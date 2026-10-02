@@ -9,7 +9,7 @@ App Android (Flutter) para importar extratos bancários (PDF, CSV, Excel), class
 - **Grupos de títulos**: juntar vários títulos (ex.: “TRANS …” e “MB WAY …” do mesmo restaurante) sob um nome e uma categoria; aplicado automaticamente nas próximas importações.
 - **Categorias com emoji**, obrigatórias por período (mês a mês), modo escuro e cores personalizáveis.
 - **Orçamento**: salário líquido, alocação por valor ou % do salário, cada categoria/subcategoria como *Limite* ou *Objetivo*, com barras de progresso.
-- **Análise**: mês, ano, YTD ou intervalo de datas à escolha; obrigatórias vs opcionais, evolução, alertas de limites/objetivos.
+- **Análise**: mês, ano, YTD ou intervalo à escolha, com filtros (tipo, categorias, contas, valor, texto) e comparação com o período anterior. Quatro separadores: visão geral (ritmo, projeção, orçamento), gastos (por categoria, subcategoria, comerciante ou conta, com detalhe), poupar (potencial, simulador, sugestões, pagamentos recorrentes) e evolução (mês a mês).
 
 ## Como correr
 Requer Flutter e o SDK Android.
