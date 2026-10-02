@@ -248,7 +248,7 @@ Future<int?> showHoldingEditor(
   final fxCtrl = TextEditingController(
     text: edit?.lastFx != null && edit!.lastFx! > 0 ? (1 / edit.lastFx!).toStringAsFixed(4).replaceAll('.', ',') : '',
   );
-  var currency = edit?.currency ?? 'EUR';
+  var currency = edit?.currency ?? baseCcy;
   var kind = edit?.kind ?? HoldingKind.etf;
   var provider = edit?.provider ?? PriceProvider.yahoo;
   var acc =
@@ -310,14 +310,14 @@ Future<int?> showHoldingEditor(
               DropdownButtonFormField<String>(
                 initialValue: kCurrencies.contains(currency) ? currency : null,
                 decoration: const InputDecoration(labelText: 'Moeda do ativo'),
-                items: [for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == 'EUR' ? 'EUR · euros' : c))],
-                onChanged: (v) => set(() => currency = v ?? 'EUR'),
+                items: [for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == baseCcy ? '$c · moeda de base' : c))],
+                onChanged: (v) => set(() => currency = v ?? baseCcy),
               ),
               const SizedBox(height: 4),
               Text(
-                currency == 'EUR'
+                currency == baseCcy
                     ? 'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'
-                    : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para euros.',
+                    : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para a moeda de base.',
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
               const SizedBox(height: 14),
@@ -384,15 +384,15 @@ Future<int?> showHoldingEditor(
                   ),
                   decoration: InputDecoration(
                     labelText: 'Preço atual ($currency, opcional)',
-                    prefixText: currency == 'EUR' ? '€ ' : null,
+                    prefixText: currency == baseCcy ? '$baseSym ' : null,
                   ),
                 ),
-                if (currency != 'EUR') ...[
+                if (currency != baseCcy) ...[
                   const SizedBox(height: 12),
                   TextField(
                     controller: fxCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(labelText: 'Câmbio: 1 € = ? $currency'),
+                    decoration: InputDecoration(labelText: 'Câmbio: 1 $baseSym = ? $currency'),
                   ),
                 ],
               ],
@@ -420,8 +420,8 @@ Future<int?> showHoldingEditor(
                   ? parseNum(price.text)
                   : null;
               final rate = parseNum(fxCtrl.text);
-              final fx = currency == 'EUR' ? 1.0 : (rate != null && rate > 0 ? 1 / rate : edit?.lastFx);
-              if (provider == PriceProvider.manual && manual != null && currency != 'EUR' && fx == null) {
+              final fx = currency == baseCcy ? 1.0 : (rate != null && rate > 0 ? 1 / rate : edit?.lastFx);
+              if (provider == PriceProvider.manual && manual != null && currency != baseCcy && fx == null) {
                 set(() => error = 'Indica o câmbio para converter o preço');
                 return;
               }
@@ -544,12 +544,12 @@ class _OpFormScreenState extends State<OpFormScreen> {
   double? get price => parseNum(priceCtrl.text);
   double? get totalIn => parseNum(totalCtrl.text);
   Holding? get _holding => holdingId == null ? null : context.read<AppState>().holding(holdingId);
-  String get ccy => _holding?.currency ?? 'EUR';
-  String get ccyLabel => ccy == 'EUR' ? '€' : ccy;
+  String get ccy => _holding?.currency ?? baseCcy;
+  String get ccyLabel => ccy == baseCcy ? baseSym : ccy;
 
   /// Operação num ativo que cota noutra moeda (USD…): o preço é nessa moeda e há câmbio.
   bool get foreignTrade => tradeLike && (_holding?.foreign ?? false);
-  double? get rate => parseNum(fxCtrl.text); // unidades da moeda por 1 €
+  double? get rate => parseNum(fxCtrl.text); // unidades da moeda do ativo por 1 unidade da moeda de base
   double? get eurPerUnit => !foreignTrade ? 1 : (rate != null && rate! > 0 ? 1 / rate! : null);
 
   double? get qty {
@@ -681,7 +681,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
 
   Future<void> _liveFx(AppState s) async {
     try {
-      final fx = await s.prices.fxToEur(ccy);
+      final fx = await s.prices.fxRate(ccy, baseCcy);
       if (mounted && fx > 0) setState(() => fxCtrl.text = _num(1 / fx));
     } on PriceException catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Não consegui obter o câmbio: ${e.message}')));
@@ -705,7 +705,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
       return;
     }
     if (foreignTrade && eurPerUnit == null) {
-      setState(() => error = 'Indica o câmbio (1 € = ? $ccy).');
+      setState(() => error = 'Indica o câmbio (1 $baseSym = ? $ccy).');
       return;
     }
     if (tradeLike && ((qty ?? 0) <= 0 || (price ?? 0) <= 0)) {
@@ -998,18 +998,18 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 ] else ...[
                   FieldLabel(
                     type == OpType.initial
-                        ? 'Valor investido (€)'
+                        ? 'Valor investido ($baseSym)'
                         : (type == OpType.buy
-                              ? 'Valor a investir (€)'
-                              : 'Valor da venda (€)'),
+                              ? 'Valor a investir ($baseSym)'
+                              : 'Valor da venda ($baseSym)'),
                   ),
                   TextField(
                     controller: totalCtrl,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      prefixText: '€  ',
+                    decoration: InputDecoration(
+                      prefixText: '$baseSym  ',
                       hintText: '0,00',
                     ),
                   ),
@@ -1025,13 +1025,13 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     decimal: true,
                   ),
                   decoration: InputDecoration(
-                    prefixText: ccy == 'EUR' ? '€  ' : null,
-                    suffixText: ccy == 'EUR' ? null : ccy,
+                    prefixText: ccy == baseCcy ? '$baseSym  ' : null,
+                    suffixText: ccy == baseCcy ? null : ccy,
                     hintText: '0,00',
                   ),
                 ),
                 if (foreignTrade) ...[
-                  FieldLabel(type == OpType.initial ? 'Câmbio médio na compra (1 € = ? $ccy)' : 'Câmbio (1 € = ? $ccy)'),
+                  FieldLabel(type == OpType.initial ? 'Câmbio médio na compra (1 $baseSym = ? $ccy)' : 'Câmbio (1 $baseSym = ? $ccy)'),
                   TextField(
                     controller: fxCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1064,14 +1064,14 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     ),
                   ),
                 if (type != OpType.initial) ...[
-                  const FieldLabel('Comissão (€)', optional: true),
+                  FieldLabel('Comissão ($baseSym)', optional: true),
                   TextField(
                     controller: feeCtrl,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      prefixText: '€  ',
+                    decoration: InputDecoration(
+                      prefixText: '$baseSym  ',
                       hintText: '0,00',
                     ),
                   ),
@@ -1099,15 +1099,15 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   ),
                 ],
                 FieldLabel(
-                  type == OpType.dividend ? 'Valor recebido (€)' : 'Valor (€)',
+                  type == OpType.dividend ? 'Valor recebido ($baseSym)' : 'Valor ($baseSym)',
                 ),
                 TextField(
                   controller: amountCtrl,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    prefixText: '€  ',
+                  decoration: InputDecoration(
+                    prefixText: '$baseSym  ',
                     hintText: '0,00',
                   ),
                 ),

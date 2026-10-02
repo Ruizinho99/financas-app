@@ -98,6 +98,7 @@ class AppState extends ChangeNotifier {
     investPatterns = db.investPatterns();
     mandatoryRanges = db.mandatoryRanges();
     salaries = db.salaries();
+    baseCcy = db.setting('base_currency') ?? 'EUR';
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
     themeMode = ThemeMode.values.firstWhere((m) => m.name == db.setting('theme_mode'), orElse: () => ThemeMode.system);
     seedColor = int.tryParse(db.setting('seed_color') ?? '') ?? 0xFF2E7D6B;
@@ -111,6 +112,18 @@ class AppState extends ChangeNotifier {
   ThemeMode themeMode = ThemeMode.system;
   int seedColor = 0xFF2E7D6B;
   bool amoled = false;
+  /// Moeda de base escolhida (a mesma de `baseCcy`, usada na formatação).
+  String get baseCurrency => baseCcy;
+
+  /// Muda a moeda de base. Não converte valores já registados: serve para definir a moeda antes de usar a app.
+  /// Os ativos têm de ter o preço atualizado de novo (o câmbio passa a ser relativo à nova moeda).
+  void setBaseCurrency(String c) {
+    if (c == baseCcy) return;
+    baseCcy = c;
+    db.putSetting('base_currency', c);
+    notifyListeners();
+  }
+
   int incomeColor = 0xFF43A047;
   int expenseColor = 0xFFE53935;
 
@@ -569,7 +582,7 @@ class AppState extends ChangeNotifier {
         for (final h in batch)
           () async {
             try {
-              return (h, await prices.quote(h.provider, h.symbol), null as String?);
+              return (h, await prices.quote(h.provider, h.symbol, base: baseCcy), null as String?);
             } on PriceException catch (e) {
               return (h, null as PriceQuote?, e.message);
             } catch (_) {

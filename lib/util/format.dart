@@ -1,7 +1,30 @@
 import 'package:intl/intl.dart';
 
-final _money = NumberFormat.currency(locale: 'pt_PT', symbol: '€', decimalDigits: 2);
-final _moneyShort = NumberFormat.currency(locale: 'pt_PT', symbol: '€', decimalDigits: 0);
+/// Moeda de base da app (todos os valores guardados estão nela). Por omissão, euros.
+String baseCcy = 'EUR';
+
+const _ccySymbols = {'EUR': '€', 'USD': r'US$', 'GBP': '£', 'CHF': 'CHF', 'CAD': r'CA$', 'AUD': r'A$', 'JPY': '¥', 'SEK': 'kr', 'NOK': 'kr', 'DKK': 'kr', 'PLN': 'zł', 'BRL': r'R$'};
+String ccySymbol(String c) => _ccySymbols[c] ?? c;
+String get baseSym => ccySymbol(baseCcy);
+
+NumberFormat? _moneyF, _moneyShortF;
+String _fmtKey = '';
+NumberFormat get _money {
+  if (_fmtKey != baseCcy) _resetFmt();
+  return _moneyF!;
+}
+
+NumberFormat get _moneyShort {
+  if (_fmtKey != baseCcy) _resetFmt();
+  return _moneyShortF!;
+}
+
+void _resetFmt() {
+  _fmtKey = baseCcy;
+  _moneyF = NumberFormat.currency(locale: 'pt_PT', symbol: baseSym, decimalDigits: 2);
+  _moneyShortF = NumberFormat.currency(locale: 'pt_PT', symbol: baseSym, decimalDigits: 0);
+}
+
 final _dateFmt = DateFormat('dd/MM/yyyy');
 final _monthFmt = DateFormat('MMMM yyyy', 'pt_PT');
 final _monthShort = DateFormat('MMM yy', 'pt_PT');
@@ -55,14 +78,14 @@ final _qtyFmt = NumberFormat('#,##0.######', 'pt_PT');
 String fmtQty(double q) => _qtyFmt.format(q);
 
 /// Preço unitário: 2 casas, ou 4 se for menor que 1 €.
-String fmtPrice(double p) => NumberFormat.currency(locale: 'pt_PT', symbol: '€', decimalDigits: p.abs() < 1 ? 4 : 2).format(p);
+String fmtPrice(double p) => NumberFormat.currency(locale: 'pt_PT', symbol: baseSym, decimalDigits: p.abs() < 1 ? 4 : 2).format(p);
 
 /// Número com [digits] casas, no formato português ("1,0850").
 String fmtNum(double v, int digits) => NumberFormat.decimalPatternDigits(locale: 'pt_PT', decimalDigits: digits).format(v);
 
 /// Preço na moeda do ativo: euros com €, outras moedas como "123,45 USD".
 String fmtPriceIn(double p, String ccy) {
-  if (ccy == 'EUR') return fmtPrice(p);
+  if (ccy == baseCcy) return fmtPrice(p);
   return '${NumberFormat.decimalPatternDigits(locale: 'pt_PT', decimalDigits: p.abs() < 1 ? 4 : 2).format(p)} $ccy';
 }
 

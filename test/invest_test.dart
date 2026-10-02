@@ -6,6 +6,7 @@ import 'package:financas/invest/invest.dart';
 import 'package:financas/invest/price_service.dart';
 import 'package:financas/models.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/util/format.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -329,6 +330,35 @@ void main() {
       expect(s.investOps.single.fx, 1.1);
       s.setHoldingPrice(h, 12, eurPerUnit: 1.2);
       expect(s.holding(h)!.lastPrice, closeTo(14.4, 1e-9));
+    });
+  });
+
+  group('moeda de base', () {
+    test('com base em USD: formatação, ativo em EUR convertido e persistência', () async {
+      final urls = <String>[];
+      final client = MockClient((r) async {
+        urls.add(r.url.pathSegments.isEmpty ? '' : r.url.pathSegments.last);
+        final sym = r.url.pathSegments.last;
+        final isFx = sym == 'EURUSD=X';
+        return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': isFx ? 1.25 : 100.0, 'currency': isFx ? 'USD' : 'EUR'}}]}}), 200);
+      });
+      final db = Db.memory();
+      final s = AppState(db, prices: PriceService(client: client));
+      s.setBaseCurrency('USD');
+      expect(fmtMoney(12345), contains(r'US$'));
+      final acc = s.addInvestAccount('XTB');
+      final id = s.addHolding(Holding(id: 0, accountId: acc, name: 'VWCE', symbol: 'VWCE.DE', provider: PriceProvider.yahoo));
+      expect(s.holding(id)!.currency, 'USD'); // novo ativo: moeda de base por omissão
+      await s.refreshPrices();
+      final h = s.holding(id)!;
+      expect(h.currency, 'EUR'); // detetada: agora é "estrangeira" face ao USD
+      expect(h.foreign, isTrue);
+      expect(h.lastFx, 1.25);
+      expect(h.lastPrice, closeTo(125, 1e-9));
+      expect(urls, contains('EURUSD=X'));
+      expect(db.setting('base_currency'), 'USD');
+      s.setBaseCurrency('EUR');
+      expect(fmtMoney(12345), contains('€'));
     });
   });
 }

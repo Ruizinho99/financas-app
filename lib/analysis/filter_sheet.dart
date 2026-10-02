@@ -158,9 +158,9 @@ class _FilterSheetState extends State<_FilterSheet> {
             TextField(controller: query, decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Nome, nota, categoria…')),
             _label('Valor do movimento'),
             Row(children: [
-              Expanded(child: TextField(controller: minC, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Mínimo (€)'))),
+              Expanded(child: TextField(controller: minC, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'Mínimo ($baseSym)'))),
               const SizedBox(width: 12),
-              Expanded(child: TextField(controller: maxC, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Máximo (€)'))),
+              Expanded(child: TextField(controller: maxC, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'Máximo ($baseSym)'))),
             ]),
             if (s.accounts.isNotEmpty) ...[
               _label('Contas'),

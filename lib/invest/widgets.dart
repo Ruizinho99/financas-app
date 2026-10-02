@@ -73,12 +73,13 @@ class PositionRow extends StatelessWidget {
 class OpTile extends StatelessWidget {
   final InvestOp op;
   final String? holdingName;
-  final String currency; // moeda do ativo
+  final String? currencyCode; // moeda do ativo
   final VoidCallback? onTap;
-  const OpTile(this.op, {super.key, this.holdingName, this.currency = 'EUR', this.onTap});
+  const OpTile(this.op, {super.key, this.holdingName, this.currencyCode, this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final currency = currencyCode ?? baseCcy;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final (icon, cash) = switch (op.type) {
@@ -89,7 +90,7 @@ class OpTile extends StatelessWidget {
       OpType.cash => (Icons.account_balance_wallet_outlined, op.amount),
     };
     final detail = switch (op.type) {
-      OpType.buy || OpType.sell || OpType.initial => '${fmtQty(op.quantity)} un. × ${op.fx == null || currency == 'EUR' ? fmtPrice(op.price) : '${fmtPriceIn(op.price, currency)} (1 € = ${fmtNum(1 / op.fx!, 4)} $currency)'}${op.fee > 0 ? ' · comissão ${fmtMoney(op.fee)}' : ''}',
+      OpType.buy || OpType.sell || OpType.initial => '${fmtQty(op.quantity)} un. × ${op.fx == null || currency == baseCcy ? fmtPrice(op.price) : '${fmtPriceIn(op.price, currency)} (1 $baseSym = ${fmtNum(1 / op.fx!, 4)} $currency)'}${op.fee > 0 ? ' · comissão ${fmtMoney(op.fee)}' : ''}',
       _ => op.note,
     };
     return ListTile(

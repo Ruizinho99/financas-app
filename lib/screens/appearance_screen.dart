@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../invest/invest.dart' show kCurrencies;
 import '../state/app_state.dart';
+import '../util/format.dart';
 import '../widgets/common.dart';
 
 const _accentColors = <int>[
@@ -36,6 +38,21 @@ class AppearanceScreen extends StatelessWidget {
           subtitle: const Text('No modo escuro, fundo totalmente preto'),
           value: s.amoled,
           onChanged: (v) => s.setAppearance(amoledBlack: v),
+        ),
+        const Divider(height: 32),
+        Text('Moeda de base', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        const Text('É a moeda dos teus movimentos, orçamentos e carteira. Os ativos noutras moedas (USD, GBP…) são convertidos para esta.'),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          initialValue: kCurrencies.contains(s.baseCurrency) ? s.baseCurrency : null,
+          decoration: const InputDecoration(prefixIcon: Icon(Icons.payments_outlined)),
+          items: [for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text('$c · ${ccySymbol(c)}'))],
+          onChanged: (c) {
+            if (c == null) return;
+            s.setBaseCurrency(c);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Moeda de base: $c. Os valores já registados não são convertidos; atualiza os preços da Carteira.')));
+          },
         ),
         const Divider(height: 32),
         Text('Cor principal', style: Theme.of(context).textTheme.titleMedium),

@@ -265,7 +265,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             onChanged: (_) => setState(() => error = null),
             decoration: InputDecoration(
               hintText: '0,00',
-              prefixIcon: const Padding(padding: EdgeInsets.only(left: 16, right: 8), child: Align(widthFactor: 1, child: Text('€', style: TextStyle(fontSize: 22)))),
+              prefixIcon: Padding(padding: const EdgeInsets.only(left: 16, right: 8), child: Align(widthFactor: 1, child: Text(baseSym, style: const TextStyle(fontSize: 22)))),
               suffixIcon: IconButton(tooltip: 'Calculadora', icon: const Icon(Icons.calculate_outlined), onPressed: _calculator),
               errorText: error,
             ),

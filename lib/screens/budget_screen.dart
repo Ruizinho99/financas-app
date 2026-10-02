@@ -110,7 +110,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         builder: (ctx, set) => AlertDialog(
           title: const Text('Salário líquido mensal'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: ctrl, autofocus: true, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor (€)', suffixText: '€')),
+            TextField(controller: ctrl, autofocus: true, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'Valor ($baseSym)', suffixText: baseSym)),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Só para este mês'),
@@ -266,14 +266,14 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
               ),
               const SizedBox(height: 8),
               SegmentedButton<bool>(
-                segments: const [ButtonSegment(value: false, label: Text('Valor (€)')), ButtonSegment(value: true, label: Text('% do salário'))],
+                segments: [ButtonSegment(value: false, label: Text('Valor ($baseSym)')), const ButtonSegment(value: true, label: Text('% do salário'))],
                 selected: {percent},
                 onSelectionChanged: (v) => set(() => percent = v.first),
               ),
               TextField(
                 controller: ctrl,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(labelText: percent ? 'Percentagem' : 'Valor mensal', suffixText: percent ? '%' : '€'),
+                decoration: InputDecoration(labelText: percent ? 'Percentagem' : 'Valor mensal', suffixText: percent ? '%' : baseSym),
               ),
             ],
           ]),

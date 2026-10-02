@@ -5,13 +5,13 @@ import 'package:http/http.dart' as http;
 
 import 'invest.dart';
 
-/// Preço obtido, já convertido para euros.
+/// Preço obtido, já convertido para a moeda de base.
 class PriceQuote {
   final double eur;
   final String currency; // moeda original do ativo
   final double original; // preço na moeda original
   final DateTime at;
-  final double fx; // euros por 1 unidade da moeda original (1 se já for euros)
+  final double fx; // moeda de base por 1 unidade da moeda original (1 se já estiver na moeda de base)
   const PriceQuote(this.eur, this.currency, this.original, this.at, [this.fx = 1]);
 }
 
@@ -58,13 +58,13 @@ class PriceService {
     }
   }
 
-  /// Preço atual em euros.
-  Future<PriceQuote> quote(PriceProvider provider, String symbol) {
+  /// Preço atual na moeda [base].
+  Future<PriceQuote> quote(PriceProvider provider, String symbol, {String base = 'EUR'}) {
     final s = symbol.trim();
     if (s.isEmpty) throw const PriceException('Falta o símbolo.');
     return switch (provider) {
-      PriceProvider.yahoo => _yahoo(s),
-      PriceProvider.coingecko => _gecko(s),
+      PriceProvider.yahoo => _yahoo(s, base),
+      PriceProvider.coingecko => _gecko(s, base),
       PriceProvider.manual => throw const PriceException('Preço manual: não há nada para atualizar.'),
     };
   }
@@ -82,17 +82,18 @@ class PriceService {
     return (price: price.toDouble(), currency: (meta['currency'] as String?) ?? 'EUR');
   }
 
-  /// Euros por 1 unidade de [ccy] (ex.: USD → 0,92).
-  Future<double> fxToEur(String ccy) => _fxToEur(ccy.toUpperCase());
-
-  Future<double> _fxToEur(String ccy) async {
-    if (ccy == 'EUR') return 1;
-    if (_fx.containsKey(ccy)) return _fx[ccy]!;
-    final r = await _yahooRaw('${ccy}EUR=X');
-    return _fx[ccy] = r.price;
+  /// Quanto vale 1 unidade de [from] na moeda [to] (ex.: USD → EUR = 0,92).
+  Future<double> fxRate(String from, String to) async {
+    from = from.toUpperCase();
+    to = to.toUpperCase();
+    if (from == to) return 1;
+    final key = '$from$to';
+    if (_fx.containsKey(key)) return _fx[key]!;
+    final r = await _yahooRaw('$from$to=X');
+    return _fx[key] = r.price;
   }
 
-  Future<PriceQuote> _yahoo(String symbol) async {
+  Future<PriceQuote> _yahoo(String symbol, String base) async {
     final raw = await _yahooRaw(symbol);
     var price = raw.price;
     var ccy = raw.currency;
@@ -101,17 +102,17 @@ class PriceService {
       ccy = 'GBP';
     }
     final original = price;
-    final fx = ccy == 'EUR' ? 1.0 : await _fxToEur(ccy);
+    final fx = await fxRate(ccy, base);
     return PriceQuote(original * fx, ccy, original, DateTime.now(), fx);
   }
 
-  Future<PriceQuote> _gecko(String id) async {
+  Future<PriceQuote> _gecko(String id, String base) async {
     final key = id.toLowerCase();
-    final j = await _getJson(Uri.https('api.coingecko.com', '/api/v3/simple/price', {'ids': key, 'vs_currencies': 'eur'}));
+    final j = await _getJson(Uri.https('api.coingecko.com', '/api/v3/simple/price', {'ids': key, 'vs_currencies': base.toLowerCase()}));
     final v = j is Map ? j[key] : null;
-    final eur = v is Map ? v['eur'] : null;
+    final eur = v is Map ? v[base.toLowerCase()] : null;
     if (eur is! num) throw const PriceException('Id não encontrado no CoinGecko (usa o id, ex.: bitcoin).');
-    return PriceQuote(eur.toDouble(), 'EUR', eur.toDouble(), DateTime.now());
+    return PriceQuote(eur.toDouble(), base, eur.toDouble(), DateTime.now());
   }
 
   /// Procura ativos pelo nome ou símbolo.

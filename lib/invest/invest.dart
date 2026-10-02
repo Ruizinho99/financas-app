@@ -1,4 +1,5 @@
 import '../models.dart';
+import '../util/format.dart' show baseCcy;
 
 /// Plataforma / corretora onde tens dinheiro investido (XTB, Trade Republic, uma exchange…).
 class InvestAccount {
@@ -13,7 +14,7 @@ class InvestAccount {
       InvestAccount(id: id, name: name ?? this.name, emoji: emoji ?? this.emoji, note: note ?? this.note, archived: archived ?? this.archived);
 }
 
-/// Moedas em que um ativo pode cotar (o resto da app é sempre em euros).
+/// Moedas disponíveis (para o ativo e para a moeda de base da app).
 const kCurrencies = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL'];
 
 enum HoldingKind { etf, stock, crypto, fund, bond, other }
@@ -48,7 +49,7 @@ extension PriceProviderX on PriceProvider {
       };
 }
 
-/// Um ativo (ETF, ação, cripto…) numa plataforma. Os preços são sempre em euros.
+/// Um ativo (ETF, ação, cripto…) numa plataforma. Os valores da carteira são convertidos para a moeda de base.
 class Holding {
   final int id;
   final int accountId;
@@ -56,13 +57,13 @@ class Holding {
   final String symbol; // ex.: VWCE.DE (Yahoo) ou bitcoin (CoinGecko)
   final PriceProvider provider;
   final HoldingKind kind;
-  final double? lastPrice; // EUR (já convertido)
+  final double? lastPrice; // na moeda de base (já convertido)
   final DateTime? lastPriceAt;
   final bool archived;
   final String currency; // moeda em que o ativo cota: EUR, USD, GBP…
   final double? lastPriceOrig; // último preço na moeda do ativo
-  final double? lastFx; // euros por 1 unidade da moeda do ativo, no momento do último preço
-  const Holding({
+  final double? lastFx; // moeda de base por 1 unidade da moeda do ativo, no momento do último preço
+  Holding({
     required this.id,
     required this.accountId,
     required this.name,
@@ -72,12 +73,12 @@ class Holding {
     this.lastPrice,
     this.lastPriceAt,
     this.archived = false,
-    this.currency = 'EUR',
+    String? currency,
     this.lastPriceOrig,
     this.lastFx,
-  });
+  }) : currency = currency ?? baseCcy;
 
-  bool get foreign => currency != 'EUR';
+  bool get foreign => currency != baseCcy;
 
   /// Último preço na moeda do ativo (em euros, se o ativo for em euros).
   double? get priceOrig => foreign ? lastPriceOrig : lastPrice;
@@ -127,7 +128,7 @@ class InvestOp {
   final OpType type;
   final double quantity;
   final double price; // por unidade, na moeda do ativo (se [fx] for nulo, em euros)
-  final double? fx; // euros por 1 unidade da moeda do ativo, no dia da operação (nulo = preço em euros)
+  final double? fx; // moeda de base por 1 unidade da moeda do ativo, no dia da operação (nulo = preço na moeda de base)
   final int amount; // cêntimos: pago (compra, com comissão), recebido (venda/dividendo), custo da posição (initial) ou ± (cash)
   final int fee; // cêntimos (já incluída em amount nas compras)
   final String note;
