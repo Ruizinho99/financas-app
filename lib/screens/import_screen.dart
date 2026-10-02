@@ -105,7 +105,7 @@ class _ImportScreenState extends State<ImportScreen> {
         if (error != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Card(color: Colors.orange.shade50, child: Padding(padding: const EdgeInsets.all(12), child: Text(error!, style: TextStyle(color: Colors.orange.shade900)))),
+            child: Card(color: Theme.of(context).colorScheme.errorContainer, child: Padding(padding: const EdgeInsets.all(12), child: Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)))),
           ),
         if (table != null) _mappingCard(),
         if (filename != null && source == 'pdf' && rows.isNotEmpty) _pdfOptions(),

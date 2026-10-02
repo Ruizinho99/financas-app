@@ -56,9 +56,12 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     final roots = s.roots;
     final income = s.txnsIn(p).where((t) => t.amount > 0 && (s.cat(t.categoryId)?.isIncome ?? false)).fold(0, (a, t) => a + t.amount);
     final expRoots = roots.where((c) => !c.isIncome).toList();
-    final mandSpent = expRoots.where((c) => c.mandatory).fold(0, (a, c) => a + s.rollup(c, own));
-    final optSpent = expRoots.where((c) => !c.mandatory).fold(0, (a, c) => a + s.rollup(c, own));
-    final unclassified = s.txnsIn(p).where((t) => t.categoryId == null && t.amount < 0).fold(0, (a, t) => a - t.amount);
+    final split = s.mandatorySplit(p);
+    final mandSpent = split.mandatory.values.fold(0, (a, v) => a + v);
+    final optSpent = split.optional.values.fold(0, (a, v) => a + v);
+    final unclassified = split.unclassified;
+    final cs = Theme.of(context).colorScheme;
+    final mandColor = cs.primary, optColor = cs.tertiary;
     final totalSpent = mandSpent + optSpent + unclassified;
     final base = income > 0 ? income : salary;
 
@@ -115,17 +118,17 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                     width: 130,
                     height: 130,
                     child: PieChart(PieChartData(sectionsSpace: 2, centerSpaceRadius: 30, sections: [
-                      PieChartSectionData(value: mandSpent.toDouble().clamp(0, double.infinity), color: Colors.indigo, title: '', radius: 28),
-                      PieChartSectionData(value: optSpent.toDouble().clamp(0, double.infinity), color: Colors.orange, title: '', radius: 28),
-                      if (unclassified > 0) PieChartSectionData(value: unclassified.toDouble(), color: Colors.grey, title: '', radius: 28),
+                      PieChartSectionData(value: mandSpent.toDouble().clamp(0, double.infinity), color: mandColor, title: '', radius: 28),
+                      PieChartSectionData(value: optSpent.toDouble().clamp(0, double.infinity), color: optColor, title: '', radius: 28),
+                      if (unclassified > 0) PieChartSectionData(value: unclassified.toDouble(), color: Colors.blueGrey, title: '', radius: 28),
                     ])),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      _legend(Colors.indigo, 'Obrigatórias', mandSpent, totalSpent),
-                      _legend(Colors.orange, 'Opcionais', optSpent, totalSpent),
-                      if (unclassified > 0) _legend(Colors.grey, 'Sem categoria', unclassified, totalSpent),
+                      _legend(mandColor, 'Obrigatórias', mandSpent, totalSpent),
+                      _legend(optColor, 'Opcionais', optSpent, totalSpent),
+                      if (unclassified > 0) _legend(Colors.blueGrey, 'Sem categoria', unclassified, totalSpent),
                     ]),
                   ),
                 ]),
@@ -155,9 +158,11 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
             ]),
           ),
         ),
-        // Detalhe por tipo
-        _typeDetail(context, s, 'Obrigatórias', expRoots.where((c) => c.mandatory).toList(), own, p),
-        _typeDetail(context, s, 'Opcionais', expRoots.where((c) => !c.mandatory).toList(), own, p),
+        // Orçamento por categoria
+        _budgetCard(context, s, expRoots, own, p),
+        // Detalhe por tipo (a obrigatoriedade depende do mês de cada movimento)
+        _splitDetail(context, s, 'Obrigatórias', split.mandatory),
+        _splitDetail(context, s, 'Opcionais', split.optional),
       ]),
     );
   }
@@ -245,8 +250,9 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     for (final t in s.txnsIn(p)) {
       final c = s.cat(t.categoryId);
       if (c == null || c.isIncome || t.amount >= 0) continue;
+      final isMand = s.isMandatory(c, monthKey(t.date));
       final idx = bucketYears ? t.date.year - p.start.year : (t.date.year - p.start.year) * 12 + t.date.month - p.start.month;
-      (c.mandatory ? mand : opt)[idx] += -t.amount / 100;
+      (isMand ? mand : opt)[idx] += -t.amount / 100;
     }
     String label(int i) => bucketYears ? '${p.start.year + i}' : fmtMonthShort(DateTime(p.start.year, p.start.month + i)).split(' ').first;
     final maxY = [for (var i = 0; i < buckets; i++) mand[i] + opt[i]].fold(1.0, (a, b) => b > a ? b : a);
@@ -281,31 +287,65 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                       toY: mand[i] + opt[i],
                       width: buckets > 12 ? 6 : 14,
                       borderRadius: BorderRadius.circular(2),
-                      rodStackItems: [BarChartRodStackItem(0, mand[i], Colors.indigo), BarChartRodStackItem(mand[i], mand[i] + opt[i], Colors.orange)],
+                      rodStackItems: [BarChartRodStackItem(0, mand[i], Theme.of(context).colorScheme.primary), BarChartRodStackItem(mand[i], mand[i] + opt[i], Theme.of(context).colorScheme.tertiary)],
                     )
                   ]),
               ],
             )),
           ),
           const SizedBox(height: 4),
-          Row(children: [Container(width: 10, height: 10, color: Colors.indigo), const Text('  Obrigatórias    '), Container(width: 10, height: 10, color: Colors.orange), const Text('  Opcionais')]),
+          Row(children: [Container(width: 10, height: 10, color: Theme.of(context).colorScheme.primary), const Text('  Obrigatórias    '), Container(width: 10, height: 10, color: Theme.of(context).colorScheme.tertiary), const Text('  Opcionais')]),
         ]),
       ),
     );
   }
 
-  Widget _typeDetail(BuildContext context, AppState s, String title, List<Categoria> cats, Map<int, int> own, Period p) {
-    if (cats.isEmpty) return const SizedBox.shrink();
-    final list = cats.map((c) => (c, s.rollup(c, own), s.targetIn(c, p))).toList()..sort((a, b) => b.$2.compareTo(a.$2));
-    final total = list.fold(0, (a, e) => a + e.$2);
+  Widget _budgetCard(BuildContext context, AppState s, List<Categoria> roots, Map<int, int> own, Period p) {
+    final list = roots.map((c) => (c, s.rollup(c, own), s.targetIn(c, p))).where((e) => e.$3 > 0).toList()..sort((a, b) => b.$2.compareTo(a.$2));
+    if (list.isEmpty) return const SizedBox.shrink();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Orçamento por categoria', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          for (final (c, spent, target) in list) _row(context, s, c, spent, target, own, p),
+        ]),
+      ),
+    );
+  }
+
+  /// Lista as categorias (e subcategorias) de uma das metades obrigatórias/opcionais.
+  Widget _splitDetail(BuildContext context, AppState s, String title, Map<int, int> amounts) {
+    if (amounts.isEmpty) return const SizedBox.shrink();
+    final byRoot = <int, int>{};
+    final subs = <int, List<MapEntry<int, int>>>{};
+    for (final e in amounts.entries) {
+      final c = s.cat(e.key);
+      if (c == null) continue;
+      final root = c.parentId ?? c.id;
+      byRoot[root] = (byRoot[root] ?? 0) + e.value;
+      if (c.parentId != null) (subs[root] ??= []).add(e);
+    }
+    final roots = byRoot.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final total = byRoot.values.fold(0, (a, v) => a + v);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [Text(title, style: Theme.of(context).textTheme.titleMedium), const Spacer(), Text(fmtMoney(total), style: const TextStyle(fontWeight: FontWeight.w700))]),
-          const SizedBox(height: 8),
-          for (final (c, spent, target) in list)
-            if (spent != 0 || target > 0) _row(context, s, c, spent, target, own, p),
+          for (final r in roots)
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              enabled: (subs[r.key] ?? []).isNotEmpty,
+              title: Row(children: [Dot(s.cat(r.key)?.color ?? 0xFF9E9E9E), const SizedBox(width: 8), Expanded(child: Text(s.cat(r.key)?.name ?? '?')), Text(fmtMoney(r.value))]),
+              children: [
+                for (final e in (subs[r.key] ?? [])..sort((a, b) => b.value.compareTo(a.value)))
+                  ListTile(dense: true, contentPadding: const EdgeInsets.only(left: 24), title: Text(s.cat(e.key)?.name ?? '?'), trailing: Text(fmtMoney(e.value))),
+              ],
+            ),
         ]),
       ),
     );

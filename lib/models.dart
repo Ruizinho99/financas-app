@@ -4,7 +4,6 @@ class Categoria {
   final int id;
   final String name;
   final int? parentId;
-  final bool mandatory; // obrigatória (despesa mensal fixa/necessária) vs opcional
   final bool isIncome;
   final int color; // ARGB
   final String description;
@@ -18,7 +17,6 @@ class Categoria {
     required this.id,
     required this.name,
     this.parentId,
-    this.mandatory = false,
     this.isIncome = false,
     this.color = 0xFF607D8B,
     this.description = '',
@@ -93,4 +91,15 @@ class TxnGroup {
   TxnGroup(this.key, this.txns);
   int get total => txns.fold(0, (s, t) => s + t.amount);
   String get sampleDescription => txns.first.description;
+}
+
+/// Período em que uma categoria conta como "obrigatória" (despesa que existe nesses meses).
+/// [end] nulo = sem fim. Meses no formato AAAA-MM.
+class MandatoryRange {
+  final int id;
+  final int categoryId;
+  final String start;
+  final String? end;
+  const MandatoryRange({required this.id, required this.categoryId, required this.start, this.end});
+  bool covers(String month) => month.compareTo(start) >= 0 && (end == null || month.compareTo(end!) <= 0);
 }

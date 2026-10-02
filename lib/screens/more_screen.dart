@@ -10,6 +10,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import 'appearance_screen.dart';
 import 'budget_screen.dart' show showBudgetEditor;
 import 'classify_screen.dart';
 import 'import_screen.dart';
@@ -23,6 +24,7 @@ class MoreScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Mais')),
       body: ListView(children: [
+        ListTile(leading: const Icon(Icons.palette_outlined), title: const Text('Aparência'), subtitle: const Text('Modo escuro e cores'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppearanceScreen()))),
         ListTile(leading: const Icon(Icons.category_outlined), title: const Text('Categorias e subcategorias'), subtitle: Text('${s.categories.length} categorias'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()))),
         ListTile(leading: const Icon(Icons.rule), title: const Text('Regras memorizadas'), subtitle: Text('${s.rules.length} regras'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RulesScreen()))),
         ListTile(leading: const Icon(Icons.upload_file), title: const Text('Importar extrato'), subtitle: const Text('PDF, CSV ou Excel'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportScreen()))),
@@ -54,6 +56,13 @@ class MoreScreen extends StatelessWidget {
           title: const Text('Apagar todos os movimentos', style: TextStyle(color: Colors.red)),
           onTap: () async {
             if (await confirm(context, 'Apagar TODOS os movimentos, regras e salários? As categorias mantêm-se. Não é possível desfazer.')) s.wipe();
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.delete_sweep_outlined, color: Colors.red),
+          title: const Text('Apagar tudo, incluindo categorias', style: TextStyle(color: Colors.red)),
+          onTap: () async {
+            if (await confirm(context, 'Apagar TUDO: movimentos, categorias, orçamentos, regras e salários? Não é possível desfazer.')) s.wipe(categories: true);
           },
         ),
         const Padding(padding: EdgeInsets.all(16), child: Text('Todos os dados ficam guardados apenas neste telemóvel. A app não usa internet.', textAlign: TextAlign.center)),
@@ -114,13 +123,13 @@ class CategoriesScreen extends StatelessWidget {
       contentPadding: EdgeInsets.only(left: 16.0 + depth * 32, right: 8),
       leading: Dot(c.color, size: depth == 0 ? 14 : 10),
       title: Text(c.name, style: TextStyle(fontWeight: depth == 0 ? FontWeight.w700 : null, decoration: c.archived ? TextDecoration.lineThrough : null)),
-      subtitle: Text([c.isIncome ? 'Rendimento' : (c.mandatory ? 'Obrigatória' : 'Opcional'), '$count mov.', if (c.description.isNotEmpty) c.description].join(' · ')),
+      subtitle: Text([if (c.isIncome) 'Rendimento', '$count mov.', if (s.rangesOf(c.id).isNotEmpty) 'Obrigatória em ${s.rangesOf(c.id).length} período(s)', if (c.description.isNotEmpty) c.description].join(' · ')),
       onTap: () => showCategoryEditor(context, edit: c),
       trailing: PopupMenuButton<String>(
         onSelected: (v) async {
           if (v == 'sub') showCategoryEditor(context, parentId: c.id);
           if (v == 'budget') showBudgetEditor(context, c);
-          if (v == 'archive') s.updateCategory(Categoria(id: c.id, name: c.name, parentId: c.parentId, mandatory: c.mandatory, isIncome: c.isIncome, color: c.color, description: c.description, budgetType: c.budgetType, budgetPercent: c.budgetPercent, budgetValue: c.budgetValue, hasBudget: c.hasBudget, archived: !c.archived));
+          if (v == 'archive') s.updateCategory(Categoria(id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, color: c.color, description: c.description, budgetType: c.budgetType, budgetPercent: c.budgetPercent, budgetValue: c.budgetValue, hasBudget: c.hasBudget, archived: !c.archived));
           if (v == 'delete') {
             if (await confirm(context, 'Apagar “${c.name}”? Os $count movimentos ficam sem categoria${depth == 0 ? ' e as subcategorias são apagadas' : ''}.') && context.mounted) {
               s.deleteCategory(c.id);

@@ -22,17 +22,25 @@ class FinancasApp extends StatelessWidget {
   const FinancasApp({super.key});
   @override
   Widget build(BuildContext context) {
-    ThemeData theme(Brightness b) => ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: const Color(0xFF2E7D6B),
-          brightness: b,
-          cardTheme: const CardThemeData(margin: EdgeInsets.symmetric(vertical: 6)),
-        );
+    final st = context.watch<AppState>();
+    ThemeData theme(Brightness b) {
+      var scheme = ColorScheme.fromSeed(seedColor: Color(st.seedColor), brightness: b);
+      final black = b == Brightness.dark && st.amoled;
+      if (black) scheme = scheme.copyWith(surface: Colors.black, surfaceContainerLowest: Colors.black, surfaceContainerLow: const Color(0xFF0A0A0A), surfaceContainer: const Color(0xFF101010));
+      return ThemeData(
+        useMaterial3: true,
+        colorScheme: scheme,
+        scaffoldBackgroundColor: black ? Colors.black : null,
+        cardTheme: const CardThemeData(margin: EdgeInsets.symmetric(vertical: 6)),
+      );
+    }
+
     return MaterialApp(
       title: 'Finanças',
       debugShowCheckedModeBanner: false,
       theme: theme(Brightness.light),
       darkTheme: theme(Brightness.dark),
+      themeMode: st.themeMode,
       locale: const Locale('pt', 'PT'),
       supportedLocales: const [Locale('pt', 'PT')],
       localizationsDelegates: const [

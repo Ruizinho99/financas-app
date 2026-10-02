@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../db/database.dart';
 import '../import/parsers.dart';
@@ -40,6 +40,7 @@ class AppState extends ChangeNotifier {
   List<Categoria> categories = [];
   List<Txn> transactions = [];
   List<Rule> rules = [];
+  List<MandatoryRange> mandatoryRanges = [];
   Map<String, int> salaries = {};
   int defaultSalary = 0;
 
@@ -47,9 +48,98 @@ class AppState extends ChangeNotifier {
     categories = db.categories();
     transactions = db.transactions();
     rules = db.rules();
+    mandatoryRanges = db.mandatoryRanges();
     salaries = db.salaries();
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
+    themeMode = ThemeMode.values.firstWhere((m) => m.name == db.setting('theme_mode'), orElse: () => ThemeMode.system);
+    seedColor = int.tryParse(db.setting('seed_color') ?? '') ?? 0xFF2E7D6B;
+    amoled = db.setting('amoled') == '1';
+    incomeColor = int.tryParse(db.setting('income_color') ?? '') ?? 0xFF43A047;
+    expenseColor = int.tryParse(db.setting('expense_color') ?? '') ?? 0xFFE53935;
     notifyListeners();
+  }
+
+  // ---------- Aparência ----------
+  ThemeMode themeMode = ThemeMode.system;
+  int seedColor = 0xFF2E7D6B;
+  bool amoled = false;
+  int incomeColor = 0xFF43A047;
+  int expenseColor = 0xFFE53935;
+
+  void setAppearance({ThemeMode? mode, int? seed, bool? amoledBlack, int? income, int? expense}) {
+    if (mode != null) db.putSetting('theme_mode', mode.name);
+    if (seed != null) db.putSetting('seed_color', seed.toString());
+    if (amoledBlack != null) db.putSetting('amoled', amoledBlack ? '1' : '0');
+    if (income != null) db.putSetting('income_color', income.toString());
+    if (expense != null) db.putSetting('expense_color', expense.toString());
+    reload();
+  }
+
+  void resetAppearance() {
+    for (final k in ['theme_mode', 'seed_color', 'amoled', 'income_color', 'expense_color']) {
+      db.deleteSetting(k);
+    }
+    reload();
+  }
+
+  // ---------- Obrigatoriedade por mês ----------
+  /// Uma categoria é obrigatória num mês se ela (ou a mãe) tiver um período que o cobre.
+  bool isMandatory(Categoria c, String month, {bool inherit = true}) {
+    bool own(int id) => mandatoryRanges.any((r) => r.categoryId == id && r.covers(month));
+    if (own(c.id)) return true;
+    return inherit && c.parentId != null && own(c.parentId!);
+  }
+
+  bool isMandatoryDirect(Categoria c, String month) => isMandatory(c, month, inherit: false);
+
+  List<MandatoryRange> rangesOf(int categoryId) => mandatoryRanges.where((r) => r.categoryId == categoryId).toList();
+
+  void addRange(int categoryId, String start, String? end) {
+    db.addMandatoryRange(categoryId, start, end);
+    reload();
+  }
+
+  void removeRange(int id) {
+    db.deleteMandatoryRange(id);
+    reload();
+  }
+
+  static String _shift(String month, int delta) {
+    final y = int.parse(month.substring(0, 4)), m = int.parse(month.substring(5, 7));
+    return monthKey(DateTime(y, m + delta));
+  }
+
+  /// Marca/desmarca a categoria como obrigatória só num mês, dividindo períodos existentes.
+  void setMandatoryInMonth(int categoryId, String month, bool value) {
+    final own = rangesOf(categoryId);
+    if (value) {
+      if (!own.any((r) => r.covers(month))) db.addMandatoryRange(categoryId, month, month);
+    } else {
+      for (final r in own.where((r) => r.covers(month))) {
+        db.deleteMandatoryRange(r.id);
+        if (r.start.compareTo(month) < 0) db.addMandatoryRange(categoryId, r.start, _shift(month, -1));
+        if (r.end == null || r.end!.compareTo(month) > 0) db.addMandatoryRange(categoryId, _shift(month, 1), r.end);
+      }
+    }
+    reload();
+  }
+
+  /// Despesa por categoria dividida em obrigatória / opcional, conforme o mês de cada movimento.
+  ({Map<int, int> mandatory, Map<int, int> optional, int unclassified}) mandatorySplit(Period p) {
+    final mand = <int, int>{}, opt = <int, int>{};
+    var unclassified = 0;
+    for (final t in txnsIn(p)) {
+      if (t.amount >= 0) continue;
+      final c = cat(t.categoryId);
+      if (c == null) {
+        unclassified += -t.amount;
+        continue;
+      }
+      if (c.isIncome) continue;
+      final target = isMandatory(c, monthKey(t.date)) ? mand : opt;
+      target[c.id] = (target[c.id] ?? 0) - t.amount;
+    }
+    return (mandatory: mand, optional: opt, unclassified: unclassified);
   }
 
   // ---------- Consultas ----------
@@ -295,8 +385,9 @@ class AppState extends ChangeNotifier {
     reload();
   }
 
-  void wipe() {
+  void wipe({bool categories = false}) {
     db.wipeAll();
+    if (categories) db.wipeCategories();
     reload();
   }
 }

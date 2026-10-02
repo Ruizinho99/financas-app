@@ -3,6 +3,7 @@ import 'package:financas/import/parsers.dart';
 import 'package:financas/models.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:financas/util/format.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -47,6 +48,9 @@ RENDA JANEIRO 500,00 1.454,70
 
   test('classificar, memorizar regra e orçamento', () {
     final s = AppState(Db.memory());
+    expect(s.categories, isEmpty); // nada vem pré-definido
+    final food0 = s.addCategory(const Categoria(id: 0, name: 'Alimentação'));
+    s.addCategory(Categoria(id: 0, name: 'Supermercado', parentId: food0));
     s.setDefaultSalary(200000);
     final (added, dup) = s.importRows('x.csv', 'csv', [
       ParsedRow(DateTime(2026, 1, 3), 'COMPRA CONTINENTE 1', -4000),
@@ -65,10 +69,49 @@ RENDA JANEIRO 500,00 1.454,70
     expect(s.transactions.firstWhere((t) => t.description.endsWith('77')).categoryId, super_.id);
     // orçamento: limite de 25% do salário
     final food = s.categories.firstWhere((c) => c.name == 'Alimentação');
-    s.updateCategory(Categoria(id: food.id, name: food.name, mandatory: true, color: food.color, budgetPercent: true, budgetValue: 2500, hasBudget: true));
+    s.updateCategory(Categoria(id: food.id, name: food.name, color: food.color, budgetPercent: true, budgetValue: 2500, hasBudget: true));
     final p = Period.month(DateTime(2026, 1));
     expect(s.effectiveMonthlyTarget(s.cat(food.id)!, 200000), 50000);
     expect(s.rollup(s.cat(food.id)!, s.totalsByCategory(p)), 10000);
     expect(s.targetIn(s.cat(food.id)!, Period.years(2026, 2026)), 600000);
+  });
+  test('obrigatória varia de mês para mês', () {
+    final s = AppState(Db.memory());
+    final casa = s.addCategory(const Categoria(id: 0, name: 'Casa'));
+    final sub = s.addCategory(Categoria(id: 0, name: 'Condomínio', parentId: casa));
+    final c = s.cat(casa)!, k = s.cat(sub)!;
+    expect(s.isMandatory(c, '2026-03'), isFalse);
+    s.addRange(casa, '2026-01', '2026-06');
+    expect(s.isMandatory(c, '2026-03'), isTrue);
+    expect(s.isMandatory(c, '2026-07'), isFalse);
+    expect(s.isMandatory(k, '2026-03'), isTrue); // herdada
+    // desmarcar só março parte o período em dois
+    s.setMandatoryInMonth(casa, '2026-03', false);
+    expect(s.isMandatory(c, '2026-02'), isTrue);
+    expect(s.isMandatory(c, '2026-03'), isFalse);
+    expect(s.isMandatory(c, '2026-04'), isTrue);
+    expect(s.rangesOf(casa).length, 2);
+    // período sem fim
+    s.setMandatoryInMonth(casa, '2026-09', true);
+    s.addRange(sub, '2027-01', null);
+    expect(s.isMandatory(k, '2030-05'), isTrue);
+    // divisão por mês dos movimentos
+    s.addManual(date: DateTime(2026, 2, 5), description: 'Condominio', amount: -3000, categoryId: sub);
+    s.addManual(date: DateTime(2026, 3, 5), description: 'Condominio', amount: -3000, categoryId: sub);
+    final split = s.mandatorySplit(Period.years(2026, 2026));
+    expect(split.mandatory[sub], 3000);
+    expect(split.optional[sub], 3000);
+  });
+
+  test('definições de aparência persistem', () {
+    final db = Db.memory();
+    final s = AppState(db);
+    s.setAppearance(mode: ThemeMode.dark, seed: 0xFF123456, amoledBlack: true);
+    final s2 = AppState(db);
+    expect(s2.themeMode, ThemeMode.dark);
+    expect(s2.seedColor, 0xFF123456);
+    expect(s2.amoled, isTrue);
+    s2.resetAppearance();
+    expect(s2.themeMode, ThemeMode.system);
   });
 }

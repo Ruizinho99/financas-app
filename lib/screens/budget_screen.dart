@@ -25,8 +25,6 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final allocated = s.totalAllocated(salary);
     final income = s.txnsIn(period).where((t) => t.amount > 0 && (s.cat(t.categoryId)?.isIncome ?? false)).fold(0, (a, t) => a + t.amount);
     final expenseRoots = s.roots.where((c) => !c.isIncome).toList();
-    final mandatory = expenseRoots.where((c) => c.mandatory).toList();
-    final optional = expenseRoots.where((c) => !c.mandatory).toList();
     final unallocated = salary - allocated;
 
     return Scaffold(
@@ -67,8 +65,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
             ]),
           ),
         ),
-        _section(context, s, 'Obrigatórias', mandatory, own, salary),
-        _section(context, s, 'Opcionais', optional, own, salary),
+        if (expenseRoots.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('Ainda não tens categorias. Cria a primeira abaixo (ex.: Habitação) e define o orçamento de cada uma.', textAlign: TextAlign.center),
+          )
+        else
+          _section(context, s, 'Categorias', expenseRoots, own, salary, key),
         Padding(
           padding: const EdgeInsets.only(top: 12),
           child: OutlinedButton.icon(
@@ -81,7 +84,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
-  Widget _section(BuildContext context, AppState s, String title, List<Categoria> cats, Map<int, int> own, int salary) {
+  Widget _section(BuildContext context, AppState s, String title, List<Categoria> cats, Map<int, int> own, int salary, String month) {
     if (cats.isEmpty) return const SizedBox.shrink();
     final total = cats.fold(0, (a, c) => a + s.effectiveMonthlyTarget(c, salary));
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -93,7 +96,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           if (total > 0) Text('${fmtMoney(total)}${salary > 0 ? '  ·  ${fmtPercent(total / salary)}' : ''}'),
         ]),
       ),
-      for (final c in cats) _CategoryBudgetTile(category: c, own: own, salary: salary),
+      for (final c in cats) _CategoryBudgetTile(category: c, own: own, salary: salary, month: month),
     ]);
   }
 
@@ -143,7 +146,8 @@ class _CategoryBudgetTile extends StatelessWidget {
   final Categoria category;
   final Map<int, int> own;
   final int salary;
-  const _CategoryBudgetTile({required this.category, required this.own, required this.salary});
+  final String month;
+  const _CategoryBudgetTile({required this.category, required this.own, required this.salary, required this.month});
 
   @override
   Widget build(BuildContext context) {
@@ -172,6 +176,18 @@ class _CategoryBudgetTile extends StatelessWidget {
               : Text('Gasto: ${fmtMoney(spent)} · sem orçamento', style: Theme.of(context).textTheme.bodySmall),
         ),
         children: [
+          if (!c.isIncome)
+            Builder(builder: (_) {
+              final direct = s.isMandatoryDirect(c, month);
+              final inherited = !direct && s.isMandatory(c, month);
+              return SwitchListTile(
+                dense: true,
+                title: Text('Obrigatória em ${fmtMonth(DateTime(int.parse(month.substring(0, 4)), int.parse(month.substring(5, 7))))}'),
+                subtitle: Text(inherited ? 'Herdada da categoria-mãe' : 'Só este mês; para vários meses usa “Períodos”'),
+                value: direct || inherited,
+                onChanged: inherited ? null : (v) => s.setMandatoryInMonth(c.id, month, v),
+              );
+            }),
           ListTile(
             dense: true,
             title: Text(c.hasBudget ? _describe(c, salary) : 'Orçamento da categoria (opcional)'),
@@ -182,6 +198,7 @@ class _CategoryBudgetTile extends StatelessWidget {
           for (final k in kids) _subTile(context, s, k),
           Row(children: [
             TextButton.icon(onPressed: () => showCategoryEditor(context, parentId: c.id), icon: const Icon(Icons.add), label: const Text('Subcategoria')),
+            TextButton.icon(onPressed: () => showMandatoryDialog(context, c), icon: const Icon(Icons.event_repeat), label: const Text('Períodos')),
             TextButton.icon(onPressed: () => showCategoryEditor(context, edit: c), icon: const Icon(Icons.settings_outlined), label: const Text('Editar')),
           ]),
         ],
@@ -266,7 +283,7 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
             onPressed: () {
               final v = has ? (parseCents(ctrl.text) ?? 0) : 0;
               s.updateCategory(Categoria(
-                id: c.id, name: c.name, parentId: c.parentId, mandatory: c.mandatory, isIncome: c.isIncome, color: c.color,
+                id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, color: c.color,
                 description: c.description, budgetType: type, budgetPercent: percent, budgetValue: v,
                 hasBudget: has && v > 0, archived: c.archived,
               ));

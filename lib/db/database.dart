@@ -82,33 +82,21 @@ class Db {
         value TEXT NOT NULL
       );
     ''');
-    if (_db.select('SELECT COUNT(*) c FROM categories').first['c'] == 0) _seedCategories();
-  }
-
-  void _seedCategories() {
-    // categoria raiz -> (obrigatória, cor, subcategorias)
-    final seed = <(String, bool, bool, int, List<String>)>[
-      ('Habitação', true, false, 0xFF5C6BC0, ['Renda / Prestação', 'Condomínio', 'Água', 'Eletricidade', 'Gás', 'Internet / TV']),
-      ('Alimentação', true, false, 0xFF66BB6A, ['Supermercado', 'Talho / Peixaria']),
-      ('Transportes', true, false, 0xFF26A69A, ['Combustível', 'Transportes públicos', 'Seguro automóvel', 'Portagens']),
-      ('Saúde', true, false, 0xFFEF5350, ['Farmácia', 'Consultas', 'Seguro de saúde']),
-      ('Seguros e Impostos', true, false, 0xFF8D6E63, ['Seguros', 'Impostos', 'Bancárias / Comissões']),
-      ('Lazer', false, false, 0xFFFFA726, ['Restaurantes', 'Cafés', 'Cinema / Eventos', 'Subscrições']),
-      ('Compras', false, false, 0xFFAB47BC, ['Roupa', 'Eletrónica', 'Casa', 'Outros']),
-      ('Viagens', false, false, 0xFF29B6F6, []),
-      ('Poupança e Investimento', false, false, 0xFF9CCC65, ['Poupança', 'Investimento']),
-      ('Rendimentos', false, true, 0xFF43A047, ['Salário', 'Outros rendimentos']),
-    ];
-    for (final (name, mand, inc, color, subs) in seed) {
-      _db.execute(
-          'INSERT INTO categories(name, mandatory, is_income, color) VALUES(?,?,?,?)',
-          [name, mand ? 1 : 0, inc ? 1 : 0, color]);
-      final pid = _db.lastInsertRowId;
-      for (final s in subs) {
-        _db.execute(
-            'INSERT INTO categories(name, parent_id, mandatory, is_income, color) VALUES(?,?,?,?,?)',
-            [s, pid, mand ? 1 : 0, inc ? 1 : 0, color]);
-      }
+    _db.execute('''
+      CREATE TABLE IF NOT EXISTS mandatory_ranges(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+        start_month TEXT NOT NULL,
+        end_month TEXT
+      );
+    ''');
+    final v = _db.select('PRAGMA user_version').first.values.first as int;
+    if (v < 2) {
+      // v1 trazia categorias de exemplo. Se nunca foram usadas, removê-las: nada vem pré-definido.
+      final used = _db.select('SELECT 1 FROM transactions LIMIT 1').isNotEmpty ||
+          _db.select('SELECT 1 FROM categories WHERE has_budget=1 LIMIT 1').isNotEmpty;
+      if (!used) _db.execute('DELETE FROM categories');
+      _db.execute('PRAGMA user_version = 2');
     }
   }
 
@@ -117,7 +105,6 @@ class Db {
         id: r['id'] as int,
         name: r['name'] as String,
         parentId: r['parent_id'] as int?,
-        mandatory: r['mandatory'] == 1,
         isIncome: r['is_income'] == 1,
         color: r['color'] as int,
         description: r['description'] as String,
@@ -133,21 +120,36 @@ class Db {
 
   int saveCategory(Categoria c, {int? id}) {
     final vals = [
-      c.name, c.parentId, c.mandatory ? 1 : 0, c.isIncome ? 1 : 0, c.color, c.description,
+      c.name, c.parentId, c.isIncome ? 1 : 0, c.color, c.description,
       c.budgetType == BudgetType.goal ? 'goal' : 'limit', c.budgetPercent ? 1 : 0,
       c.budgetValue, c.hasBudget ? 1 : 0, c.archived ? 1 : 0,
     ];
     if (id == null) {
       _db.execute(
-          'INSERT INTO categories(name,parent_id,mandatory,is_income,color,description,budget_type,budget_percent,budget_value,has_budget,archived) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+          'INSERT INTO categories(name,parent_id,is_income,color,description,budget_type,budget_percent,budget_value,has_budget,archived) VALUES(?,?,?,?,?,?,?,?,?,?)',
           vals);
       return _db.lastInsertRowId;
     }
     _db.execute(
-        'UPDATE categories SET name=?,parent_id=?,mandatory=?,is_income=?,color=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=? WHERE id=?',
+        'UPDATE categories SET name=?,parent_id=?,is_income=?,color=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=? WHERE id=?',
         [...vals, id]);
     return id;
   }
+
+  // ---------- Períodos de obrigatoriedade ----------
+  List<MandatoryRange> mandatoryRanges() => _db
+      .select('SELECT * FROM mandatory_ranges ORDER BY category_id, start_month')
+      .map((r) => MandatoryRange(
+          id: r['id'] as int,
+          categoryId: r['category_id'] as int,
+          start: r['start_month'] as String,
+          end: r['end_month'] as String?))
+      .toList();
+
+  void addMandatoryRange(int categoryId, String start, String? end) => _db.execute(
+      'INSERT INTO mandatory_ranges(category_id,start_month,end_month) VALUES(?,?,?)', [categoryId, start, end]);
+
+  void deleteMandatoryRange(int id) => _db.execute('DELETE FROM mandatory_ranges WHERE id=?', [id]);
 
   void deleteCategory(int id) => _db.execute('DELETE FROM categories WHERE id=?', [id]);
 
@@ -289,6 +291,12 @@ class Db {
   void wipeAll() {
     _db.execute('DELETE FROM transactions; DELETE FROM rules; DELETE FROM imports; DELETE FROM salaries;');
   }
+
+  void wipeCategories() {
+    _db.execute('DELETE FROM categories');
+  }
+
+  void deleteSetting(String key) => _db.execute('DELETE FROM settings WHERE key=?', [key]);
 
   void close() => _db.close();
 

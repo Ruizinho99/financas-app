@@ -26,7 +26,8 @@ class MoneyText extends StatelessWidget {
   const MoneyText(this.cents, {super.key, this.style, this.colored = true});
   @override
   Widget build(BuildContext context) {
-    final color = !colored ? null : (cents < 0 ? Colors.red.shade400 : Colors.green.shade500);
+    final st = context.watch<AppState>();
+    final color = !colored ? null : Color(cents < 0 ? st.expenseColor : st.incomeColor);
     return Text(fmtMoney(cents), style: (style ?? const TextStyle()).copyWith(color: color, fontWeight: FontWeight.w600));
   }
 }
@@ -103,7 +104,7 @@ class _CategoryPickerState extends State<_CategoryPicker> {
       tiles.add(ListTile(
         leading: Dot(r.color),
         title: Text(r.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(r.isIncome ? 'Rendimento' : (r.mandatory ? 'Obrigatória' : 'Opcional')),
+        subtitle: r.isIncome ? const Text('Rendimento') : null,
         selected: widget.selected == r.id,
         trailing: IconButton(
           tooltip: 'Nova subcategoria',
@@ -185,9 +186,8 @@ class _CategoryEditorState extends State<_CategoryEditor> {
   late final name = TextEditingController(text: widget.edit?.name ?? '');
   late final desc = TextEditingController(text: widget.edit?.description ?? '');
   late int? parent = widget.parentId;
-  late bool mandatory = widget.edit?.mandatory ?? false;
   late bool income = widget.edit?.isIncome ?? false;
-  late int color = widget.edit?.color ?? palette[DateTime.now().millisecond % palette.length];
+  late int color = widget.edit?.color ?? palette.first;
 
   @override
   Widget build(BuildContext context) {
@@ -212,54 +212,37 @@ class _CategoryEditorState extends State<_CategoryEditor> {
               parent = v;
               final p = s.cat(v);
               if (p != null) {
-                mandatory = p.mandatory;
                 income = p.isIncome;
                 color = p.color;
               }
             }),
           ),
-          if (parentCat == null) ...[
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Obrigatória'),
-              subtitle: const Text('Despesa que tenho todos os meses (casa, alimentação, tarifários…)'),
-              value: mandatory,
-              onChanged: income ? null : (v) => setState(() => mandatory = v),
-            ),
+          if (parentCat == null)
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Rendimento'),
+              subtitle: const Text('Entradas de dinheiro (salário, etc.), não conta como despesa'),
               value: income,
-              onChanged: (v) => setState(() {
-                income = v;
-                if (v) mandatory = false;
-              }),
+              onChanged: (v) => setState(() => income = v),
             ),
-          ] else
-            SwitchListTile(
+          if (widget.edit != null && !income)
+            ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Obrigatória'),
-              subtitle: Text('Por omissão herda de “${parentCat.name}”'),
-              value: mandatory,
-              onChanged: income ? null : (v) => setState(() => mandatory = v),
+              leading: const Icon(Icons.event_repeat),
+              title: const Text('Obrigatória em…'),
+              subtitle: Text(() {
+                final n = s.rangesOf(widget.edit!.id).length;
+                return n == 0 ? 'Opcional em todos os meses' : '$n período(s) definido(s)';
+              }()),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () async {
+                await showMandatoryDialog(context, widget.edit!);
+                setState(() {});
+              },
             ),
           TextField(controller: desc, decoration: const InputDecoration(labelText: 'Descrição (opcional)'), maxLines: 2),
           const SizedBox(height: 12),
-          Wrap(spacing: 8, runSpacing: 8, children: [
-            for (final c in palette)
-              GestureDetector(
-                onTap: () => setState(() => color = c),
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: Color(c),
-                    shape: BoxShape.circle,
-                    border: color == c ? Border.all(width: 3, color: Theme.of(context).colorScheme.onSurface) : null,
-                  ),
-                ),
-              ),
-          ]),
+          ColorChoice(color: color, onChanged: (c) => setState(() => color = c)),
         ]),
       ),
       actions: [
@@ -273,7 +256,6 @@ class _CategoryEditorState extends State<_CategoryEditor> {
               id: e?.id ?? 0,
               name: n,
               parentId: parent,
-              mandatory: income ? false : mandatory,
               isIncome: income,
               color: color,
               description: desc.text.trim(),
@@ -426,6 +408,188 @@ class _TxnEditorState extends State<_TxnEditor> {
           ]),
         ]),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Escolha de cor: paleta + seletor livre
+// ---------------------------------------------------------------------------
+class ColorChoice extends StatelessWidget {
+  final int color;
+  final ValueChanged<int> onChanged;
+  final List<int> colors;
+  const ColorChoice({super.key, required this.color, required this.onChanged, this.colors = palette});
+
+  @override
+  Widget build(BuildContext context) {
+    final custom = !colors.contains(color);
+    return Wrap(spacing: 8, runSpacing: 8, children: [
+      for (final c in colors)
+        GestureDetector(
+          onTap: () => onChanged(c),
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Color(c),
+              shape: BoxShape.circle,
+              border: color == c ? Border.all(width: 3, color: Theme.of(context).colorScheme.onSurface) : null,
+            ),
+          ),
+        ),
+      GestureDetector(
+        onTap: () async {
+          final c = await pickCustomColor(context, color);
+          if (c != null) onChanged(c);
+        },
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: custom ? Color(color) : null,
+            gradient: custom ? null : const SweepGradient(colors: [Colors.red, Colors.yellow, Colors.green, Colors.cyan, Colors.blue, Colors.purple, Colors.red]),
+            border: custom ? Border.all(width: 3, color: Theme.of(context).colorScheme.onSurface) : null,
+          ),
+          child: const Icon(Icons.colorize, size: 16, color: Colors.white),
+        ),
+      ),
+    ]);
+  }
+}
+
+/// Seletor de cor livre (matiz, saturação, brilho ou código hexadecimal).
+Future<int?> pickCustomColor(BuildContext context, int initial) {
+  return showDialog<int>(
+    context: context,
+    builder: (_) {
+      var hsv = HSVColor.fromColor(Color(initial));
+      final hex = TextEditingController(text: _hex(hsv.toColor()));
+      return StatefulBuilder(
+        builder: (ctx, set) => AlertDialog(
+          title: const Text('Escolher cor'),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Container(height: 56, decoration: BoxDecoration(color: hsv.toColor(), borderRadius: BorderRadius.circular(12))),
+              const SizedBox(height: 8),
+              _slider('Matiz', hsv.hue, 360, (v) => set(() { hsv = hsv.withHue(v); hex.text = _hex(hsv.toColor()); })),
+              _slider('Saturação', hsv.saturation, 1, (v) => set(() { hsv = hsv.withSaturation(v); hex.text = _hex(hsv.toColor()); })),
+              _slider('Brilho', hsv.value, 1, (v) => set(() { hsv = hsv.withValue(v); hex.text = _hex(hsv.toColor()); })),
+              TextField(
+                controller: hex,
+                decoration: const InputDecoration(labelText: 'Hexadecimal', prefixText: '#'),
+                onChanged: (v) {
+                  final n = int.tryParse(v.replaceAll('#', ''), radix: 16);
+                  if (n != null && v.replaceAll('#', '').length == 6) set(() => hsv = HSVColor.fromColor(Color(0xFF000000 | n)));
+                },
+              ),
+            ]),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, hsv.toColor().toARGB32()), child: const Text('Usar')),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+String _hex(Color c) => (c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase();
+
+Widget _slider(String label, double v, double max, ValueChanged<double> on) => Row(children: [
+      SizedBox(width: 78, child: Text(label)),
+      Expanded(child: Slider(value: v.clamp(0, max), max: max, onChanged: on)),
+    ]);
+
+// ---------------------------------------------------------------------------
+// Períodos em que uma categoria é obrigatória
+// ---------------------------------------------------------------------------
+Future<void> showMandatoryDialog(BuildContext context, Categoria c) {
+  return showDialog(context: context, builder: (_) => _MandatoryDialog(category: c));
+}
+
+class _MandatoryDialog extends StatelessWidget {
+  final Categoria category;
+  const _MandatoryDialog({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final ranges = s.rangesOf(category.id);
+    String m(String k) => fmtMonth(DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))));
+    return AlertDialog(
+      title: Text('Obrigatória · ${category.name}'),
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Os meses abaixo contam como despesa obrigatória nesta categoria. Nos restantes meses é opcional.'),
+          const SizedBox(height: 8),
+          if (ranges.isEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('Nenhum período definido.', style: TextStyle(fontStyle: FontStyle.italic))),
+          for (final r in ranges)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(r.end == null ? 'A partir de ${m(r.start)}' : (r.start == r.end ? m(r.start) : '${m(r.start)} → ${m(r.end!)}')),
+              trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => s.removeRange(r.id)),
+            ),
+        ]),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fechar')),
+        FilledButton.icon(
+          icon: const Icon(Icons.add),
+          label: const Text('Adicionar período'),
+          onPressed: () async {
+            final r = await showDialog<(String, String?)>(context: context, builder: (_) => const _RangePicker());
+            if (r != null) s.addRange(category.id, r.$1, r.$2);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _RangePicker extends StatefulWidget {
+  const _RangePicker();
+  @override
+  State<_RangePicker> createState() => _RangePickerState();
+}
+
+class _RangePickerState extends State<_RangePicker> {
+  DateTime from = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime? to;
+  bool open = false;
+
+  Future<DateTime?> _pick(DateTime initial) async {
+    final d = await showDatePicker(context: context, initialDate: initial, firstDate: DateTime(2000), lastDate: DateTime(2100), helpText: 'Escolhe qualquer dia do mês');
+    return d == null ? null : DateTime(d.year, d.month);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Novo período'),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        OutlinedButton(onPressed: () async { final d = await _pick(from); if (d != null) setState(() => from = d); }, child: Text('Desde ${fmtMonth(from)}')),
+        SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Sem data de fim'), value: open, onChanged: (v) => setState(() => open = v)),
+        if (!open)
+          OutlinedButton(
+            onPressed: () async { final d = await _pick(to ?? from); if (d != null) setState(() => to = d); },
+            child: Text('Até ${fmtMonth(to ?? from)}'),
+          ),
+      ]),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        FilledButton(
+          onPressed: () {
+            var a = from, b = open ? null : (to ?? from);
+            if (b != null && b.isBefore(a)) (a, b) = (b, a);
+            Navigator.pop(context, (monthKey(a), b == null ? null : monthKey(b)));
+          },
+          child: const Text('Adicionar'),
+        ),
+      ],
     );
   }
 }
