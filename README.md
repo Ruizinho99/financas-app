@@ -5,7 +5,9 @@ App Android (Flutter) para importar extratos bancários (PDF, CSV, Excel), class
 ## Funcionalidades
 - **Movimentos**: lista, pesquisa, filtros, inserção manual, seleção múltipla.
 - **Importação**: PDF (com texto), CSV e Excel `.xlsx`, com deteção/ajuste de colunas e deteção de duplicados.
-- **Classificar**: um cartão por nome de movimento; mover todos para uma categoria, memorizar regras, nomes amigáveis, notas e subcategorias.
+- **Classificar**: um cartão por nome de movimento, com dropdowns ligados de categoria → subcategoria; mover todos, memorizar regras, nomes amigáveis e notas.
+- **Grupos de títulos**: juntar vários títulos (ex.: “TRANS …” e “MB WAY …” do mesmo restaurante) sob um nome e uma categoria; aplicado automaticamente nas próximas importações.
+- **Categorias com emoji**, obrigatórias por período (mês a mês), modo escuro e cores personalizáveis.
 - **Orçamento**: salário líquido, alocação por valor ou % do salário, cada categoria/subcategoria como *Limite* ou *Objetivo*, com barras de progresso.
 - **Análise**: mês, vários meses, ano ou vários anos; obrigatórias vs opcionais, evolução, alertas de limites/objetivos.
 
