@@ -339,7 +339,13 @@ class AppState extends ChangeNotifier {
   }
 
   /// Importa linhas; ignora duplicados. Devolve (novos, duplicados).
-  (int, int) importRows(String filename, String source, List<ParsedRow> rows) {
+  (int, int) importRows(String filename, String source, List<ParsedRow> rows,
+      {Map<String, int?> categories = const {}, Set<String> remember = const {}}) {
+    for (final k in remember) {
+      final c = categories[k];
+      if (c != null) db.upsertRule(k, c);
+    }
+    rules = db.rules();
     final importId = db.createImport(filename, 0);
     var added = 0, dup = 0;
     final seen = <String>{};
@@ -358,7 +364,7 @@ class AppState extends ChangeNotifier {
         description: r.description,
         amount: r.amount,
         balance: r.balance,
-        categoryId: ruleFor(key)?.categoryId,
+        categoryId: categories.containsKey(key) ? categories[key] : ruleFor(key)?.categoryId,
         source: source,
         merchantKey: key,
         importId: importId,

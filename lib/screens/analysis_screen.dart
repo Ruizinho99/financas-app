@@ -340,7 +340,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
               shape: const Border(),
               collapsedShape: const Border(),
               enabled: (subs[r.key] ?? []).isNotEmpty,
-              title: Row(children: [Dot(s.cat(r.key)?.color ?? 0xFF9E9E9E), const SizedBox(width: 8), Expanded(child: Text(s.cat(r.key)?.name ?? '?')), Text(fmtMoney(r.value))]),
+              title: Row(children: [CatBadge(s.cat(r.key)), const SizedBox(width: 8), Expanded(child: Text(s.cat(r.key)?.name ?? '?')), Text(fmtMoney(r.value))]),
               children: [
                 for (final e in (subs[r.key] ?? [])..sort((a, b) => b.value.compareTo(a.value)))
                   ListTile(dense: true, contentPadding: const EdgeInsets.only(left: 24), title: Text(s.cat(e.key)?.name ?? '?'), trailing: Text(fmtMoney(e.value))),
@@ -358,7 +358,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
       tilePadding: EdgeInsets.zero,
       shape: const Border(),
       collapsedShape: const Border(),
-      title: Row(children: [Dot(c.color), const SizedBox(width: 8), Expanded(child: Text(c.name)), Text(target > 0 ? '${fmtMoney(spent)} / ${fmtMoney(target)}' : fmtMoney(spent))]),
+      title: Row(children: [CatBadge(c), const SizedBox(width: 8), Expanded(child: Text(c.name)), Text(target > 0 ? '${fmtMoney(spent)} / ${fmtMoney(target)}' : fmtMoney(spent))]),
       subtitle: target > 0 ? Padding(padding: const EdgeInsets.only(top: 4), child: BudgetBar(spent: spent < 0 ? 0 : spent, target: target, type: type, height: 8)) : null,
       children: [
         for (final k in kids)

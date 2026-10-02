@@ -27,6 +27,8 @@ class _ImportScreenState extends State<ImportScreen> {
   int year = DateTime.now().year;
   String? pdfRaw;
   Set<int> excluded = {};
+  final cats = <String, int?>{}; // chave do grupo -> categoria escolhida
+  final noRemember = <String>{};
 
   Future<void> pick() async {
     setState(() {
@@ -128,16 +130,7 @@ class _ImportScreenState extends State<ImportScreen> {
               ]),
             ),
           ),
-          const Padding(padding: EdgeInsets.fromLTRB(4, 12, 4, 4), child: Text('Pré-visualização (desmarca o que não queres importar)')),
-          for (var i = 0; i < rows.length; i++)
-            CheckboxListTile(
-              dense: true,
-              value: !excluded.contains(i),
-              onChanged: (v) => setState(() => v! ? excluded.remove(i) : excluded.add(i)),
-              title: Text(rows[i].description, maxLines: 2, overflow: TextOverflow.ellipsis),
-              subtitle: Text(fmtDate(rows[i].date)),
-              secondary: MoneyText(invert ? -rows[i].amount : rows[i].amount),
-            ),
+          ..._groupCards(context),
           const SizedBox(height: 80),
         ],
       ]),
@@ -152,7 +145,10 @@ class _ImportScreenState extends State<ImportScreen> {
                   onPressed: fr.isEmpty
                       ? null
                       : () {
-                          final (added, dup) = context.read<AppState>().importRows(filename!, source, fr);
+                          final st = context.read<AppState>();
+                          final chosen = Map<String, int?>.of(cats);
+                          final (added, dup) = st.importRows(filename!, source, fr,
+                              categories: chosen, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
                           final unclassified = context.read<AppState>().unclassifiedGroups().length;
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -161,6 +157,76 @@ class _ImportScreenState extends State<ImportScreen> {
                 ),
               ),
             ),
+    );
+  }
+
+  List<Widget> _groupCards(BuildContext context) {
+    final st = context.watch<AppState>();
+    final groups = <String, List<int>>{};
+    for (var i = 0; i < rows.length; i++) {
+      groups.putIfAbsent(merchantKey(rows[i].description), () => []).add(i);
+    }
+    final keys = groups.keys.toList()..sort((a, b) => groups[b]!.length.compareTo(groups[a]!.length));
+    final classified = keys.where((k) => (cats[k] ?? st.ruleFor(k)?.categoryId) != null).length;
+    return [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+        child: Text('Classificação: $classified de ${keys.length} grupos', style: Theme.of(context).textTheme.titleMedium),
+      ),
+      const Padding(
+        padding: EdgeInsets.fromLTRB(4, 0, 4, 4),
+        child: Text('Movimentos com o mesmo nome estão juntos. Escolhe a categoria e a subcategoria de cada grupo (ou deixa por classificar). As regras já memorizadas vêm preenchidas.'),
+      ),
+      for (final k in keys) _importGroup(context, st, k, groups[k]!),
+    ];
+  }
+
+  Widget _importGroup(BuildContext context, AppState st, String key, List<int> idx) {
+    final rule = st.ruleFor(key);
+    final value = cats.containsKey(key) ? cats[key] : rule?.categoryId;
+    final active = idx.where((i) => !excluded.contains(i)).toList();
+    final total = active.fold(0, (a, i) => a + (invert ? -rows[i].amount : rows[i].amount));
+    final isNewRule = value != null && (rule == null || rule.categoryId != value);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Row(children: [
+            Expanded(child: Text(rule?.label.isNotEmpty == true ? rule!.label : key, style: const TextStyle(fontWeight: FontWeight.w700))),
+            MoneyText(total),
+          ]),
+          Text('${active.length} de ${idx.length} movimentos${rule != null ? ' · regra memorizada' : ''}', style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 10),
+          CategorySelector(value: value, compact: true, onChanged: (v) => setState(() => cats[key] = v)),
+          if (isNewRule)
+            CheckboxListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: const Text('Memorizar para futuras importações'),
+              value: !noRemember.contains(key),
+              onChanged: (v) => setState(() => v! ? noRemember.remove(key) : noRemember.add(key)),
+            ),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            shape: const Border(),
+            collapsedShape: const Border(),
+            title: const Text('Ver movimentos'),
+            children: [
+              for (final i in idx)
+                CheckboxListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  value: !excluded.contains(i),
+                  onChanged: (v) => setState(() => v! ? excluded.remove(i) : excluded.add(i)),
+                  title: Text(rows[i].description, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  subtitle: Text(fmtDate(rows[i].date)),
+                  secondary: MoneyText(invert ? -rows[i].amount : rows[i].amount),
+                ),
+            ],
+          ),
+        ]),
+      ),
     );
   }
 

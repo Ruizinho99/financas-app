@@ -10,13 +10,17 @@ const palette = <int>[
   0xFFAB47BC, 0xFF29B6F6, 0xFF9CCC65, 0xFF43A047, 0xFFEC407A, 0xFF78909C,
 ];
 
-class Dot extends StatelessWidget {
-  final int color;
+/// Emoji da categoria (ou um marcador neutro se ainda não tem).
+class CatBadge extends StatelessWidget {
+  final Categoria? category;
   final double size;
-  const Dot(this.color, {super.key, this.size = 12});
+  const CatBadge(this.category, {super.key, this.size = 22});
   @override
-  Widget build(BuildContext context) =>
-      Container(width: size, height: size, decoration: BoxDecoration(color: Color(color), shape: BoxShape.circle));
+  Widget build(BuildContext context) {
+    final e = category?.emoji ?? '';
+    if (category == null) return Icon(Icons.help_outline, size: size, color: Colors.grey);
+    return SizedBox(width: size * 1.3, child: Center(child: Text(e.isEmpty ? '🏷️' : e, style: TextStyle(fontSize: size * 0.9))));
+  }
 }
 
 class MoneyText extends StatelessWidget {
@@ -68,99 +72,183 @@ class BudgetBar extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Escolher categoria (hierárquico, com pesquisa e criação rápida)
+// Seletor de categoria: dois dropdowns ligados (categoria → subcategoria)
 // ---------------------------------------------------------------------------
-/// Devolve o id escolhido, -1 para "sem categoria", ou null se cancelado.
-Future<int?> pickCategory(BuildContext context, {int? selected, bool? income, bool allowClear = true}) {
-  return showModalBottomSheet<int>(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    builder: (_) => _CategoryPicker(selected: selected, income: income, allowClear: allowClear),
-  );
-}
+class CategorySelector extends StatefulWidget {
+  /// Id da categoria ou subcategoria escolhida (null = nenhuma).
+  final int? value;
+  final ValueChanged<int?> onChanged;
+  final bool compact; // lado a lado, para listas
+  final bool? income; // filtra rendimentos (true) ou despesas (false)
+  const CategorySelector({super.key, required this.value, required this.onChanged, this.compact = false, this.income});
 
-class _CategoryPicker extends StatefulWidget {
-  final int? selected;
-  final bool? income;
-  final bool allowClear;
-  const _CategoryPicker({this.selected, this.income, required this.allowClear});
   @override
-  State<_CategoryPicker> createState() => _CategoryPickerState();
+  State<CategorySelector> createState() => _CategorySelectorState();
 }
 
-class _CategoryPickerState extends State<_CategoryPicker> {
-  String q = '';
+class _CategorySelectorState extends State<CategorySelector> {
+  static const _none = -1, _newItem = -2;
+  int _tick = 0; // força os dropdowns a voltarem ao valor real depois de "Nova…"
+
+  int? get value => widget.value;
+  ValueChanged<int?> get onChanged => widget.onChanged;
+  bool get compact => widget.compact;
+  bool? get income => widget.income;
+
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
-    final query = q.toLowerCase();
-    final tiles = <Widget>[];
-    for (final r in s.roots) {
-      final kids = s.childrenOf(r.id);
-      final rootMatch = r.name.toLowerCase().contains(query);
-      final shownKids = kids.where((k) => rootMatch || k.name.toLowerCase().contains(query)).toList();
-      if (!rootMatch && shownKids.isEmpty) continue;
-      tiles.add(ListTile(
-        leading: Dot(r.color),
-        title: Text(r.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: r.isIncome ? const Text('Rendimento') : null,
-        selected: widget.selected == r.id,
-        trailing: IconButton(
-          tooltip: 'Nova subcategoria',
-          icon: const Icon(Icons.add),
-          onPressed: () async {
-            final id = await showCategoryEditor(context, parentId: r.id);
-            if (id != null && context.mounted) Navigator.pop(context, id);
-          },
-        ),
-        onTap: () => Navigator.pop(context, r.id),
-      ));
-      for (final k in shownKids) {
-        tiles.add(ListTile(
-          contentPadding: const EdgeInsets.only(left: 56, right: 16),
-          leading: Dot(k.color, size: 8),
-          title: Text(k.name),
-          selected: widget.selected == k.id,
-          onTap: () => Navigator.pop(context, k.id),
-        ));
-      }
+    final chosen = s.cat(value);
+    final rootId = chosen == null ? null : (chosen.parentId ?? chosen.id);
+    final subId = chosen?.parentId == null ? null : chosen!.id;
+    final roots = s.roots.where((r) => income == null || r.isIncome == income).toList();
+    final subs = rootId == null ? <Categoria>[] : s.childrenOf(rootId);
+
+    Future<void> createRoot() async {
+      final id = await showCategoryEditor(context);
+      if (!mounted) return;
+      setState(() => _tick++);
+      if (id != null) onChanged(id);
     }
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.8,
-      maxChildSize: 0.95,
-      builder: (_, controller) => Column(children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: TextField(
-            autofocus: false,
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Pesquisar categoria', border: OutlineInputBorder()),
-            onChanged: (v) => setState(() => q = v),
-          ),
-        ),
-        Expanded(child: ListView(controller: controller, children: tiles)),
-        SafeArea(
-          child: Row(children: [
-            if (widget.allowClear)
-              TextButton.icon(
-                  onPressed: () => Navigator.pop(context, -1),
-                  icon: const Icon(Icons.label_off_outlined),
-                  label: const Text('Sem categoria')),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: () async {
-                final id = await showCategoryEditor(context);
-                if (id != null && context.mounted) Navigator.pop(context, id);
-              },
-              icon: const Icon(Icons.create_new_folder_outlined),
-              label: const Text('Nova categoria'),
+
+    Future<void> createSub() async {
+      final id = await showCategoryEditor(context, parentId: rootId);
+      if (!mounted) return;
+      setState(() => _tick++);
+      if (id != null) onChanged(id);
+    }
+
+    final catDrop = DropdownButtonFormField<int>(
+      key: ValueKey('cat-$rootId-${roots.length}-$_tick'),
+      initialValue: rootId,
+      isExpanded: true,
+      decoration: InputDecoration(labelText: 'Categoria', border: const OutlineInputBorder(), isDense: compact),
+      items: [
+        for (final r in roots) DropdownMenuItem(value: r.id, child: Text('${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}', overflow: TextOverflow.ellipsis)),
+        const DropdownMenuItem(value: _newItem, child: Text('➕  Nova categoria…')),
+        if (rootId != null) const DropdownMenuItem(value: _none, child: Text('✖️  Sem categoria')),
+      ],
+      onChanged: (v) {
+        if (v == _newItem) {
+          createRoot();
+        } else if (v == _none) {
+          onChanged(null);
+        } else if (v != rootId) {
+          onChanged(v);
+        }
+      },
+    );
+
+    final subDrop = DropdownButtonFormField<int>(
+      key: ValueKey('sub-$rootId-$subId-${subs.length}-$_tick'),
+      initialValue: subId,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: 'Subcategoria',
+        border: const OutlineInputBorder(),
+        isDense: compact,
+        enabled: rootId != null,
+      ),
+      items: rootId == null
+          ? const []
+          : [
+              for (final k in subs) DropdownMenuItem(value: k.id, child: Text('${k.emoji.isEmpty ? '🏷️' : k.emoji}  ${k.name}', overflow: TextOverflow.ellipsis)),
+              const DropdownMenuItem(value: _newItem, child: Text('➕  Nova subcategoria…')),
+              if (subId != null) const DropdownMenuItem(value: _none, child: Text('— Sem subcategoria —')),
+            ],
+      onChanged: rootId == null
+          ? null
+          : (v) {
+              if (v == _newItem) {
+                createSub();
+              } else if (v == _none) {
+                onChanged(rootId);
+              } else {
+                onChanged(v);
+              }
+            },
+    );
+
+    if (compact) {
+      return Row(children: [Expanded(child: catDrop), const SizedBox(width: 8), Expanded(child: subDrop)]);
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [catDrop, const SizedBox(height: 12), subDrop]);
+  }
+}
+
+/// Diálogo com o seletor. Devolve o id, -1 para "sem categoria", ou null se cancelado.
+Future<int?> pickCategory(BuildContext context, {int? selected, bool? income, bool allowClear = true}) {
+  int? v = selected;
+  return showDialog<int>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, set) => AlertDialog(
+        title: const Text('Escolher categoria'),
+        content: SingleChildScrollView(child: CategorySelector(value: v, income: income, onChanged: (x) => set(() => v = x))),
+        actions: [
+          if (allowClear) TextButton(onPressed: () => Navigator.pop(ctx, -1), child: const Text('Sem categoria')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          FilledButton(onPressed: v == null ? null : () => Navigator.pop(ctx, v), child: const Text('Escolher')),
+        ],
+      ),
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Emoji
+// ---------------------------------------------------------------------------
+const _emojis = <String>[
+  '🏠', '🔑', '💡', '💧', '🔥', '📶', '📱', '📺', '🛒', '🥦', '🍎', '🥩', '🐟', '🍞', '☕', '🍽️',
+  '🍕', '🍔', '🍺', '🚗', '⛽', '🚌', '🚆', '✈️', '🚲', '🅿️', '🛣️', '🏥', '💊', '🦷', '👓', '🧘',
+  '🏋️', '⚽', '🎬', '🎮', '🎵', '📚', '🎓', '👕', '👟', '💄', '💇', '🛍️', '🎁', '🧸', '👶', '🐶',
+  '🐱', '🌴', '🏖️', '🏨', '🧾', '🏦', '💳', '💰', '📈', '🪙', '🐷', '🎯', '🛡️', '🔧', '🧹', '🪴',
+  '💼', '🧑‍💻', '📦', '❤️', '⭐', '🏷️',
+];
+
+Future<String?> pickEmoji(BuildContext context, String current) {
+  final ctrl = TextEditingController(text: current);
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Escolher emoji'),
+      content: SizedBox(
+        width: 340,
+        child: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Wrap(spacing: 4, runSpacing: 4, children: [
+              for (final e in _emojis)
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => Navigator.pop(ctx, e),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: e == current ? Theme.of(ctx).colorScheme.primaryContainer : null,
+                    ),
+                    child: Text(e, style: const TextStyle(fontSize: 24)),
+                  ),
+                ),
+            ]),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              decoration: const InputDecoration(labelText: 'Ou usa outro emoji do teclado', border: OutlineInputBorder()),
+              onSubmitted: (v) => Navigator.pop(ctx, v.trim().isEmpty ? '' : v.characters.first),
             ),
           ]),
         ),
-      ]),
-    );
-  }
+      ),
+      actions: [
+        if (current.isNotEmpty) TextButton(onPressed: () => Navigator.pop(ctx, ''), child: const Text('Remover')),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text.trim().isEmpty ? '' : ctrl.text.trim().characters.first), child: const Text('OK')),
+      ],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +275,7 @@ class _CategoryEditorState extends State<_CategoryEditor> {
   late final desc = TextEditingController(text: widget.edit?.description ?? '');
   late int? parent = widget.parentId;
   late bool income = widget.edit?.isIncome ?? false;
-  late int color = widget.edit?.color ?? palette.first;
+  late String emoji = widget.edit?.emoji ?? '';
 
   @override
   Widget build(BuildContext context) {
@@ -199,22 +287,36 @@ class _CategoryEditorState extends State<_CategoryEditor> {
       title: Text(widget.edit == null ? (parent == null ? 'Nova categoria' : 'Nova subcategoria') : 'Editar categoria'),
       content: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(controller: name, autofocus: true, decoration: const InputDecoration(labelText: 'Nome')),
+          Row(children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                final e = await pickEmoji(context, emoji);
+                if (e != null) setState(() => emoji = e);
+              },
+              child: Container(
+                width: 56,
+                height: 56,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(border: Border.all(color: Theme.of(context).dividerColor), borderRadius: BorderRadius.circular(12)),
+                child: Text(emoji.isEmpty ? '🙂' : emoji, style: TextStyle(fontSize: 28, color: emoji.isEmpty ? Colors.grey : null)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: TextField(controller: name, autofocus: true, decoration: const InputDecoration(labelText: 'Nome'))),
+          ]),
           const SizedBox(height: 8),
           DropdownButtonFormField<int?>(
             initialValue: parent,
             decoration: const InputDecoration(labelText: 'Categoria-mãe'),
             items: [
               const DropdownMenuItem(value: null, child: Text('— Nenhuma (categoria principal) —')),
-              if (!hasKids) ...roots.map((r) => DropdownMenuItem(value: r.id, child: Text(r.name))),
+              if (!hasKids) ...roots.map((r) => DropdownMenuItem(value: r.id, child: Text('${r.emoji} ${r.name}'.trim()))),
             ],
             onChanged: (v) => setState(() {
               parent = v;
               final p = s.cat(v);
-              if (p != null) {
-                income = p.isIncome;
-                color = p.color;
-              }
+              if (p != null) income = p.isIncome;
             }),
           ),
           if (parentCat == null)
@@ -241,8 +343,6 @@ class _CategoryEditorState extends State<_CategoryEditor> {
               },
             ),
           TextField(controller: desc, decoration: const InputDecoration(labelText: 'Descrição (opcional)'), maxLines: 2),
-          const SizedBox(height: 12),
-          ColorChoice(color: color, onChanged: (c) => setState(() => color = c)),
         ]),
       ),
       actions: [
@@ -257,7 +357,7 @@ class _CategoryEditorState extends State<_CategoryEditor> {
               name: n,
               parentId: parent,
               isIncome: income,
-              color: color,
+              emoji: emoji,
               description: desc.text.trim(),
               budgetType: e?.budgetType ?? (income ? BudgetType.goal : BudgetType.limit),
               budgetPercent: e?.budgetPercent ?? false,
@@ -352,15 +452,7 @@ class _TxnEditorState extends State<_TxnEditor> {
             ),
           ]),
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.folder_open),
-            label: Align(alignment: Alignment.centerLeft, child: Text(s.path(categoryId))),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
-            onPressed: () async {
-              final id = await pickCategory(context, selected: categoryId);
-              if (id != null) setState(() => categoryId = id == -1 ? null : id);
-            },
-          ),
+          CategorySelector(value: categoryId, onChanged: (v) => setState(() => categoryId = v)),
           const SizedBox(height: 12),
           TextField(controller: note, decoration: const InputDecoration(labelText: 'Nota (opcional)', border: OutlineInputBorder()), maxLines: 2),
           if (error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(error!, style: const TextStyle(color: Colors.red))),

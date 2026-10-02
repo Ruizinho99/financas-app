@@ -121,7 +121,7 @@ class CategoriesScreen extends StatelessWidget {
     final count = s.transactions.where((t) => t.categoryId == c.id).length;
     return ListTile(
       contentPadding: EdgeInsets.only(left: 16.0 + depth * 32, right: 8),
-      leading: Dot(c.color, size: depth == 0 ? 14 : 10),
+      leading: CatBadge(c, size: depth == 0 ? 24 : 20),
       title: Text(c.name, style: TextStyle(fontWeight: depth == 0 ? FontWeight.w700 : null, decoration: c.archived ? TextDecoration.lineThrough : null)),
       subtitle: Text([if (c.isIncome) 'Rendimento', '$count mov.', if (s.rangesOf(c.id).isNotEmpty) 'Obrigatória em ${s.rangesOf(c.id).length} período(s)', if (c.description.isNotEmpty) c.description].join(' · ')),
       onTap: () => showCategoryEditor(context, edit: c),
@@ -129,7 +129,7 @@ class CategoriesScreen extends StatelessWidget {
         onSelected: (v) async {
           if (v == 'sub') showCategoryEditor(context, parentId: c.id);
           if (v == 'budget') showBudgetEditor(context, c);
-          if (v == 'archive') s.updateCategory(Categoria(id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, color: c.color, description: c.description, budgetType: c.budgetType, budgetPercent: c.budgetPercent, budgetValue: c.budgetValue, hasBudget: c.hasBudget, archived: !c.archived));
+          if (v == 'archive') s.updateCategory(Categoria(id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, emoji: c.emoji, description: c.description, budgetType: c.budgetType, budgetPercent: c.budgetPercent, budgetValue: c.budgetValue, hasBudget: c.hasBudget, archived: !c.archived));
           if (v == 'delete') {
             if (await confirm(context, 'Apagar “${c.name}”? Os $count movimentos ficam sem categoria${depth == 0 ? ' e as subcategorias são apagadas' : ''}.') && context.mounted) {
               s.deleteCategory(c.id);

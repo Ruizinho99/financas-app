@@ -5,7 +5,7 @@ class Categoria {
   final String name;
   final int? parentId;
   final bool isIncome;
-  final int color; // ARGB
+  final String emoji; // ícone da categoria (um emoji); vazio = sem ícone
   final String description;
   final BudgetType budgetType;
   final bool budgetPercent; // true: % do salário; false: valor em cêntimos
@@ -18,7 +18,7 @@ class Categoria {
     required this.name,
     this.parentId,
     this.isIncome = false,
-    this.color = 0xFF607D8B,
+    this.emoji = '',
     this.description = '',
     this.budgetType = BudgetType.limit,
     this.budgetPercent = false,

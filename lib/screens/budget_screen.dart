@@ -163,7 +163,7 @@ class _CategoryBudgetTile extends StatelessWidget {
       child: ExpansionTile(
         shape: const Border(),
         collapsedShape: const Border(),
-        leading: Dot(c.color, size: 14),
+        leading: CatBadge(c),
         title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
@@ -283,7 +283,7 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
             onPressed: () {
               final v = has ? (parseCents(ctrl.text) ?? 0) : 0;
               s.updateCategory(Categoria(
-                id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, color: c.color,
+                id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, emoji: c.emoji,
                 description: c.description, budgetType: type, budgetPercent: percent, budgetValue: v,
                 hasBudget: has && v > 0, archived: c.archived,
               ));

@@ -148,7 +148,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     final c = s.cat(t.categoryId);
                     final tile = ListTile(
                       selected: selected.contains(t.id),
-                      leading: c == null ? const Icon(Icons.help_outline, color: Colors.grey) : Dot(c.color, size: 14),
+                      leading: c == null ? const Icon(Icons.help_outline, color: Colors.grey) : CatBadge(c),
                       title: Text(s.displayName(t), maxLines: 2, overflow: TextOverflow.ellipsis),
                       subtitle: Text([s.path(t.categoryId), if (t.note.isNotEmpty) t.note].join(' · '), maxLines: 2, overflow: TextOverflow.ellipsis),
                       trailing: MoneyText(t.amount),

@@ -36,6 +36,7 @@ class Db {
         mandatory INTEGER NOT NULL DEFAULT 0,
         is_income INTEGER NOT NULL DEFAULT 0,
         color INTEGER NOT NULL DEFAULT 4284955319,
+        emoji TEXT NOT NULL DEFAULT '',
         description TEXT NOT NULL DEFAULT '',
         budget_type TEXT NOT NULL DEFAULT 'limit',
         budget_percent INTEGER NOT NULL DEFAULT 0,
@@ -96,7 +97,13 @@ class Db {
       final used = _db.select('SELECT 1 FROM transactions LIMIT 1').isNotEmpty ||
           _db.select('SELECT 1 FROM categories WHERE has_budget=1 LIMIT 1').isNotEmpty;
       if (!used) _db.execute('DELETE FROM categories');
-      _db.execute('PRAGMA user_version = 2');
+    }
+    if (v < 3) {
+      // v3: emoji em vez de cor. Em bases novas a coluna já existe.
+      try {
+        _db.execute("ALTER TABLE categories ADD COLUMN emoji TEXT NOT NULL DEFAULT ''");
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 3');
     }
   }
 
@@ -106,7 +113,7 @@ class Db {
         name: r['name'] as String,
         parentId: r['parent_id'] as int?,
         isIncome: r['is_income'] == 1,
-        color: r['color'] as int,
+        emoji: r['emoji'] as String,
         description: r['description'] as String,
         budgetType: r['budget_type'] == 'goal' ? BudgetType.goal : BudgetType.limit,
         budgetPercent: r['budget_percent'] == 1,
@@ -120,18 +127,18 @@ class Db {
 
   int saveCategory(Categoria c, {int? id}) {
     final vals = [
-      c.name, c.parentId, c.isIncome ? 1 : 0, c.color, c.description,
+      c.name, c.parentId, c.isIncome ? 1 : 0, c.emoji, c.description,
       c.budgetType == BudgetType.goal ? 'goal' : 'limit', c.budgetPercent ? 1 : 0,
       c.budgetValue, c.hasBudget ? 1 : 0, c.archived ? 1 : 0,
     ];
     if (id == null) {
       _db.execute(
-          'INSERT INTO categories(name,parent_id,is_income,color,description,budget_type,budget_percent,budget_value,has_budget,archived) VALUES(?,?,?,?,?,?,?,?,?,?)',
+          'INSERT INTO categories(name,parent_id,is_income,emoji,description,budget_type,budget_percent,budget_value,has_budget,archived) VALUES(?,?,?,?,?,?,?,?,?,?)',
           vals);
       return _db.lastInsertRowId;
     }
     _db.execute(
-        'UPDATE categories SET name=?,parent_id=?,is_income=?,color=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=? WHERE id=?',
+        'UPDATE categories SET name=?,parent_id=?,is_income=?,emoji=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=? WHERE id=?',
         [...vals, id]);
     return id;
   }

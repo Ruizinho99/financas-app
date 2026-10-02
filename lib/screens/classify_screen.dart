@@ -108,6 +108,9 @@ class _GroupCard extends StatefulWidget {
 class _GroupCardState extends State<_GroupCard> {
   bool expanded = false;
   final selected = <int>{};
+  int? pick; // categoria/subcategoria escolhida nos dropdowns
+  bool remember = true;
+  bool initDone = false;
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +125,11 @@ class _GroupCardState extends State<_GroupCard> {
       dist[t.categoryId] = (dist[t.categoryId] ?? 0) + 1;
     }
     final title = (rule != null && rule.label.isNotEmpty) ? rule.label : g.key;
+    if (!initDone) {
+      initDone = true;
+      pick = rule?.categoryId;
+      remember = rule == null || rule.categoryId != pick;
+    }
 
     return Card(
       margin: const EdgeInsets.only(top: 10),
@@ -145,7 +153,7 @@ class _GroupCardState extends State<_GroupCard> {
                 for (final e in dist.entries)
                   Chip(
                     visualDensity: VisualDensity.compact,
-                    avatar: e.key == null ? const Icon(Icons.help_outline, size: 16) : Dot(s.cat(e.key)?.color ?? 0xFF9E9E9E, size: 10),
+                    avatar: e.key == null ? const Icon(Icons.help_outline, size: 16) : CatBadge(s.cat(e.key), size: 16),
                     label: Text('${s.path(e.key)} · ${e.value}'),
                   ),
                 if (rule != null)
@@ -155,18 +163,27 @@ class _GroupCardState extends State<_GroupCard> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Wrap(children: [
-            TextButton.icon(
-              icon: const Icon(Icons.drive_file_move_outline),
-              label: Text('Mover todas (${txns.length})'),
-              onPressed: () => _move(context, txns, defaultRemember: true),
-            ),
-            TextButton.icon(
-              icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
-              label: Text(expanded ? 'Fechar' : 'Ver movimentos'),
-              onPressed: () => setState(() => expanded = !expanded),
-            ),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            CategorySelector(value: pick, compact: true, onChanged: (v) => setState(() => pick = v)),
+            Row(children: [
+              Checkbox(value: remember, onChanged: (v) => setState(() => remember = v ?? true), visualDensity: VisualDensity.compact),
+              const Expanded(child: Text('Memorizar para futuros')),
+              IconButton(tooltip: 'Nome amigável e notas', icon: const Icon(Icons.edit_note), onPressed: () => _details(context, txns, rule)),
+            ]),
+            Row(children: [
+              TextButton.icon(
+                icon: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                label: Text(expanded ? 'Fechar' : 'Ver movimentos'),
+                onPressed: () => setState(() => expanded = !expanded),
+              ),
+              const Spacer(),
+              FilledButton.icon(
+                icon: const Icon(Icons.drive_file_move_outline),
+                label: Text('Mover ${txns.length}'),
+                onPressed: pick == null ? null : () => _move(context, txns),
+              ),
+            ]),
           ]),
         ),
         if (expanded) ...[
@@ -179,8 +196,8 @@ class _GroupCardState extends State<_GroupCard> {
                 Text('${selected.length} selecionados'),
                 const Spacer(),
                 TextButton(
-                  onPressed: () => _move(context, txns.where((t) => selected.contains(t.id)).toList(), defaultRemember: false),
-                  child: const Text('Mover selecionados'),
+                  onPressed: pick == null ? null : () => _move(context, txns.where((t) => selected.contains(t.id)).toList(), remember: false),
+                  child: Text(pick == null ? 'Escolhe a categoria acima' : 'Mover para ${s.path(pick)}'),
                 ),
                 IconButton(icon: const Icon(Icons.close), onPressed: () => setState(selected.clear)),
               ]),
@@ -216,82 +233,48 @@ class _GroupCardState extends State<_GroupCard> {
     );
   }
 
-  Future<void> _move(BuildContext context, List<Txn> txns, {required bool defaultRemember}) async {
+  void _move(BuildContext context, List<Txn> txns, {bool? remember}) {
     final s = context.read<AppState>();
     final rule = s.ruleFor(widget.group.key);
-    final result = await showDialog<_MoveResult>(
-      context: context,
-      builder: (_) => _MoveDialog(count: txns.length, remember: defaultRemember, label: rule?.label ?? '', note: rule?.note ?? ''),
-    );
-    if (result == null) return;
-    s.assign(txns, result.categoryId, remember: result.remember, label: result.label, note: result.note);
-    if (result.noteForTxns.isNotEmpty) s.setNote(txns.map((t) => t.id).toList(), result.noteForTxns);
+    final rem = remember ?? this.remember;
+    s.assign(txns, pick, remember: rem, label: rule?.label ?? '', note: rule?.note ?? '');
     setState(selected.clear);
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${txns.length} movimentos movidos para ${s.path(result.categoryId)}')));
-    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${txns.length} movimentos movidos para ${s.path(pick)}')));
   }
-}
 
-class _MoveResult {
-  final int categoryId;
-  final bool remember;
-  final String label, note, noteForTxns;
-  _MoveResult(this.categoryId, this.remember, this.label, this.note, this.noteForTxns);
-}
-
-class _MoveDialog extends StatefulWidget {
-  final int count;
-  final bool remember;
-  final String label, note;
-  const _MoveDialog({required this.count, required this.remember, required this.label, required this.note});
-  @override
-  State<_MoveDialog> createState() => _MoveDialogState();
-}
-
-class _MoveDialogState extends State<_MoveDialog> {
-  int? cat;
-  late bool remember = widget.remember;
-  late final label = TextEditingController(text: widget.label);
-  late final note = TextEditingController(text: widget.note);
-  final txNote = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
+  Future<void> _details(BuildContext context, List<Txn> txns, Rule? rule) async {
     final s = context.read<AppState>();
-    return AlertDialog(
-      title: Text('Mover ${widget.count} movimentos'),
-      content: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          OutlinedButton.icon(
-            icon: const Icon(Icons.folder_open),
-            label: Align(alignment: Alignment.centerLeft, child: Text(cat == null ? 'Escolher categoria…' : s.path(cat))),
-            onPressed: () async {
-              final id = await pickCategory(context, selected: cat, allowClear: false);
-              if (id != null && id != -1) setState(() => cat = id);
-            },
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Memorizar para futuros'),
-            subtitle: const Text('Novos movimentos com este nome vão automaticamente para esta categoria'),
-            value: remember,
-            onChanged: (v) => setState(() => remember = v),
-          ),
-          if (remember) ...[
+    final label = TextEditingController(text: rule?.label ?? '');
+    final note = TextEditingController(text: rule?.note ?? '');
+    final txNote = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Detalhes do grupo'),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
             TextField(controller: label, decoration: const InputDecoration(labelText: 'Nome amigável (opcional)', hintText: 'Ex.: Ginásio')),
             TextField(controller: note, decoration: const InputDecoration(labelText: 'Descrição da regra (opcional)'), maxLines: 2),
-          ],
-          TextField(controller: txNote, decoration: const InputDecoration(labelText: 'Nota nestes movimentos (opcional)'), maxLines: 2),
-        ]),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        FilledButton(
-          onPressed: cat == null ? null : () => Navigator.pop(context, _MoveResult(cat!, remember, label.text.trim(), note.text.trim(), txNote.text.trim())),
-          child: const Text('Mover'),
+            TextField(controller: txNote, decoration: const InputDecoration(labelText: 'Nota em todos os movimentos (opcional)'), maxLines: 2),
+            const SizedBox(height: 8),
+            const Text('O nome e a descrição ficam guardados na regra; escolhe a categoria e carrega em “Mover” para os aplicar.', style: TextStyle(fontSize: 12)),
+          ]),
         ),
-      ],
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () {
+              final cid = pick ?? rule?.categoryId;
+              if (cid != null && (label.text.trim().isNotEmpty || note.text.trim().isNotEmpty || rule != null)) {
+                s.saveRule(widget.group.key, cid, label: label.text.trim(), note: note.text.trim());
+              }
+              if (txNote.text.trim().isNotEmpty) s.setNote(txns.map((t) => t.id).toList(), txNote.text.trim());
+              Navigator.pop(ctx);
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -314,7 +297,7 @@ class RulesScreen extends StatelessWidget {
           : ListView(children: [
               for (final r in s.rules)
                 ListTile(
-                  leading: Dot(s.cat(r.categoryId)?.color ?? 0xFF9E9E9E, size: 14),
+                  leading: CatBadge(s.cat(r.categoryId)),
                   title: Text(r.label.isEmpty ? r.pattern : '${r.label}  (${r.pattern})'),
                   subtitle: Text('${r.exact ? 'Igual a' : 'Contém'} → ${s.path(r.categoryId)}${r.note.isEmpty ? '' : '\n${r.note}'}'),
                   isThreeLine: r.note.isNotEmpty,
@@ -341,14 +324,8 @@ class RulesScreen extends StatelessWidget {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               TextField(controller: pattern, enabled: edit == null, textCapitalization: TextCapitalization.characters, decoration: const InputDecoration(labelText: 'Texto a reconhecer (MAIÚSCULAS)')),
               SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Nome exatamente igual'), subtitle: const Text('Desligado: basta conter o texto'), value: exact, onChanged: edit == null ? (v) => set(() => exact = v) : null),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.folder_open),
-                label: Text(cat == null ? 'Escolher categoria…' : s.path(cat)),
-                onPressed: () async {
-                  final id = await pickCategory(ctx, selected: cat, allowClear: false);
-                  if (id != null && id != -1) set(() => cat = id);
-                },
-              ),
+              const SizedBox(height: 8),
+              CategorySelector(value: cat, onChanged: (v) => set(() => cat = v)),
               TextField(controller: label, decoration: const InputDecoration(labelText: 'Nome amigável (opcional)')),
               TextField(controller: note, decoration: const InputDecoration(labelText: 'Descrição (opcional)'), maxLines: 2),
             ]),

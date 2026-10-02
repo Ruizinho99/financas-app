@@ -65,7 +65,7 @@ class AppearanceScreen extends StatelessWidget {
         const SizedBox(height: 8),
         OutlinedButton.icon(onPressed: s.resetAppearance, icon: const Icon(Icons.restart_alt), label: const Text('Repor aparência original')),
         const SizedBox(height: 4),
-        Text('As cores de cada categoria escolhem-se ao criar ou editar a categoria.', style: Theme.of(context).textTheme.bodySmall),
+        Text('Cada categoria e subcategoria tem um emoji próprio, que escolhes ao criar ou editar.', style: Theme.of(context).textTheme.bodySmall),
       ]),
     );
   }

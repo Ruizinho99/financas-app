@@ -50,7 +50,7 @@ RENDA JANEIRO 500,00 1.454,70
     final s = AppState(Db.memory());
     expect(s.categories, isEmpty); // nada vem pré-definido
     final food0 = s.addCategory(const Categoria(id: 0, name: 'Alimentação'));
-    s.addCategory(Categoria(id: 0, name: 'Supermercado', parentId: food0));
+    s.addCategory(Categoria(id: 0, name: 'Supermercado', parentId: food0, emoji: '🛒'));
     s.setDefaultSalary(200000);
     final (added, dup) = s.importRows('x.csv', 'csv', [
       ParsedRow(DateTime(2026, 1, 3), 'COMPRA CONTINENTE 1', -4000),
@@ -58,18 +58,27 @@ RENDA JANEIRO 500,00 1.454,70
       ParsedRow(DateTime(2026, 1, 9), 'SALARIO ACME', 200000),
     ]);
     expect((added, dup), (3, 0));
+    // classificar na importação, com memorização
+    final mercado = s.categories.firstWhere((c) => c.name == 'Supermercado');
+    s.importRows('z.csv', 'csv', [ParsedRow(DateTime(2026, 3, 1), 'LIDL 55', -500)],
+        categories: {'LIDL': mercado.id}, remember: {'LIDL'});
+    expect(s.transactions.firstWhere((t) => t.description == 'LIDL 55').categoryId, mercado.id);
+    expect(s.ruleFor('LIDL')?.categoryId, mercado.id);
+    s.importRows('w.csv', 'csv', [ParsedRow(DateTime(2026, 3, 2), 'LIDL 56', -700)], categories: {'LIDL': null});
+    expect(s.transactions.firstWhere((t) => t.description == 'LIDL 56').categoryId, isNull);
     expect(s.importRows('x.csv', 'csv', [ParsedRow(DateTime(2026, 1, 3), 'COMPRA CONTINENTE 1', -4000)]).$2, 1);
-    final groups = s.unclassifiedGroups();
+    expect(s.cat(mercado.id)!.emoji, '🛒');
+    final groups = s.unclassifiedGroups().where((g) => g.key == 'CONTINENTE').toList();
     expect(groups.first.txns.length, 2);
     final super_ = s.categories.firstWhere((c) => c.name == 'Supermercado');
     s.assign(groups.first.txns, super_.id, remember: true);
-    expect(s.unclassifiedGroups().length, 1);
+    expect(s.unclassifiedGroups().where((g) => g.key == 'CONTINENTE'), isEmpty);
     // futura importação usa a regra
     s.importRows('y.csv', 'csv', [ParsedRow(DateTime(2026, 2, 1), 'COMPRA CONTINENTE 77', -1000)]);
     expect(s.transactions.firstWhere((t) => t.description.endsWith('77')).categoryId, super_.id);
     // orçamento: limite de 25% do salário
     final food = s.categories.firstWhere((c) => c.name == 'Alimentação');
-    s.updateCategory(Categoria(id: food.id, name: food.name, color: food.color, budgetPercent: true, budgetValue: 2500, hasBudget: true));
+    s.updateCategory(Categoria(id: food.id, name: food.name, budgetPercent: true, budgetValue: 2500, hasBudget: true));
     final p = Period.month(DateTime(2026, 1));
     expect(s.effectiveMonthlyTarget(s.cat(food.id)!, 200000), 50000);
     expect(s.rollup(s.cat(food.id)!, s.totalsByCategory(p)), 10000);
