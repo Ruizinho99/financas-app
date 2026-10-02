@@ -3,13 +3,13 @@
 App Android (Flutter) para importar extratos bancários (PDF, CSV, Excel), classificar movimentos, definir orçamento e analisar despesas. **Tudo fica guardado localmente no telemóvel** (SQLite); não usa internet.
 
 ## Funcionalidades
-- **Movimentos**: lista, pesquisa, filtros, inserção manual, seleção múltipla.
+- **Movimentos**: lista, pesquisa, filtros (despesas, receitas, transferências, por conta), seleção múltipla. Novo movimento em ecrã completo com contas, recibos (foto ou ficheiro) e transferências entre contas.
 - **Importação**: PDF (com texto), CSV e Excel `.xlsx`, com deteção/ajuste de colunas e deteção de duplicados.
 - **Classificar**: um cartão por nome de movimento, com dropdowns ligados de categoria → subcategoria; mover todos, memorizar regras, nomes amigáveis e notas.
 - **Grupos de títulos**: juntar vários títulos (ex.: “TRANS …” e “MB WAY …” do mesmo restaurante) sob um nome e uma categoria; aplicado automaticamente nas próximas importações.
 - **Categorias com emoji**, obrigatórias por período (mês a mês), modo escuro e cores personalizáveis.
 - **Orçamento**: salário líquido, alocação por valor ou % do salário, cada categoria/subcategoria como *Limite* ou *Objetivo*, com barras de progresso.
-- **Análise**: mês, vários meses, ano ou vários anos; obrigatórias vs opcionais, evolução, alertas de limites/objetivos.
+- **Análise**: mês, ano, YTD ou intervalo de datas à escolha; obrigatórias vs opcionais, evolução, alertas de limites/objetivos.
 
 ## Como correr
 Requer Flutter e o SDK Android.
