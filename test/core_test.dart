@@ -83,6 +83,12 @@ RENDA JANEIRO 500,00 1.454,70
     expect(s.effectiveMonthlyTarget(s.cat(food.id)!, 200000), 50000);
     expect(s.rollup(s.cat(food.id)!, s.totalsByCategory(p)), 10000);
     expect(s.targetIn(s.cat(food.id)!, Period.years(2026, 2026)), 600000);
+    // YTD / intervalo: o último mês conta só os dias decorridos (15 de 28 em fevereiro)
+    expect(s.targetIn(s.cat(food.id)!, Period.custom(DateTime(2026, 1, 1), DateTime(2026, 2, 15))), 50000 + 26786);
+    expect(s.salaryIn(Period.custom(DateTime(2026, 1, 1), DateTime(2026, 1, 31))), 200000);
+    expect(Period.ytd(DateTime(2026, 5, 20)).monthCount, 5);
+    expect(Period.ytd(DateTime(2026, 5, 20)).contains(DateTime(2026, 5, 20)), isTrue);
+    expect(Period.ytd(DateTime(2026, 5, 20)).contains(DateTime(2026, 5, 21)), isFalse);
   });
   test('nome amigável aplica-se a movimentos com o mesmo nome', () {
     final s = AppState(Db.memory());

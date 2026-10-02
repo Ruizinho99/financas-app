@@ -5,21 +5,53 @@ import '../import/parsers.dart';
 import '../models.dart';
 import '../util/format.dart';
 
-enum PeriodKind { month, months, year, years, all }
-
-/// Período de análise: um mês, vários meses, um ano, vários anos ou tudo.
+/// Período de análise: um mês, um ano, o ano até hoje (YTD) ou um intervalo de datas.
 class Period {
   final DateTime start; // inclusivo
   final DateTime end; // exclusivo
   const Period(this.start, this.end);
 
-  int get monthCount => (end.year - start.year) * 12 + end.month - start.month;
+  static DateTime _u(DateTime d) => DateTime.utc(d.year, d.month, d.day);
+
+  /// Número de meses que o período toca (um mês parcial conta como um).
+  int get monthCount {
+    final last = _u(end).subtract(const Duration(days: 1));
+    return (last.year - start.year) * 12 + last.month - start.month + 1;
+  }
+
+  /// Cada mês tocado com o peso (fração dos dias do mês que estão dentro do período).
+  /// Meses completos pesam 1; num intervalo/YTD o último mês pesa só os dias decorridos.
+  List<(DateTime, double)> get monthWeights {
+    final out = <(DateTime, double)>[];
+    for (var i = 0; i < monthCount; i++) {
+      final m = DateTime(start.year, start.month + i);
+      final next = DateTime(m.year, m.month + 1);
+      final from = _u(start).isAfter(_u(m)) ? _u(start) : _u(m);
+      final to = _u(end).isBefore(_u(next)) ? _u(end) : _u(next);
+      final days = to.difference(from).inDays;
+      final inMonth = _u(next).difference(_u(m)).inDays;
+      out.add((m, days <= 0 ? 0 : days / inMonth));
+    }
+    return out;
+  }
+
   bool contains(DateTime d) => !d.isBefore(start) && d.isBefore(end);
 
   static Period month(DateTime d) => Period(DateTime(d.year, d.month), DateTime(d.year, d.month + 1));
-  static Period months(DateTime from, DateTime to) =>
-      Period(DateTime(from.year, from.month), DateTime(to.year, to.month + 1));
+  static Period year(int y) => Period(DateTime(y), DateTime(y + 1));
   static Period years(int from, int to) => Period(DateTime(from), DateTime(to + 1));
+
+  /// 1 de janeiro até hoje (inclusive).
+  static Period ytd([DateTime? today]) {
+    final t = today ?? DateTime.now();
+    return Period(DateTime(t.year), DateTime(t.year, t.month, t.day + 1));
+  }
+
+  /// Intervalo de dias, ambos inclusivos.
+  static Period custom(DateTime from, DateTime to) {
+    final a = from.isBefore(to) ? from : to, b = from.isBefore(to) ? to : from;
+    return Period(DateTime(a.year, a.month, a.day), DateTime(b.year, b.month, b.day + 1));
+  }
 }
 
 class CategoryStat {
@@ -184,8 +216,8 @@ class AppState extends ChangeNotifier {
   /// Salário acumulado num período (soma mês a mês).
   int salaryIn(Period p) {
     var total = 0;
-    for (var i = 0; i < p.monthCount; i++) {
-      total += salaryFor(monthKey(DateTime(p.start.year, p.start.month + i)));
+    for (final (m, w) in p.monthWeights) {
+      total += (salaryFor(monthKey(m)) * w).round();
     }
     return total;
   }
@@ -275,8 +307,8 @@ class AppState extends ChangeNotifier {
   /// Alocação de [c] no período: soma mês a mês (suporta % e salários diferentes).
   int targetIn(Categoria c, Period p) {
     var t = 0;
-    for (var i = 0; i < p.monthCount; i++) {
-      t += effectiveMonthlyTarget(c, salaryFor(monthKey(DateTime(p.start.year, p.start.month + i))));
+    for (final (m, w) in p.monthWeights) {
+      t += (effectiveMonthlyTarget(c, salaryFor(monthKey(m))) * w).round();
     }
     return t;
   }

@@ -7,7 +7,7 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 
-enum _Mode { month, range, year, years }
+enum _Mode { month, year, ytd, custom }
 
 class AnalysisScreen extends StatefulWidget {
   const AnalysisScreen({super.key});
@@ -18,34 +18,23 @@ class AnalysisScreen extends StatefulWidget {
 class _AnalysisScreenState extends State<AnalysisScreen> {
   _Mode mode = _Mode.month;
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
-  DateTime from = DateTime(DateTime.now().year, DateTime.now().month - 2);
-  DateTime to = DateTime(DateTime.now().year, DateTime.now().month);
   int year = DateTime.now().year;
-  int yearFrom = DateTime.now().year - 1;
-  int yearTo = DateTime.now().year;
+  DateTime customFrom = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime customTo = DateTime.now();
 
   Period get period => switch (mode) {
         _Mode.month => Period.month(month),
-        _Mode.range => Period.months(from.isBefore(to) ? from : to, from.isBefore(to) ? to : from),
-        _Mode.year => Period.years(year, year),
-        _Mode.years => Period.years(yearFrom <= yearTo ? yearFrom : yearTo, yearFrom <= yearTo ? yearTo : yearFrom),
+        _Mode.year => Period.year(year),
+        _Mode.ytd => Period.ytd(),
+        _Mode.custom => Period.custom(customFrom, customTo),
       };
 
-  String get periodLabel {
-    final p = period;
-    return switch (mode) {
-      _Mode.month => fmtMonth(month),
-      _Mode.range => '${fmtMonthShort(p.start)} – ${fmtMonthShort(DateTime(p.end.year, p.end.month - 1))}',
-      _Mode.year => '$year',
-      _Mode.years => '${p.start.year} – ${p.end.year - 1}',
-    };
-  }
-
-  Future<DateTime?> _pickMonth(DateTime initial) async {
-    final d = await showDatePicker(
-        context: context, initialDate: initial, firstDate: DateTime(2000), lastDate: DateTime(2100), helpText: 'Escolhe qualquer dia do mês');
-    return d == null ? null : DateTime(d.year, d.month);
-  }
+  String get periodLabel => switch (mode) {
+        _Mode.month => fmtMonth(month),
+        _Mode.year => '$year',
+        _Mode.ytd => 'YTD ${DateTime.now().year} · 1 jan – hoje',
+        _Mode.custom => customFrom.isAfter(customTo) ? '${fmtDate(customTo)} – ${fmtDate(customFrom)}' : '${fmtDate(customFrom)} – ${fmtDate(customTo)}',
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -169,8 +158,8 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
   int _subTarget(AppState s, Categoria c, Period p) {
     var t = 0;
-    for (var i = 0; i < p.monthCount; i++) {
-      t += c.monthlyTarget(s.salaryFor(monthKey(DateTime(p.start.year, p.start.month + i))));
+    for (final (m, w) in p.monthWeights) {
+      t += (c.monthlyTarget(s.salaryFor(monthKey(m))) * w).round();
     }
     return t;
   }
@@ -203,7 +192,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
       );
 
   Widget _selector(BuildContext context, AppState s) {
-    final years = {for (final t in s.transactions) t.date.year, DateTime.now().year}.toList()..sort();
     Widget chev(int dir) => IconButton(
           icon: Icon(dir < 0 ? Icons.chevron_left : Icons.chevron_right),
           onPressed: () => setState(() {
@@ -216,9 +204,9 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         showSelectedIcon: false,
         segments: const [
           ButtonSegment(value: _Mode.month, label: Text('Mês')),
-          ButtonSegment(value: _Mode.range, label: Text('Meses')),
           ButtonSegment(value: _Mode.year, label: Text('Ano')),
-          ButtonSegment(value: _Mode.years, label: Text('Anos')),
+          ButtonSegment(value: _Mode.ytd, label: Text('YTD')),
+          ButtonSegment(value: _Mode.custom, label: Text('Custom')),
         ],
         selected: {mode},
         onSelectionChanged: (v) => setState(() => mode = v.first),
@@ -226,18 +214,27 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
       const SizedBox(height: 4),
       if (mode == _Mode.month || mode == _Mode.year)
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [chev(-1), Text(periodLabel, style: Theme.of(context).textTheme.titleMedium), chev(1)]),
-      if (mode == _Mode.range)
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          TextButton(onPressed: () async { final d = await _pickMonth(from); if (d != null) setState(() => from = d); }, child: Text('De ${fmtMonthShort(from)}')),
-          TextButton(onPressed: () async { final d = await _pickMonth(to); if (d != null) setState(() => to = d); }, child: Text('a ${fmtMonthShort(to)}')),
-        ]),
-      if (mode == _Mode.years)
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Text('De '),
-          DropdownButton<int>(value: yearFrom, items: [for (final y in years.toSet()..addAll([yearFrom, yearTo])) DropdownMenuItem(value: y, child: Text('$y'))], onChanged: (v) => setState(() => yearFrom = v!)),
-          const Text('  a '),
-          DropdownButton<int>(value: yearTo, items: [for (final y in years.toSet()..addAll([yearFrom, yearTo])) DropdownMenuItem(value: y, child: Text('$y'))], onChanged: (v) => setState(() => yearTo = v!)),
-        ]),
+      if (mode == _Mode.ytd)
+        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(periodLabel, style: Theme.of(context).textTheme.titleMedium)),
+      if (mode == _Mode.custom)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.date_range),
+            label: Text(periodLabel),
+            onPressed: () async {
+              final r = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+                initialDateRange: DateTimeRange(start: customFrom.isAfter(customTo) ? customTo : customFrom, end: customFrom.isAfter(customTo) ? customFrom : customTo),
+                helpText: 'Escolhe o intervalo',
+                saveText: 'Aplicar',
+              );
+              if (r != null) setState(() { customFrom = r.start; customTo = r.end; });
+            },
+          ),
+        ),
     ]);
   }
 
@@ -245,7 +242,8 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     final n = p.monthCount;
     if (n < 2) return const SizedBox.shrink();
     final bucketYears = n > 24;
-    final buckets = bucketYears ? (p.end.year - p.start.year) : n;
+    final lastDay = p.end.subtract(const Duration(days: 1));
+    final buckets = bucketYears ? (lastDay.year - p.start.year + 1) : n;
     final mand = List<double>.filled(buckets, 0), opt = List<double>.filled(buckets, 0);
     for (final t in s.txnsIn(p)) {
       final c = s.cat(t.categoryId);
