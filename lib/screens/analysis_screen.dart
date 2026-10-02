@@ -1,26 +1,41 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models.dart';
+import '../analysis/analytics.dart';
+import '../analysis/filter_sheet.dart';
+import '../analysis/overview_tab.dart';
+import '../analysis/save_tab.dart';
+import '../analysis/spend_tab.dart';
+import '../analysis/trend_tab.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
-import '../widgets/common.dart';
 
 enum _Mode { month, year, ytd, custom }
 
+/// Análise: ferramenta para perceber onde se gasta, o que mudou e onde se pode poupar.
 class AnalysisScreen extends StatefulWidget {
-  const AnalysisScreen({super.key});
+  /// Mês inicial (por omissão, o mês atual).
+  final DateTime? initialMonth;
+  const AnalysisScreen({super.key, this.initialMonth});
   @override
   State<AnalysisScreen> createState() => _AnalysisScreenState();
 }
 
-class _AnalysisScreenState extends State<AnalysisScreen> {
+class _AnalysisScreenState extends State<AnalysisScreen> with SingleTickerProviderStateMixin {
+  late final TabController tabs = TabController(length: 4, vsync: this);
   _Mode mode = _Mode.month;
-  DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
-  int year = DateTime.now().year;
-  DateTime customFrom = DateTime(DateTime.now().year, DateTime.now().month);
-  DateTime customTo = DateTime.now();
+  late DateTime month = DateTime((widget.initialMonth ?? DateTime.now()).year, (widget.initialMonth ?? DateTime.now()).month);
+  late int year = month.year;
+  late DateTime customFrom = month;
+  late DateTime customTo = DateTime(month.year, month.month + 1, 0);
+  AnalysisFilter filter = const AnalysisFilter();
+  bool compare = true;
+
+  @override
+  void dispose() {
+    tabs.dispose();
+    super.dispose();
+  }
 
   Period get period => switch (mode) {
         _Mode.month => Period.month(month),
@@ -36,163 +51,18 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
         _Mode.custom => customFrom.isAfter(customTo) ? '${fmtDate(customTo)} – ${fmtDate(customFrom)}' : '${fmtDate(customFrom)} – ${fmtDate(customTo)}',
       };
 
+  void _viewCategory(int id) {
+    setState(() => filter = filter.copyWith(categoryIds: {id}));
+    tabs.animateTo(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final p = period;
-    final own = s.totalsByCategory(p);
-    final salary = s.salaryIn(p);
-    final roots = s.roots;
-    final income = s.txnsIn(p).where((t) => t.amount > 0 && (s.cat(t.categoryId)?.isIncome ?? false)).fold(0, (a, t) => a + t.amount);
-    final expRoots = roots.where((c) => !c.isIncome).toList();
-    final split = s.mandatorySplit(p);
-    final mandSpent = split.mandatory.values.fold(0, (a, v) => a + v);
-    final optSpent = split.optional.values.fold(0, (a, v) => a + v);
-    final unclassified = split.unclassified;
+    final a = Analytics(s, p, filter, previous: compare ? previousPeriod(p, today: DateTime.now()) : null);
     final cs = Theme.of(context).colorScheme;
-    final mandColor = cs.primary, optColor = cs.tertiary;
-    final totalSpent = mandSpent + optSpent + unclassified;
-    final base = income > 0 ? income : salary;
 
-    // Alertas
-    final stats = <CategoryStat>[];
-    for (final c in s.categories.where((c) => !c.isIncome && !c.archived)) {
-      final t = c.parentId == null ? s.targetIn(c, p) : _subTarget(s, c, p);
-      if (t <= 0) continue;
-      final spent = c.parentId == null ? s.rollup(c, own) : (own[c.id] ?? 0);
-      stats.add(CategoryStat(c, spent, t));
-    }
-    final over = stats.where((x) => x.category.budgetType == BudgetType.limit || !x.category.hasBudget).where((x) => x.ratio > 1).toList()..sort((a, b) => b.ratio.compareTo(a.ratio));
-    final near = stats.where((x) => (x.category.budgetType == BudgetType.limit || !x.category.hasBudget) && x.ratio >= 0.85 && x.ratio <= 1).toList();
-    final goalsMissed = stats.where((x) => x.category.hasBudget && x.category.budgetType == BudgetType.goal && x.ratio < 1).toList();
-    final goalsHit = stats.where((x) => x.category.hasBudget && x.category.budgetType == BudgetType.goal && x.ratio >= 1).toList();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Análise')),
-      body: ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 48), children: [
-        _selector(context, s),
-        const SizedBox(height: 8),
-        // Resumo
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(periodLabel, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              Wrap(spacing: 24, runSpacing: 8, children: [
-                _kpi('Rendimentos', income > 0 ? income : salary, Colors.green),
-                _kpi('Despesas', totalSpent, Colors.red),
-                _kpi('Saldo', (income > 0 ? income : salary) - totalSpent, (income > 0 ? income : salary) - totalSpent >= 0 ? Colors.green : Colors.red),
-              ]),
-              if (income == 0 && salary > 0) const Padding(padding: EdgeInsets.only(top: 6), child: Text('Sem rendimentos categorizados: a usar o salário líquido definido.', style: TextStyle(fontSize: 12))),
-              if (base > 0) ...[
-                const SizedBox(height: 12),
-                Text('Taxa de poupança: ${fmtPercent((base - totalSpent) / base)}'),
-              ],
-            ]),
-          ),
-        ),
-        // Obrigatórias vs opcionais
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Obrigatórias vs Opcionais', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 12),
-              if (totalSpent == 0)
-                const Text('Sem despesas neste período.')
-              else
-                Row(children: [
-                  SizedBox(
-                    width: 130,
-                    height: 130,
-                    child: PieChart(PieChartData(sectionsSpace: 2, centerSpaceRadius: 30, sections: [
-                      PieChartSectionData(value: mandSpent.toDouble().clamp(0, double.infinity), color: mandColor, title: '', radius: 28),
-                      PieChartSectionData(value: optSpent.toDouble().clamp(0, double.infinity), color: optColor, title: '', radius: 28),
-                      if (unclassified > 0) PieChartSectionData(value: unclassified.toDouble(), color: Colors.blueGrey, title: '', radius: 28),
-                    ])),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      _legend(mandColor, 'Obrigatórias', mandSpent, totalSpent),
-                      _legend(optColor, 'Opcionais', optSpent, totalSpent),
-                      if (unclassified > 0) _legend(Colors.blueGrey, 'Sem categoria', unclassified, totalSpent),
-                    ]),
-                  ),
-                ]),
-              if (base > 0 && totalSpent > 0) ...[
-                const SizedBox(height: 12),
-                Text(_needsWants(base, mandSpent, optSpent), style: Theme.of(context).textTheme.bodyMedium),
-              ],
-            ]),
-          ),
-        ),
-        // Evolução
-        _trend(context, s, p),
-        // Insights
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Estamos a chegar ao limite / objetivo?', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              if (stats.isEmpty) const Text('Define limites ou objetivos na página Orçamento para ver aqui o estado de cada categoria.'),
-              for (final x in over) _insight(Icons.error, Colors.red, '${s.path(x.category.id)}: ${fmtMoney(x.spent)} de ${fmtMoney(x.target)} (${fmtPercent(x.ratio)}) – limite excedido em ${fmtMoney(x.spent - x.target)}'),
-              for (final x in near) _insight(Icons.warning_amber, Colors.orange, '${s.path(x.category.id)}: ${fmtPercent(x.ratio)} do limite – restam ${fmtMoney(x.target - x.spent)}'),
-              for (final x in goalsMissed) _insight(Icons.flag_outlined, Colors.amber.shade800, '${s.path(x.category.id)}: objetivo a ${fmtPercent(x.ratio)} – faltam ${fmtMoney(x.target - x.spent)}'),
-              for (final x in goalsHit) _insight(Icons.check_circle, Colors.green, '${s.path(x.category.id)}: objetivo atingido (${fmtMoney(x.spent)} de ${fmtMoney(x.target)})'),
-              if (stats.isNotEmpty && over.isEmpty && near.isEmpty && goalsMissed.isEmpty && goalsHit.isEmpty)
-                _insight(Icons.check_circle, Colors.green, 'Tudo dentro dos limites. Bom trabalho!'),
-            ]),
-          ),
-        ),
-        // Orçamento por categoria
-        _budgetCard(context, s, expRoots, own, p),
-        // Detalhe por tipo (a obrigatoriedade depende do mês de cada movimento)
-        _splitDetail(context, s, 'Obrigatórias', split.mandatory),
-        _splitDetail(context, s, 'Opcionais', split.optional),
-      ]),
-    );
-  }
-
-  int _subTarget(AppState s, Categoria c, Period p) {
-    var t = 0;
-    for (final (m, w) in p.monthWeights) {
-      final mk = monthKey(m);
-      t += s.isCategoryActive(c, mk) ? (c.monthlyTarget(s.salaryFor(mk)) * w).round() : 0;
-    }
-    return t;
-  }
-
-  String _needsWants(int base, int mand, int opt) {
-    final m = mand / base, o = opt / base, sv = 1 - m - o;
-    return 'Em % dos rendimentos: obrigatórias ${fmtPercent(m)}, opcionais ${fmtPercent(o)}, sobra ${fmtPercent(sv)}. '
-        '${m > 0.5 ? 'As obrigatórias pesam mais de metade – vê onde poupar nos tarifários e na habitação. ' : ''}'
-        '${o > 0.3 ? 'Os gastos opcionais passam os 30% – é aqui que há mais margem de manobra.' : ''}';
-  }
-
-  Widget _kpi(String l, int v, Color c) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(l, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        Text(fmtMoney(v), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: c)),
-      ]);
-
-  Widget _legend(Color c, String label, int v, int total) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: Row(children: [
-          Container(width: 12, height: 12, color: c),
-          const SizedBox(width: 8),
-          Expanded(child: Text(label)),
-          Text('${fmtMoney(v)}  ${total > 0 ? fmtPercent(v / total) : ''}'),
-        ]),
-      );
-
-  Widget _insight(IconData icon, Color color, String text) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: color, size: 20), const SizedBox(width: 8), Expanded(child: Text(text))]),
-      );
-
-  Widget _selector(BuildContext context, AppState s) {
     Widget chev(int dir) => IconButton(
           icon: Icon(dir < 0 ? Icons.chevron_left : Icons.chevron_right),
           onPressed: () => setState(() {
@@ -200,181 +70,109 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
             if (mode == _Mode.year) year += dir;
           }),
         );
-    return Column(children: [
-      SegmentedButton<_Mode>(
-        showSelectedIcon: false,
-        segments: const [
-          ButtonSegment(value: _Mode.month, label: Text('Mês')),
-          ButtonSegment(value: _Mode.year, label: Text('Ano')),
-          ButtonSegment(value: _Mode.ytd, label: Text('YTD')),
-          ButtonSegment(value: _Mode.custom, label: Text('Custom')),
-        ],
-        selected: {mode},
-        onSelectionChanged: (v) => setState(() => mode = v.first),
-      ),
-      const SizedBox(height: 4),
-      if (mode == _Mode.month || mode == _Mode.year)
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [chev(-1), Text(periodLabel, style: Theme.of(context).textTheme.titleMedium), chev(1)]),
-      if (mode == _Mode.ytd)
-        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(periodLabel, style: Theme.of(context).textTheme.titleMedium)),
-      if (mode == _Mode.custom)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: OutlinedButton.icon(
-            icon: const Icon(Icons.date_range),
-            label: Text(periodLabel),
-            onPressed: () async {
-              final r = await showDateRangePicker(
-                context: context,
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2100),
-                initialDateRange: DateTimeRange(start: customFrom.isAfter(customTo) ? customTo : customFrom, end: customFrom.isAfter(customTo) ? customFrom : customTo),
-                helpText: 'Escolhe o intervalo',
-                saveText: 'Aplicar',
-              );
-              if (r != null) setState(() { customFrom = r.start; customTo = r.end; });
-            },
-          ),
-        ),
-    ]);
-  }
 
-  Widget _trend(BuildContext context, AppState s, Period p) {
-    final n = p.monthCount;
-    if (n < 2) return const SizedBox.shrink();
-    final bucketYears = n > 24;
-    final lastDay = p.end.subtract(const Duration(days: 1));
-    final buckets = bucketYears ? (lastDay.year - p.start.year + 1) : n;
-    final mand = List<double>.filled(buckets, 0), opt = List<double>.filled(buckets, 0);
-    for (final t in s.txnsIn(p)) {
-      final c = s.cat(t.categoryId);
-      if (c == null || c.isIncome || t.amount >= 0) continue;
-      final isMand = s.isMandatory(c, monthKey(t.date));
-      final idx = bucketYears ? t.date.year - p.start.year : (t.date.year - p.start.year) * 12 + t.date.month - p.start.month;
-      (isMand ? mand : opt)[idx] += -t.amount / 100;
-    }
-    String label(int i) => bucketYears ? '${p.start.year + i}' : fmtMonthShort(DateTime(p.start.year, p.start.month + i)).split(' ').first;
-    final maxY = [for (var i = 0; i < buckets; i++) mand[i] + opt[i]].fold(1.0, (a, b) => b > a ? b : a);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Evolução das despesas', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 180,
-            child: BarChart(BarChartData(
-              maxY: maxY * 1.1,
-              gridData: const FlGridData(show: false),
-              borderData: FlBorderData(show: false),
-              titlesData: FlTitlesData(
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: buckets > 12 ? (buckets / 6).ceilToDouble() : 1,
-                    getTitlesWidget: (v, _) => Padding(padding: const EdgeInsets.only(top: 4), child: Text(label(v.toInt()), style: const TextStyle(fontSize: 10))),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Análise'),
+        actions: [
+          IconButton(
+            tooltip: compare ? 'A comparar com o período anterior' : 'Comparar com o período anterior',
+            isSelected: compare,
+            icon: const Icon(Icons.compare_arrows),
+            selectedIcon: Icon(Icons.compare_arrows, color: cs.primary),
+            onPressed: () => setState(() => compare = !compare),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, inner) => [
+          SliverToBoxAdapter(
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<_Mode>(
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment(value: _Mode.month, label: Text('Mês')),
+                      ButtonSegment(value: _Mode.year, label: Text('Ano')),
+                      ButtonSegment(value: _Mode.ytd, label: Text('YTD')),
+                      ButtonSegment(value: _Mode.custom, label: Text('Custom')),
+                    ],
+                    selected: {mode},
+                    onSelectionChanged: (v) => setState(() => mode = v.first),
                   ),
                 ),
               ),
-              barGroups: [
-                for (var i = 0; i < buckets; i++)
-                  BarChartGroupData(x: i, barRods: [
-                    BarChartRodData(
-                      toY: mand[i] + opt[i],
-                      width: buckets > 12 ? 6 : 14,
-                      borderRadius: BorderRadius.circular(2),
-                      rodStackItems: [BarChartRodStackItem(0, mand[i], Theme.of(context).colorScheme.primary), BarChartRodStackItem(mand[i], mand[i] + opt[i], Theme.of(context).colorScheme.tertiary)],
-                    )
-                  ]),
-              ],
-            )),
+              if (mode == _Mode.month || mode == _Mode.year)
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [chev(-1), Text(periodLabel, style: Theme.of(context).textTheme.titleMedium), chev(1)])
+              else if (mode == _Mode.ytd)
+                Padding(padding: const EdgeInsets.symmetric(vertical: 14), child: Text(periodLabel, style: Theme.of(context).textTheme.titleMedium))
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.date_range),
+                    label: Text(periodLabel),
+                    onPressed: () async {
+                      final r = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                        initialDateRange: DateTimeRange(start: customFrom.isAfter(customTo) ? customTo : customFrom, end: customFrom.isAfter(customTo) ? customFrom : customTo),
+                        helpText: 'Escolhe o intervalo',
+                        saveText: 'Aplicar',
+                      );
+                      if (r != null) setState(() {
+                        customFrom = r.start;
+                        customTo = r.end;
+                      });
+                    },
+                  ),
+                ),
+              FilterBar(filter: filter, onChanged: (f) => setState(() => filter = f)),
+            ]),
           ),
-          const SizedBox(height: 4),
-          Row(children: [Container(width: 10, height: 10, color: Theme.of(context).colorScheme.primary), const Text('  Obrigatórias    '), Container(width: 10, height: 10, color: Theme.of(context).colorScheme.tertiary), const Text('  Opcionais')]),
-        ]),
-      ),
-    );
-  }
-
-  Widget _budgetCard(BuildContext context, AppState s, List<Categoria> roots, Map<int, int> own, Period p) {
-    final list = roots.map((c) => (c, s.rollup(c, own), s.targetIn(c, p))).where((e) => e.$3 > 0).toList()..sort((a, b) => b.$2.compareTo(a.$2));
-    if (list.isEmpty) return const SizedBox.shrink();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Orçamento por categoria', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          for (final (c, spent, target) in list) _row(context, s, c, spent, target, own, p),
-        ]),
-      ),
-    );
-  }
-
-  /// Lista as categorias (e subcategorias) de uma das metades obrigatórias/opcionais.
-  Widget _splitDetail(BuildContext context, AppState s, String title, Map<int, int> amounts) {
-    if (amounts.isEmpty) return const SizedBox.shrink();
-    final byRoot = <int, int>{};
-    final subs = <int, List<MapEntry<int, int>>>{};
-    for (final e in amounts.entries) {
-      final c = s.cat(e.key);
-      if (c == null) continue;
-      final root = c.parentId ?? c.id;
-      byRoot[root] = (byRoot[root] ?? 0) + e.value;
-      if (c.parentId != null) (subs[root] ??= []).add(e);
-    }
-    final roots = byRoot.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    final total = byRoot.values.fold(0, (a, v) => a + v);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [Text(title, style: Theme.of(context).textTheme.titleMedium), const Spacer(), Text(fmtMoney(total), style: const TextStyle(fontWeight: FontWeight.w700))]),
-          for (final r in roots)
-            ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              shape: const Border(),
-              collapsedShape: const Border(),
-              enabled: (subs[r.key] ?? []).isNotEmpty,
-              title: Row(children: [CatBadge(s.cat(r.key)), const SizedBox(width: 8), Expanded(child: Text(s.cat(r.key)?.name ?? '?')), Text(fmtMoney(r.value))]),
-              children: [
-                for (final e in (subs[r.key] ?? [])..sort((a, b) => b.value.compareTo(a.value)))
-                  ListTile(dense: true, contentPadding: const EdgeInsets.only(left: 24), title: Text(s.cat(e.key)?.name ?? '?'), trailing: Text(fmtMoney(e.value))),
-              ],
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _TabsDelegate(
+              Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: TabBar(
+                  controller: tabs,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  tabs: const [Tab(text: 'Visão geral'), Tab(text: 'Gastos'), Tab(text: 'Poupar'), Tab(text: 'Evolução')],
+                ),
+              ),
             ),
-        ]),
+          ),
+        ],
+        body: TabBarView(
+          controller: tabs,
+          children: [
+            OverviewTab(a: a, periodLabel: periodLabel, compare: compare, onSavings: () => tabs.animateTo(2)),
+            SpendTab(a: a, compare: compare, onFilterCategory: _viewCategory),
+            SaveTab(a: a, onViewCategory: _viewCategory),
+            TrendTab(a: a),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _row(BuildContext context, AppState s, Categoria c, int spent, int target, Map<int, int> own, Period p) {
-    final kids = s.childrenOf(c.id).where((k) => (own[k.id] ?? 0) != 0 || k.hasBudget).toList();
-    final type = c.hasBudget ? c.budgetType : BudgetType.limit;
-    return ExpansionTile(
-      tilePadding: EdgeInsets.zero,
-      shape: const Border(),
-      collapsedShape: const Border(),
-      title: Row(children: [CatBadge(c), const SizedBox(width: 8), Expanded(child: Text(c.name)), Text(target > 0 ? '${fmtMoney(spent)} / ${fmtMoney(target)}' : fmtMoney(spent))]),
-      subtitle: target > 0 ? Padding(padding: const EdgeInsets.only(top: 4), child: BudgetBar(spent: spent < 0 ? 0 : spent, target: target, type: type, height: 8)) : null,
-      children: [
-        for (final k in kids)
-          () {
-            final ks = own[k.id] ?? 0;
-            final kt = _subTarget(s, k, p);
-            return ListTile(
-              dense: true,
-              contentPadding: const EdgeInsets.only(left: 24),
-              title: Text(k.name),
-              subtitle: kt > 0 ? BudgetBar(spent: ks < 0 ? 0 : ks, target: kt, type: k.budgetType, height: 6) : null,
-              trailing: Text(kt > 0 ? '${fmtMoney(ks)} / ${fmtMoney(kt)}' : fmtMoney(ks)),
-            );
-          }(),
-        if ((own[c.id] ?? 0) != 0 && kids.isNotEmpty)
-          ListTile(dense: true, contentPadding: const EdgeInsets.only(left: 24), title: const Text('Sem subcategoria'), trailing: Text(fmtMoney(own[c.id]!))),
-      ],
-    );
-  }
+class _TabsDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  _TabsDelegate(this.child);
+  @override
+  double get minExtent => 48;
+  @override
+  double get maxExtent => 48;
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
+  @override
+  bool shouldRebuild(covariant _TabsDelegate old) => true;
 }
