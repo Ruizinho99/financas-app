@@ -172,6 +172,18 @@ class Db {
     }
   }
 
+  /// Corre [body] numa transação: ou grava tudo ou nada.
+  void inTransaction(void Function() body) {
+    _db.execute('BEGIN');
+    try {
+      body();
+      _db.execute('COMMIT');
+    } catch (_) {
+      _db.execute('ROLLBACK');
+      rethrow;
+    }
+  }
+
   // ---------- Categorias ----------
   Categoria _cat(Row r) => Categoria(
         id: r['id'] as int,

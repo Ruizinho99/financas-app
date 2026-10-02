@@ -410,6 +410,43 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Escrita ----------
+  /// Já existe, no mesmo nível (mesma categoria-mãe), uma categoria com este nome?
+  bool categoryNameTaken(String name, int? parentId, {int? excludeId}) {
+    final n = name.trim().toLowerCase();
+    return categories.any((c) => c.parentId == parentId && c.id != excludeId && c.name.trim().toLowerCase() == n);
+  }
+
+  /// Guarda uma categoria e as suas subcategorias numa única operação.
+  /// [subs]: subcategorias a criar (id nulo) ou a atualizar (id existente).
+  /// [removedIds]: subcategorias a apagar (os movimentos ficam sem categoria).
+  /// Com [subsAreSiblings] as subcategorias ficam ao lado de [main] (mesma categoria-mãe),
+  /// em vez de dentro dela. Devolve o id de [main].
+  int saveCategoryWithSubs(
+    Categoria main,
+    List<({int? id, String name, String emoji})> subs, {
+    List<int> removedIds = const [],
+    bool subsAreSiblings = false,
+  }) {
+    late int mainId;
+    db.inTransaction(() {
+      mainId = main.id == 0 ? db.saveCategory(main) : db.saveCategory(main, id: main.id);
+      final subParent = subsAreSiblings ? main.parentId : mainId;
+      for (final id in removedIds) {
+        db.deleteCategory(id);
+      }
+      for (final d in subs) {
+        final ex = cat(d.id);
+        if (ex != null) {
+          db.saveCategory(ex.copyWith(name: d.name, emoji: d.emoji, isIncome: main.isIncome), id: ex.id);
+        } else {
+          db.saveCategory(Categoria(id: 0, name: d.name, parentId: subParent, isIncome: main.isIncome, emoji: d.emoji));
+        }
+      }
+    });
+    reload();
+    return mainId;
+  }
+
   int addCategory(Categoria c) {
     final id = db.saveCategory(c);
     reload();
