@@ -33,6 +33,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   late int? categoryId = widget.edit?.categoryId;
   late int? accountId = widget.edit?.accountId;
   int? toAccountId;
+  late int? investId = widget.edit?.investAccountId; // transferência para/de uma plataforma de investimento
   late String? receipt = widget.edit?.receiptPath;
   late bool transferIn = (widget.edit?.amount ?? -1) > 0; // só ao editar uma transferência
   bool newReceipt = false; // recibo anexado nesta sessão (apagar se não guardar)
@@ -162,7 +163,10 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     final e = widget.edit;
     saved = true;
     if (e == null) {
-      if (type == _Type.transfer) {
+      if (type == _Type.transfer && investId != null) {
+        // entrega a uma plataforma de investimento: um só movimento, associado à plataforma
+        s.addManual(date: date, description: d, amount: -cents, accountId: accountId, isTransfer: true, receiptPath: receipt, investAccountId: investId);
+      } else if (type == _Type.transfer) {
         s.addTransfer(date: date, description: d, amount: cents, fromAccount: accountId, toAccount: toAccountId, receiptPath: receipt);
       } else {
         s.addManual(
@@ -190,6 +194,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
         accountId: accountId,
         isTransfer: type == _Type.transfer,
         receiptPath: receipt,
+        investAccountId: type == _Type.transfer ? investId : null,
       ));
       if (e.receiptPath != null && e.receiptPath != receipt) Receipts.delete(e.receiptPath);
     }
@@ -307,7 +312,30 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             }
             return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [contaTile, const SizedBox(height: 12), reciboTile]);
           }),
-          if (type == _Type.transfer && !isEdit) ...[
+          if (type == _Type.transfer && s.investAccounts.isNotEmpty) ...[
+            const FieldLabel('Plataforma de investimento', optional: true),
+            TileField(
+              icon: Icons.trending_up,
+              text: s.investAccount(investId) == null ? 'Seleciona se for para investir' : '${s.investAccount(investId)!.emoji} ${s.investAccount(investId)!.name}'.trim(),
+              isHint: s.investAccount(investId) == null,
+              onTap: () async {
+                final id = await showModalBottomSheet<int>(
+                  context: context,
+                  useSafeArea: true,
+                  builder: (ctx) => SingleChildScrollView(
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 8), child: Align(alignment: Alignment.centerLeft, child: Text('Plataforma de investimento', style: Theme.of(ctx).textTheme.titleLarge))),
+                      for (final a in s.investAccounts) ListTile(leading: Text(a.emoji.isEmpty ? '🏦' : a.emoji, style: const TextStyle(fontSize: 22)), title: Text(a.name), selected: a.id == investId, onTap: () => Navigator.pop(ctx, a.id)),
+                      if (investId != null) ListTile(leading: const Icon(Icons.close), title: const Text('Nenhuma'), onTap: () => Navigator.pop(ctx, -1)),
+                      const SizedBox(height: 8),
+                    ]),
+                  ),
+                );
+                if (id != null) setState(() => investId = id == -1 ? null : id);
+              },
+            ),
+          ],
+          if (type == _Type.transfer && !isEdit && investId == null) ...[
             const FieldLabel('Para a conta', optional: true),
             TileField(
               icon: Icons.account_balance_outlined,

@@ -51,6 +51,7 @@ class OverviewTab extends StatelessWidget {
           Wrap(spacing: 28, runSpacing: 14, children: [
             Stat('Rendimentos', fmtMoney(a.income), color: Colors.green.shade500, extra: compare ? DeltaChip(cur: a.income, prev: a.prevIncome, upIsBad: false) : null),
             Stat('Saldo', fmtMoney(a.balance), color: a.balance >= 0 ? Colors.green.shade500 : Colors.red.shade400),
+            if (a.invested != 0) Stat('Investido', fmtMoney(a.invested), extra: a.income > 0 ? Text('${fmtPercent(a.invested / a.income)} dos rendimentos', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)) : null),
             if (rate != null)
               Stat('Taxa de poupança', fmtPercent(rate),
                   extra: compare && prevRate != null

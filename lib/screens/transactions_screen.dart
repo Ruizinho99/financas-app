@@ -175,7 +175,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       title: Text(s.displayName(t), maxLines: 2, overflow: TextOverflow.ellipsis),
                       subtitle: Text(
                           [
-                            if (t.isTransfer) 'Transferência' else s.path(t.categoryId),
+                            if (t.investAccountId != null) 'Investimento · ${s.investAccount(t.investAccountId)?.name ?? ''}' else if (t.isTransfer) 'Transferência' else s.path(t.categoryId),
                             if (s.account(t.accountId) != null) s.account(t.accountId)!.name,
                             if (t.note.isNotEmpty) t.note,
                           ].join(' · '),

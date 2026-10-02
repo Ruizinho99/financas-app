@@ -66,10 +66,10 @@ class MoreScreen extends StatelessWidget {
           leading: const Icon(Icons.delete_sweep_outlined, color: Colors.red),
           title: const Text('Apagar tudo, incluindo categorias', style: TextStyle(color: Colors.red)),
           onTap: () async {
-            if (await confirm(context, 'Apagar TUDO: movimentos, categorias, orçamentos, regras e salários? Não é possível desfazer.')) s.wipe(categories: true);
+            if (await confirm(context, 'Apagar TUDO: movimentos, categorias, orçamentos, regras, salários e investimentos? Não é possível desfazer.')) s.wipe(categories: true);
           },
         ),
-        const Padding(padding: EdgeInsets.all(16), child: Text('Todos os dados ficam guardados apenas neste telemóvel. A app não usa internet.', textAlign: TextAlign.center)),
+        const Padding(padding: EdgeInsets.all(16), child: Text('Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).', textAlign: TextAlign.center)),
       ]),
     );
   }

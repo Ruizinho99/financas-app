@@ -174,9 +174,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                   child: FilledButton.icon(
                     style: FilledButton.styleFrom(minimumSize: const Size(0, 48), padding: const EdgeInsets.symmetric(horizontal: 16)),
                     icon: const Icon(Icons.check, size: 20),
-                    label: Flexible(
-                      child: FittedBox(fit: BoxFit.scaleDown, child: Text('Aplicar a $applicable ${applicable == 1 ? 'movimento' : 'movimentos'}')),
-                    ),
+                    label: FittedBox(fit: BoxFit.scaleDown, child: Text('Aplicar a $applicable ${applicable == 1 ? 'movimento' : 'movimentos'}')),
                     onPressed: applicable == 0
                         ? null
                         : () {

@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Só usada quando carregas em "Atualizar preços" na Carteira. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Finanças"
         android:name="${applicationName}"

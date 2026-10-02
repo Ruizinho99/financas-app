@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'db/database.dart';
+import 'invest/invest_screen.dart';
 import 'screens/analysis_screen.dart';
 import 'screens/budget_screen.dart';
 import 'screens/classify_screen.dart';
@@ -90,7 +91,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int index = 0;
-  static const pages = <Widget>[TransactionsScreen(), ClassifyScreen(), BudgetScreen(), AnalysisScreen(), MoreScreen()];
+  static const pages = <Widget>[TransactionsScreen(), ClassifyScreen(), BudgetScreen(), AnalysisScreen(), InvestScreen(), MoreScreen()];
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +99,7 @@ class _HomeShellState extends State<HomeShell> {
     return Scaffold(
       body: IndexedStack(index: index, children: pages),
       bottomNavigationBar: NavigationBar(
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected, // 6 separadores: só o selecionado mostra o nome
         selectedIndex: index,
         onDestinationSelected: (i) => setState(() => index = i),
         destinations: [
@@ -109,6 +111,7 @@ class _HomeShellState extends State<HomeShell> {
           ),
           const NavigationDestination(icon: Icon(Icons.savings_outlined), selectedIcon: Icon(Icons.savings), label: 'Orçamento'),
           const NavigationDestination(icon: Icon(Icons.insights_outlined), selectedIcon: Icon(Icons.insights), label: 'Análise'),
+          const NavigationDestination(icon: Icon(Icons.account_balance_outlined), selectedIcon: Icon(Icons.account_balance), label: 'Carteira'),
           const NavigationDestination(icon: Icon(Icons.more_horiz), label: 'Mais'),
         ],
       ),

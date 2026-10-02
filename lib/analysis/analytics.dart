@@ -187,6 +187,9 @@ class Analytics {
 
   late final int spent = _sum(spends);
   late final int prevSpent = _sum(prevSpends);
+
+  /// Dinheiro enviado para plataformas de investimento no período (entregas menos levantamentos).
+  late final int invested = s.investedIn(period);
   int get count => spends.length;
   int get avgTicket => spends.isEmpty ? 0 : (spent / spends.length).round();
   late final int mandatoryTotal = _sum(spends.where((e) => e.mandatory));

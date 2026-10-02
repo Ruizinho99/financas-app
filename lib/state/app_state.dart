@@ -634,6 +634,7 @@ class AppState extends ChangeNotifier {
     int? accountId,
     bool isTransfer = false,
     String? receiptPath,
+    int? investAccountId,
   }) {
     final key = merchantKey(description);
     var cid = isTransfer ? null : categoryId;
@@ -648,7 +649,8 @@ class AppState extends ChangeNotifier {
         merchantKey: key,
         accountId: accountId,
         isTransfer: isTransfer,
-        receiptPath: receiptPath);
+        receiptPath: receiptPath,
+        investAccountId: investAccountId);
     reload();
   }
 
