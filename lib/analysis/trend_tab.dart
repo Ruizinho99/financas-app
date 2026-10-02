@@ -29,7 +29,8 @@ class _TrendTabState extends State<TrendTab> {
     if (pts.every((p) => p.spent == 0 && p.income == 0)) {
       return const Center(child: Padding(padding: EdgeInsets.all(32), child: Text('Ainda não há dados suficientes para mostrar a evolução.', textAlign: TextAlign.center)));
     }
-    final withSpend = pts.where((p) => p.spent > 0).toList();
+    // médias e "melhor/pior mês" só com meses completos e com despesas registadas
+    final withSpend = [for (var i = 0; i < pts.length; i++) if (pts[i].spent > 0 && !(a.ongoing && i == pts.length - 1)) pts[i]];
     final avg = withSpend.isEmpty ? 0 : (withSpend.fold(0, (x, p) => x + p.spent) / withSpend.length).round();
     final best = withSpend.isEmpty ? null : withSpend.reduce((x, y) => x.spent <= y.spent ? x : y);
     final worst = withSpend.isEmpty ? null : withSpend.reduce((x, y) => x.spent >= y.spent ? x : y);
@@ -134,8 +135,8 @@ class _TrendTabState extends State<TrendTab> {
             ),
             lineTouchData: LineTouchData(touchTooltipData: LineTouchTooltipData(getTooltipItems: (spots) => [for (final sp in spots) LineTooltipItem(fmtMoney(sp.y.round()), TextStyle(color: sp.bar.color, fontWeight: FontWeight.w700, fontSize: 12))])),
             lineBarsData: [
-              LineChartBarData(spots: [for (var i = 0; i < pts.length; i++) FlSpot(i.toDouble(), pts[i].income.toDouble())], isCurved: true, color: Colors.green.shade500, barWidth: 3, dotData: const FlDotData(show: false)),
-              LineChartBarData(spots: [for (var i = 0; i < pts.length; i++) FlSpot(i.toDouble(), pts[i].spent.toDouble())], isCurved: true, color: Colors.red.shade400, barWidth: 3, dotData: const FlDotData(show: false)),
+              LineChartBarData(spots: [for (var i = 0; i < pts.length; i++) FlSpot(i.toDouble(), pts[i].income.toDouble())], isCurved: false, color: Colors.green.shade500, barWidth: 3, dotData: const FlDotData(show: false)),
+              LineChartBarData(spots: [for (var i = 0; i < pts.length; i++) FlSpot(i.toDouble(), pts[i].spent.toDouble())], isCurved: false, color: Colors.red.shade400, barWidth: 3, dotData: const FlDotData(show: false)),
             ],
           )),
         ),
@@ -155,9 +156,10 @@ class _TrendTabState extends State<TrendTab> {
               padding: const EdgeInsets.symmetric(vertical: 5),
               child: Row(children: [
                 Expanded(flex: 3, child: Text(fmtMonthShort(p.month))),
-                Expanded(flex: 3, child: Text(fmtMoney(p.spent), textAlign: TextAlign.right)),
-                Expanded(flex: 3, child: Text(fmtMoney(p.balance), textAlign: TextAlign.right, style: TextStyle(color: p.balance >= 0 ? Colors.green.shade500 : Colors.red.shade400, fontWeight: FontWeight.w600))),
-                Expanded(flex: 2, child: Text(p.savingsRate == null ? '–' : fmtPercent(p.savingsRate!), textAlign: TextAlign.right)),
+                // meses sem despesas registadas não têm saldo nem taxa de poupança com significado
+                Expanded(flex: 3, child: Text(p.spent == 0 ? '–' : fmtMoney(p.spent), textAlign: TextAlign.right)),
+                Expanded(flex: 3, child: Text(p.spent == 0 ? '–' : fmtMoney(p.balance), textAlign: TextAlign.right, style: TextStyle(color: p.balance >= 0 ? Colors.green.shade500 : Colors.red.shade400, fontWeight: FontWeight.w600))),
+                Expanded(flex: 2, child: Text(p.spent == 0 || p.savingsRate == null ? '–' : fmtPercent(p.savingsRate!), textAlign: TextAlign.right)),
               ]),
             ),
         ]),
