@@ -4,6 +4,7 @@ import '../db/database.dart';
 import '../import/parsers.dart';
 import '../models.dart';
 import '../util/format.dart';
+import '../util/receipts.dart';
 
 /// Período de análise: um mês, um ano, o ano até hoje (YTD) ou um intervalo de datas.
 class Period {
@@ -73,6 +74,7 @@ class AppState extends ChangeNotifier {
   List<Txn> transactions = [];
   List<Rule> rules = [];
   List<Grupo> groups = [];
+  List<Conta> accounts = [];
   List<MandatoryRange> mandatoryRanges = [];
   Map<String, int> salaries = {};
   int defaultSalary = 0;
@@ -82,6 +84,7 @@ class AppState extends ChangeNotifier {
     transactions = db.transactions();
     rules = db.rules();
     groups = db.ruleGroups();
+    accounts = db.accounts();
     mandatoryRanges = db.mandatoryRanges();
     salaries = db.salaries();
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
@@ -163,7 +166,7 @@ class AppState extends ChangeNotifier {
     final mand = <int, int>{}, opt = <int, int>{};
     var unclassified = 0;
     for (final t in txnsIn(p)) {
-      if (t.amount >= 0) continue;
+      if (t.amount >= 0 || t.isTransfer) continue;
       final c = cat(t.categoryId);
       if (c == null) {
         unclassified += -t.amount;
@@ -239,9 +242,33 @@ class AppState extends ChangeNotifier {
   }
 
   /// Cartões da aba Classificar: um por título, ou um por grupo quando o título pertence a um.
-  List<TxnGroup> unclassifiedGroups() => _cards(transactions.where((t) => t.categoryId == null));
+  List<TxnGroup> unclassifiedGroups() => _cards(transactions.where((t) => t.categoryId == null && !t.isTransfer));
 
-  List<TxnGroup> allGroups() => _cards(transactions);
+  List<TxnGroup> allGroups() => _cards(transactions.where((t) => !t.isTransfer));
+
+  Conta? account(int? id) {
+    if (id == null) return null;
+    for (final a in accounts) {
+      if (a.id == id) return a;
+    }
+    return null;
+  }
+
+  int addAccount(String name, {String emoji = ''}) {
+    final id = db.saveAccount(name: name.trim(), emoji: emoji);
+    reload();
+    return id;
+  }
+
+  void updateAccount(Conta a) {
+    db.saveAccount(id: a.id, name: a.name.trim(), emoji: a.emoji);
+    reload();
+  }
+
+  void deleteAccount(int id) {
+    db.deleteAccount(id);
+    reload();
+  }
 
   Grupo? groupById(int? id) {
     if (id == null) return null;
@@ -277,6 +304,7 @@ class AppState extends ChangeNotifier {
   Map<int, int> totalsByCategory(Period p) {
     final own = <int, int>{};
     for (final t in txnsIn(p)) {
+      if (t.isTransfer) continue;
       final id = t.categoryId;
       if (id == null) continue;
       final c = cat(id);
@@ -336,13 +364,45 @@ class AppState extends ChangeNotifier {
     required int amount,
     int? categoryId,
     String note = '',
+    int? accountId,
+    bool isTransfer = false,
+    String? receiptPath,
   }) {
     final key = merchantKey(description);
-    var cid = categoryId;
-    final r = ruleFor(key);
-    cid ??= r?.categoryId;
+    var cid = isTransfer ? null : categoryId;
+    if (!isTransfer) cid ??= ruleFor(key)?.categoryId;
     db.insertTransaction(
-        date: date, description: description, amount: amount, categoryId: cid, note: note, source: 'manual', merchantKey: key);
+        date: date,
+        description: description,
+        amount: amount,
+        categoryId: cid,
+        note: note,
+        source: 'manual',
+        merchantKey: key,
+        accountId: accountId,
+        isTransfer: isTransfer,
+        receiptPath: receiptPath);
+    reload();
+  }
+
+  /// Transferência entre contas: saída na origem e, se houver destino, entrada no destino.
+  void addTransfer({
+    required DateTime date,
+    required String description,
+    required int amount, // valor positivo
+    int? fromAccount,
+    int? toAccount,
+    String? receiptPath,
+  }) {
+    final key = merchantKey(description);
+    db.insertTransaction(
+        date: date, description: description, amount: -amount.abs(), source: 'manual', merchantKey: key,
+        accountId: fromAccount, isTransfer: true, receiptPath: receiptPath);
+    if (toAccount != null) {
+      db.insertTransaction(
+          date: date, description: description, amount: amount.abs(), source: 'manual', merchantKey: key,
+          accountId: toAccount, isTransfer: true);
+    }
     reload();
   }
 
@@ -352,7 +412,13 @@ class AppState extends ChangeNotifier {
   }
 
   void deleteTxns(List<int> ids) {
+    final files = db.receiptsOf(ids);
     db.deleteTransactions(ids);
+    // só apaga o ficheiro se mais nenhum movimento o usar
+    final still = {for (final t in db.transactions()) if (t.receiptPath != null) t.receiptPath!};
+    for (final f in files) {
+      if (!still.contains(f)) Receipts.delete(f);
+    }
     reload();
   }
 
@@ -402,7 +468,7 @@ class AppState extends ChangeNotifier {
   /// Aplica todas as regras a movimentos sem categoria. Devolve quantos foram classificados.
   int applyRules() {
     var n = 0;
-    for (final t in transactions.where((t) => t.categoryId == null)) {
+    for (final t in transactions.where((t) => t.categoryId == null && !t.isTransfer)) {
       final r = ruleFor(t.merchantKey);
       if (r != null && r.categoryId != null) {
         db.setCategory([t.id], r.categoryId);
@@ -468,7 +534,8 @@ class AppState extends ChangeNotifier {
   (int, int) importRows(String filename, String source, List<ParsedRow> rows,
       {Map<String, int?> categories = const {},
       Set<String> remember = const {},
-      Map<String, String> names = const {}}) {
+      Map<String, String> names = const {},
+      int? accountId}) {
     // Regras: categoria memorizada e/ou nome amigável. Aplicam-se a esta e às próximas importações.
     for (final k in {...remember, ...names.keys}) {
       // se o nome escrito é o de um grupo existente, o título junta-se a esse grupo
@@ -511,6 +578,7 @@ class AppState extends ChangeNotifier {
         source: source,
         merchantKey: key,
         importId: importId,
+        accountId: accountId,
       );
       added++;
     }
@@ -535,6 +603,9 @@ class AppState extends ChangeNotifier {
   }
 
   void wipe({bool categories = false}) {
+    for (final t in transactions) {
+      Receipts.delete(t.receiptPath);
+    }
     db.wipeAll();
     if (categories) db.wipeCategories();
     reload();

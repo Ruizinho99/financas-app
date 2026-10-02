@@ -3,6 +3,7 @@ import 'package:financas/import/parsers.dart';
 import 'package:financas/models.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:financas/util/format.dart';
+import 'package:financas/widgets/form_kit.dart';
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 
@@ -204,5 +205,36 @@ RENDA JANEIRO 500,00 1.454,70
     expect(s.groups, isEmpty);
     expect(s.ruleFor(merchantKey(t2))!.label, 'Restaurante Arminda');
     expect(s.ruleFor(merchantKey(t2))!.groupId, isNull);
+  });
+
+  test('contas, transferências (fora da análise) e recibos', () {
+    final s = AppState(Db.memory());
+    final comida = s.addCategory(const Categoria(id: 0, name: 'Comida'));
+    final ordem = s.addAccount('Ordem', emoji: '🏦');
+    final poup = s.addAccount('Poupança');
+    s.addManual(date: DateTime(2026, 4, 2), description: 'Compra', amount: -2000, categoryId: comida, accountId: ordem, receiptPath: 'r.jpg');
+    s.addTransfer(date: DateTime(2026, 4, 3), description: 'Para poupança', amount: 50000, fromAccount: ordem, toAccount: poup);
+    expect(s.transactions.length, 3);
+    final out = s.transactions.firstWhere((t) => t.accountId == ordem && t.isTransfer);
+    final into = s.transactions.firstWhere((t) => t.accountId == poup);
+    expect(out.amount, -50000);
+    expect(into.amount, 50000);
+    expect(into.isTransfer, isTrue);
+    expect(s.transactions.firstWhere((t) => !t.isTransfer).receiptPath, 'r.jpg');
+    // transferências não contam como despesa, receita nem "por classificar"
+    final p = Period.month(DateTime(2026, 4));
+    expect(s.totalsByCategory(p)[comida], 2000);
+    final split = s.mandatorySplit(p);
+    expect(split.optional.values.fold(0, (a, v) => a + v), 2000);
+    expect(split.unclassified, 0);
+    expect(s.unclassifiedGroups(), isEmpty);
+    // apagar a conta deixa os movimentos sem conta
+    s.deleteAccount(ordem);
+    expect(s.transactions.where((t) => t.accountId == ordem), isEmpty);
+    expect(s.transactions.length, 3);
+    // expressões da calculadora
+    expect(evalExpression('12,5+3*2'), 18.5);
+    expect(evalExpression('(1+2)*3-4/2'), 7);
+    expect(evalExpression('2+'), isNull);
   });
 }

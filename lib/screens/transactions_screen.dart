@@ -6,7 +6,7 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import 'import_screen.dart';
 
-enum _Filter { all, uncategorized, income, expense }
+enum _Filter { all, uncategorized, income, expense, transfers }
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -18,6 +18,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   String q = '';
   _Filter filter = _Filter.all;
   DateTime? month; // null = todos
+  int? accountFilter; // null = todas as contas
   final selected = <int>{};
   bool searching = false;
 
@@ -27,25 +28,29 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     final ql = q.toLowerCase();
     final list = s.transactions.where((t) {
       if (month != null && (t.date.year != month!.year || t.date.month != month!.month)) return false;
+      if (accountFilter != null && t.accountId != accountFilter) return false;
       switch (filter) {
         case _Filter.uncategorized:
-          if (t.categoryId != null) return false;
+          if (t.categoryId != null || t.isTransfer) return false;
         case _Filter.income:
-          if (t.amount <= 0) return false;
+          if (t.amount <= 0 || t.isTransfer) return false;
         case _Filter.expense:
-          if (t.amount >= 0) return false;
+          if (t.amount >= 0 || t.isTransfer) return false;
+        case _Filter.transfers:
+          if (!t.isTransfer) return false;
         case _Filter.all:
       }
       if (ql.isEmpty) return true;
       return s.displayName(t).toLowerCase().contains(ql) ||
           t.description.toLowerCase().contains(ql) ||
           t.note.toLowerCase().contains(ql) ||
-          s.path(t.categoryId).toLowerCase().contains(ql);
+          s.path(t.categoryId).toLowerCase().contains(ql) ||
+          (s.account(t.accountId)?.name.toLowerCase().contains(ql) ?? false);
     }).toList();
     final months = {for (final t in s.transactions) DateTime(t.date.year, t.date.month)}.toList()
       ..sort((a, b) => b.compareTo(a));
-    final inc = list.where((t) => t.amount > 0).fold(0, (a, t) => a + t.amount);
-    final exp = list.where((t) => t.amount < 0).fold(0, (a, t) => a + t.amount);
+    final inc = list.where((t) => t.amount > 0 && !t.isTransfer).fold(0, (a, t) => a + t.amount);
+    final exp = list.where((t) => t.amount < 0 && !t.isTransfer).fold(0, (a, t) => a + t.amount);
 
     return Scaffold(
       appBar: selected.isNotEmpty
@@ -108,15 +113,33 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         SizedBox(
           height: 52,
           child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), children: [
-            for (final (f, label) in [
-              (_Filter.all, 'Todos'),
-              (_Filter.uncategorized, 'Sem categoria'),
-              (_Filter.expense, 'Despesas'),
-              (_Filter.income, 'Receitas'),
+            for (final (f, label, icon) in [
+              (_Filter.all, 'Todos', Icons.all_inclusive),
+              (_Filter.expense, 'Despesas', Icons.arrow_downward),
+              (_Filter.uncategorized, 'Sem categoria', Icons.format_list_bulleted),
+              (_Filter.income, 'Receitas', Icons.arrow_upward),
+              (_Filter.transfers, 'Transferências', Icons.swap_horiz),
             ])
               Padding(
                 padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(label: Text(label), selected: filter == f, onSelected: (_) => setState(() => filter = f)),
+                child: ChoiceChip(
+                  avatar: Icon(filter == f ? Icons.check : icon, size: 18),
+                  label: Text(label),
+                  selected: filter == f,
+                  onSelected: (_) => setState(() => filter = f),
+                ),
+              ),
+            if (s.accounts.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: PopupMenuButton<int>(
+                  onSelected: (v) => setState(() => accountFilter = v == -1 ? null : v),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: -1, child: Text('Todas as contas')),
+                    for (final a in s.accounts) PopupMenuItem(value: a.id, child: Text('${a.emoji} ${a.name}'.trim())),
+                  ],
+                  child: Chip(avatar: const Icon(Icons.account_balance_wallet_outlined, size: 18), label: Text(accountFilter == null ? 'Todas as contas' : (s.account(accountFilter)?.name ?? 'Conta'))),
+                ),
               ),
             PopupMenuButton<DateTime?>(
               onSelected: (v) => setState(() => month = v),
@@ -148,10 +171,20 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     final c = s.cat(t.categoryId);
                     final tile = ListTile(
                       selected: selected.contains(t.id),
-                      leading: c == null ? const Icon(Icons.help_outline, color: Colors.grey) : CatBadge(c),
+                      leading: t.isTransfer ? const Icon(Icons.swap_horiz) : (c == null ? const Icon(Icons.help_outline, color: Colors.grey) : CatBadge(c)),
                       title: Text(s.displayName(t), maxLines: 2, overflow: TextOverflow.ellipsis),
-                      subtitle: Text([s.path(t.categoryId), if (t.note.isNotEmpty) t.note].join(' · '), maxLines: 2, overflow: TextOverflow.ellipsis),
-                      trailing: MoneyText(t.amount),
+                      subtitle: Text(
+                          [
+                            if (t.isTransfer) 'Transferência' else s.path(t.categoryId),
+                            if (s.account(t.accountId) != null) s.account(t.accountId)!.name,
+                            if (t.note.isNotEmpty) t.note,
+                          ].join(' · '),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                        if (t.receiptPath != null) const Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.attach_file, size: 16)),
+                        MoneyText(t.amount, colored: !t.isTransfer),
+                      ]),
                       onTap: () => selected.isNotEmpty
                           ? setState(() => selected.contains(t.id) ? selected.remove(t.id) : selected.add(t.id))
                           : showTxnEditor(context, edit: t),

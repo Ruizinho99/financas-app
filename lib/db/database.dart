@@ -138,6 +138,26 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 5');
     }
+    if (v < 6) {
+      // v6: contas, transferências e recibos.
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS accounts(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          emoji TEXT NOT NULL DEFAULT ''
+        );
+      ''');
+      for (final sql in [
+        'ALTER TABLE transactions ADD COLUMN account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL',
+        'ALTER TABLE transactions ADD COLUMN is_transfer INTEGER NOT NULL DEFAULT 0',
+        'ALTER TABLE transactions ADD COLUMN receipt_path TEXT',
+      ]) {
+        try {
+          _db.execute(sql);
+        } catch (_) {}
+      }
+      _db.execute('PRAGMA user_version = 6');
+    }
   }
 
   // ---------- Categorias ----------
@@ -205,6 +225,9 @@ class Db {
         source: r['source'] as String,
         merchantKey: r['merchant_key'] as String,
         importId: r['import_id'] as int?,
+        accountId: r['account_id'] as int?,
+        isTransfer: r['is_transfer'] == 1,
+        receiptPath: r['receipt_path'] as String?,
       );
 
   List<Txn> transactions() =>
@@ -223,11 +246,14 @@ class Db {
     String source = 'manual',
     required String merchantKey,
     int? importId,
+    int? accountId,
+    bool isTransfer = false,
+    String? receiptPath,
   }) {
     _db.execute(
-        'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash) VALUES(?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash,account_id,is_transfer,receipt_path) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [isoDate(date), description, amount, balance, categoryId, note, source, merchantKey, importId,
-          hashOf(date, description, amount, balance)]);
+          hashOf(date, description, amount, balance), accountId, isTransfer ? 1 : 0, receiptPath]);
     return _db.lastInsertRowId;
   }
 
@@ -235,9 +261,39 @@ class Db {
       _db.select('SELECT 1 FROM transactions WHERE hash=? LIMIT 1', [h]).isNotEmpty;
 
   void updateTransaction(Txn t, {required String merchantKey}) => _db.execute(
-      'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=? WHERE id=?',
+      'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=? WHERE id=?',
       [isoDate(t.date), t.description, t.amount, t.balance, t.categoryId, t.note, merchantKey,
-        hashOf(t.date, t.description, t.amount, t.balance), t.id]);
+        hashOf(t.date, t.description, t.amount, t.balance), t.accountId, t.isTransfer ? 1 : 0, t.receiptPath, t.id]);
+
+  /// Nomes dos ficheiros de recibo dos movimentos indicados.
+  List<String> receiptsOf(List<int> ids) => [
+        for (final id in ids)
+          for (final r in _db.select('SELECT receipt_path FROM transactions WHERE id=? AND receipt_path IS NOT NULL', [id]))
+            r['receipt_path'] as String
+      ];
+
+  // ---------- Contas ----------
+  List<Conta> accounts() => _db
+      .select('SELECT * FROM accounts ORDER BY name COLLATE NOCASE')
+      .map((r) => Conta(id: r['id'] as int, name: r['name'] as String, emoji: r['emoji'] as String))
+      .toList();
+
+  int saveAccount({int? id, required String name, String emoji = ''}) {
+    if (id == null) {
+      _db.execute('INSERT INTO accounts(name,emoji) VALUES(?,?)', [name, emoji]);
+      return _db.lastInsertRowId;
+    }
+    _db.execute('UPDATE accounts SET name=?,emoji=? WHERE id=?', [name, emoji, id]);
+    return id;
+  }
+
+  void deleteAccount(int id) => _db.execute('DELETE FROM accounts WHERE id=?', [id]);
+
+  void setAccount(List<int> ids, int? accountId) {
+    for (final id in ids) {
+      _db.execute('UPDATE transactions SET account_id=? WHERE id=?', [accountId, id]);
+    }
+  }
 
   void deleteTransactions(List<int> ids) {
     for (final id in ids) {
@@ -382,11 +438,11 @@ class Db {
       _db.execute('INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)', [key, value]);
 
   void wipeAll() {
-    _db.execute('DELETE FROM transactions; DELETE FROM rules; DELETE FROM imports; DELETE FROM salaries;');
+    _db.execute('DELETE FROM transactions; DELETE FROM rules; DELETE FROM rule_groups; DELETE FROM imports; DELETE FROM salaries;');
   }
 
   void wipeCategories() {
-    _db.execute('DELETE FROM categories');
+    _db.execute('DELETE FROM categories; DELETE FROM accounts;');
   }
 
   void deleteSetting(String key) => _db.execute('DELETE FROM settings WHERE key=?', [key]);

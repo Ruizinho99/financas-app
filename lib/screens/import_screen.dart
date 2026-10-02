@@ -7,6 +7,8 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import '../widgets/form_kit.dart';
+import 'accounts_screen.dart';
 
 /// Importação de extratos PDF, CSV e Excel (tudo processado no telemóvel).
 class ImportScreen extends StatefulWidget {
@@ -30,6 +32,7 @@ class _ImportScreenState extends State<ImportScreen> {
   final cats = <String, int?>{}; // chave do grupo -> categoria escolhida
   final noRemember = <String>{};
   final names = <String, String>{}; // chave do grupo -> nome amigável
+  int? accountId; // conta de onde vem o extrato
 
   Future<void> pick() async {
     setState(() {
@@ -84,6 +87,7 @@ class _ImportScreenState extends State<ImportScreen> {
   @override
   Widget build(BuildContext context) {
     final fr = finalRows;
+    final st0 = context.watch<AppState>();
     final income = fr.where((r) => r.amount > 0).fold(0, (s, r) => s + r.amount);
     final expense = fr.where((r) => r.amount < 0).fold(0, (s, r) => s + r.amount);
     return Scaffold(
@@ -109,6 +113,20 @@ class _ImportScreenState extends State<ImportScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Card(color: Theme.of(context).colorScheme.errorContainer, child: Padding(padding: const EdgeInsets.all(12), child: Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)))),
+          ),
+        if (filename != null && rows.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TileField(
+              icon: Icons.account_balance_wallet_outlined,
+              title: 'Conta deste extrato',
+              text: st0.account(accountId) == null ? 'Seleciona uma conta (opcional)' : '${st0.account(accountId)!.emoji} ${st0.account(accountId)!.name}'.trim(),
+              isHint: st0.account(accountId) == null,
+              onTap: () async {
+                final id = await pickAccount(context, selected: accountId);
+                if (id != null) setState(() => accountId = id == -1 ? null : id);
+              },
+            ),
           ),
         if (table != null) _mappingCard(),
         if (filename != null && source == 'pdf' && rows.isNotEmpty) _pdfOptions(),
@@ -149,7 +167,7 @@ class _ImportScreenState extends State<ImportScreen> {
                           final st = context.read<AppState>();
                           final chosen = Map<String, int?>.of(cats);
                           final (added, dup) = st.importRows(filename!, source, fr,
-                              categories: chosen, names: {for (final e in names.entries) if (!noRemember.contains(e.key)) e.key: e.value}, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
+                              accountId: accountId, categories: chosen, names: {for (final e in names.entries) if (!noRemember.contains(e.key)) e.key: e.value}, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
                           final unclassified = context.read<AppState>().unclassifiedGroups().length;
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -221,7 +239,6 @@ class _ImportScreenState extends State<ImportScreen> {
                 labelText: 'Nome ou grupo (opcional)',
                 hintText: 'Ex.: Ginásio, Restaurante Arminda…',
                 prefixIcon: const Icon(Icons.label_outline),
-                border: const OutlineInputBorder(),
                 isDense: true,
                 helperText: byName != null ? 'Junta-se ao grupo “${byName.name}” (${st.rulesOfGroup(byName.id).length} títulos)' : null,
               ),
@@ -290,7 +307,7 @@ class _ImportScreenState extends State<ImportScreen> {
           padding: const EdgeInsets.only(bottom: 8),
           child: DropdownButtonFormField<int?>(
             initialValue: value,
-            decoration: InputDecoration(labelText: title, border: const OutlineInputBorder(), isDense: true),
+            decoration: InputDecoration(labelText: title, isDense: true),
             items: [
               if (optional) const DropdownMenuItem(value: null, child: Text('— não usar —')),
               for (var c = 0; c < cols; c++)

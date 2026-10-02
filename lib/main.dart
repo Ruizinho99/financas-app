@@ -10,10 +10,12 @@ import 'screens/classify_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'state/app_state.dart';
+import 'util/receipts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT');
+  await Receipts.init();
   final db = await Db.open();
   runApp(ChangeNotifierProvider(create: (_) => AppState(db), child: const FinancasApp()));
 }
@@ -27,11 +29,36 @@ class FinancasApp extends StatelessWidget {
       var scheme = ColorScheme.fromSeed(seedColor: Color(st.seedColor), brightness: b);
       final black = b == Brightness.dark && st.amoled;
       if (black) scheme = scheme.copyWith(surface: Colors.black, surfaceContainerLowest: Colors.black, surfaceContainerLow: const Color(0xFF0A0A0A), surfaceContainer: const Color(0xFF101010));
+      final outline = OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: scheme.outlineVariant));
       return ThemeData(
         useMaterial3: true,
         colorScheme: scheme,
         scaffoldBackgroundColor: black ? Colors.black : null,
-        cardTheme: const CardThemeData(margin: EdgeInsets.symmetric(vertical: 6)),
+        cardTheme: CardThemeData(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: outline,
+          enabledBorder: outline,
+          disabledBorder: outline.copyWith(borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
+          focusedBorder: outline.copyWith(borderSide: BorderSide(color: scheme.primary, width: 2)),
+          errorBorder: outline.copyWith(borderSide: BorderSide(color: scheme.error)),
+          focusedErrorBorder: outline.copyWith(borderSide: BorderSide(color: scheme.error, width: 2)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        ),
+        chipTheme: ChipThemeData(
+          shape: const StadiumBorder(),
+          side: BorderSide(color: scheme.outlineVariant),
+          selectedColor: scheme.primaryContainer,
+          showCheckmark: false,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        ),
+        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(minimumSize: const Size(64, 52), shape: const StadiumBorder(), textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+        outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(minimumSize: const Size(64, 48), shape: const StadiumBorder())),
+        dialogTheme: DialogThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
+        bottomSheetTheme: const BottomSheetThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28)))),
+        appBarTheme: const AppBarTheme(centerTitle: false),
       );
     }
 
@@ -65,7 +92,7 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    final pending = context.select<AppState, int>((s) => s.transactions.where((t) => t.categoryId == null).length);
+    final pending = context.select<AppState, int>((s) => s.transactions.where((t) => t.categoryId == null && !t.isTransfer).length);
     return Scaffold(
       body: IndexedStack(index: index, children: pages),
       bottomNavigationBar: NavigationBar(

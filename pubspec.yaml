@@ -46,6 +46,8 @@ dependencies:
   sqlite3: ^3.7.0
   flutter_localizations:
     sdk: flutter
+  image_picker: ^1.2.3
+  open_filex: ^4.7.0
 
 dev_dependencies:
   flutter_test:

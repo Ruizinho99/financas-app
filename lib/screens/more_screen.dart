@@ -10,6 +10,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import 'accounts_screen.dart';
 import 'appearance_screen.dart';
 import 'budget_screen.dart' show showBudgetEditor;
 import 'classify_screen.dart';
@@ -26,6 +27,7 @@ class MoreScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Mais')),
       body: ListView(children: [
         ListTile(leading: const Icon(Icons.palette_outlined), title: const Text('Aparência'), subtitle: const Text('Modo escuro e cores'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppearanceScreen()))),
+        ListTile(leading: const Icon(Icons.account_balance_wallet_outlined), title: const Text('Contas'), subtitle: Text('${s.accounts.length} contas'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountsScreen()))),
         ListTile(leading: const Icon(Icons.category_outlined), title: const Text('Categorias e subcategorias'), subtitle: Text('${s.categories.length} categorias'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()))),
         ListTile(leading: const Icon(Icons.hub_outlined), title: const Text('Grupos de títulos'), subtitle: Text('${s.groups.length} grupos'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupsScreen()))),
         ListTile(leading: const Icon(Icons.rule), title: const Text('Regras memorizadas'), subtitle: Text('${s.rules.length} regras'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RulesScreen()))),
@@ -39,7 +41,7 @@ class MoreScreen extends StatelessWidget {
             final b = StringBuffer('﻿data;descricao;montante;categoria;nota\n');
             for (final t in s.transactions.reversed) {
               String q(String v) => '"${v.replaceAll('"', '""')}"';
-              b.writeln('${isoDate(t.date)};${q(t.description)};${(t.amount / 100).toStringAsFixed(2)};${q(s.path(t.categoryId))};${q(t.note)}');
+              b.writeln('${isoDate(t.date)};${q(t.description)};${(t.amount / 100).toStringAsFixed(2)};${t.isTransfer ? 'transferencia' : (t.amount < 0 ? 'despesa' : 'receita')};${q(t.isTransfer ? '' : s.path(t.categoryId))};${q(s.account(t.accountId)?.name ?? '')};${q(t.note)}');
             }
             await FilePicker.saveFile(fileName: 'movimentos.csv', bytes: Uint8List.fromList(utf8.encode(b.toString())), mimeType: 'text/csv');
           },

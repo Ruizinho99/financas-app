@@ -43,6 +43,9 @@ class Txn {
   final String source; // pdf | csv | xlsx | manual
   final String merchantKey;
   final int? importId;
+  final int? accountId;
+  final bool isTransfer; // transferência entre contas: fora das despesas/receitas
+  final String? receiptPath; // nome do ficheiro do recibo (na pasta de recibos da app)
 
   const Txn({
     required this.id,
@@ -55,7 +58,18 @@ class Txn {
     this.source = 'manual',
     required this.merchantKey,
     this.importId,
+    this.accountId,
+    this.isTransfer = false,
+    this.receiptPath,
   });
+}
+
+/// Conta bancária / carteira onde o movimento aconteceu.
+class Conta {
+  final int id;
+  final String name;
+  final String emoji;
+  const Conta({required this.id, required this.name, this.emoji = ''});
 }
 
 class Rule {

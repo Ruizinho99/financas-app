@@ -60,7 +60,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
           child: TextField(
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Pesquisar grupos', isDense: true, border: OutlineInputBorder()),
+            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Pesquisar grupos', isDense: true),
             onChanged: (v) => setState(() => q = v),
           ),
         ),

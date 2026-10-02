@@ -136,11 +136,11 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
         onPressed: () => _addTitles(context, s, g),
       ),
       body: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 100), children: [
-        TextField(controller: name, decoration: const InputDecoration(labelText: 'Nome do grupo', border: OutlineInputBorder())),
+        TextField(controller: name, decoration: const InputDecoration(labelText: 'Nome do grupo')),
         const SizedBox(height: 12),
         CategorySelector(value: category, onChanged: (v) => setState(() => category = v)),
         const SizedBox(height: 12),
-        TextField(controller: note, decoration: const InputDecoration(labelText: 'Descrição (opcional)', border: OutlineInputBorder()), maxLines: 2),
+        TextField(controller: note, decoration: const InputDecoration(labelText: 'Descrição (opcional)'), maxLines: 2),
         const SizedBox(height: 12),
         Align(alignment: Alignment.centerRight, child: FilledButton.icon(onPressed: save, icon: const Icon(Icons.check), label: const Text('Guardar'))),
         const Divider(height: 32),
@@ -183,7 +183,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
               width: double.maxFinite,
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 TextField(
-                  decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Pesquisar títulos', isDense: true, border: OutlineInputBorder()),
+                  decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Pesquisar títulos', isDense: true),
                   onChanged: (v) => set(() => q = v),
                 ),
                 const SizedBox(height: 8),
@@ -209,7 +209,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                 TextField(
                   controller: custom,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: 'Ou: qualquer título que contenha…', hintText: 'ARMINDA', isDense: true, border: OutlineInputBorder()),
+                  decoration: const InputDecoration(labelText: 'Ou: qualquer título que contenha…', hintText: 'ARMINDA', isDense: true),
                 ),
               ]),
             ),
@@ -253,7 +253,7 @@ Future<void> joinGroupDialog(BuildContext context, Set<String> keys, {int? sugge
                 DropdownButtonFormField<int>(
                   initialValue: existing,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Grupo existente', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(labelText: 'Grupo existente'),
                   items: [for (final g in s.groups) DropdownMenuItem(value: g.id, child: Text(g.name, overflow: TextOverflow.ellipsis))],
                   onChanged: (v) => set(() {
                     existing = v;
@@ -267,7 +267,6 @@ Future<void> joinGroupDialog(BuildContext context, Set<String> keys, {int? sugge
                 decoration: InputDecoration(
                   labelText: 'Novo grupo',
                   hintText: 'Ex.: Restaurante Arminda',
-                  border: const OutlineInputBorder(),
                   helperText: match != null ? 'Já existe: vai juntar-se a “${match.name}”' : null,
                 ),
                 onChanged: (_) => set(() => existing = null),

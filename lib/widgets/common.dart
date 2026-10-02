@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../models.dart';
 import '../state/app_state.dart';
+import '../screens/txn_form_screen.dart';
 import '../util/format.dart';
+import 'form_kit.dart';
 
 const palette = <int>[
   0xFF5C6BC0, 0xFF66BB6A, 0xFF26A69A, 0xFFEF5350, 0xFF8D6E63, 0xFFFFA726,
@@ -79,8 +81,9 @@ class CategorySelector extends StatefulWidget {
   final int? value;
   final ValueChanged<int?> onChanged;
   final bool compact; // lado a lado, para listas
+  final bool form; // rótulos por cima e ícones, como nos formulários
   final bool? income; // filtra rendimentos (true) ou despesas (false)
-  const CategorySelector({super.key, required this.value, required this.onChanged, this.compact = false, this.income});
+  const CategorySelector({super.key, required this.value, required this.onChanged, this.compact = false, this.form = false, this.income});
 
   @override
   State<CategorySelector> createState() => _CategorySelectorState();
@@ -93,6 +96,7 @@ class _CategorySelectorState extends State<CategorySelector> {
   int? get value => widget.value;
   ValueChanged<int?> get onChanged => widget.onChanged;
   bool get compact => widget.compact;
+  bool get form => widget.form;
   bool? get income => widget.income;
 
   @override
@@ -122,7 +126,9 @@ class _CategorySelectorState extends State<CategorySelector> {
       key: ValueKey('cat-$rootId-${roots.length}-$_tick'),
       initialValue: rootId,
       isExpanded: true,
-      decoration: InputDecoration(labelText: 'Categoria', border: const OutlineInputBorder(), isDense: compact),
+      decoration: form
+          ? const InputDecoration(hintText: 'Seleciona uma categoria', prefixIcon: Icon(Icons.sell_outlined))
+          : InputDecoration(labelText: 'Categoria', isDense: compact),
       items: [
         for (final r in roots) DropdownMenuItem(value: r.id, child: Text('${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}', overflow: TextOverflow.ellipsis)),
         const DropdownMenuItem(value: _newItem, child: Text('➕  Nova categoria…')),
@@ -143,12 +149,9 @@ class _CategorySelectorState extends State<CategorySelector> {
       key: ValueKey('sub-$rootId-$subId-${subs.length}-$_tick'),
       initialValue: subId,
       isExpanded: true,
-      decoration: InputDecoration(
-        labelText: 'Subcategoria',
-        border: const OutlineInputBorder(),
-        isDense: compact,
-        enabled: rootId != null,
-      ),
+      decoration: form
+          ? InputDecoration(hintText: 'Seleciona uma subcategoria', prefixIcon: const Icon(Icons.format_list_bulleted), enabled: rootId != null)
+          : InputDecoration(labelText: 'Subcategoria', isDense: compact, enabled: rootId != null),
       items: rootId == null
           ? const []
           : [
@@ -169,6 +172,14 @@ class _CategorySelectorState extends State<CategorySelector> {
             },
     );
 
+    if (form) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const FieldLabel('Categoria'),
+        catDrop,
+        const FieldLabel('Subcategoria', optional: true),
+        subDrop,
+      ]);
+    }
     if (compact) {
       return Row(children: [Expanded(child: catDrop), const SizedBox(width: 8), Expanded(child: subDrop)]);
     }
@@ -236,7 +247,7 @@ Future<String?> pickEmoji(BuildContext context, String current) {
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
-              decoration: const InputDecoration(labelText: 'Ou usa outro emoji do teclado', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Ou usa outro emoji do teclado'),
               onSubmitted: (v) => Navigator.pop(ctx, v.trim().isEmpty ? '' : v.characters.first),
             ),
           ]),
@@ -380,129 +391,10 @@ class _CategoryEditorState extends State<_CategoryEditor> {
 }
 
 // ---------------------------------------------------------------------------
-// Editor de movimento (manual ou existente)
+// Editor de movimento (manual ou existente): ecrã completo
 // ---------------------------------------------------------------------------
-Future<void> showTxnEditor(BuildContext context, {Txn? edit}) {
-  return showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    builder: (_) => _TxnEditor(edit: edit),
-  );
-}
-
-class _TxnEditor extends StatefulWidget {
-  final Txn? edit;
-  const _TxnEditor({this.edit});
-  @override
-  State<_TxnEditor> createState() => _TxnEditorState();
-}
-
-class _TxnEditorState extends State<_TxnEditor> {
-  late DateTime date = widget.edit?.date ?? DateTime.now();
-  late final desc = TextEditingController(text: widget.edit?.description ?? '');
-  late final amount = TextEditingController(
-      text: widget.edit == null ? '' : (widget.edit!.amount.abs() / 100).toStringAsFixed(2).replaceAll('.', ','));
-  late final note = TextEditingController(text: widget.edit?.note ?? '');
-  late bool expense = (widget.edit?.amount ?? -1) < 0;
-  late int? categoryId = widget.edit?.categoryId;
-  String? error;
-
-  @override
-  Widget build(BuildContext context) {
-    final s = context.watch<AppState>();
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(widget.edit == null ? 'Novo movimento' : 'Editar movimento', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          SegmentedButton<bool>(
-            segments: const [
-              ButtonSegment(value: true, label: Text('Despesa'), icon: Icon(Icons.arrow_downward)),
-              ButtonSegment(value: false, label: Text('Receita'), icon: Icon(Icons.arrow_upward)),
-            ],
-            selected: {expense},
-            onSelectionChanged: (v) => setState(() => expense = v.first),
-          ),
-          const SizedBox(height: 12),
-          TextField(controller: desc, decoration: const InputDecoration(labelText: 'Descrição', border: OutlineInputBorder())),
-          const SizedBox(height: 12),
-          Row(children: [
-            Expanded(
-              child: TextField(
-                controller: amount,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Montante (€)', border: OutlineInputBorder()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.calendar_today, size: 18),
-                label: Text(fmtDate(date)),
-                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
-                onPressed: () async {
-                  final d = await showDatePicker(
-                      context: context, initialDate: date, firstDate: DateTime(2000), lastDate: DateTime(2100));
-                  if (d != null) setState(() => date = d);
-                },
-              ),
-            ),
-          ]),
-          const SizedBox(height: 12),
-          CategorySelector(value: categoryId, onChanged: (v) => setState(() => categoryId = v)),
-          const SizedBox(height: 12),
-          TextField(controller: note, decoration: const InputDecoration(labelText: 'Nota (opcional)', border: OutlineInputBorder()), maxLines: 2),
-          if (error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(error!, style: const TextStyle(color: Colors.red))),
-          const SizedBox(height: 16),
-          Row(children: [
-            if (widget.edit != null)
-              TextButton.icon(
-                onPressed: () {
-                  s.deleteTxns([widget.edit!.id]);
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Apagar'),
-              ),
-            const Spacer(),
-            FilledButton(
-              onPressed: () {
-                final v = parseCents(amount.text);
-                if (desc.text.trim().isEmpty || v == null || v == 0) {
-                  setState(() => error = 'Indica descrição e montante válidos.');
-                  return;
-                }
-                final cents = expense ? -v.abs() : v.abs();
-                final e = widget.edit;
-                if (e == null) {
-                  s.addManual(date: date, description: desc.text.trim(), amount: cents, categoryId: categoryId, note: note.text.trim());
-                } else {
-                  s.updateTxn(Txn(
-                    id: e.id,
-                    date: date,
-                    description: desc.text.trim(),
-                    amount: cents,
-                    balance: e.balance,
-                    categoryId: categoryId,
-                    note: note.text.trim(),
-                    source: e.source,
-                    merchantKey: e.merchantKey,
-                    importId: e.importId,
-                  ));
-                }
-                Navigator.pop(context);
-              },
-              child: const Text('Guardar'),
-            ),
-          ]),
-        ]),
-      ),
-    );
-  }
-}
+Future<void> showTxnEditor(BuildContext context, {Txn? edit}) =>
+    Navigator.push(context, MaterialPageRoute(builder: (_) => TxnFormScreen(edit: edit)));
 
 // ---------------------------------------------------------------------------
 // Escolha de cor: paleta + seletor livre
