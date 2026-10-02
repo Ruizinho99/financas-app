@@ -603,7 +603,8 @@ class AppState extends ChangeNotifier {
       {Map<String, int?> categories = const {},
       Set<String> remember = const {},
       Map<String, String> names = const {},
-      int? accountId}) {
+      int? accountId,
+      Map<String, int> accountsByName = const {}}) {
     // Regras: categoria memorizada e/ou nome amigável. Aplicam-se a esta e às próximas importações.
     for (final k in {...remember, ...names.keys}) {
       // se o nome escrito é o de um grupo existente, o título junta-se a esse grupo
@@ -642,11 +643,12 @@ class AppState extends ChangeNotifier {
         description: r.description,
         amount: r.amount,
         balance: r.balance,
-        categoryId: categories.containsKey(key) ? categories[key] : ruleFor(key)?.categoryId,
+        categoryId: r.isTransfer ? null : (categories.containsKey(key) ? categories[key] : ruleFor(key)?.categoryId),
         source: source,
         merchantKey: key,
         importId: importId,
-        accountId: accountId,
+        accountId: (r.account != null ? accountsByName[r.account] : null) ?? accountId,
+        isTransfer: r.isTransfer,
       );
       added++;
     }

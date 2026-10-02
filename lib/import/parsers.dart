@@ -75,7 +75,16 @@ const _date = r'\d{1,2}[-/.]\d{1,2}(?:[-/.]\d{2,4})?';
 const _amount = r'[-+]?\(?\d{1,3}(?:[. ]\d{3})*,\d{2}\)?(?:\s?[-+]|\s?[CD]R?)?|[-+]?\d+\.\d{2}';
 final _lineRe = RegExp('^($_date)(?:\\s+($_date))?\\s+(.*?)\\s*($_amount)(?:\\s+($_amount))?\\s*\$');
 final _onlyDateRe = RegExp('^($_date)(?:\\s+($_date))?\\s+(.+)\$');
+final _dateOnlyRe = RegExp('^($_date)(?:\\s+($_date))?\$');
 final _tailRe = RegExp('^(.*?)\\s*($_amount)(?:\\s+($_amount))?\\s*\$');
+final _loneAmountRe = RegExp('^($_amount)\\s*\$');
+final _loneAmountsRe = RegExp('^($_amount)(?:\\s+($_amount))?\\s*\$');
+final _anchorRe = RegExp('^(SALDO INICIAL|SALDO ANTERIOR|TRANSPORTE)\\b\\s*($_amount)?\\s*\$', caseSensitive: false);
+final _endAnchorRe = RegExp(r'^(A TRANSPORTAR|SALDO FINAL|SALDO DISPON[IÍ]VEL|SALDO CONTABIL[IÍ]STICO)\b', caseSensitive: false);
+final _accountRe = RegExp(r'^CONTA(?: [A-ZÀ-Ú]+)+$');
+final _noiseRe = RegExp(
+    r'^(DATA|LANC\.?|VALOR|DESCRITIVO|D[ÉE]BITO|CR[ÉE]DITO|SALDO|P[ÁA]G\b|N\.|EXTRATO|MOEDA|BIC\b|EXT\.|MENSAGEM|RESUMO|IBAN|NIB)',
+    caseSensitive: false);
 
 int? _amt(String? s) {
   if (s == null) return null;
@@ -85,70 +94,260 @@ int? _amt(String? s) {
   return v == null ? null : (neg ? -v.abs() : v);
 }
 
+/// Texto do PDF, uma linha por linha visual, com espaços entre colunas.
+/// (extractText(layoutText) cola colunas sem espaços e o parser deixava de reconhecer os movimentos.)
 String pdfText(Uint8List bytes) {
   final doc = PdfDocument(inputBytes: bytes);
   try {
-    return PdfTextExtractor(doc).extractText(layoutText: true);
+    final extractor = PdfTextExtractor(doc);
+    final out = StringBuffer();
+    for (var i = 0; i < doc.pages.count; i++) {
+      for (final line in extractor.extractTextLines(startPageIndex: i, endPageIndex: i)) {
+        final t = line.text.replaceAll(RegExp(r'\s+'), ' ').trim();
+        if (t.isNotEmpty) out.writeln(t);
+      }
+    }
+    final text = out.toString();
+    // se por algum motivo não saiu nada, tenta o método antigo
+    return text.trim().isEmpty ? extractor.extractText(layoutText: true) : text;
   } finally {
     doc.dispose();
   }
 }
 
-/// Interpreta o texto de um extrato PDF. [text] vem de [pdfText].
-List<ParsedRow> parseStatementText(String text, {int? defaultYear}) {
-  defaultYear ??= RegExp(r'\b(20\d{2})\b').firstMatch(text)?.group(1) != null
-      ? int.parse(RegExp(r'\b(20\d{2})\b').firstMatch(text)!.group(1)!)
-      : DateTime.now().year;
-  final rows = <ParsedRow>[];
-  ParsedRow? pending;
-  bool pendingOpen = false; // a linha pendente ainda não tem montante
-  for (final raw in const LineSplitter().convert(text)) {
-    final line = raw.trim().replaceAll(RegExp(r'\s{2,}'), '  ').replaceAll('  ', ' ');
-    if (line.isEmpty) continue;
-    final m = _lineRe.firstMatch(line);
-    if (m != null && m[3]!.trim().isNotEmpty) {
-      final d = parseDate(m[1]!, defaultYear: defaultYear);
-      final a = _amt(m[4]);
-      if (d != null && a != null) {
-        rows.add(ParsedRow(d, m[3]!.trim(), a, _amt(m[5])));
-        pendingOpen = false;
-        continue;
-      }
-    }
-    final od = _onlyDateRe.firstMatch(line);
-    if (od != null) {
-      final d = parseDate(od[1]!, defaultYear: defaultYear);
-      if (d != null) {
-        pending = ParsedRow(d, od[3]!.trim(), 0);
-        rows.add(pending);
-        pendingOpen = true;
-        continue;
-      }
-    }
-    final t = _tailRe.firstMatch(line);
-    if (pendingOpen && pending != null && t != null) {
-      if (t[1]!.trim().isNotEmpty) pending.description += ' ${t[1]!.trim()}';
-      pending.amount = _amt(t[2]) ?? 0;
-      pending.balance = _amt(t[3]);
-      pendingOpen = false;
-    } else if (rows.isNotEmpty && t == null) {
-      rows.last.description += ' $line';
-    }
-  }
-  rows.removeWhere((r) => r.amount == 0 && r.balance == null);
-  _inferSigns(rows);
-  return rows;
+typedef StatementPeriod = ({DateTime start, DateTime end});
+
+/// Período do extrato ("EXTRATO DE 2025/06/02 A 2025/06/30"), se existir.
+StatementPeriod? detectPeriod(String text) {
+  final m = RegExp(r'(\d{4})[/-](\d{2})[/-](\d{2})\s*(?:A|a|-|AT[ÉE]|até)\s*(\d{4})[/-](\d{2})[/-](\d{2})').firstMatch(text);
+  if (m == null) return null;
+  final a = _mk(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
+  final b = _mk(int.parse(m[4]!), int.parse(m[5]!), int.parse(m[6]!));
+  if (a == null || b == null) return null;
+  return a.isAfter(b) ? (start: b, end: a) : (start: a, end: b);
 }
 
-/// Montantes sem sinal: inferir pela variação do saldo.
+/// Datas sem ano ("6.02") interpretam-se como dia.mês ou mês.dia conforme caiam dentro do período.
+DateTime? _statementDate(String tok, StatementPeriod? per, int defaultYear) {
+  final m2 = RegExp(r'^(\d{1,2})[-/.](\d{1,2})$').firstMatch(tok.trim());
+  if (m2 == null || per == null) return parseDate(tok, defaultYear: defaultYear);
+  final a = int.parse(m2[1]!), b = int.parse(m2[2]!);
+  final lo = per.start.subtract(const Duration(days: 5)), hi = per.end.add(const Duration(days: 5));
+  DateTime? pick(int month, int day) {
+    for (final y in {per.end.year, per.start.year}) {
+      final d = _mk(y, month, day);
+      if (d != null && !d.isBefore(lo) && !d.isAfter(hi)) return d;
+    }
+    return null;
+  }
+
+  return pick(b, a) ?? pick(a, b);
+}
+
+bool _isNoise(String line) {
+  if (_noiseRe.hasMatch(line)) return true;
+  // texto com letras espaçadas ("B a n c o  A c t i v o") – rodapés/cabeçalhos
+  final toks = line.split(' ');
+  return toks.length >= 8 && toks.where((t) => t.length == 1).length >= toks.length * 0.6;
+}
+
+String _titleCase(String s) =>
+    s.toLowerCase().split(' ').map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1)).join(' ');
+
+/// Interpreta o texto de um extrato PDF. [text] vem de [pdfText].
+List<ParsedRow> parseStatementText(String text, {int? defaultYear}) => parseStatementDetailed(text, defaultYear: defaultYear).rows;
+
+/// Como [parseStatementText], mas devolve também as linhas que começam por uma data
+/// e que não foram reconhecidas como movimento (para avisar o utilizador).
+///
+/// Percebe extratos com várias contas (secções "CONTA …"), movimentos partidos em várias linhas,
+/// montantes sem sinal (deduz-o pela variação do saldo, a partir de "SALDO INICIAL"/"TRANSPORTE"),
+/// datas "mês.dia" e ignora cabeçalhos/rodapés de página.
+({List<ParsedRow> rows, List<String> skipped}) parseStatementDetailed(String text, {int? defaultYear}) {
+  final period = detectPeriod(text);
+  defaultYear ??= period?.end.year ??
+      (RegExp(r'\b(20\d{2})\b').firstMatch(text) != null ? int.parse(RegExp(r'\b(20\d{2})\b').firstMatch(text)!.group(1)!) : DateTime.now().year);
+  final lo = period?.start.subtract(const Duration(days: 5));
+  final hi = period?.end.add(const Duration(days: 5));
+  bool inWindow(DateTime d) => period == null || (!d.isBefore(lo!) && !d.isAfter(hi!));
+
+  final rows = <ParsedRow>[];
+  final skipped = <String>[];
+  String? account;
+  int? running; // saldo corrente da conta (para deduzir sinais)
+  var expectAnchor = false;
+  ParsedRow? pending; // movimento com data mas ainda sem montante
+  var pendingDesc = <String>[];
+
+  void dropPending() {
+    final p = pending;
+    if (p != null) skipped.add('${fmtDate(p.date)}  ${p.description}'.trim());
+    pending = null;
+  }
+
+  void finalize(ParsedRow r) {
+    if (r.balance != null) {
+      if (running != null) {
+        final delta = r.balance! - running!;
+        if (delta.abs() == r.amount.abs()) r.amount = delta;
+      }
+      running = r.balance;
+    } else if (running != null) {
+      running = running! + r.amount;
+    }
+    r.account = account;
+    rows.add(r);
+  }
+
+  for (final raw in const LineSplitter().convert(text)) {
+    final line = raw.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (line.isEmpty) continue;
+
+    if (expectAnchor) {
+      expectAnchor = false;
+      final m = _loneAmountRe.firstMatch(line);
+      if (m != null) {
+        running = _amt(m[1]);
+        continue;
+      }
+    }
+    final anchor = _anchorRe.firstMatch(line);
+    if (anchor != null) {
+      dropPending();
+      if (anchor[2] != null) {
+        running = _amt(anchor[2]);
+      } else {
+        expectAnchor = true;
+      }
+      continue;
+    }
+    if (_endAnchorRe.hasMatch(line)) {
+      dropPending();
+      continue;
+    }
+    if (_accountRe.hasMatch(line) && !RegExp(r'\d').hasMatch(line)) {
+      dropPending();
+      account = _titleCase(line);
+      running = null;
+      continue;
+    }
+
+    final m = _lineRe.firstMatch(line);
+    if (m != null && m[3]!.trim().isNotEmpty) {
+      final d = _statementDate(m[1]!, period, defaultYear);
+      final a = _amt(m[4]);
+      if (d != null && a != null && inWindow(d)) {
+        dropPending();
+        finalize(ParsedRow(d, m[3]!.trim(), a, _amt(m[5])));
+        continue;
+      }
+      if (d != null && !inWindow(d)) continue; // rodapé/cabeçalho com uma data fora do extrato
+    }
+
+    // linha só com valores ("3.60 53.44") a fechar um movimento pendente; parece duas datas, mas não cai no período
+    final lone = _loneAmountsRe.firstMatch(line);
+    final pend = pending;
+    if (pend != null && lone != null) {
+      final d0 = _statementDate(line.split(' ').first, period, defaultYear);
+      final a = _amt(lone[1]);
+      if ((d0 == null || !inWindow(d0)) && a != null) {
+        pending = null;
+        final desc = pendingDesc.join(' ').trim();
+        finalize(ParsedRow(pend.date, desc.isEmpty ? '(sem descrição)' : desc, a, _amt(lone[2])));
+        continue;
+      }
+    }
+
+    // só data(s): a descrição e os valores vêm nas linhas seguintes
+    final dOnly = _dateOnlyRe.firstMatch(line);
+    if (dOnly != null) {
+      final d = _statementDate(dOnly[1]!, period, defaultYear);
+      if (d != null && inWindow(d)) {
+        dropPending();
+        pending = ParsedRow(d, '', 0);
+        pendingDesc = [];
+        continue;
+      }
+      // "3.60 53.44" parece duas datas mas é a linha de valores que fecha um movimento pendente
+      if (pending == null) continue;
+    }
+    // data + descrição, o montante vem depois
+    final od = _onlyDateRe.firstMatch(line);
+    if (od != null) {
+      final d = _statementDate(od[1]!, period, defaultYear);
+      if (d != null && inWindow(d) && !_isNoise(od[3]!)) {
+        dropPending();
+        pending = ParsedRow(d, od[3]!.trim(), 0);
+        pendingDesc = [od[3]!.trim()];
+      }
+      continue;
+    }
+
+    final p = pending;
+    if (p != null) {
+      final t = _tailRe.firstMatch(line);
+      if (t != null) {
+        if (t[1]!.trim().isNotEmpty) pendingDesc.add(t[1]!.trim());
+        final a = _amt(t[2]);
+        if (a != null) {
+          p.description = pendingDesc.join(' ');
+          pending = null;
+          finalize(ParsedRow(p.date, p.description.isEmpty ? '(sem descrição)' : p.description, a, _amt(t[3])));
+          continue;
+        }
+      }
+      if (!_isNoise(line)) {
+        pendingDesc.add(line);
+        p.description = pendingDesc.join(' ');
+      }
+    }
+  }
+  dropPending();
+  _inferSigns(rows);
+  return (rows: rows, skipped: skipped);
+}
+
+/// Montantes sem sinal: inferir pela variação do saldo (linhas seguidas da mesma conta).
 void _inferSigns(List<ParsedRow> rows) {
   for (var i = 1; i < rows.length; i++) {
     final p = rows[i - 1], c = rows[i];
-    if (p.balance != null && c.balance != null) {
+    if (p.account == c.account && p.balance != null && c.balance != null) {
       final delta = c.balance! - p.balance!;
       if (delta.abs() == c.amount.abs()) c.amount = delta;
     }
   }
+}
+
+/// Marca como transferências os pares saída/entrada com o mesmo valor entre contas diferentes
+/// (até 3 dias de diferença e "TRF"/"TRANSFER" na descrição). Devolve quantos pares encontrou.
+int markTransfers(List<ParsedRow> rows) {
+  for (final r in rows) {
+    r.isTransfer = false;
+  }
+  bool looksTransfer(ParsedRow r) => RegExp(r'\bTRF\b|TRANSFER', caseSensitive: false).hasMatch(r.description);
+  var pairs = 0;
+  for (var i = 0; i < rows.length; i++) {
+    final a = rows[i];
+    if (a.isTransfer || a.account == null || a.amount == 0) continue;
+    ParsedRow? best;
+    var bestDiff = 99;
+    for (var j = 0; j < rows.length; j++) {
+      final b = rows[j];
+      if (j == i || b.isTransfer || b.account == null || b.account == a.account || b.amount != -a.amount) continue;
+      if (!looksTransfer(a) && !looksTransfer(b)) continue;
+      final diff = a.date.difference(b.date).inDays.abs();
+      if (diff <= 3 && diff < bestDiff) {
+        best = b;
+        bestDiff = diff;
+      }
+    }
+    if (best != null) {
+      a.isTransfer = true;
+      best.isTransfer = true;
+      pairs++;
+    }
+  }
+  return pairs;
 }
 
 // ---------------------------------------------------------------------------

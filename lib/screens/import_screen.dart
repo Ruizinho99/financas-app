@@ -28,11 +28,15 @@ class _ImportScreenState extends State<ImportScreen> {
   String? error;
   int year = DateTime.now().year;
   String? pdfRaw;
+  List<String> skipped = []; // linhas com data que não foram reconhecidas
   Set<int> excluded = {};
   final cats = <String, int?>{}; // chave do grupo -> categoria escolhida
   final noRemember = <String>{};
   final names = <String, String>{}; // chave do grupo -> nome amigável
-  int? accountId; // conta de onde vem o extrato
+  int? accountId; // conta de onde vem o extrato (quando o ficheiro não indica contas)
+  bool detectTransfers = true;
+  // nome de conta detetado no PDF -> conta da app (0 = criar nova, -1 = sem conta)
+  final accountMap = <String, int>{};
 
   Future<void> pick() async {
     setState(() {
@@ -52,10 +56,15 @@ class _ImportScreenState extends State<ImportScreen> {
       source = ext == 'pdf' ? 'pdf' : (ext == 'xlsx' ? 'xlsx' : 'csv');
       table = null;
       pdfRaw = null;
+      skipped = [];
+      accountMap.clear();
       excluded = {};
       if (ext == 'pdf') {
         pdfRaw = pdfText(bytes);
-        rows = parseStatementText(pdfRaw!);
+        final det = parseStatementDetailed(pdfRaw!);
+        rows = det.rows;
+        skipped = det.skipped;
+        _afterParse();
         if (rows.isNotEmpty) year = rows.first.date.year;
       } else {
         table = ext == 'xlsx' ? parseXlsx(bytes) : parseCsv(decodeText(bytes));
@@ -79,9 +88,31 @@ class _ImportScreenState extends State<ImportScreen> {
     excluded = {};
   }
 
+  /// Contas que o extrato indica e deteção de transferências entre elas.
+  void _afterParse() {
+    final st = context.read<AppState>();
+    final names = rows.map((r) => r.account).whereType<String>().toSet();
+    accountMap.clear();
+    for (final n in names) {
+      final ex = st.accounts.where((a) => a.name.toLowerCase() == n.toLowerCase());
+      accountMap[n] = ex.isNotEmpty ? ex.first.id : 0;
+    }
+    _markTransfers();
+  }
+
+  void _markTransfers() {
+    if (detectTransfers && accountMap.length >= 2) {
+      markTransfers(rows);
+    } else {
+      for (final r in rows) {
+        r.isTransfer = false;
+      }
+    }
+  }
+
   List<ParsedRow> get finalRows => [
         for (var i = 0; i < rows.length; i++)
-          if (!excluded.contains(i)) invert ? ParsedRow(rows[i].date, rows[i].description, -rows[i].amount, rows[i].balance) : rows[i]
+          if (!excluded.contains(i)) invert ? rows[i].copy(amount: -rows[i].amount) : rows[i]
       ];
 
   @override
@@ -114,7 +145,8 @@ class _ImportScreenState extends State<ImportScreen> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Card(color: Theme.of(context).colorScheme.errorContainer, child: Padding(padding: const EdgeInsets.all(12), child: Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)))),
           ),
-        if (filename != null && rows.isNotEmpty)
+        if (filename != null && rows.isNotEmpty && accountMap.isNotEmpty) _accountsCard(st0),
+        if (filename != null && rows.isNotEmpty && accountMap.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: TileField(
@@ -128,6 +160,7 @@ class _ImportScreenState extends State<ImportScreen> {
               },
             ),
           ),
+        if (skipped.isNotEmpty) _skippedCard(),
         if (table != null) _mappingCard(),
         if (filename != null && source == 'pdf' && rows.isNotEmpty) _pdfOptions(),
         if (rows.isNotEmpty) ...[
@@ -166,8 +199,14 @@ class _ImportScreenState extends State<ImportScreen> {
                       : () {
                           final st = context.read<AppState>();
                           final chosen = Map<String, int?>.of(cats);
+                          // contas detetadas no extrato: usa a escolhida ou cria uma nova com o nome do banco
+                          final byName = <String, int>{};
+                          for (final e in accountMap.entries) {
+                            if (e.value == -1) continue;
+                            byName[e.key] = e.value == 0 ? st.addAccount(e.key) : e.value;
+                          }
                           final (added, dup) = st.importRows(filename!, source, fr,
-                              accountId: accountId, categories: chosen, names: {for (final e in names.entries) if (!noRemember.contains(e.key)) e.key: e.value}, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
+                              accountId: accountId, accountsByName: byName, categories: chosen, names: {for (final e in names.entries) if (!noRemember.contains(e.key)) e.key: e.value}, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
                           final unclassified = context.read<AppState>().unclassifiedGroups().length;
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -183,11 +222,13 @@ class _ImportScreenState extends State<ImportScreen> {
     final st = context.watch<AppState>();
     final groups = <String, List<int>>{};
     for (var i = 0; i < rows.length; i++) {
+      if (rows[i].isTransfer) continue; // transferências entre contas não se classificam
       groups.putIfAbsent(merchantKey(rows[i].description), () => []).add(i);
     }
     final keys = groups.keys.toList()..sort((a, b) => groups[b]!.length.compareTo(groups[a]!.length));
     final classified = keys.where((k) => (cats[k] ?? st.ruleFor(k)?.categoryId) != null).length;
     return [
+      if (rows.any((r) => r.isTransfer)) _transfersCard(),
       Padding(
         padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
         child: Text('Classificação: $classified de ${keys.length} grupos', style: Theme.of(context).textTheme.titleMedium),
@@ -288,6 +329,86 @@ class _ImportScreenState extends State<ImportScreen> {
     );
   }
 
+  Widget _accountsCard(AppState st) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('Contas neste extrato', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text('${accountMap.length} ${accountMap.length == 1 ? 'conta' : 'contas'} detetadas. Escolhe a que corresponde a cada uma na app.', style: Theme.of(context).textTheme.bodySmall),
+            for (final name in accountMap.keys) ...[
+              const SizedBox(height: 14),
+              Text('${name}  ·  ${rows.where((r) => r.account == name).length} movimentos', style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<int>(
+                key: ValueKey('acc-$name-${accountMap[name]}-${st.accounts.length}'),
+                initialValue: accountMap[name],
+                isExpanded: true,
+                decoration: const InputDecoration(prefixIcon: Icon(Icons.account_balance_wallet_outlined)),
+                items: [
+                  DropdownMenuItem(value: 0, child: Text('➕  Criar conta “$name”')),
+                  for (final a in st.accounts) DropdownMenuItem(value: a.id, child: Text('${a.emoji} ${a.name}'.trim())),
+                  const DropdownMenuItem(value: -1, child: Text('Sem conta')),
+                ],
+                onChanged: (v) => setState(() => accountMap[name] = v ?? 0),
+              ),
+            ],
+            if (accountMap.length >= 2)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Detetar transferências entre estas contas'),
+                subtitle: const Text('Saída numa conta e entrada noutra, do mesmo valor, não contam como despesa nem receita.'),
+                value: detectTransfers,
+                onChanged: (v) => setState(() {
+                  detectTransfers = v;
+                  _markTransfers();
+                }),
+              ),
+          ]),
+        ),
+      );
+
+  Widget _transfersCard() {
+    final list = [for (var i = 0; i < rows.length; i++) if (rows[i].isTransfer) i];
+    return Card(
+      child: ExpansionTile(
+        shape: const Border(),
+        collapsedShape: const Border(),
+        leading: const Icon(Icons.swap_horiz),
+        title: Text('${list.length} transferências entre contas', style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: const Text('Não precisam de categoria e ficam fora das despesas e receitas.'),
+        children: [
+          for (final i in list)
+            ListTile(
+              dense: true,
+              title: Text(rows[i].description, maxLines: 2, overflow: TextOverflow.ellipsis),
+              subtitle: Text('${fmtDate(rows[i].date)} · ${rows[i].account ?? ''}'),
+              trailing: MoneyText(invert ? -rows[i].amount : rows[i].amount, colored: false),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _skippedCard() => Card(
+        color: Theme.of(context).colorScheme.errorContainer,
+        child: ExpansionTile(
+          shape: const Border(),
+          collapsedShape: const Border(),
+          leading: Icon(Icons.warning_amber_rounded, color: Theme.of(context).colorScheme.onErrorContainer),
+          title: Text(
+            '${skipped.length} ${skipped.length == 1 ? 'linha parece' : 'linhas parecem'} movimentos mas não ${skipped.length == 1 ? 'foi reconhecida' : 'foram reconhecidas'}',
+            style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text('Lidos: ${rows.length}. Toca para ver as linhas ignoradas.', style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
+          children: [
+            for (final l in skipped.take(30)) ListTile(dense: true, title: Text(l, maxLines: 2, overflow: TextOverflow.ellipsis)),
+            if (skipped.length > 30) Padding(padding: const EdgeInsets.all(12), child: Text('… e mais ${skipped.length - 30}')),
+            const Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 12), child: Text('Se for um extrato do teu banco, exporta em CSV/Excel no homebanking ou envia-me um exemplo (com os dados tapados) para eu ajustar o leitor.')),
+          ],
+        ),
+      );
+
   Widget _pdfOptions() => Card(
         child: ListTile(
           title: const Text('Ano das datas sem ano'),
@@ -297,7 +418,10 @@ class _ImportScreenState extends State<ImportScreen> {
             items: [for (var y = DateTime.now().year + 1; y >= 2015; y--) DropdownMenuItem(value: y, child: Text('$y'))],
             onChanged: (v) => setState(() {
               year = v!;
-              rows = parseStatementText(pdfRaw!, defaultYear: year);
+              final det = parseStatementDetailed(pdfRaw!, defaultYear: year);
+              rows = det.rows;
+              skipped = det.skipped;
+              _afterParse();
             }),
           ),
         ),

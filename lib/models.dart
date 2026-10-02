@@ -149,7 +149,11 @@ class ParsedRow {
   String description;
   int amount;
   int? balance;
-  ParsedRow(this.date, this.description, this.amount, [this.balance]);
+  String? account; // nome da conta, quando o extrato tem várias (ex.: "Conta Simples")
+  bool isTransfer; // transferência entre contas do próprio utilizador
+  ParsedRow(this.date, this.description, this.amount, [this.balance, this.account, this.isTransfer = false]);
+
+  ParsedRow copy({int? amount}) => ParsedRow(date, description, amount ?? this.amount, balance, account, isTransfer);
 }
 
 /// Grupo de movimentos com a mesma chave (cartão na aba Classificar).
