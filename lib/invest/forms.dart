@@ -249,6 +249,7 @@ Future<int?> showHoldingEditor(
     text: edit?.lastFx != null && edit!.lastFx! > 0 ? (1 / edit.lastFx!).toStringAsFixed(4).replaceAll('.', ',') : '',
   );
   var currency = edit?.currency ?? baseCcy;
+  var manualCcy = edit?.currencyManual ?? false;
   var kind = edit?.kind ?? HoldingKind.etf;
   var provider = edit?.provider ?? PriceProvider.yahoo;
   var acc =
@@ -308,16 +309,30 @@ Future<int?> showHoldingEditor(
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
-                initialValue: kCurrencies.contains(currency) ? currency : null,
+                key: ValueKey('ccy-$provider'),
+                initialValue: provider != PriceProvider.manual && !manualCcy ? 'AUTO' : (kCurrencies.contains(currency) ? currency : null),
+                isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Moeda do ativo'),
-                items: [for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == baseCcy ? '$c · moeda de base' : c))],
-                onChanged: (v) => set(() => currency = v ?? baseCcy),
+                items: [
+                  if (provider != PriceProvider.manual) const DropdownMenuItem(value: 'AUTO', child: Text('Automática (a do preço)')),
+                  for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == baseCcy ? '$c · moeda de base' : c)),
+                ],
+                onChanged: (v) => set(() {
+                  if (v == 'AUTO') {
+                    manualCcy = false;
+                  } else if (v != null) {
+                    currency = v;
+                    manualCcy = true;
+                  }
+                }),
               ),
               const SizedBox(height: 4),
               Text(
-                currency == baseCcy
-                    ? 'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'
-                    : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para a moeda de base.',
+                provider != PriceProvider.manual && !manualCcy
+                    ? 'Usa a moeda em que o ativo cota (${currency == baseCcy && edit?.lastPrice == null ? 'detetada ao obter o preço' : currency}). Podes escolher outra à mão.'
+                    : currency == baseCcy
+                        ? 'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'
+                        : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para a moeda de base ao câmbio de mercado (atualizado em "Atualizar preços").',
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
               const SizedBox(height: 14),
@@ -392,7 +407,21 @@ Future<int?> showHoldingEditor(
                   TextField(
                     controller: fxCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(labelText: 'Câmbio: 1 $baseSym = ? $currency'),
+                    decoration: InputDecoration(
+                      labelText: 'Câmbio: 1 $baseSym = ? $currency',
+                      suffixIcon: IconButton(
+                        tooltip: 'Câmbio de mercado atual (internet)',
+                        icon: const Icon(Icons.sync),
+                        onPressed: () async {
+                          try {
+                            final r = await s.prices.fxRate(currency, baseCcy);
+                            if (r > 0) set(() => fxCtrl.text = (1 / r).toStringAsFixed(4).replaceAll('.', ','));
+                          } on PriceException catch (e) {
+                            set(() => error = 'Não consegui obter o câmbio: ${e.message}');
+                          }
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ],
@@ -422,7 +451,7 @@ Future<int?> showHoldingEditor(
               final rate = parseNum(fxCtrl.text);
               final fx = currency == baseCcy ? 1.0 : (rate != null && rate > 0 ? 1 / rate : edit?.lastFx);
               if (provider == PriceProvider.manual && manual != null && currency != baseCcy && fx == null) {
-                set(() => error = 'Indica o câmbio para converter o preço');
+                set(() => error = 'Indica o câmbio, ou usa o botão de sincronizar para o câmbio de mercado.');
                 return;
               }
               final base = (edit ?? Holding(id: 0, accountId: acc!, name: n))
@@ -435,6 +464,7 @@ Future<int?> showHoldingEditor(
                         ? ''
                         : symbol.text.trim(),
                     currency: currency,
+                    currencyManual: manualCcy || provider == PriceProvider.manual,
                     lastPriceOrig: provider == PriceProvider.manual
                         ? (manual ?? edit?.lastPriceOrig)
                         : edit?.lastPriceOrig,
@@ -474,6 +504,51 @@ Future<int?> showHoldingEditor(
       ),
     ),
   );
+}
+
+/// Escolher só a moeda do ativo (manual ou automática) e atualizar o câmbio de mercado.
+Future<void> showCurrencyPicker(BuildContext context, Holding h) async {
+  final s = context.read<AppState>();
+  var value = h.canAutoPrice && !h.currencyManual ? 'AUTO' : h.currency;
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, set) => AlertDialog(
+        title: const Text('Moeda do ativo'),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          DropdownButtonFormField<String>(
+            initialValue: value,
+            isExpanded: true,
+            items: [
+              if (h.canAutoPrice) const DropdownMenuItem(value: 'AUTO', child: Text('Automática (a do preço)')),
+              for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == baseCcy ? '$c · moeda de base' : c)),
+            ],
+            onChanged: (v) => set(() => value = v ?? value),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'O valor é convertido para ${baseCcy} ao câmbio de mercado, atualizado em "Atualizar preços". As operações já registadas mantêm os valores que lá estão.',
+            style: Theme.of(ctx).textTheme.bodySmall,
+          ),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Guardar')),
+        ],
+      ),
+    ),
+  );
+  if (ok != true) return;
+  final auto = value == 'AUTO';
+  final nh = h.copyWith(currency: auto ? h.currency : value, currencyManual: !auto, lastFx: null);
+  // sem câmbio conhecido, o valor em moeda de base fica por atualizar até haver internet
+  s.updateHolding(nh.currency == baseCcy ? nh.copyWith(lastFx: 1.0, lastPrice: nh.lastPriceOrig ?? nh.lastPrice) : nh);
+  if (nh.needsRefresh || nh.canAutoPrice) {
+    final r = await s.refreshPrices(holdingId: h.id);
+    if (context.mounted && r.failed.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Não consegui obter o câmbio: ${r.failed.values.first}')));
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -938,6 +1013,21 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   },
                 ),
               ],
+              if (tradeLike && _holding != null && widget.edit == null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: ActionChip(
+                      avatar: const Icon(Icons.currency_exchange, size: 16),
+                      label: Text('Moeda do ativo: ${_holding!.currency} · alterar'),
+                      onPressed: () async {
+                        await showCurrencyPicker(context, _holding!);
+                        if (mounted) setState(() => _prefillFx(_holding));
+                      },
+                    ),
+                  ),
+                ),
               const FieldLabel('Data'),
               TileField(
                 icon: Icons.event,

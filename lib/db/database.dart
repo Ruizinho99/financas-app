@@ -229,6 +229,12 @@ class Db {
       }
       _db.execute('PRAGMA user_version = 9');
     }
+    if (v < 10) {
+      try {
+        _db.execute('ALTER TABLE holdings ADD COLUMN currency_manual INTEGER NOT NULL DEFAULT 0');
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 10');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -557,18 +563,19 @@ class Db {
           lastPriceAt: at == null ? null : DateTime.tryParse(at),
           archived: r['archived'] == 1,
           currency: (r['currency'] as String?) ?? 'EUR',
+          currencyManual: r['currency_manual'] == 1,
           lastPriceOrig: (r['last_price_orig'] as num?)?.toDouble(),
           lastFx: (r['last_fx'] as num?)?.toDouble(),
         );
       }).toList();
 
   int saveHolding(Holding h, {bool isNew = false}) {
-    final vals = [h.accountId, h.name, h.symbol, h.provider.name, h.kind.name, h.lastPrice, h.lastPriceAt?.toIso8601String(), h.archived ? 1 : 0, h.currency, h.lastPriceOrig, h.lastFx];
+    final vals = [h.accountId, h.name, h.symbol, h.provider.name, h.kind.name, h.lastPrice, h.lastPriceAt?.toIso8601String(), h.archived ? 1 : 0, h.currency, h.lastPriceOrig, h.lastFx, h.currencyManual ? 1 : 0];
     if (isNew) {
-      _db.execute('INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx) VALUES(?,?,?,?,?,?,?,?,?,?,?)', vals);
+      _db.execute('INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', vals);
       return _db.lastInsertRowId;
     }
-    _db.execute('UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=? WHERE id=?', [...vals, h.id]);
+    _db.execute('UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=? WHERE id=?', [...vals, h.id]);
     return h.id;
   }
 

@@ -570,11 +570,29 @@ class AppState extends ChangeNotifier {
   int investedIn(Period p) =>
       transactions.where((t) => t.investAccountId != null && p.contains(t.date)).fold(0, (a, t) => a - t.amount);
 
-  /// Atualiza os preços dos ativos com fonte automática. Só usa a internet aqui, a pedido.
+  /// Atualiza pela internet (só a pedido) os preços dos ativos com fonte automática e os câmbios de
+  /// todos os ativos noutras moedas, ao valor de mercado atual.
+  /// A moeda escolhida à mão para o ativo é respeitada: o preço é convertido para ela.
   Future<({int updated, Map<String, String> failed})> refreshPrices({int? accountId, int? holdingId}) async {
-    final targets = holdings.where((h) => !h.archived && h.canAutoPrice && (accountId == null || h.accountId == accountId) && (holdingId == null || h.id == holdingId)).toList();
+    final targets = holdings.where((h) => !h.archived && h.needsRefresh && (accountId == null || h.accountId == accountId) && (holdingId == null || h.id == holdingId)).toList();
     var updated = 0;
     final failed = <String, String>{};
+    final base = baseCcy;
+
+    Future<Holding> one(Holding h) async {
+      if (h.canAutoPrice) {
+        final q = await prices.quote(h.provider, h.symbol, base: base);
+        // moeda do ativo: a escolhida pelo utilizador ou, se for automática, a do preço
+        final ccy = h.currencyManual ? h.currency : q.currency;
+        final orig = ccy == q.currency ? q.original : q.original * await prices.fxRate(q.currency, ccy);
+        final fx = ccy == base ? 1.0 : (ccy == q.currency ? q.fx : await prices.fxRate(ccy, base));
+        return h.copyWith(currency: ccy, lastPriceOrig: orig, lastFx: fx, lastPrice: orig * fx, lastPriceAt: q.at);
+      }
+      // preço manual noutra moeda: só o câmbio
+      final fx = await prices.fxRate(h.currency, base);
+      return h.copyWith(lastFx: fx, lastPrice: h.lastPriceOrig! * fx);
+    }
+
     // pedidos em paralelo, em grupos de 4: com a rede em baixo demora ~12 s em vez de 12 s por ativo
     for (var i = 0; i < targets.length; i += 4) {
       final batch = targets.skip(i).take(4).toList();
@@ -582,17 +600,17 @@ class AppState extends ChangeNotifier {
         for (final h in batch)
           () async {
             try {
-              return (h, await prices.quote(h.provider, h.symbol, base: baseCcy), null as String?);
+              return (h, await one(h), null as String?);
             } on PriceException catch (e) {
-              return (h, null as PriceQuote?, e.message);
+              return (h, null as Holding?, e.message);
             } catch (_) {
-              return (h, null as PriceQuote?, 'Erro inesperado.');
+              return (h, null as Holding?, 'Erro inesperado.');
             }
           }(),
       ]);
-      for (final (h, q, err) in results) {
-        if (q != null) {
-          db.saveHolding(h.copyWith(lastPrice: q.eur, lastPriceAt: q.at, currency: q.currency, lastPriceOrig: q.original, lastFx: q.fx));
+      for (final (h, nh, err) in results) {
+        if (nh != null) {
+          db.saveHolding(nh);
           updated++;
         } else {
           failed[h.name] = err ?? 'Erro inesperado.';

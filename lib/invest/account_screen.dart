@@ -45,7 +45,7 @@ class _AccountScreenState extends State<AccountScreen> {
       appBar: AppBar(
         title: Text('${acc.emoji} ${acc.name}'.trim()),
         actions: [
-          if (holdings.any((h) => h.canAutoPrice))
+          if (holdings.any((h) => h.needsRefresh))
             refreshing
                 ? const Padding(padding: EdgeInsets.all(14), child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5)))
                 : IconButton(

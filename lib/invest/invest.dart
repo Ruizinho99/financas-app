@@ -61,6 +61,7 @@ class Holding {
   final DateTime? lastPriceAt;
   final bool archived;
   final String currency; // moeda em que o ativo cota: EUR, USD, GBP…
+  final bool currencyManual; // true: escolhida pelo utilizador; false: detetada pelo preço
   final double? lastPriceOrig; // último preço na moeda do ativo
   final double? lastFx; // moeda de base por 1 unidade da moeda do ativo, no momento do último preço
   Holding({
@@ -74,6 +75,7 @@ class Holding {
     this.lastPriceAt,
     this.archived = false,
     String? currency,
+    this.currencyManual = false,
     this.lastPriceOrig,
     this.lastFx,
   }) : currency = currency ?? baseCcy;
@@ -85,7 +87,10 @@ class Holding {
 
   bool get canAutoPrice => provider != PriceProvider.manual && symbol.trim().isNotEmpty;
 
-  Holding copyWith({String? name, String? symbol, PriceProvider? provider, HoldingKind? kind, int? accountId, Object? lastPrice = _k, Object? lastPriceAt = _k, bool? archived, String? currency, Object? lastPriceOrig = _k, Object? lastFx = _k}) => Holding(
+  /// Tem algo a atualizar pela internet: o preço, ou só o câmbio (ativo com preço manual noutra moeda).
+  bool get needsRefresh => canAutoPrice || (foreign && lastPriceOrig != null);
+
+  Holding copyWith({String? name, String? symbol, PriceProvider? provider, HoldingKind? kind, int? accountId, Object? lastPrice = _k, Object? lastPriceAt = _k, bool? archived, String? currency, bool? currencyManual, Object? lastPriceOrig = _k, Object? lastFx = _k}) => Holding(
         id: id,
         accountId: accountId ?? this.accountId,
         name: name ?? this.name,
@@ -96,6 +101,7 @@ class Holding {
         lastPriceAt: identical(lastPriceAt, _k) ? this.lastPriceAt : lastPriceAt as DateTime?,
         archived: archived ?? this.archived,
         currency: currency ?? this.currency,
+        currencyManual: currencyManual ?? this.currencyManual,
         lastPriceOrig: identical(lastPriceOrig, _k) ? this.lastPriceOrig : lastPriceOrig as double?,
         lastFx: identical(lastFx, _k) ? this.lastFx : lastFx as double?,
       );

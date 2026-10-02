@@ -361,4 +361,50 @@ void main() {
       expect(fmtMoney(12345), contains('€'));
     });
   });
+
+  group('moeda escolhida à mão e câmbio de mercado', () {
+    MockClient market(Map<String, ({double price, String ccy})> m) => MockClient((r) async {
+          final q = m[r.url.pathSegments.last];
+          if (q == null) return http.Response('{}', 404);
+          return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': q.price, 'currency': q.ccy}}]}}), 200);
+        });
+
+    test('moeda escolhida à mão é respeitada: o preço é convertido para ela', () async {
+      // VWCE.DE cota a 100 EUR; o utilizador quer-o em USD (1 EUR = 1,25 USD; 1 USD = 0,80 EUR)
+      final s = AppState(Db.memory(), prices: PriceService(client: market({'VWCE.DE': (price: 100, ccy: 'EUR'), 'EURUSD=X': (price: 1.25, ccy: 'USD'), 'USDEUR=X': (price: 0.8, ccy: 'EUR')})));
+      final a = s.addInvestAccount('XTB');
+      final id = s.addHolding(Holding(id: 0, accountId: a, name: 'VWCE', symbol: 'VWCE.DE', provider: PriceProvider.yahoo, currency: 'USD', currencyManual: true));
+      await s.refreshPrices();
+      final h = s.holding(id)!;
+      expect(h.currency, 'USD');
+      expect(h.currencyManual, isTrue);
+      expect(h.priceOrig, closeTo(125, 1e-9));
+      expect(h.lastFx, 0.8);
+      expect(h.lastPrice, closeTo(100, 1e-9)); // em EUR, o valor de mercado real
+    });
+
+    test('ativo com preço manual em USD: "Atualizar" põe o câmbio de mercado atual', () async {
+      final s = AppState(Db.memory(), prices: PriceService(client: market({'USDEUR=X': (price: 0.9, ccy: 'EUR')})));
+      final a = s.addInvestAccount('XTB');
+      final id = s.addHolding(Holding(id: 0, accountId: a, name: 'Fundo', currency: 'USD', currencyManual: true, lastPriceOrig: 100, lastPrice: 80, lastFx: 0.8));
+      expect(s.holding(id)!.needsRefresh, isTrue);
+      final r = await s.refreshPrices();
+      expect(r.updated, 1);
+      expect(s.holding(id)!.lastFx, 0.9);
+      expect(s.holding(id)!.lastPrice, closeTo(90, 1e-9));
+      expect(s.holding(id)!.priceOrig, 100); // o preço manual não muda
+    });
+
+    test('moeda automática segue a do preço; guarda-se a opção na base de dados', () async {
+      final db = Db.memory();
+      final s = AppState(db, prices: PriceService(client: market({'AAPL': (price: 200, ccy: 'USD'), 'USDEUR=X': (price: 0.9, ccy: 'EUR')})));
+      final a = s.addInvestAccount('XTB');
+      final id = s.addHolding(Holding(id: 0, accountId: a, name: 'Apple', symbol: 'AAPL', provider: PriceProvider.yahoo));
+      await s.refreshPrices();
+      expect(s.holding(id)!.currency, 'USD');
+      expect(s.holding(id)!.currencyManual, isFalse);
+      s.updateHolding(s.holding(id)!.copyWith(currencyManual: true));
+      expect(db.holdings().single.currencyManual, isTrue);
+    });
+  });
 }

@@ -73,7 +73,7 @@ class _InvestScreenState extends State<InvestScreen> {
     final tt = Theme.of(context).textTheme;
     final pf = s.portfolio;
     final colors = chartColors(cs);
-    final anyAuto = s.holdings.any((h) => h.canAutoPrice && !h.archived);
+    final anyAuto = s.holdings.any((h) => h.needsRefresh && !h.archived);
     final times = s.holdings.where((h) => h.lastPriceAt != null && !h.archived).map((h) => h.lastPriceAt!).toList()..sort();
 
     return Scaffold(

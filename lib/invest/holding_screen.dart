@@ -80,12 +80,20 @@ class _HoldingScreenState extends State<HoldingScreen> {
           subtitle: '${h.kind.emoji} ${h.kind.label} · ${h.currency} · ${acc?.name ?? ''} · ${h.provider.label}${h.symbol.isEmpty ? '' : ' (${h.symbol})'}',
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(h.lastPrice == null ? 'Sem preço' : fmtPriceIn(h.priceOrig ?? h.lastPrice!, h.currency), style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ActionChip(
+                avatar: const Icon(Icons.currency_exchange, size: 16),
+                label: Text('Moeda: ${h.currency} · ${h.currencyManual || !h.canAutoPrice ? 'escolhida' : 'automática'}'),
+                onPressed: () => showCurrencyPicker(context, h),
+              ),
+            ),
             if (h.foreign && h.lastPrice != null)
               Text('≈ ${fmtPrice(h.lastPrice!)}${h.lastFx != null && h.lastFx! > 0 ? ' · 1 $baseSym = ${fmtNum(1 / h.lastFx!, 4)} ${h.currency}' : ''}', style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
             if (h.lastPriceAt != null) Text('Atualizado ${fmtAgo(h.lastPriceAt!)} · ${fmtDate(h.lastPriceAt!)}', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              if (h.canAutoPrice)
+              if (h.needsRefresh)
                 FilledButton.tonalIcon(
                   style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
                   onPressed: refreshing
