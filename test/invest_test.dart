@@ -179,6 +179,21 @@ void main() {
       expect(calls, 3); // 2 cotações + 1 câmbio (o segundo câmbio veio da cache)
     });
 
+    test('o endereço do Yahoo leva o símbolo codificado uma só vez (câmbios e índices)', () async {
+      final paths = <String>[];
+      final svc = PriceService(client: MockClient((r) async {
+        paths.add(r.url.toString());
+        return _json(_chart(1, 'EUR'));
+      }));
+      await svc.quote(PriceProvider.yahoo, 'USDEUR=X');
+      await svc.quote(PriceProvider.yahoo, '^GSPC');
+      await svc.quote(PriceProvider.yahoo, 'VWCE.DE');
+      expect(paths[0], 'https://query1.finance.yahoo.com/v8/finance/chart/USDEUR=X?range=1d&interval=1d');
+      expect(paths[1], 'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=1d&interval=1d');
+      expect(paths[2], 'https://query1.finance.yahoo.com/v8/finance/chart/VWCE.DE?range=1d&interval=1d');
+      expect(paths.any((p) => p.contains('%25')), isFalse);
+    });
+
     test('Yahoo em pence (GBp) passa por libras', () async {
       final svc = PriceService(client: MockClient((r) async {
         if (r.url.path.contains('GBPEUR')) return _json(_chart(1.2, 'EUR'));

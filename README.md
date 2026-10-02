@@ -1,6 +1,6 @@
 # Finanças
 
-App Android (Flutter) para importar extratos bancários (PDF, CSV, Excel), classificar movimentos, definir orçamento e analisar despesas. **Tudo fica guardado localmente no telemóvel** (SQLite); não usa internet.
+App Android (Flutter) para importar extratos bancários (PDF, CSV, Excel), classificar movimentos, definir orçamento e analisar despesas. **Tudo fica guardado localmente no telemóvel** (SQLite). A internet só é usada, a pedido, para atualizar preços de investimentos (é enviado apenas o símbolo do ativo).
 
 ## Funcionalidades
 - **Movimentos**: lista, pesquisa, filtros (despesas, receitas, transferências, por conta), seleção múltipla. Novo movimento em ecrã completo com contas, recibos (foto ou ficheiro) e transferências entre contas.
@@ -22,6 +22,8 @@ flutter build apk --release
 ```
 
 Os APKs estão na secção **Releases** do GitHub.
+
+- **Carteira (investimentos)**: plataformas (XTB, exchange…), ativos com preço médio de compra e posição inicial, compras, vendas e dividendos, dinheiro por alocar (standby), transferências do banco associadas a cada plataforma (e lembradas nas próximas importações) e atualização de preços por APIs gratuitas sem chave (Yahoo Finance e CoinGecko), convertidos para euros.
 
 ## Notas
 - Cada banco tem um layout de PDF diferente; o parser (`lib/import/parsers.dart`) é genérico e pode precisar de ajustes. CSV/Excel são mais fiáveis.

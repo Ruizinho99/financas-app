@@ -556,15 +556,28 @@ class AppState extends ChangeNotifier {
     final targets = holdings.where((h) => !h.archived && h.canAutoPrice && (accountId == null || h.accountId == accountId) && (holdingId == null || h.id == holdingId)).toList();
     var updated = 0;
     final failed = <String, String>{};
-    for (final h in targets) {
-      try {
-        final q = await prices.quote(h.provider, h.symbol);
-        db.saveHolding(h.copyWith(lastPrice: q.eur, lastPriceAt: q.at));
-        updated++;
-      } on PriceException catch (e) {
-        failed[h.name] = e.message;
-      } catch (e) {
-        failed[h.name] = 'Erro inesperado.';
+    // pedidos em paralelo, em grupos de 4: com a rede em baixo demora ~12 s em vez de 12 s por ativo
+    for (var i = 0; i < targets.length; i += 4) {
+      final batch = targets.skip(i).take(4).toList();
+      final results = await Future.wait([
+        for (final h in batch)
+          () async {
+            try {
+              return (h, await prices.quote(h.provider, h.symbol), null as String?);
+            } on PriceException catch (e) {
+              return (h, null as PriceQuote?, e.message);
+            } catch (_) {
+              return (h, null as PriceQuote?, 'Erro inesperado.');
+            }
+          }(),
+      ]);
+      for (final (h, q, err) in results) {
+        if (q != null) {
+          db.saveHolding(h.copyWith(lastPrice: q.eur, lastPriceAt: q.at));
+          updated++;
+        } else {
+          failed[h.name] = err ?? 'Erro inesperado.';
+        }
       }
     }
     reload();

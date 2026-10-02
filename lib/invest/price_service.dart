@@ -69,7 +69,8 @@ class PriceService {
   }
 
   Future<({double price, String currency})> _yahooRaw(String symbol) async {
-    final uri = Uri.https('query1.finance.yahoo.com', '/v8/finance/chart/${Uri.encodeComponent(symbol)}', {'range': '1d', 'interval': '1d'});
+    // pathSegments codifica uma só vez (encodeComponent + Uri.https dava %253D em "USDEUR=X" e o Yahoo respondia 404)
+    final uri = Uri(scheme: 'https', host: 'query1.finance.yahoo.com', pathSegments: ['v8', 'finance', 'chart', symbol], queryParameters: {'range': '1d', 'interval': '1d'});
     final j = await _getJson(uri);
     final chart = j is Map ? j['chart'] : null;
     final result = chart is Map ? chart['result'] : null;
