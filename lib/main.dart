@@ -60,6 +60,8 @@ class FinancasApp extends StatelessWidget {
         dialogTheme: DialogThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
         bottomSheetTheme: const BottomSheetThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28)))),
         appBarTheme: const AppBarTheme(centerTitle: false, toolbarHeight: 64),
+        // 6 separadores: etiquetas mais pequenas para "Movimentos" e "Classificar" caberem numa só linha em ecrãs de 360 dp
+        navigationBarTheme: const NavigationBarThemeData(labelTextStyle: WidgetStatePropertyAll(TextStyle(fontSize: 10, fontWeight: FontWeight.w600)), labelPadding: EdgeInsets.zero),
         listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 4), minVerticalPadding: 8),
         dividerTheme: const DividerThemeData(space: 24),
       );
