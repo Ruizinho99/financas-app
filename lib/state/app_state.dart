@@ -40,6 +40,7 @@ class AppState extends ChangeNotifier {
   List<Categoria> categories = [];
   List<Txn> transactions = [];
   List<Rule> rules = [];
+  List<Grupo> groups = [];
   List<MandatoryRange> mandatoryRanges = [];
   Map<String, int> salaries = {};
   int defaultSalary = 0;
@@ -48,6 +49,7 @@ class AppState extends ChangeNotifier {
     categories = db.categories();
     transactions = db.transactions();
     rules = db.rules();
+    groups = db.ruleGroups();
     mandatoryRanges = db.mandatoryRanges();
     salaries = db.salaries();
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
@@ -190,22 +192,51 @@ class AppState extends ChangeNotifier {
 
   List<Txn> txnsIn(Period p) => transactions.where((t) => p.contains(t.date)).toList();
 
-  List<TxnGroup> unclassifiedGroups() {
+  List<TxnGroup> _cards(Iterable<Txn> txns) {
     final map = <String, List<Txn>>{};
-    for (final t in transactions) {
-      if (t.categoryId == null) map.putIfAbsent(t.merchantKey, () => []).add(t);
+    final gid = <String, int?>{};
+    for (final t in txns) {
+      final r = ruleFor(t.merchantKey);
+      final id = r?.groupId;
+      final k = id != null ? 'g$id' : t.merchantKey;
+      map.putIfAbsent(k, () => []).add(t);
+      gid[k] = id;
     }
-    return map.entries.map((e) => TxnGroup(e.key, e.value)).toList()
+    return map.entries.map((e) => TxnGroup(e.key, e.value, groupId: gid[e.key])).toList()
       ..sort((a, b) => b.txns.length.compareTo(a.txns.length));
   }
 
-  List<TxnGroup> allGroups() {
-    final map = <String, List<Txn>>{};
-    for (final t in transactions) {
-      map.putIfAbsent(t.merchantKey, () => []).add(t);
+  /// Cartões da aba Classificar: um por título, ou um por grupo quando o título pertence a um.
+  List<TxnGroup> unclassifiedGroups() => _cards(transactions.where((t) => t.categoryId == null));
+
+  List<TxnGroup> allGroups() => _cards(transactions);
+
+  Grupo? groupById(int? id) {
+    if (id == null) return null;
+    for (final g in groups) {
+      if (g.id == id) return g;
     }
-    return map.entries.map((e) => TxnGroup(e.key, e.value)).toList()
-      ..sort((a, b) => b.txns.length.compareTo(a.txns.length));
+    return null;
+  }
+
+  Grupo? groupByName(String name) {
+    final n = name.trim().toLowerCase();
+    if (n.isEmpty) return null;
+    for (final g in groups) {
+      if (g.name.toLowerCase() == n) return g;
+    }
+    return null;
+  }
+
+  List<Rule> rulesOfGroup(int id) => rules.where((r) => r.groupId == id).toList();
+
+  /// Títulos distintos dos movimentos, com a contagem (para escolher o que juntar num grupo).
+  Map<String, int> titleCounts() {
+    final m = <String, int>{};
+    for (final t in transactions) {
+      m[t.merchantKey] = (m[t.merchantKey] ?? 0) + 1;
+    }
+    return m;
   }
 
   // ---------- Estatísticas ----------
@@ -298,13 +329,25 @@ class AppState extends ChangeNotifier {
   void assign(List<Txn> txns, int? categoryId, {bool remember = false, String label = '', String note = ''}) {
     db.setCategory(txns.map((t) => t.id).toList(), categoryId);
     if (remember && categoryId != null && txns.isNotEmpty) {
-      final key = txns.first.merchantKey;
-      db.upsertRule(key, categoryId, label: label, note: note);
-      final others = transactions
-          .where((t) => t.merchantKey == key && t.categoryId == null)
-          .map((t) => t.id)
-          .toList();
-      db.setCategory(others, categoryId);
+      for (final key in {for (final t in txns) t.merchantKey}) {
+        final r = ruleFor(key);
+        if (r?.groupId != null) {
+          // o título pertence a um grupo: a categoria é a do grupo
+          final g = groupById(r!.groupId)!;
+          db.saveRuleGroup(id: g.id, name: g.name, categoryId: categoryId, note: g.note);
+          rules = db.rules();
+          groups = db.ruleGroups();
+        } else {
+          db.upsertRule(key, categoryId, label: label, note: note);
+        }
+        final others = transactions.where((t) => t.merchantKey == key && t.categoryId == null).map((t) => t.id).toList();
+        db.setCategory(others, categoryId);
+      }
+      // movimentos de outros títulos do mesmo grupo
+      for (final t in transactions.where((t) => t.categoryId == null)) {
+        final r = ruleFor(t.merchantKey);
+        if (r?.groupId != null && r!.categoryId != null) db.setCategory([t.id], r.categoryId);
+      }
     }
     reload();
   }
@@ -314,7 +357,7 @@ class AppState extends ChangeNotifier {
     reload();
   }
 
-  void saveRule(String pattern, int categoryId, {bool exact = true, String label = '', String note = ''}) {
+  void saveRule(String pattern, int? categoryId, {bool exact = true, String label = '', String note = ''}) {
     db.upsertRule(pattern, categoryId, exact: exact, label: label, note: note);
     reload();
   }
@@ -329,7 +372,7 @@ class AppState extends ChangeNotifier {
     var n = 0;
     for (final t in transactions.where((t) => t.categoryId == null)) {
       final r = ruleFor(t.merchantKey);
-      if (r != null) {
+      if (r != null && r.categoryId != null) {
         db.setCategory([t.id], r.categoryId);
         n++;
       }
@@ -338,12 +381,80 @@ class AppState extends ChangeNotifier {
     return n;
   }
 
+  // ---------- Grupos ----------
+  /// Cria um grupo e (opcionalmente) junta-lhe títulos. Devolve o id.
+  int createGroup(String name, {int? categoryId, String note = '', Iterable<String> keys = const []}) {
+    final id = db.saveRuleGroup(name: name.trim(), categoryId: categoryId, note: note);
+    for (final k in keys) {
+      db.setRuleGroup(db.ensureRule(k), id);
+    }
+    _afterGroupChange(id, null);
+    return id;
+  }
+
+  /// Altera nome/categoria/nota. Os movimentos dos títulos do grupo que estavam sem categoria
+  /// (ou na categoria antiga do grupo) passam para a nova.
+  void updateGroup(Grupo g) {
+    final old = groupById(g.id)?.categoryId;
+    db.saveRuleGroup(id: g.id, name: g.name.trim(), categoryId: g.categoryId, note: g.note);
+    _afterGroupChange(g.id, old);
+  }
+
+  void addKeysToGroup(int groupId, Iterable<String> keys, {bool exact = true}) {
+    for (final k in keys) {
+      db.setRuleGroup(db.ensureRule(k, exact: exact), groupId);
+    }
+    _afterGroupChange(groupId, null);
+  }
+
+  void removeFromGroup(int ruleId) {
+    db.detachRule(ruleId);
+    reload();
+  }
+
+  void deleteGroup(int id) {
+    db.deleteRuleGroup(id);
+    reload();
+  }
+
+  void _afterGroupChange(int groupId, int? oldCategory) {
+    rules = db.rules();
+    groups = db.ruleGroups();
+    final g = groupById(groupId);
+    final cid = g?.categoryId;
+    if (cid != null) {
+      final ids = [
+        for (final t in transactions)
+          if (ruleFor(t.merchantKey)?.groupId == groupId && (t.categoryId == null || t.categoryId == oldCategory)) t.id
+      ];
+      db.setCategory(ids, cid);
+    }
+    reload();
+  }
+
   /// Importa linhas; ignora duplicados. Devolve (novos, duplicados).
   (int, int) importRows(String filename, String source, List<ParsedRow> rows,
-      {Map<String, int?> categories = const {}, Set<String> remember = const {}}) {
-    for (final k in remember) {
-      final c = categories[k];
-      if (c != null) db.upsertRule(k, c);
+      {Map<String, int?> categories = const {},
+      Set<String> remember = const {},
+      Map<String, String> names = const {}}) {
+    // Regras: categoria memorizada e/ou nome amigável. Aplicam-se a esta e às próximas importações.
+    for (final k in {...remember, ...names.keys}) {
+      // se o nome escrito é o de um grupo existente, o título junta-se a esse grupo
+      final named = names[k]?.trim() ?? '';
+      final grp = groupByName(named);
+      if (grp != null) {
+        db.setRuleGroup(db.ensureRule(k), grp.id);
+        final c = remember.contains(k) ? categories[k] : null;
+        if (c != null && c != grp.categoryId) db.saveRuleGroup(id: grp.id, name: grp.name, categoryId: c, note: grp.note);
+        rules = db.rules();
+        groups = db.ruleGroups();
+        continue;
+      }
+      final ex = ruleFor(k);
+      final c = remember.contains(k) ? categories[k] : ex?.categoryId;
+      final label = names.containsKey(k) ? names[k]!.trim() : (ex?.label ?? '');
+      if (c == null && label.isEmpty) continue;
+      db.upsertRule(k, c, label: label, note: ex?.note ?? '');
     }
     rules = db.rules();
     final importId = db.createImport(filename, 0);

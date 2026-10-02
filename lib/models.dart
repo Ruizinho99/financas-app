@@ -62,17 +62,29 @@ class Rule {
   final int id;
   final String pattern; // chave normalizada
   final bool exact; // exacta ou "contém"
-  final int categoryId;
+  final int? categoryId; // pode ser nulo: regra só com nome amigável
   final String label; // nome amigável
   final String note;
+  final int? groupId; // se pertence a um grupo, categoryId/label/note vêm do grupo
   const Rule({
     required this.id,
     required this.pattern,
     required this.exact,
-    required this.categoryId,
+    this.categoryId,
     this.label = '',
     this.note = '',
+    this.groupId,
   });
+}
+
+/// Grupo: vários títulos de movimentos que representam a mesma coisa
+/// (ex.: "TRANS RESTAURANTE ARMINDA" e "MB WAY RESTAURANTE ARMINDA" → "Restaurante Arminda").
+class Grupo {
+  final int id;
+  final String name;
+  final int? categoryId;
+  final String note;
+  const Grupo({required this.id, required this.name, this.categoryId, this.note = ''});
 }
 
 /// Movimento lido de um ficheiro, antes de ser guardado.
@@ -86,9 +98,13 @@ class ParsedRow {
 
 /// Grupo de movimentos com a mesma chave (cartão na aba Classificar).
 class TxnGroup {
-  final String key;
+  final String key; // identificador do cartão (chave do título ou "g<id>" se for um grupo)
   final List<Txn> txns;
-  TxnGroup(this.key, this.txns);
+  final int? groupId;
+  TxnGroup(this.key, this.txns, {this.groupId});
+  /// Chave normalizada do primeiro título (para procurar a regra).
+  String get rep => txns.first.merchantKey;
+  Set<String> get keys => {for (final t in txns) t.merchantKey};
   int get total => txns.fold(0, (s, t) => s + t.amount);
   String get sampleDescription => txns.first.description;
 }

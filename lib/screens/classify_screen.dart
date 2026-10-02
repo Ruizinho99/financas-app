@@ -5,6 +5,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
+import 'groups_screen.dart';
 import 'transactions_screen.dart' show confirm;
 
 class ClassifyScreen extends StatefulWidget {
@@ -42,6 +43,11 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
               PopupMenuItem(value: 'recent', child: Text('Mais recentes')),
               PopupMenuItem(value: 'name', child: Text('Nome (A-Z)')),
             ],
+          ),
+          IconButton(
+            tooltip: 'Grupos',
+            icon: const Icon(Icons.hub_outlined),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupsScreen())),
           ),
           IconButton(
             tooltip: 'Regras memorizadas',
@@ -116,7 +122,8 @@ class _GroupCardState extends State<_GroupCard> {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final g = widget.group;
-    final rule = s.ruleFor(g.key);
+    final rule = s.ruleFor(g.rep);
+    final grp = s.groupById(g.groupId);
     final txns = g.txns;
     final dates = txns.map((t) => t.date).toList()..sort();
     // distribuição por categoria
@@ -124,7 +131,7 @@ class _GroupCardState extends State<_GroupCard> {
     for (final t in txns) {
       dist[t.categoryId] = (dist[t.categoryId] ?? 0) + 1;
     }
-    final title = (rule != null && rule.label.isNotEmpty) ? rule.label : g.key;
+    final title = grp != null ? grp.name : ((rule != null && rule.label.isNotEmpty) ? rule.label : g.key);
     if (!initDone) {
       initDone = true;
       pick = rule?.categoryId;
@@ -156,7 +163,14 @@ class _GroupCardState extends State<_GroupCard> {
                     avatar: e.key == null ? const Icon(Icons.help_outline, size: 16) : CatBadge(s.cat(e.key), size: 16),
                     label: Text('${s.path(e.key)} · ${e.value}'),
                   ),
-                if (rule != null)
+                if (grp != null)
+                  ActionChip(
+                    visualDensity: VisualDensity.compact,
+                    avatar: const Icon(Icons.hub_outlined, size: 16),
+                    label: Text('Grupo · ${g.keys.length} ${g.keys.length == 1 ? 'título' : 'títulos'}'),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: grp.id))),
+                  )
+                else if (rule != null)
                   const Chip(visualDensity: VisualDensity.compact, avatar: Icon(Icons.push_pin, size: 14), label: Text('Memorizado')),
               ]),
             ]),
@@ -169,7 +183,14 @@ class _GroupCardState extends State<_GroupCard> {
             Row(children: [
               Checkbox(value: remember, onChanged: (v) => setState(() => remember = v ?? true), visualDensity: VisualDensity.compact),
               const Expanded(child: Text('Memorizar para futuros')),
-              IconButton(tooltip: 'Nome amigável e notas', icon: const Icon(Icons.edit_note), onPressed: () => _details(context, txns, rule)),
+              if (grp == null) IconButton(tooltip: 'Nome amigável e notas', icon: const Icon(Icons.edit_note), onPressed: () => _details(context, txns, rule)),
+              IconButton(
+                tooltip: grp == null ? 'Juntar a um grupo' : 'Gerir grupo',
+                icon: const Icon(Icons.hub_outlined),
+                onPressed: () => grp == null
+                    ? joinGroupDialog(context, g.keys, suggestedCategory: pick)
+                    : Navigator.push(context, MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: grp.id))),
+              ),
             ]),
             Row(children: [
               TextButton.icon(
@@ -215,7 +236,7 @@ class _GroupCardState extends State<_GroupCard> {
               trailing: MoneyText(t.amount),
               onTap: () => showTxnEditor(context, edit: t),
             ),
-          if (rule != null)
+          if (rule != null && grp == null)
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
@@ -235,7 +256,7 @@ class _GroupCardState extends State<_GroupCard> {
 
   void _move(BuildContext context, List<Txn> txns, {bool? remember}) {
     final s = context.read<AppState>();
-    final rule = s.ruleFor(widget.group.key);
+    final rule = s.ruleFor(widget.group.rep);
     final rem = remember ?? this.remember;
     s.assign(txns, pick, remember: rem, label: rule?.label ?? '', note: rule?.note ?? '');
     setState(selected.clear);
@@ -265,8 +286,8 @@ class _GroupCardState extends State<_GroupCard> {
           FilledButton(
             onPressed: () {
               final cid = pick ?? rule?.categoryId;
-              if (cid != null && (label.text.trim().isNotEmpty || note.text.trim().isNotEmpty || rule != null)) {
-                s.saveRule(widget.group.key, cid, label: label.text.trim(), note: note.text.trim());
+              if (cid != null || label.text.trim().isNotEmpty || note.text.trim().isNotEmpty || rule != null) {
+                s.saveRule(widget.group.rep, cid, label: label.text.trim(), note: note.text.trim());
               }
               if (txNote.text.trim().isNotEmpty) s.setNote(txns.map((t) => t.id).toList(), txNote.text.trim());
               Navigator.pop(ctx);
@@ -334,8 +355,8 @@ class RulesScreen extends StatelessWidget {
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
             FilledButton(
               onPressed: () {
-                if (pattern.text.trim().isEmpty || cat == null) return;
-                s.saveRule(pattern.text.trim().toUpperCase(), cat!, exact: exact, label: label.text.trim(), note: note.text.trim());
+                if (pattern.text.trim().isEmpty || (cat == null && label.text.trim().isEmpty)) return;
+                s.saveRule(pattern.text.trim().toUpperCase(), cat, exact: exact, label: label.text.trim(), note: note.text.trim());
                 s.applyRules();
                 Navigator.pop(ctx);
               },

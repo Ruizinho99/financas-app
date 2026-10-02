@@ -13,6 +13,7 @@ import '../widgets/common.dart';
 import 'appearance_screen.dart';
 import 'budget_screen.dart' show showBudgetEditor;
 import 'classify_screen.dart';
+import 'groups_screen.dart';
 import 'import_screen.dart';
 import 'transactions_screen.dart' show confirm;
 
@@ -26,6 +27,7 @@ class MoreScreen extends StatelessWidget {
       body: ListView(children: [
         ListTile(leading: const Icon(Icons.palette_outlined), title: const Text('Aparência'), subtitle: const Text('Modo escuro e cores'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppearanceScreen()))),
         ListTile(leading: const Icon(Icons.category_outlined), title: const Text('Categorias e subcategorias'), subtitle: Text('${s.categories.length} categorias'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()))),
+        ListTile(leading: const Icon(Icons.hub_outlined), title: const Text('Grupos de títulos'), subtitle: Text('${s.groups.length} grupos'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupsScreen()))),
         ListTile(leading: const Icon(Icons.rule), title: const Text('Regras memorizadas'), subtitle: Text('${s.rules.length} regras'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RulesScreen()))),
         ListTile(leading: const Icon(Icons.upload_file), title: const Text('Importar extrato'), subtitle: const Text('PDF, CSV ou Excel'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportScreen()))),
         ListTile(leading: const Icon(Icons.history), title: const Text('Histórico de importações'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportsScreen()))),

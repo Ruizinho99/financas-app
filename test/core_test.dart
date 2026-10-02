@@ -84,6 +84,28 @@ RENDA JANEIRO 500,00 1.454,70
     expect(s.rollup(s.cat(food.id)!, s.totalsByCategory(p)), 10000);
     expect(s.targetIn(s.cat(food.id)!, Period.years(2026, 2026)), 600000);
   });
+  test('nome amigável aplica-se a movimentos com o mesmo nome', () {
+    final s = AppState(Db.memory());
+    final desp = s.addCategory(const Categoria(id: 0, name: 'Desporto'));
+    final gym = s.addCategory(Categoria(id: 0, name: 'Ginásio', parentId: desp));
+    const weird = 'XPTO*GYM 99887 HLM';
+    s.importRows('a.csv', 'csv', [ParsedRow(DateTime(2026, 1, 5), weird, -3990)],
+        categories: {merchantKey(weird): gym}, remember: {merchantKey(weird)}, names: {merchantKey(weird): 'Ginásio Holmes'});
+    final t1 = s.transactions.first;
+    expect(s.displayName(t1), 'Ginásio Holmes');
+    expect(t1.categoryId, gym);
+    // importação seguinte com o mesmo nome: nome e categoria vêm automaticamente
+    s.importRows('b.csv', 'csv', [ParsedRow(DateTime(2026, 2, 5), 'XPTO*GYM 11223 HLM', -3990)]);
+    final t2 = s.transactions.firstWhere((t) => t.date == DateTime(2026, 2, 5));
+    expect(s.displayName(t2), 'Ginásio Holmes');
+    expect(t2.categoryId, gym);
+    // só nome, sem categoria
+    s.importRows('c.csv', 'csv', [ParsedRow(DateTime(2026, 3, 1), 'TRF 123 JOAO', -1000)], names: {merchantKey('TRF 123 JOAO'): 'Mesada'});
+    final t3 = s.transactions.firstWhere((t) => t.date == DateTime(2026, 3, 1));
+    expect(s.displayName(t3), 'Mesada');
+    expect(t3.categoryId, isNull);
+  });
+
   test('obrigatória varia de mês para mês', () {
     final s = AppState(Db.memory());
     final casa = s.addCategory(const Categoria(id: 0, name: 'Casa'));
@@ -122,5 +144,59 @@ RENDA JANEIRO 500,00 1.454,70
     expect(s2.amoled, isTrue);
     s2.resetAppearance();
     expect(s2.themeMode, ThemeMode.system);
+  });
+
+  test('grupos: vários títulos, um nome e uma categoria', () {
+    final s = AppState(Db.memory());
+    final rest = s.addCategory(const Categoria(id: 0, name: 'Restaurantes'));
+    final bar = s.addCategory(const Categoria(id: 0, name: 'Bar'));
+    const t1 = 'TRANS RESTAURANTE ARMINDA', t2 = 'MB WAY RESTAURANTE ARMINDA 123';
+    s.importRows('a.csv', 'csv', [
+      ParsedRow(DateTime(2026, 1, 5), t1, -1500),
+      ParsedRow(DateTime(2026, 1, 9), t2, -2000),
+      ParsedRow(DateTime(2026, 1, 10), 'LIDL', -500),
+    ]);
+    expect(s.unclassifiedGroups().length, 3);
+
+    // juntar dois títulos num grupo com categoria: os movimentos existentes ficam classificados
+    final gid = s.createGroup('Restaurante Arminda', categoryId: rest, keys: {merchantKey(t1), merchantKey(t2)});
+    expect(s.transactions.where((t) => t.categoryId == rest).length, 2);
+    expect(s.displayName(s.transactions.firstWhere((t) => t.description == t1)), 'Restaurante Arminda');
+    expect(s.unclassifiedGroups().length, 1); // só o LIDL
+
+    // título do grupo numa importação futura: nome e categoria automáticos
+    s.importRows('b.csv', 'csv', [ParsedRow(DateTime(2026, 2, 5), 'MB WAY RESTAURANTE ARMINDA 999', -1000)]);
+    expect(s.transactions.firstWhere((t) => t.date == DateTime(2026, 2, 5)).categoryId, rest);
+
+    // um terceiro título junta-se ao grupo escrevendo o mesmo nome na importação
+    const t3 = 'PAG ARMINDA TAKEAWAY 77';
+    s.importRows('c.csv', 'csv', [ParsedRow(DateTime(2026, 3, 1), t3, -900)],
+        names: {merchantKey(t3): 'restaurante arminda'}, remember: {merchantKey(t3)}, categories: {merchantKey(t3): rest});
+    expect(s.rulesOfGroup(gid).length, 3);
+    expect(s.displayName(s.transactions.firstWhere((t) => t.date == DateTime(2026, 3, 1))), 'Restaurante Arminda');
+
+    // no Classificar, os três títulos aparecem num único cartão
+    final cards = s.allGroups().where((c) => c.groupId == gid).toList();
+    expect(cards.length, 1);
+    expect(cards.first.keys.length, 3);
+    expect(cards.first.txns.length, 4);
+
+    // mudar a categoria do grupo move os movimentos que estavam na antiga
+    s.updateGroup(Grupo(id: gid, name: 'Restaurante Arminda', categoryId: bar));
+    expect(s.transactions.where((t) => t.categoryId == bar).length, 4);
+
+    // tirar um título do grupo: mantém nome e categoria, mas deixa de acompanhar o grupo
+    final r1 = s.rulesOfGroup(gid).firstWhere((r) => r.pattern == merchantKey(t1));
+    s.removeFromGroup(r1.id);
+    expect(s.ruleFor(merchantKey(t1))!.groupId, isNull);
+    expect(s.ruleFor(merchantKey(t1))!.label, 'Restaurante Arminda');
+    expect(s.ruleFor(merchantKey(t1))!.categoryId, bar);
+    expect(s.rulesOfGroup(gid).length, 2);
+
+    // apagar o grupo dissolve-o sem perder nomes
+    s.deleteGroup(gid);
+    expect(s.groups, isEmpty);
+    expect(s.ruleFor(merchantKey(t2))!.label, 'Restaurante Arminda');
+    expect(s.ruleFor(merchantKey(t2))!.groupId, isNull);
   });
 }

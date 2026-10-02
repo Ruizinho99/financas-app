@@ -70,7 +70,7 @@ class Db {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         pattern TEXT NOT NULL,
         exact INTEGER NOT NULL DEFAULT 1,
-        category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+        category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
         label TEXT NOT NULL DEFAULT '',
         note TEXT NOT NULL DEFAULT ''
       );
@@ -104,6 +104,39 @@ class Db {
         _db.execute("ALTER TABLE categories ADD COLUMN emoji TEXT NOT NULL DEFAULT ''");
       } catch (_) {}
       _db.execute('PRAGMA user_version = 3');
+    }
+    if (v < 4) {
+      // v4: uma regra pode ter só nome amigável (sem categoria).
+      _db.execute('''
+        CREATE TABLE rules_new(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          pattern TEXT NOT NULL,
+          exact INTEGER NOT NULL DEFAULT 1,
+          category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+          label TEXT NOT NULL DEFAULT '',
+          note TEXT NOT NULL DEFAULT ''
+        );
+        INSERT INTO rules_new(id,pattern,exact,category_id,label,note)
+          SELECT id,pattern,exact,category_id,label,note FROM rules;
+        DROP TABLE rules;
+        ALTER TABLE rules_new RENAME TO rules;
+      ''');
+      _db.execute('PRAGMA user_version = 4');
+    }
+    if (v < 5) {
+      // v5: grupos de títulos (vários títulos → um nome e uma categoria).
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS rule_groups(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+          note TEXT NOT NULL DEFAULT ''
+        );
+      ''');
+      try {
+        _db.execute('ALTER TABLE rules ADD COLUMN group_id INTEGER REFERENCES rule_groups(id) ON DELETE SET NULL');
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 5');
     }
   }
 
@@ -249,19 +282,72 @@ class Db {
   }
 
   // ---------- Regras ----------
+  /// Regras já com nome/categoria/nota resolvidos (os do grupo, se pertencerem a um).
   List<Rule> rules() => _db
-      .select('SELECT * FROM rules ORDER BY id')
+      .select('''
+        SELECT r.id, r.pattern, r.exact, r.group_id,
+          CASE WHEN r.group_id IS NULL THEN r.category_id ELSE g.category_id END AS category_id,
+          CASE WHEN r.group_id IS NULL THEN r.label ELSE g.name END AS label,
+          CASE WHEN r.group_id IS NULL THEN r.note ELSE g.note END AS note
+        FROM rules r LEFT JOIN rule_groups g ON g.id = r.group_id ORDER BY r.id
+      ''')
       .map((r) => Rule(
             id: r['id'] as int,
             pattern: r['pattern'] as String,
             exact: r['exact'] == 1,
-            categoryId: r['category_id'] as int,
+            categoryId: r['category_id'] as int?,
             label: r['label'] as String,
             note: r['note'] as String,
+            groupId: r['group_id'] as int?,
           ))
       .toList();
 
-  void upsertRule(String pattern, int categoryId, {bool exact = true, String label = '', String note = ''}) {
+  // ---------- Grupos ----------
+  List<Grupo> ruleGroups() => _db
+      .select('SELECT * FROM rule_groups ORDER BY name COLLATE NOCASE')
+      .map((r) => Grupo(id: r['id'] as int, name: r['name'] as String, categoryId: r['category_id'] as int?, note: r['note'] as String))
+      .toList();
+
+  int saveRuleGroup({int? id, required String name, int? categoryId, String note = ''}) {
+    if (id == null) {
+      _db.execute('INSERT INTO rule_groups(name,category_id,note) VALUES(?,?,?)', [name, categoryId, note]);
+      return _db.lastInsertRowId;
+    }
+    _db.execute('UPDATE rule_groups SET name=?,category_id=?,note=? WHERE id=?', [name, categoryId, note, id]);
+    return id;
+  }
+
+  /// Garante que existe uma regra para o título e devolve o seu id.
+  int ensureRule(String pattern, {bool exact = true}) {
+    final ex = _db.select('SELECT id FROM rules WHERE pattern=? AND exact=?', [pattern, exact ? 1 : 0]);
+    if (ex.isNotEmpty) return ex.first['id'] as int;
+    _db.execute('INSERT INTO rules(pattern,exact) VALUES(?,?)', [pattern, exact ? 1 : 0]);
+    return _db.lastInsertRowId;
+  }
+
+  void setRuleGroup(int ruleId, int? groupId) =>
+      _db.execute('UPDATE rules SET group_id=? WHERE id=?', [groupId, ruleId]);
+
+  /// Copia os dados do grupo para as regras e tira-as do grupo (mantêm nome e categoria).
+  void detachRule(int ruleId) {
+    _db.execute('''
+      UPDATE rules SET
+        category_id = (SELECT category_id FROM rule_groups WHERE id = rules.group_id),
+        label = COALESCE((SELECT name FROM rule_groups WHERE id = rules.group_id), label),
+        note = COALESCE((SELECT note FROM rule_groups WHERE id = rules.group_id), note),
+        group_id = NULL
+      WHERE id = ? AND group_id IS NOT NULL
+    ''', [ruleId]);
+  }
+
+  void deleteRuleGroup(int id) {
+    for (final r in _db.select('SELECT id FROM rules WHERE group_id=?', [id])) {
+      detachRule(r['id'] as int);
+    }
+    _db.execute('DELETE FROM rule_groups WHERE id=?', [id]);
+  }
+
+  void upsertRule(String pattern, int? categoryId, {bool exact = true, String label = '', String note = ''}) {
     final ex = _db.select('SELECT id FROM rules WHERE pattern=? AND exact=?', [pattern, exact ? 1 : 0]);
     if (ex.isEmpty) {
       _db.execute('INSERT INTO rules(pattern,exact,category_id,label,note) VALUES(?,?,?,?,?)',

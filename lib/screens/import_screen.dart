@@ -29,6 +29,7 @@ class _ImportScreenState extends State<ImportScreen> {
   Set<int> excluded = {};
   final cats = <String, int?>{}; // chave do grupo -> categoria escolhida
   final noRemember = <String>{};
+  final names = <String, String>{}; // chave do grupo -> nome amigável
 
   Future<void> pick() async {
     setState(() {
@@ -148,7 +149,7 @@ class _ImportScreenState extends State<ImportScreen> {
                           final st = context.read<AppState>();
                           final chosen = Map<String, int?>.of(cats);
                           final (added, dup) = st.importRows(filename!, source, fr,
-                              categories: chosen, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
+                              categories: chosen, names: {for (final e in names.entries) if (!noRemember.contains(e.key)) e.key: e.value}, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
                           final unclassified = context.read<AppState>().unclassifiedGroups().length;
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -187,23 +188,58 @@ class _ImportScreenState extends State<ImportScreen> {
     final active = idx.where((i) => !excluded.contains(i)).toList();
     final total = active.fold(0, (a, i) => a + (invert ? -rows[i].amount : rows[i].amount));
     final isNewRule = value != null && (rule == null || rule.categoryId != value);
+    final shownName = names.containsKey(key) ? names[key]! : (rule?.label ?? '');
+    final byName = st.groupByName(shownName);
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
-            Expanded(child: Text(rule?.label.isNotEmpty == true ? rule!.label : key, style: const TextStyle(fontWeight: FontWeight.w700))),
+            Expanded(child: Text(shownName.isNotEmpty ? shownName : key, style: const TextStyle(fontWeight: FontWeight.w700))),
             MoneyText(total),
           ]),
+          Text('Original: ${rows[idx.first].description}', maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
           Text('${active.length} de ${idx.length} movimentos${rule != null ? ' · regra memorizada' : ''}', style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 10),
+          Autocomplete<String>(
+            key: ValueKey('name-$key'),
+            initialValue: TextEditingValue(text: shownName),
+            optionsBuilder: (v) {
+              final q = v.text.trim().toLowerCase();
+              if (q.isEmpty) return const Iterable<String>.empty();
+              return st.groups.map((g) => g.name).where((n) => n.toLowerCase().contains(q) && n.toLowerCase() != q);
+            },
+            onSelected: (n) => setState(() {
+              names[key] = n;
+              final g = st.groupByName(n);
+              if (g?.categoryId != null) cats[key] = g!.categoryId;
+            }),
+            fieldViewBuilder: (ctx, controller, focus, _) => TextField(
+              controller: controller,
+              focusNode: focus,
+              decoration: InputDecoration(
+                labelText: 'Nome ou grupo (opcional)',
+                hintText: 'Ex.: Ginásio, Restaurante Arminda…',
+                prefixIcon: const Icon(Icons.label_outline),
+                border: const OutlineInputBorder(),
+                isDense: true,
+                helperText: byName != null ? 'Junta-se ao grupo “${byName.name}” (${st.rulesOfGroup(byName.id).length} títulos)' : null,
+              ),
+              onChanged: (v) => setState(() {
+                names[key] = v;
+                final g = st.groupByName(v);
+                if (g?.categoryId != null && !cats.containsKey(key)) cats[key] = g!.categoryId;
+              }),
+            ),
+          ),
+          const SizedBox(height: 10),
           CategorySelector(value: value, compact: true, onChanged: (v) => setState(() => cats[key] = v)),
-          if (isNewRule)
+          if (isNewRule || (names[key]?.trim().isNotEmpty ?? false))
             CheckboxListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
-              title: const Text('Memorizar para futuras importações'),
+              title: const Text('Memorizar nome e categoria para o futuro'),
               value: !noRemember.contains(key),
               onChanged: (v) => setState(() => v! ? noRemember.remove(key) : noRemember.add(key)),
             ),
