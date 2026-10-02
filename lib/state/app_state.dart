@@ -493,11 +493,17 @@ class AppState extends ChangeNotifier {
     reload();
   }
 
-  /// Preço manual: guarda o valor e a hora.
-  void setHoldingPrice(int holdingId, double eur) {
+  /// Preço manual: [price] está na moeda do ativo; [eurPerUnit] é o câmbio (euros por 1 unidade dessa moeda).
+  /// Sem câmbio, usa o último conhecido.
+  void setHoldingPrice(int holdingId, double price, {double? eurPerUnit}) {
     final h = holding(holdingId);
     if (h == null) return;
-    db.saveHolding(h.copyWith(lastPrice: eur, lastPriceAt: DateTime.now()));
+    if (!h.foreign) {
+      db.saveHolding(h.copyWith(lastPrice: price, lastPriceOrig: price, lastFx: 1.0, lastPriceAt: DateTime.now()));
+    } else {
+      final fx = eurPerUnit ?? h.lastFx ?? 1;
+      db.saveHolding(h.copyWith(lastPrice: price * fx, lastPriceOrig: price, lastFx: fx, lastPriceAt: DateTime.now()));
+    }
     reload();
   }
 
@@ -573,7 +579,7 @@ class AppState extends ChangeNotifier {
       ]);
       for (final (h, q, err) in results) {
         if (q != null) {
-          db.saveHolding(h.copyWith(lastPrice: q.eur, lastPriceAt: q.at));
+          db.saveHolding(h.copyWith(lastPrice: q.eur, lastPriceAt: q.at, currency: q.currency, lastPriceOrig: q.original, lastFx: q.fx));
           updated++;
         } else {
           failed[h.name] = err ?? 'Erro inesperado.';

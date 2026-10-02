@@ -241,10 +241,14 @@ Future<int?> showHoldingEditor(
   final name = TextEditingController(text: edit?.name ?? '');
   final symbol = TextEditingController(text: edit?.symbol ?? '');
   final price = TextEditingController(
-    text: edit?.lastPrice == null
+    text: edit?.priceOrig == null
         ? ''
-        : edit!.lastPrice!.toString().replaceAll('.', ','),
+        : edit!.priceOrig!.toString().replaceAll('.', ','),
   );
+  final fxCtrl = TextEditingController(
+    text: edit?.lastFx != null && edit!.lastFx! > 0 ? (1 / edit.lastFx!).toStringAsFixed(4).replaceAll('.', ',') : '',
+  );
+  var currency = edit?.currency ?? 'EUR';
   var kind = edit?.kind ?? HoldingKind.etf;
   var provider = edit?.provider ?? PriceProvider.yahoo;
   var acc =
@@ -303,6 +307,20 @@ Future<int?> showHoldingEditor(
                 ],
               ),
               const SizedBox(height: 14),
+              DropdownButtonFormField<String>(
+                initialValue: kCurrencies.contains(currency) ? currency : null,
+                decoration: const InputDecoration(labelText: 'Moeda do ativo'),
+                items: [for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == 'EUR' ? 'EUR · euros' : c))],
+                onChanged: (v) => set(() => currency = v ?? 'EUR'),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                currency == 'EUR'
+                    ? 'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'
+                    : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para euros.',
+                style: Theme.of(ctx).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 14),
               Text('Preço', style: Theme.of(ctx).textTheme.labelLarge),
               const SizedBox(height: 6),
               SegmentedButton<PriceProvider>(
@@ -358,17 +376,26 @@ Future<int?> showHoldingEditor(
                     ),
                   ),
                 )
-              else
+              else ...[
                 TextField(
                   controller: price,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Preço atual (€, opcional)',
-                    prefixText: '€ ',
+                  decoration: InputDecoration(
+                    labelText: 'Preço atual ($currency, opcional)',
+                    prefixText: currency == 'EUR' ? '€ ' : null,
                   ),
                 ),
+                if (currency != 'EUR') ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: fxCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(labelText: 'Câmbio: 1 € = ? $currency'),
+                  ),
+                ],
+              ],
             ],
           ),
         ),
@@ -392,6 +419,12 @@ Future<int?> showHoldingEditor(
               final manual = provider == PriceProvider.manual
                   ? parseNum(price.text)
                   : null;
+              final rate = parseNum(fxCtrl.text);
+              final fx = currency == 'EUR' ? 1.0 : (rate != null && rate > 0 ? 1 / rate : edit?.lastFx);
+              if (provider == PriceProvider.manual && manual != null && currency != 'EUR' && fx == null) {
+                set(() => error = 'Indica o câmbio para converter o preço');
+                return;
+              }
               final base = (edit ?? Holding(id: 0, accountId: acc!, name: n))
                   .copyWith(
                     name: n,
@@ -401,8 +434,13 @@ Future<int?> showHoldingEditor(
                     symbol: provider == PriceProvider.manual
                         ? ''
                         : symbol.text.trim(),
+                    currency: currency,
+                    lastPriceOrig: provider == PriceProvider.manual
+                        ? (manual ?? edit?.lastPriceOrig)
+                        : edit?.lastPriceOrig,
+                    lastFx: provider == PriceProvider.manual && manual != null ? fx : edit?.lastFx,
                     lastPrice: provider == PriceProvider.manual
-                        ? (manual ?? edit?.lastPrice)
+                        ? (manual == null ? edit?.lastPrice : manual * (fx ?? 1))
                         : edit?.lastPrice,
                     lastPriceAt:
                         provider == PriceProvider.manual && manual != null
@@ -460,19 +498,20 @@ class OpFormScreen extends StatefulWidget {
 }
 
 class _OpFormScreenState extends State<OpFormScreen> {
-  late OpType type = widget.edit?.type ?? widget.type;
-  late int? accountId = widget.edit?.accountId ?? widget.accountId;
-  late int? holdingId = widget.edit?.holdingId ?? widget.holdingId;
-  late DateTime date = widget.edit?.date ?? DateTime.now();
+  late InvestOp? _edit = widget.edit;
+  late OpType type = _edit?.type ?? widget.type;
+  late int? accountId = _edit?.accountId ?? widget.accountId;
+  late int? holdingId = _edit?.holdingId ?? widget.holdingId;
+  late DateTime date = _edit?.date ?? DateTime.now();
   late bool byQty = widget.prefillCents == null;
   late final qtyCtrl = TextEditingController(
-    text: widget.edit != null && widget.edit!.quantity > 0
-        ? widget.edit!.quantity.toString().replaceAll('.', ',')
+    text: _edit != null && _edit!.quantity > 0
+        ? _edit!.quantity.toString().replaceAll('.', ',')
         : '',
   );
   late final priceCtrl = TextEditingController(
-    text: widget.edit != null && widget.edit!.price > 0
-        ? widget.edit!.price.toString().replaceAll('.', ',')
+    text: _edit != null && _edit!.price > 0
+        ? _edit!.price.toString().replaceAll('.', ',')
         : '',
   );
   late final totalCtrl = TextEditingController(
@@ -481,20 +520,21 @@ class _OpFormScreenState extends State<OpFormScreen> {
         : (widget.prefillCents! / 100).toStringAsFixed(2).replaceAll('.', ','),
   );
   late final feeCtrl = TextEditingController(
-    text: (widget.edit?.fee ?? 0) > 0
-        ? (widget.edit!.fee / 100).toStringAsFixed(2).replaceAll('.', ',')
+    text: (_edit?.fee ?? 0) > 0
+        ? (_edit!.fee / 100).toStringAsFixed(2).replaceAll('.', ',')
         : '',
   );
+  final fxCtrl = TextEditingController();
   late final amountCtrl = TextEditingController(
     text:
-        widget.edit != null && (type == OpType.dividend || type == OpType.cash)
-        ? (widget.edit!.amount.abs() / 100)
+        _edit != null && (type == OpType.dividend || type == OpType.cash)
+        ? (_edit!.amount.abs() / 100)
               .toStringAsFixed(2)
               .replaceAll('.', ',')
         : '',
   );
-  late final noteCtrl = TextEditingController(text: widget.edit?.note ?? '');
-  late bool cashIn = (widget.edit?.amount ?? 1) >= 0;
+  late final noteCtrl = TextEditingController(text: _edit?.note ?? '');
+  late bool cashIn = (_edit?.amount ?? 1) >= 0;
   String? error;
 
   bool get usesHolding => type != OpType.cash;
@@ -503,13 +543,29 @@ class _OpFormScreenState extends State<OpFormScreen> {
 
   double? get price => parseNum(priceCtrl.text);
   double? get totalIn => parseNum(totalCtrl.text);
-  double? get qty => byQty
-      ? parseNum(qtyCtrl.text)
-      : (totalIn != null && price != null && price! > 0
-            ? totalIn! / price!
-            : null);
-  double? get total =>
-      byQty ? (qty != null && price != null ? qty! * price! : null) : totalIn;
+  Holding? get _holding => holdingId == null ? null : context.read<AppState>().holding(holdingId);
+  String get ccy => _holding?.currency ?? 'EUR';
+  String get ccyLabel => ccy == 'EUR' ? '€' : ccy;
+
+  /// Operação num ativo que cota noutra moeda (USD…): o preço é nessa moeda e há câmbio.
+  bool get foreignTrade => tradeLike && (_holding?.foreign ?? false);
+  double? get rate => parseNum(fxCtrl.text); // unidades da moeda por 1 €
+  double? get eurPerUnit => !foreignTrade ? 1 : (rate != null && rate! > 0 ? 1 / rate! : null);
+
+  double? get qty {
+    if (byQty) return parseNum(qtyCtrl.text);
+    final fx = eurPerUnit;
+    return totalIn != null && price != null && price! > 0 && fx != null
+        ? totalIn! / (price! * fx)
+        : null;
+  }
+
+  /// Total em euros, sem comissão.
+  double? get total {
+    if (!byQty) return totalIn;
+    final fx = eurPerUnit;
+    return qty != null && price != null && fx != null ? qty! * price! * fx : null;
+  }
   int get fee => (parseCents(feeCtrl.text) ?? 0).abs();
 
   int? get amountCents {
@@ -537,15 +593,22 @@ class _OpFormScreenState extends State<OpFormScreen> {
       accountId = s.investAccounts.first.id;
     if (accountId == null && holdingId != null)
       accountId = s.holding(holdingId)?.accountId;
-    // preço inicial sugerido: o último preço conhecido do ativo
-    if (widget.edit == null &&
-        priceCtrl.text.isEmpty &&
-        holdingId != null &&
-        type != OpType.initial) {
-      final lp = s.holding(holdingId)?.lastPrice;
-      if (lp != null) priceCtrl.text = lp.toString().replaceAll('.', ',');
+    // posição inicial: se o ativo já tem uma, abre-a para editar (guardar substitui-a)
+    if (_edit == null && type == OpType.initial) {
+      final ex = _existingInitial(s, holdingId);
+      if (ex != null) _edit = ex;
     }
-    for (final c in [qtyCtrl, priceCtrl, totalCtrl, feeCtrl, amountCtrl]) {
+    if (_edit != null) {
+      _applyOp(_edit!, s.holding(_edit!.holdingId));
+    } else {
+      _prefillFx(s.holding(holdingId));
+      // preço inicial sugerido: o último preço conhecido do ativo
+      if (priceCtrl.text.isEmpty && holdingId != null && type != OpType.initial) {
+        final lp = s.holding(holdingId)?.priceOrig;
+        if (lp != null) priceCtrl.text = _num(lp);
+      }
+    }
+    for (final c in [qtyCtrl, priceCtrl, totalCtrl, feeCtrl, amountCtrl, fxCtrl]) {
       c.addListener(() => setState(() => error = null));
     }
   }
@@ -555,6 +618,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
     for (final c in [
       qtyCtrl,
       priceCtrl,
+      fxCtrl,
       totalCtrl,
       feeCtrl,
       amountCtrl,
@@ -563,6 +627,65 @@ class _OpFormScreenState extends State<OpFormScreen> {
       c.dispose();
     }
     super.dispose();
+  }
+
+  /// Posição inicial já registada para o ativo (a mais recente), se existir.
+  InvestOp? _existingInitial(AppState s, int? hid) {
+    if (hid == null) return null;
+    final l = s.investOps.where((o) => o.type == OpType.initial && o.holdingId == hid).toList()
+      ..sort((a, b) => a.date.compareTo(b.date) != 0 ? a.date.compareTo(b.date) : a.id.compareTo(b.id));
+    return l.isEmpty ? null : l.last;
+  }
+
+  /// Câmbio sugerido: o do último preço conhecido do ativo.
+  void _prefillFx(Holding? h) {
+    final fx = h?.lastFx;
+    fxCtrl.text = h != null && h.foreign && fx != null && fx > 0 ? _num(1 / fx) : '';
+  }
+
+  /// Preenche o formulário com uma operação existente.
+  void _applyOp(InvestOp o, Holding? h) {
+    byQty = true;
+    date = o.date;
+    qtyCtrl.text = o.quantity > 0 ? _num(o.quantity) : '';
+    totalCtrl.text = '';
+    feeCtrl.text = o.fee > 0 ? (o.fee / 100).toStringAsFixed(2).replaceAll('.', ',') : '';
+    noteCtrl.text = o.note;
+    var p = o.price;
+    if (h != null && h.foreign && tradeLike) {
+      if (o.fx != null && o.fx! > 0) {
+        fxCtrl.text = _num(1 / o.fx!);
+      } else {
+        // operação antiga, registada em euros: converte pelo câmbio atual para manter o custo em euros
+        _prefillFx(h);
+        final fx = h.lastFx;
+        if (fx != null && fx > 0) p = o.price / fx;
+      }
+    } else {
+      fxCtrl.text = '';
+    }
+    priceCtrl.text = p > 0 ? _num(p) : '';
+  }
+
+  static String _num(double v, [int digits = 6]) {
+    final t = double.parse(v.toStringAsFixed(digits));
+    return (t == t.roundToDouble() ? t.round().toString() : t.toString()).replaceAll('.', ',');
+  }
+
+  void _clearFields() {
+    for (final c in [qtyCtrl, priceCtrl, totalCtrl, feeCtrl, noteCtrl]) {
+      c.clear();
+    }
+    byQty = true;
+  }
+
+  Future<void> _liveFx(AppState s) async {
+    try {
+      final fx = await s.prices.fxToEur(ccy);
+      if (mounted && fx > 0) setState(() => fxCtrl.text = _num(1 / fx));
+    } on PriceException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Não consegui obter o câmbio: ${e.message}')));
+    }
   }
 
   void _save(AppState s) {
@@ -581,6 +704,10 @@ class _OpFormScreenState extends State<OpFormScreen> {
       setState(() => error = 'Indica valores válidos.');
       return;
     }
+    if (foreignTrade && eurPerUnit == null) {
+      setState(() => error = 'Indica o câmbio (1 € = ? $ccy).');
+      return;
+    }
     if (tradeLike && ((qty ?? 0) <= 0 || (price ?? 0) <= 0)) {
       setState(() => error = 'Indica a quantidade e o preço.');
       return;
@@ -593,21 +720,30 @@ class _OpFormScreenState extends State<OpFormScreen> {
       }
     }
     final op = InvestOp(
-      id: widget.edit?.id ?? 0,
+      id: _edit?.id ?? 0,
       accountId: accountId!,
       holdingId: usesHolding ? holdingId : null,
       date: date,
       type: type,
       quantity: tradeLike ? qty! : 0,
       price: tradeLike ? price! : 0,
+      fx: foreignTrade ? eurPerUnit : null,
       amount: amt,
       fee: (type == OpType.buy || type == OpType.sell) ? fee : 0,
       note: noteCtrl.text.trim(),
     );
-    if (widget.edit == null) {
-      s.addOp(op);
+    final int keepId;
+    if (_edit == null) {
+      keepId = s.addOp(op);
     } else {
       s.updateOp(op);
+      keepId = _edit!.id;
+    }
+    // só pode haver uma posição inicial por ativo: a nova substitui as anteriores
+    if (type == OpType.initial) {
+      for (final o in s.investOps.where((o) => o.type == OpType.initial && o.holdingId == holdingId && o.id != keepId).toList()) {
+        s.deleteOp(o.id);
+      }
     }
     Navigator.pop(context, true);
   }
@@ -616,17 +752,17 @@ class _OpFormScreenState extends State<OpFormScreen> {
   double? _position(AppState s) {
     final p = s.portfolio.positions.where((p) => p.holding.id == holdingId);
     if (p.isEmpty)
-      return widget.edit?.type == OpType.sell ? widget.edit!.quantity : 0;
+      return _edit?.type == OpType.sell ? _edit!.quantity : 0;
     return p.first.qty +
-        (widget.edit?.type == OpType.sell && widget.edit!.holdingId == holdingId
-            ? widget.edit!.quantity
+        (_edit?.type == OpType.sell && _edit!.holdingId == holdingId
+            ? _edit!.quantity
             : 0);
   }
 
   int _cashBefore(AppState s) {
     final a = s.portfolio.accounts.where((a) => a.account.id == accountId);
     var cash = a.isEmpty ? 0 : a.first.cashCents;
-    final e = widget.edit;
+    final e = _edit;
     if (e != null && e.accountId == accountId) {
       cash += switch (e.type) {
         OpType.buy => e.amount,
@@ -710,7 +846,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.edit == null ? type.label : 'Editar · ${type.label}',
+          _edit == null ? type.label : 'Editar · ${type.label}',
         ),
       ),
       body: ListView(
@@ -772,14 +908,30 @@ class _OpFormScreenState extends State<OpFormScreen> {
                         context,
                         accountId: accountId,
                       );
-                      if (id != null && mounted) setState(() => holdingId = id);
+                      if (id != null && mounted) {
+                        setState(() {
+                          holdingId = id;
+                          _prefillFx(s.holding(id));
+                        });
+                      }
                     } else {
                       setState(() {
                         holdingId = v;
-                        if (widget.edit == null && type != OpType.initial) {
-                          final lp = s.holding(v)?.lastPrice;
-                          if (lp != null)
-                            priceCtrl.text = lp.toString().replaceAll('.', ',');
+                        final h = s.holding(v);
+                        final ex = widget.edit == null && type == OpType.initial ? _existingInitial(s, v) : null;
+                        if (ex != null) {
+                          _edit = ex;
+                          _applyOp(ex, h);
+                        } else if (widget.edit == null) {
+                          if (_edit != null) {
+                            _edit = null;
+                            _clearFields();
+                          }
+                          _prefillFx(h);
+                          if (type != OpType.initial) {
+                            final lp = h?.priceOrig;
+                            if (lp != null) priceCtrl.text = _num(lp);
+                          }
                         }
                       });
                     }
@@ -864,19 +1016,37 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 ],
                 FieldLabel(
                   type == OpType.initial
-                      ? 'Preço médio de compra (€)'
-                      : 'Preço por unidade (€)',
+                      ? 'Preço médio de compra ($ccyLabel)'
+                      : 'Preço por unidade ($ccyLabel)',
                 ),
                 TextField(
                   controller: priceCtrl,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    prefixText: '€  ',
+                  decoration: InputDecoration(
+                    prefixText: ccy == 'EUR' ? '€  ' : null,
+                    suffixText: ccy == 'EUR' ? null : ccy,
                     hintText: '0,00',
                   ),
                 ),
+                if (foreignTrade) ...[
+                  FieldLabel(type == OpType.initial ? 'Câmbio médio na compra (1 € = ? $ccy)' : 'Câmbio (1 € = ? $ccy)'),
+                  TextField(
+                    controller: fxCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.currency_exchange),
+                      hintText: '1,0850',
+                      suffixIcon: IconButton(tooltip: 'Câmbio atual (internet)', icon: const Icon(Icons.sync), onPressed: () => _liveFx(s)),
+                    ),
+                  ),
+                  if (price != null && qty != null && eurPerUnit != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text('${fmtQty(qty!)} un. × ${fmtPriceIn(price!, ccy)} = ${fmtPriceIn(qty! * price!, ccy)} ≈ ${fmtMoney((qty! * price! * eurPerUnit! * 100).round())}', style: tt.bodySmall),
+                    ),
+                ],
                 if (!byQty && qty != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
@@ -951,6 +1121,15 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              if (widget.edit == null && _edit != null && type == OpType.initial) ...[
+                Callout(
+                  icon: Icons.history,
+                  color: cs.primary,
+                  title: 'Este ativo já tem uma posição inicial',
+                  body: 'Está carregada aqui. Ao guardar, substitui a anterior.',
+                ),
+                const SizedBox(height: 12),
+              ],
               summary(),
               if (error != null)
                 Padding(
@@ -961,13 +1140,13 @@ class _OpFormScreenState extends State<OpFormScreen> {
               FilledButton(
                 onPressed: () => _save(s),
                 child: Text(
-                  widget.edit == null ? 'Guardar' : 'Guardar alterações',
+                  _edit == null ? 'Guardar' : 'Guardar alterações',
                 ),
               ),
-              if (widget.edit != null)
+              if (_edit != null)
                 TextButton.icon(
                   onPressed: () {
-                    s.deleteOp(widget.edit!.id);
+                    s.deleteOp(_edit!.id);
                     Navigator.pop(context, true);
                   },
                   icon: const Icon(Icons.delete_outline),

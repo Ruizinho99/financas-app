@@ -13,6 +13,9 @@ class InvestAccount {
       InvestAccount(id: id, name: name ?? this.name, emoji: emoji ?? this.emoji, note: note ?? this.note, archived: archived ?? this.archived);
 }
 
+/// Moedas em que um ativo pode cotar (o resto da app é sempre em euros).
+const kCurrencies = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL'];
+
 enum HoldingKind { etf, stock, crypto, fund, bond, other }
 
 extension HoldingKindX on HoldingKind {
@@ -53,9 +56,12 @@ class Holding {
   final String symbol; // ex.: VWCE.DE (Yahoo) ou bitcoin (CoinGecko)
   final PriceProvider provider;
   final HoldingKind kind;
-  final double? lastPrice; // EUR
+  final double? lastPrice; // EUR (já convertido)
   final DateTime? lastPriceAt;
   final bool archived;
+  final String currency; // moeda em que o ativo cota: EUR, USD, GBP…
+  final double? lastPriceOrig; // último preço na moeda do ativo
+  final double? lastFx; // euros por 1 unidade da moeda do ativo, no momento do último preço
   const Holding({
     required this.id,
     required this.accountId,
@@ -66,11 +72,19 @@ class Holding {
     this.lastPrice,
     this.lastPriceAt,
     this.archived = false,
+    this.currency = 'EUR',
+    this.lastPriceOrig,
+    this.lastFx,
   });
+
+  bool get foreign => currency != 'EUR';
+
+  /// Último preço na moeda do ativo (em euros, se o ativo for em euros).
+  double? get priceOrig => foreign ? lastPriceOrig : lastPrice;
 
   bool get canAutoPrice => provider != PriceProvider.manual && symbol.trim().isNotEmpty;
 
-  Holding copyWith({String? name, String? symbol, PriceProvider? provider, HoldingKind? kind, int? accountId, Object? lastPrice = _k, Object? lastPriceAt = _k, bool? archived}) => Holding(
+  Holding copyWith({String? name, String? symbol, PriceProvider? provider, HoldingKind? kind, int? accountId, Object? lastPrice = _k, Object? lastPriceAt = _k, bool? archived, String? currency, Object? lastPriceOrig = _k, Object? lastFx = _k}) => Holding(
         id: id,
         accountId: accountId ?? this.accountId,
         name: name ?? this.name,
@@ -80,6 +94,9 @@ class Holding {
         lastPrice: identical(lastPrice, _k) ? this.lastPrice : lastPrice as double?,
         lastPriceAt: identical(lastPriceAt, _k) ? this.lastPriceAt : lastPriceAt as DateTime?,
         archived: archived ?? this.archived,
+        currency: currency ?? this.currency,
+        lastPriceOrig: identical(lastPriceOrig, _k) ? this.lastPriceOrig : lastPriceOrig as double?,
+        lastFx: identical(lastFx, _k) ? this.lastFx : lastFx as double?,
       );
 }
 
@@ -109,7 +126,8 @@ class InvestOp {
   final DateTime date;
   final OpType type;
   final double quantity;
-  final double price; // EUR por unidade
+  final double price; // por unidade, na moeda do ativo (se [fx] for nulo, em euros)
+  final double? fx; // euros por 1 unidade da moeda do ativo, no dia da operação (nulo = preço em euros)
   final int amount; // cêntimos: pago (compra, com comissão), recebido (venda/dividendo), custo da posição (initial) ou ± (cash)
   final int fee; // cêntimos (já incluída em amount nas compras)
   final String note;
@@ -121,6 +139,7 @@ class InvestOp {
     required this.type,
     this.quantity = 0,
     this.price = 0,
+    this.fx,
     this.amount = 0,
     this.fee = 0,
     this.note = '',
@@ -134,11 +153,18 @@ class Position {
   final int costCents; // custo (EUR) da quantidade que ainda tens
   final int realizedCents; // ganho/perda já realizado nas vendas
   final int dividendsCents;
-  const Position(this.holding, this.qty, this.costCents, this.realizedCents, this.dividendsCents);
+  final double costOrig; // custo na moeda do ativo (igual a costCents/100 nos ativos em euros)
+  const Position(this.holding, this.qty, this.costCents, this.realizedCents, this.dividendsCents, [double? costOrig]) : costOrig = costOrig ?? costCents / 100;
 
   bool get open => qty > 1e-9;
-  double get avgCost => open ? costCents / 100 / qty : 0;
-  double? get price => holding.lastPrice;
+  double get avgCost => open ? costCents / 100 / qty : 0; // EUR
+  double get avgCostOrig => open ? costOrig / qty : 0; // moeda do ativo
+  double? get price => holding.lastPrice; // EUR
+  double? get priceOrig => holding.priceOrig; // moeda do ativo
+
+  /// Ganho/perda só no preço, na moeda do ativo (sem o efeito do câmbio).
+  double? get plOrig => open && holding.foreign && priceOrig != null ? qty * priceOrig! - costOrig : null;
+  double? get plOrigPct => plOrig != null && costOrig > 0 ? plOrig! / costOrig : null;
   bool get priced => price != null;
 
   /// Valor atual; sem preço, usa o custo (para não distorcer o total).
@@ -201,24 +227,33 @@ class Portfolio {
       final positions = <Position>[];
       for (final h in hs) {
         var qty = 0.0, cost = 0, realized = 0, divs = 0;
+        var costOrig = 0.0;
+        // custo de uma compra na moeda do ativo (operações antigas, sem câmbio, usam o câmbio atual)
+        double origOf(InvestOp o) {
+          if (!h.foreign) return o.amount / 100;
+          if (o.fx != null && o.fx! > 0) return o.quantity * o.price + o.fee / 100 / o.fx!;
+          return o.amount / 100 / ((h.lastFx ?? 0) > 0 ? h.lastFx! : 1);
+        }
+
         for (final o in aops.where((o) => o.holdingId == h.id)) {
           switch (o.type) {
             case OpType.initial:
-              qty += o.quantity;
-              cost += o.amount;
             case OpType.buy:
               qty += o.quantity;
               cost += o.amount;
+              costOrig += origOf(o);
             case OpType.sell:
               final sold = o.quantity > qty ? qty : o.quantity;
               final avg = qty > 1e-9 ? cost / qty : 0.0;
               final removed = (avg * sold).round();
               realized += o.amount - removed;
+              costOrig -= qty > 1e-9 ? costOrig * sold / qty : 0;
               cost -= removed;
               qty -= sold;
               if (qty < 1e-9) {
                 qty = 0;
                 cost = 0;
+                costOrig = 0;
               }
             case OpType.dividend:
               divs += o.amount;
@@ -226,7 +261,7 @@ class Portfolio {
               break;
           }
         }
-        positions.add(Position(h, qty, cost, realized, divs));
+        positions.add(Position(h, qty, cost, realized, divs, costOrig));
       }
       for (final o in aops) {
         switch (o.type) {

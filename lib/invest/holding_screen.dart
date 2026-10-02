@@ -21,19 +21,27 @@ class _HoldingScreenState extends State<HoldingScreen> {
   bool refreshing = false;
 
   Future<void> _setPrice(AppState s, Holding h) async {
-    final ctrl = TextEditingController(text: h.lastPrice?.toString().replaceAll('.', ',') ?? '');
-    final v = await showDialog<double>(
+    final ctrl = TextEditingController(text: h.priceOrig?.toString().replaceAll('.', ',') ?? '');
+    final fxCtrl = TextEditingController(text: h.lastFx != null && h.lastFx! > 0 ? (1 / h.lastFx!).toStringAsFixed(4).replaceAll('.', ',') : '');
+    final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Definir preço'),
-        content: TextField(controller: ctrl, autofocus: true, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Preço por unidade (€)', prefixText: '€  ')),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: ctrl, autofocus: true, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'Preço por unidade (${h.foreign ? h.currency : '€'})', prefixText: h.foreign ? null : '€  ')),
+          if (h.foreign) ...[
+            const SizedBox(height: 12),
+            TextField(controller: fxCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'Câmbio: 1 € = ? ${h.currency}')),
+          ],
+        ]),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, parseNum(ctrl.text)), child: const Text('Guardar')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Guardar')),
         ],
       ),
     );
-    if (v != null && v > 0) s.setHoldingPrice(h.id, v);
+    final v = parseNum(ctrl.text), rate = parseNum(fxCtrl.text);
+    if (ok == true && v != null && v > 0) s.setHoldingPrice(h.id, v, eurPerUnit: h.foreign && rate != null && rate > 0 ? 1 / rate : null);
   }
 
   @override
@@ -71,7 +79,9 @@ class _HoldingScreenState extends State<HoldingScreen> {
           title: 'Preço atual',
           subtitle: '${h.kind.emoji} ${h.kind.label} · ${acc?.name ?? ''} · ${h.provider.label}${h.symbol.isEmpty ? '' : ' (${h.symbol})'}',
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(h.lastPrice == null ? 'Sem preço' : fmtPrice(h.lastPrice!), style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+            Text(h.lastPrice == null ? 'Sem preço' : fmtPriceIn(h.priceOrig ?? h.lastPrice!, h.currency), style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+            if (h.foreign && h.lastPrice != null)
+              Text('≈ ${fmtPrice(h.lastPrice!)}${h.lastFx != null && h.lastFx! > 0 ? ' · 1 € = ${fmtNum(1 / h.lastFx!, 4)} ${h.currency}' : ''}', style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
             if (h.lastPriceAt != null) Text('Atualizado ${fmtAgo(h.lastPriceAt!)} · ${fmtDate(h.lastPriceAt!)}', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
@@ -103,10 +113,11 @@ class _HoldingScreenState extends State<HoldingScreen> {
               : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   Wrap(spacing: 28, runSpacing: 14, children: [
                     Stat('Quantidade', fmtQty(p.qty)),
-                    Stat('Preço médio de compra', p.open ? fmtPrice(p.avgCost) : '–'),
+                    Stat('Preço médio de compra', p.open ? fmtPriceIn(h.foreign ? p.avgCostOrig : p.avgCost, h.currency) : '–', extra: h.foreign && p.open ? Text('≈ ${fmtPrice(p.avgCost)}', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)) : null),
                     Stat('Investido', fmtMoney(p.costCents)),
                     Stat('Valor atual', fmtMoney(p.valueCents)),
                     if (p.open && p.priced) Stat('Ganho / perda', fmtSignedMoney(p.plCents), color: plColor(context, p.plCents), extra: p.plPct == null ? null : Text(fmtSignedPercent(p.plPct!), style: tt.bodySmall?.copyWith(color: plColor(context, p.plCents), fontWeight: FontWeight.w600))),
+                    if (p.plOrig != null) Stat('Ganho em ${h.currency}', '${p.plOrig! >= 0 ? '+' : '−'}${fmtPriceIn(p.plOrig!.abs(), h.currency)}', extra: p.plOrigPct == null ? null : Text('${fmtSignedPercent(p.plOrigPct!)} · só o preço', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant))),
                     if (p.realizedCents != 0) Stat('Ganho realizado', fmtSignedMoney(p.realizedCents), color: plColor(context, p.realizedCents)),
                     if (p.dividendsCents > 0) Stat('Dividendos', fmtMoney(p.dividendsCents)),
                   ]),
@@ -126,7 +137,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
           SectionCard(
             title: 'Operações',
             subtitle: 'Toca para editar',
-            child: Column(children: [for (final o in ops) OpTile(o, onTap: () => showOpForm(context, type: o.type, edit: o))]),
+            child: Column(children: [for (final o in ops) OpTile(o, currency: h.currency, onTap: () => showOpForm(context, type: o.type, edit: o))]),
           ),
       ]),
     );

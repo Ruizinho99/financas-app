@@ -57,6 +57,15 @@ String fmtQty(double q) => _qtyFmt.format(q);
 /// Preço unitário: 2 casas, ou 4 se for menor que 1 €.
 String fmtPrice(double p) => NumberFormat.currency(locale: 'pt_PT', symbol: '€', decimalDigits: p.abs() < 1 ? 4 : 2).format(p);
 
+/// Número com [digits] casas, no formato português ("1,0850").
+String fmtNum(double v, int digits) => NumberFormat.decimalPatternDigits(locale: 'pt_PT', decimalDigits: digits).format(v);
+
+/// Preço na moeda do ativo: euros com €, outras moedas como "123,45 USD".
+String fmtPriceIn(double p, String ccy) {
+  if (ccy == 'EUR') return fmtPrice(p);
+  return '${NumberFormat.decimalPatternDigits(locale: 'pt_PT', decimalDigits: p.abs() < 1 ? 4 : 2).format(p)} $ccy';
+}
+
 /// "+12,3%" / "−4,0%"
 String fmtSignedPercent(double v) => '${v >= 0 ? '+' : '−'}${(v.abs() * 100).toStringAsFixed(1).replaceAll('.', ',')}%';
 

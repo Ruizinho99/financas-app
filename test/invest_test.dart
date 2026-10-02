@@ -272,4 +272,63 @@ void main() {
       expect(s.holding(manual)!.lastPrice, 8.5);
     });
   });
+
+  group('ativos noutras moedas', () {
+    test('o preço do Yahoo em USD guarda a moeda, o preço original e o câmbio', () async {
+      final client = MockClient((r) async {
+        final sym = r.url.pathSegments.last;
+        final price = sym == 'USDEUR=X' ? 0.9 : 200.0;
+        return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': price, 'currency': sym == 'USDEUR=X' ? 'EUR' : 'USD'}}]}}), 200);
+      });
+      final s = AppState(Db.memory(), prices: PriceService(client: client));
+      final acc = s.addInvestAccount('XTB');
+      final id = s.addHolding(Holding(id: 0, accountId: acc, name: 'Apple', symbol: 'AAPL', provider: PriceProvider.yahoo, kind: HoldingKind.stock));
+      final r = await s.refreshPrices();
+      expect(r.updated, 1);
+      final h = s.holding(id)!;
+      expect(h.currency, 'USD');
+      expect(h.priceOrig, 200);
+      expect(h.lastFx, 0.9);
+      expect(h.lastPrice, closeTo(180, 1e-9));
+    });
+
+    test('custo médio em USD ignora o câmbio do dia; o valor em EUR usa o câmbio atual', () {
+      final h = Holding(id: 1, accountId: 1, name: 'X', currency: 'USD', lastPrice: 99, lastPriceOrig: 110, lastFx: 0.9);
+      final acc = InvestAccount(id: 1, name: 'B');
+      final pf = Portfolio.compute(accounts: [acc], holdings: [h], txns: const [], ops: [
+        InvestOp(id: 1, accountId: 1, holdingId: 1, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 10, price: 100, fx: 0.8, amount: 80000),
+        InvestOp(id: 2, accountId: 1, holdingId: 1, date: DateTime(2026, 2, 1), type: OpType.buy, quantity: 10, price: 120, fx: 1 / 1.1, amount: 109091),
+      ]);
+      final p = pf.accounts.first.positions.first;
+      expect(p.avgCostOrig, closeTo(110, 1e-9));
+      expect(p.costCents, 189091);
+      expect(p.valueCents, (20 * 99 * 100));
+      expect(p.plOrig, closeTo(0, 1e-9)); // 20 × 110 − 2200
+    });
+
+    test('vender parte da posição reduz o custo em USD proporcionalmente', () {
+      final h = Holding(id: 1, accountId: 1, name: 'X', currency: 'USD', lastPrice: 90, lastPriceOrig: 100, lastFx: 0.9);
+      final pf = Portfolio.compute(accounts: [InvestAccount(id: 1, name: 'B')], holdings: [h], txns: const [], ops: [
+        InvestOp(id: 1, accountId: 1, holdingId: 1, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 10, price: 100, fx: 0.9, amount: 90000),
+        InvestOp(id: 2, accountId: 1, holdingId: 1, date: DateTime(2026, 2, 1), type: OpType.sell, quantity: 4, price: 120, fx: 0.9, amount: 43200),
+      ]);
+      final p = pf.accounts.first.positions.first;
+      expect(p.qty, 6);
+      expect(p.costOrig, closeTo(600, 1e-9));
+      expect(p.costCents, 54000);
+      expect(p.realizedCents, 43200 - 36000);
+    });
+
+    test('a base de dados guarda moeda, câmbio e preço original', () {
+      final s = AppState(Db.memory(), prices: PriceService(client: MockClient((_) async => http.Response('{}', 404))));
+      final a = s.addInvestAccount('XTB');
+      final h = s.addHolding(Holding(id: 0, accountId: a, name: 'N', currency: 'GBP', lastPrice: 11, lastPriceOrig: 10, lastFx: 1.1));
+      s.addOp(InvestOp(id: 0, accountId: a, holdingId: h, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 1, price: 10, fx: 1.1, amount: 1100));
+      final r = s.holding(h)!;
+      expect((r.currency, r.lastPriceOrig, r.lastFx), ('GBP', 10.0, 1.1));
+      expect(s.investOps.single.fx, 1.1);
+      s.setHoldingPrice(h, 12, eurPerUnit: 1.2);
+      expect(s.holding(h)!.lastPrice, closeTo(14.4, 1e-9));
+    });
+  });
 }

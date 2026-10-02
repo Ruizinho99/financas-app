@@ -11,7 +11,8 @@ class PriceQuote {
   final String currency; // moeda original do ativo
   final double original; // preço na moeda original
   final DateTime at;
-  const PriceQuote(this.eur, this.currency, this.original, this.at);
+  final double fx; // euros por 1 unidade da moeda original (1 se já for euros)
+  const PriceQuote(this.eur, this.currency, this.original, this.at, [this.fx = 1]);
 }
 
 class SymbolHit {
@@ -81,7 +82,11 @@ class PriceService {
     return (price: price.toDouble(), currency: (meta['currency'] as String?) ?? 'EUR');
   }
 
+  /// Euros por 1 unidade de [ccy] (ex.: USD → 0,92).
+  Future<double> fxToEur(String ccy) => _fxToEur(ccy.toUpperCase());
+
   Future<double> _fxToEur(String ccy) async {
+    if (ccy == 'EUR') return 1;
     if (_fx.containsKey(ccy)) return _fx[ccy]!;
     final r = await _yahooRaw('${ccy}EUR=X');
     return _fx[ccy] = r.price;
@@ -96,8 +101,8 @@ class PriceService {
       ccy = 'GBP';
     }
     final original = price;
-    if (ccy != 'EUR') price *= await _fxToEur(ccy);
-    return PriceQuote(price, ccy, original, DateTime.now());
+    final fx = ccy == 'EUR' ? 1.0 : await _fxToEur(ccy);
+    return PriceQuote(original * fx, ccy, original, DateTime.now(), fx);
   }
 
   Future<PriceQuote> _gecko(String id) async {

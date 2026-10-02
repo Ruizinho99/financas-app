@@ -198,7 +198,7 @@ class _AccountScreenState extends State<AccountScreen> {
             title: 'Histórico',
             subtitle: 'Toca para editar',
             child: Column(children: [
-              for (final o in ops.take(30)) OpTile(o, holdingName: s.holding(o.holdingId)?.name, onTap: () => showOpForm(context, type: o.type, edit: o)),
+              for (final o in ops.take(30)) OpTile(o, holdingName: s.holding(o.holdingId)?.name, currency: s.holding(o.holdingId)?.currency ?? 'EUR', onTap: () => showOpForm(context, type: o.type, edit: o)),
               if (ops.length > 30) Padding(padding: const EdgeInsets.all(8), child: Text('… e mais ${ops.length - 30}', style: tt.bodySmall)),
             ]),
           ),

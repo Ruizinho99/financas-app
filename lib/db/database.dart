@@ -215,6 +215,20 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 8');
     }
+    if (v < 9) {
+      // v9: moeda por ativo (EUR, USD…) e câmbio de cada operação.
+      for (final sql in [
+        "ALTER TABLE holdings ADD COLUMN currency TEXT NOT NULL DEFAULT 'EUR'",
+        'ALTER TABLE holdings ADD COLUMN last_price_orig REAL',
+        'ALTER TABLE holdings ADD COLUMN last_fx REAL',
+        'ALTER TABLE invest_ops ADD COLUMN fx REAL',
+      ]) {
+        try {
+          _db.execute(sql);
+        } catch (_) {}
+      }
+      _db.execute('PRAGMA user_version = 9');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -542,16 +556,19 @@ class Db {
           lastPrice: (r['last_price'] as num?)?.toDouble(),
           lastPriceAt: at == null ? null : DateTime.tryParse(at),
           archived: r['archived'] == 1,
+          currency: (r['currency'] as String?) ?? 'EUR',
+          lastPriceOrig: (r['last_price_orig'] as num?)?.toDouble(),
+          lastFx: (r['last_fx'] as num?)?.toDouble(),
         );
       }).toList();
 
   int saveHolding(Holding h, {bool isNew = false}) {
-    final vals = [h.accountId, h.name, h.symbol, h.provider.name, h.kind.name, h.lastPrice, h.lastPriceAt?.toIso8601String(), h.archived ? 1 : 0];
+    final vals = [h.accountId, h.name, h.symbol, h.provider.name, h.kind.name, h.lastPrice, h.lastPriceAt?.toIso8601String(), h.archived ? 1 : 0, h.currency, h.lastPriceOrig, h.lastFx];
     if (isNew) {
-      _db.execute('INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived) VALUES(?,?,?,?,?,?,?,?)', vals);
+      _db.execute('INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx) VALUES(?,?,?,?,?,?,?,?,?,?,?)', vals);
       return _db.lastInsertRowId;
     }
-    _db.execute('UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=? WHERE id=?', [...vals, h.id]);
+    _db.execute('UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=? WHERE id=?', [...vals, h.id]);
     return h.id;
   }
 
@@ -567,6 +584,7 @@ class Db {
             type: OpType.values.firstWhere((t) => t.name == r['type'], orElse: () => OpType.cash),
             quantity: (r['quantity'] as num).toDouble(),
             price: (r['price'] as num).toDouble(),
+            fx: (r['fx'] as num?)?.toDouble(),
             amount: r['amount'] as int,
             fee: r['fee'] as int,
             note: r['note'] as String,
@@ -574,12 +592,12 @@ class Db {
       .toList();
 
   int saveInvestOp(InvestOp o, {bool isNew = false}) {
-    final vals = [o.accountId, o.holdingId, isoDate(o.date), o.type.name, o.quantity, o.price, o.amount, o.fee, o.note];
+    final vals = [o.accountId, o.holdingId, isoDate(o.date), o.type.name, o.quantity, o.price, o.amount, o.fee, o.note, o.fx];
     if (isNew) {
-      _db.execute('INSERT INTO invest_ops(account_id,holding_id,date,type,quantity,price,amount,fee,note) VALUES(?,?,?,?,?,?,?,?,?)', vals);
+      _db.execute('INSERT INTO invest_ops(account_id,holding_id,date,type,quantity,price,amount,fee,note,fx) VALUES(?,?,?,?,?,?,?,?,?,?)', vals);
       return _db.lastInsertRowId;
     }
-    _db.execute('UPDATE invest_ops SET account_id=?,holding_id=?,date=?,type=?,quantity=?,price=?,amount=?,fee=?,note=? WHERE id=?', [...vals, o.id]);
+    _db.execute('UPDATE invest_ops SET account_id=?,holding_id=?,date=?,type=?,quantity=?,price=?,amount=?,fee=?,note=?,fx=? WHERE id=?', [...vals, o.id]);
     return o.id;
   }
 

@@ -231,4 +231,84 @@ void main() {
     expect(find.text('A minha carteira'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('definir a posição inicial outra vez traz o valor anterior e substitui-o', (tester) async {
+    final d = buildInvestData(); // VWCE: posição inicial 10 × 100 + compra de 5
+    await _pump(tester, d.s, OpFormScreen(type: OpType.initial, accountId: d.xtb, holdingId: d.vwce), size: const Size(360, 1800));
+    expect(find.text('Este ativo já tem uma posição inicial'), findsOneWidget);
+    final fields = find.byType(TextField);
+    expect((tester.widget(fields.at(0)) as TextField).controller!.text, '10');
+    expect((tester.widget(fields.at(1)) as TextField).controller!.text, '100');
+    await tester.enterText(fields.at(0), '12');
+    await tester.enterText(fields.at(1), '95');
+    await tester.pump();
+    await tester.ensureVisible(find.text('Guardar alterações'));
+    await tester.tap(find.text('Guardar alterações'));
+    await tester.pumpAndSettle();
+    final inits = d.s.investOps.where((o) => o.type == OpType.initial && o.holdingId == d.vwce).toList();
+    expect(inits.length, 1);
+    expect((inits.first.quantity, inits.first.price, inits.first.amount), (12.0, 95.0, 114000));
+    final pos = d.s.portfolio.positions.firstWhere((p) => p.holding.id == d.vwce);
+    expect(pos.qty, 17); // 12 + 5 comprados
+  });
+
+  testWidgets('posições iniciais duplicadas (versão antiga) ficam numa só ao guardar', (tester) async {
+    final d = buildInvestData();
+    d.s.addOp(InvestOp(id: 0, accountId: d.xtb, holdingId: d.vwce, date: DateTime(2025, 7, 1), type: OpType.initial, quantity: 1, price: 100, amount: 10000));
+    await _pump(tester, d.s, OpFormScreen(type: OpType.initial, accountId: d.xtb), size: const Size(360, 1800));
+    // escolher o ativo: carrega a posição inicial mais recente
+    await tester.tap(find.byType(DropdownButtonFormField<int>).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Vanguard').last);
+    await tester.pumpAndSettle();
+    expect((tester.widget(find.byType(TextField).at(0)) as TextField).controller!.text, '1');
+    await tester.enterText(find.byType(TextField).at(0), '10');
+    await tester.pump();
+    await tester.ensureVisible(find.text('Guardar alterações'));
+    await tester.tap(find.text('Guardar alterações'));
+    await tester.pumpAndSettle();
+    expect(d.s.investOps.where((o) => o.type == OpType.initial && o.holdingId == d.vwce).length, 1);
+    expect(d.s.portfolio.positions.firstWhere((p) => p.holding.id == d.vwce).qty, 15);
+  });
+
+  testWidgets('ativo em dólares: compra com câmbio, preço médio em USD e em EUR', (tester) async {
+    final d = buildInvestData();
+    final nvda = d.s.addHolding(Holding(id: 0, accountId: d.xtb, name: 'Nvidia', kind: HoldingKind.stock, currency: 'USD', lastPrice: 110, lastPriceOrig: 120, lastFx: 110 / 120));
+    await _pump(tester, d.s, OpFormScreen(type: OpType.buy, accountId: d.xtb, holdingId: nvda), size: const Size(360, 1900));
+    final fields = find.byType(TextField);
+    // quantidade, preço (USD, sugerido 120), câmbio (sugerido 1/0,9167), comissão
+    expect((tester.widget(fields.at(1)) as TextField).controller!.text, '120');
+    await tester.enterText(fields.at(0), '2');
+    await tester.enterText(fields.at(1), '200');
+    await tester.enterText(fields.at(2), '1,25'); // 1 € = 1,25 USD → 1 USD = 0,80 €
+    await tester.enterText(fields.at(3), '1');
+    await tester.pump();
+    expect(find.textContaining('Total a pagar: 321,00'), findsOneWidget); // 2 × 200 × 0,80 + 1
+    await tester.ensureVisible(find.text('Guardar'));
+    await tester.tap(find.text('Guardar'));
+    await tester.pumpAndSettle();
+    final op = d.s.investOps.last;
+    expect((op.price, op.amount, op.fee), (200.0, 32100, 100));
+    expect(op.fx, closeTo(0.8, 1e-9));
+    final pos = d.s.portfolio.positions.firstWhere((p) => p.holding.id == nvda);
+    expect(pos.avgCostOrig, closeTo(200.625, 1e-9)); // (400 + 1 € ÷ 0,80) ÷ 2
+    expect(pos.avgCost, closeTo(160.5, 1e-9));
+    expect(pos.valueCents, (2 * 110 * 100));
+    expect(pos.plOrig, closeTo(2 * 120 - 401.25, 1e-6), reason: 'ganho só no preço, em USD');
+  });
+
+  testWidgets('editar uma compra antiga em euros de um ativo em USD mantém o custo em euros', (tester) async {
+    final d = buildInvestData();
+    final h = d.s.holding(d.aapl)!;
+    d.s.updateHolding(h.copyWith(currency: 'USD', lastPriceOrig: 150 / 0.9, lastFx: 0.9));
+    final op = d.s.investOps.firstWhere((o) => o.holdingId == d.aapl); // 2 × 140 € = 280 €, sem câmbio guardado
+    await _pump(tester, d.s, OpFormScreen(type: op.type, edit: op), size: const Size(360, 1900));
+    expect(find.textContaining('Total a pagar: 280,00'), findsOneWidget);
+    await tester.ensureVisible(find.text('Guardar alterações'));
+    await tester.tap(find.text('Guardar alterações'));
+    await tester.pumpAndSettle();
+    final saved = d.s.investOps.firstWhere((o) => o.id == op.id);
+    expect(saved.amount, 28000);
+    expect(saved.fx, closeTo(0.9, 1e-5));
+  });
 }

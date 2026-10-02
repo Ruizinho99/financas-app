@@ -23,7 +23,7 @@ flutter build apk --release
 
 Os APKs estão na secção **Releases** do GitHub.
 
-- **Carteira (investimentos)**: plataformas (XTB, exchange…), ativos com preço médio de compra e posição inicial, compras, vendas e dividendos, dinheiro por alocar (standby), transferências do banco associadas a cada plataforma (e lembradas nas próximas importações) e atualização de preços por APIs gratuitas sem chave (Yahoo Finance e CoinGecko), convertidos para euros.
+- **Carteira (investimentos)**: plataformas (XTB, exchange…), ativos com preço médio de compra e posição inicial, compras, vendas e dividendos, dinheiro por alocar (standby), transferências do banco associadas a cada plataforma (e lembradas nas próximas importações) e atualização de preços por APIs gratuitas sem chave (Yahoo Finance e CoinGecko), convertidos para euros. Ativos em dólares (ou outras moedas): o preço de compra fica na moeda do ativo com o câmbio de cada compra, e vês o ganho em USD e em EUR. A posição inicial pode ser reaberta e é substituída ao guardar.
 
 ## Notas
 - Cada banco tem um layout de PDF diferente; o parser (`lib/import/parsers.dart`) é genérico e pode precisar de ajustes. CSV/Excel são mais fiáveis.
