@@ -88,6 +88,7 @@ class Txn {
   final int? accountId;
   final bool isTransfer; // transferência entre contas: fora das despesas/receitas
   final String? receiptPath; // nome do ficheiro do recibo (na pasta de recibos da app)
+  final int? investAccountId; // entrega (ou levantamento) de/para uma plataforma de investimento
 
   const Txn({
     required this.id,
@@ -103,6 +104,7 @@ class Txn {
     this.accountId,
     this.isTransfer = false,
     this.receiptPath,
+    this.investAccountId,
   });
 }
 

@@ -4,6 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+import '../invest/invest.dart';
 import '../models.dart';
 import '../util/format.dart';
 
@@ -170,6 +171,50 @@ class Db {
       }
       _db.execute('PRAGMA user_version = 7');
     }
+    if (v < 8) {
+      // v8: investimentos (plataformas, ativos, operações, títulos que são entregas a plataformas).
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS invest_accounts(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          emoji TEXT NOT NULL DEFAULT '',
+          note TEXT NOT NULL DEFAULT '',
+          archived INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE TABLE IF NOT EXISTS holdings(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          account_id INTEGER NOT NULL REFERENCES invest_accounts(id) ON DELETE CASCADE,
+          name TEXT NOT NULL,
+          symbol TEXT NOT NULL DEFAULT '',
+          provider TEXT NOT NULL DEFAULT 'manual',
+          kind TEXT NOT NULL DEFAULT 'etf',
+          last_price REAL,
+          last_price_at TEXT,
+          archived INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE TABLE IF NOT EXISTS invest_ops(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          account_id INTEGER NOT NULL REFERENCES invest_accounts(id) ON DELETE CASCADE,
+          holding_id INTEGER REFERENCES holdings(id) ON DELETE CASCADE,
+          date TEXT NOT NULL,
+          type TEXT NOT NULL,
+          quantity REAL NOT NULL DEFAULT 0,
+          price REAL NOT NULL DEFAULT 0,
+          amount INTEGER NOT NULL DEFAULT 0,
+          fee INTEGER NOT NULL DEFAULT 0,
+          note TEXT NOT NULL DEFAULT ''
+        );
+        CREATE TABLE IF NOT EXISTS invest_patterns(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          pattern TEXT NOT NULL,
+          account_id INTEGER NOT NULL REFERENCES invest_accounts(id) ON DELETE CASCADE
+        );
+      ''');
+      try {
+        _db.execute('ALTER TABLE transactions ADD COLUMN invest_account_id INTEGER REFERENCES invest_accounts(id) ON DELETE SET NULL');
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 8');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -254,6 +299,7 @@ class Db {
         accountId: r['account_id'] as int?,
         isTransfer: r['is_transfer'] == 1,
         receiptPath: r['receipt_path'] as String?,
+        investAccountId: r['invest_account_id'] as int?,
       );
 
   List<Txn> transactions() =>
@@ -275,11 +321,12 @@ class Db {
     int? accountId,
     bool isTransfer = false,
     String? receiptPath,
+    int? investAccountId,
   }) {
     _db.execute(
-        'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash,account_id,is_transfer,receipt_path) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash,account_id,is_transfer,receipt_path,invest_account_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [isoDate(date), description, amount, balance, categoryId, note, source, merchantKey, importId,
-          hashOf(date, description, amount, balance), accountId, isTransfer ? 1 : 0, receiptPath]);
+          hashOf(date, description, amount, balance), accountId, isTransfer ? 1 : 0, receiptPath, investAccountId]);
     return _db.lastInsertRowId;
   }
 
@@ -287,9 +334,9 @@ class Db {
       _db.select('SELECT 1 FROM transactions WHERE hash=? LIMIT 1', [h]).isNotEmpty;
 
   void updateTransaction(Txn t, {required String merchantKey}) => _db.execute(
-      'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=? WHERE id=?',
+      'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=?,invest_account_id=? WHERE id=?',
       [isoDate(t.date), t.description, t.amount, t.balance, t.categoryId, t.note, merchantKey,
-        hashOf(t.date, t.description, t.amount, t.balance), t.accountId, t.isTransfer ? 1 : 0, t.receiptPath, t.id]);
+        hashOf(t.date, t.description, t.amount, t.balance), t.accountId, t.isTransfer ? 1 : 0, t.receiptPath, t.investAccountId, t.id]);
 
   /// Nomes dos ficheiros de recibo dos movimentos indicados.
   List<String> receiptsOf(List<int> ids) => [
@@ -462,6 +509,110 @@ class Db {
 
   void putSetting(String key, String value) =>
       _db.execute('INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)', [key, value]);
+
+  // ---------- Investimentos ----------
+  List<InvestAccount> investAccounts() => _db
+      .select('SELECT * FROM invest_accounts ORDER BY name COLLATE NOCASE')
+      .map((r) => InvestAccount(id: r['id'] as int, name: r['name'] as String, emoji: r['emoji'] as String, note: r['note'] as String, archived: r['archived'] == 1))
+      .toList();
+
+  int saveInvestAccount({int? id, required String name, String emoji = '', String note = '', bool archived = false}) {
+    if (id == null) {
+      _db.execute('INSERT INTO invest_accounts(name,emoji,note,archived) VALUES(?,?,?,?)', [name, emoji, note, archived ? 1 : 0]);
+      return _db.lastInsertRowId;
+    }
+    _db.execute('UPDATE invest_accounts SET name=?,emoji=?,note=?,archived=? WHERE id=?', [name, emoji, note, archived ? 1 : 0, id]);
+    return id;
+  }
+
+  void deleteInvestAccount(int id) {
+    // os movimentos do banco associados deixam de apontar para a plataforma (continuam transferências)
+    _db.execute('DELETE FROM invest_accounts WHERE id=?', [id]);
+  }
+
+  List<Holding> holdings() => _db.select('SELECT * FROM holdings ORDER BY name COLLATE NOCASE').map((r) {
+        final at = r['last_price_at'] as String?;
+        return Holding(
+          id: r['id'] as int,
+          accountId: r['account_id'] as int,
+          name: r['name'] as String,
+          symbol: r['symbol'] as String,
+          provider: PriceProvider.values.firstWhere((p) => p.name == r['provider'], orElse: () => PriceProvider.manual),
+          kind: HoldingKind.values.firstWhere((k) => k.name == r['kind'], orElse: () => HoldingKind.other),
+          lastPrice: (r['last_price'] as num?)?.toDouble(),
+          lastPriceAt: at == null ? null : DateTime.tryParse(at),
+          archived: r['archived'] == 1,
+        );
+      }).toList();
+
+  int saveHolding(Holding h, {bool isNew = false}) {
+    final vals = [h.accountId, h.name, h.symbol, h.provider.name, h.kind.name, h.lastPrice, h.lastPriceAt?.toIso8601String(), h.archived ? 1 : 0];
+    if (isNew) {
+      _db.execute('INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived) VALUES(?,?,?,?,?,?,?,?)', vals);
+      return _db.lastInsertRowId;
+    }
+    _db.execute('UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=? WHERE id=?', [...vals, h.id]);
+    return h.id;
+  }
+
+  void deleteHolding(int id) => _db.execute('DELETE FROM holdings WHERE id=?', [id]);
+
+  List<InvestOp> investOps() => _db
+      .select('SELECT * FROM invest_ops ORDER BY date, id')
+      .map((r) => InvestOp(
+            id: r['id'] as int,
+            accountId: r['account_id'] as int,
+            holdingId: r['holding_id'] as int?,
+            date: DateTime.parse(r['date'] as String),
+            type: OpType.values.firstWhere((t) => t.name == r['type'], orElse: () => OpType.cash),
+            quantity: (r['quantity'] as num).toDouble(),
+            price: (r['price'] as num).toDouble(),
+            amount: r['amount'] as int,
+            fee: r['fee'] as int,
+            note: r['note'] as String,
+          ))
+      .toList();
+
+  int saveInvestOp(InvestOp o, {bool isNew = false}) {
+    final vals = [o.accountId, o.holdingId, isoDate(o.date), o.type.name, o.quantity, o.price, o.amount, o.fee, o.note];
+    if (isNew) {
+      _db.execute('INSERT INTO invest_ops(account_id,holding_id,date,type,quantity,price,amount,fee,note) VALUES(?,?,?,?,?,?,?,?,?)', vals);
+      return _db.lastInsertRowId;
+    }
+    _db.execute('UPDATE invest_ops SET account_id=?,holding_id=?,date=?,type=?,quantity=?,price=?,amount=?,fee=?,note=? WHERE id=?', [...vals, o.id]);
+    return o.id;
+  }
+
+  void deleteInvestOp(int id) => _db.execute('DELETE FROM invest_ops WHERE id=?', [id]);
+
+  List<({int id, String pattern, int accountId})> investPatterns() => _db
+      .select('SELECT * FROM invest_patterns ORDER BY id')
+      .map((r) => (id: r['id'] as int, pattern: r['pattern'] as String, accountId: r['account_id'] as int))
+      .toList();
+
+  void addInvestPattern(String pattern, int accountId) {
+    final ex = _db.select('SELECT id FROM invest_patterns WHERE pattern=?', [pattern]);
+    if (ex.isEmpty) {
+      _db.execute('INSERT INTO invest_patterns(pattern,account_id) VALUES(?,?)', [pattern, accountId]);
+    } else {
+      _db.execute('UPDATE invest_patterns SET account_id=? WHERE id=?', [accountId, ex.first['id']]);
+    }
+  }
+
+  void deleteInvestPattern(int id) => _db.execute('DELETE FROM invest_patterns WHERE id=?', [id]);
+
+  /// Marca movimentos como entregas/levantamentos de uma plataforma (ou desmarca com [accountId] nulo).
+  void setInvestAccount(List<int> txnIds, int? accountId) {
+    for (final id in txnIds) {
+      if (accountId == null) {
+        _db.execute('UPDATE transactions SET invest_account_id=NULL, is_transfer=0 WHERE id=?', [id]);
+      } else {
+        _db.execute('UPDATE transactions SET invest_account_id=?, is_transfer=1, category_id=NULL WHERE id=?', [accountId, id]);
+      }
+    }
+  }
+
+  void wipeInvestments() => _db.execute('DELETE FROM invest_ops; DELETE FROM holdings; DELETE FROM invest_patterns; DELETE FROM invest_accounts;');
 
   void wipeAll() {
     _db.execute('DELETE FROM transactions; DELETE FROM rules; DELETE FROM rule_groups; DELETE FROM imports; DELETE FROM salaries;');

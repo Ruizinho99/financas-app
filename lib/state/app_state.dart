@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../db/database.dart';
 import '../import/parsers.dart';
+import '../invest/invest.dart';
+import '../invest/price_service.dart';
 import '../models.dart';
 import '../util/format.dart';
 import '../util/receipts.dart';
@@ -66,7 +68,8 @@ class CategoryStat {
 
 class AppState extends ChangeNotifier {
   final Db db;
-  AppState(this.db) {
+  final PriceService prices;
+  AppState(this.db, {PriceService? prices}) : prices = prices ?? PriceService() {
     reload();
   }
 
@@ -75,6 +78,10 @@ class AppState extends ChangeNotifier {
   List<Rule> rules = [];
   List<Grupo> groups = [];
   List<Conta> accounts = [];
+  List<InvestAccount> investAccounts = [];
+  List<Holding> holdings = [];
+  List<InvestOp> investOps = [];
+  List<({int id, String pattern, int accountId})> investPatterns = [];
   List<MandatoryRange> mandatoryRanges = [];
   Map<String, int> salaries = {};
   int defaultSalary = 0;
@@ -85,6 +92,10 @@ class AppState extends ChangeNotifier {
     rules = db.rules();
     groups = db.ruleGroups();
     accounts = db.accounts();
+    investAccounts = db.investAccounts();
+    holdings = db.holdings();
+    investOps = db.investOps();
+    investPatterns = db.investPatterns();
     mandatoryRanges = db.mandatoryRanges();
     salaries = db.salaries();
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
@@ -409,6 +420,157 @@ class AppState extends ChangeNotifier {
     return t;
   }
 
+  // ---------- Investimentos ----------
+  /// Plataformas, posições, dinheiro por alocar e totais (tudo em EUR).
+  Portfolio get portfolio => Portfolio.compute(
+        accounts: investAccounts.where((a) => !a.archived).toList(),
+        holdings: holdings.where((h) => !h.archived).toList(),
+        ops: investOps,
+        txns: transactions.where((t) => t.investAccountId != null).toList(),
+      );
+
+  InvestAccount? investAccount(int? id) {
+    if (id == null) return null;
+    for (final a in investAccounts) {
+      if (a.id == id) return a;
+    }
+    return null;
+  }
+
+  Holding? holding(int? id) {
+    if (id == null) return null;
+    for (final h in holdings) {
+      if (h.id == id) return h;
+    }
+    return null;
+  }
+
+  int addInvestAccount(String name, {String emoji = '', String note = ''}) {
+    final id = db.saveInvestAccount(name: name.trim(), emoji: emoji, note: note);
+    reload();
+    return id;
+  }
+
+  void updateInvestAccount(InvestAccount a) {
+    db.saveInvestAccount(id: a.id, name: a.name.trim(), emoji: a.emoji, note: a.note, archived: a.archived);
+    reload();
+  }
+
+  void deleteInvestAccount(int id) {
+    db.deleteInvestAccount(id);
+    reload();
+  }
+
+  int addHolding(Holding h) {
+    final id = db.saveHolding(h, isNew: true);
+    reload();
+    return id;
+  }
+
+  void updateHolding(Holding h) {
+    db.saveHolding(h);
+    reload();
+  }
+
+  void deleteHolding(int id) {
+    db.deleteHolding(id);
+    reload();
+  }
+
+  int addOp(InvestOp o) {
+    final id = db.saveInvestOp(o, isNew: true);
+    reload();
+    return id;
+  }
+
+  void updateOp(InvestOp o) {
+    db.saveInvestOp(o);
+    reload();
+  }
+
+  void deleteOp(int id) {
+    db.deleteInvestOp(id);
+    reload();
+  }
+
+  /// Preço manual: guarda o valor e a hora.
+  void setHoldingPrice(int holdingId, double eur) {
+    final h = holding(holdingId);
+    if (h == null) return;
+    db.saveHolding(h.copyWith(lastPrice: eur, lastPriceAt: DateTime.now()));
+    reload();
+  }
+
+  /// Marca movimentos do banco como entregas (saída) ou levantamentos (entrada) de uma plataforma.
+  /// Com [rememberTitles] lembra os títulos para as próximas importações.
+  void linkTransfers(List<int> txnIds, int accountId, {bool rememberTitles = false}) {
+    db.setInvestAccount(txnIds, accountId);
+    if (rememberTitles) {
+      for (final k in {for (final t in transactions) if (txnIds.contains(t.id)) t.merchantKey}) {
+        db.addInvestPattern(k, accountId);
+      }
+    }
+    reload();
+  }
+
+  void unlinkTransfers(List<int> txnIds) {
+    db.setInvestAccount(txnIds, null);
+    reload();
+  }
+
+  void deleteInvestPattern(int id) {
+    db.deleteInvestPattern(id);
+    reload();
+  }
+
+  /// Plataforma associada a um título memorizado (igual ou que contém o padrão).
+  int? investAccountForKey(String key) {
+    int? contains;
+    for (final p in investPatterns) {
+      if (p.pattern == key) return p.accountId;
+      if (contains == null && key.contains(p.pattern)) contains = p.accountId;
+    }
+    return contains;
+  }
+
+  /// Aplica os títulos memorizados aos movimentos já existentes. Devolve quantos marcou.
+  int applyInvestPatterns() {
+    var n = 0;
+    for (final t in transactions.where((t) => t.investAccountId == null)) {
+      final a = investAccountForKey(t.merchantKey);
+      if (a != null) {
+        db.setInvestAccount([t.id], a);
+        n++;
+      }
+    }
+    if (n > 0) reload();
+    return n;
+  }
+
+  /// Dinheiro enviado para plataformas num período (entregas menos levantamentos).
+  int investedIn(Period p) =>
+      transactions.where((t) => t.investAccountId != null && p.contains(t.date)).fold(0, (a, t) => a - t.amount);
+
+  /// Atualiza os preços dos ativos com fonte automática. Só usa a internet aqui, a pedido.
+  Future<({int updated, Map<String, String> failed})> refreshPrices({int? accountId, int? holdingId}) async {
+    final targets = holdings.where((h) => !h.archived && h.canAutoPrice && (accountId == null || h.accountId == accountId) && (holdingId == null || h.id == holdingId)).toList();
+    var updated = 0;
+    final failed = <String, String>{};
+    for (final h in targets) {
+      try {
+        final q = await prices.quote(h.provider, h.symbol);
+        db.saveHolding(h.copyWith(lastPrice: q.eur, lastPriceAt: q.at));
+        updated++;
+      } on PriceException catch (e) {
+        failed[h.name] = e.message;
+      } catch (e) {
+        failed[h.name] = 'Erro inesperado.';
+      }
+    }
+    reload();
+    return (updated: updated, failed: failed);
+  }
+
   // ---------- Escrita ----------
   /// Já existe, no mesmo nível (mesma categoria-mãe), uma categoria com este nome?
   bool categoryNameTaken(String name, int? parentId, {int? excludeId}) {
@@ -675,17 +837,19 @@ class AppState extends ChangeNotifier {
       }
       seen.add(h);
       final key = merchantKey(r.description);
+      final inv = investAccountForKey(key); // título memorizado como entrega a uma plataforma
       db.insertTransaction(
         date: r.date,
         description: r.description,
         amount: r.amount,
         balance: r.balance,
-        categoryId: r.isTransfer ? null : (categories.containsKey(key) ? categories[key] : ruleFor(key)?.categoryId),
+        categoryId: (r.isTransfer || inv != null) ? null : (categories.containsKey(key) ? categories[key] : ruleFor(key)?.categoryId),
         source: source,
         merchantKey: key,
         importId: importId,
         accountId: (r.account != null ? accountsByName[r.account] : null) ?? accountId,
-        isTransfer: r.isTransfer,
+        isTransfer: r.isTransfer || inv != null,
+        investAccountId: inv,
       );
       added++;
     }
@@ -714,7 +878,10 @@ class AppState extends ChangeNotifier {
       Receipts.delete(t.receiptPath);
     }
     db.wipeAll();
-    if (categories) db.wipeCategories();
+    if (categories) {
+      db.wipeCategories();
+      db.wipeInvestments();
+    }
     reload();
   }
 }
