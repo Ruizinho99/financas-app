@@ -158,6 +158,18 @@ class Db {
       }
       _db.execute('PRAGMA user_version = 6');
     }
+    if (v < 7) {
+      // v7: categorias com período de validade (ex.: "Férias 2027").
+      for (final sql in [
+        'ALTER TABLE categories ADD COLUMN active_from TEXT',
+        'ALTER TABLE categories ADD COLUMN active_to TEXT',
+      ]) {
+        try {
+          _db.execute(sql);
+        } catch (_) {}
+      }
+      _db.execute('PRAGMA user_version = 7');
+    }
   }
 
   // ---------- Categorias ----------
@@ -173,6 +185,8 @@ class Db {
         budgetValue: r['budget_value'] as int,
         hasBudget: r['has_budget'] == 1,
         archived: r['archived'] == 1,
+        activeFrom: r['active_from'] as String?,
+        activeTo: r['active_to'] as String?,
       );
 
   List<Categoria> categories() =>
@@ -182,16 +196,16 @@ class Db {
     final vals = [
       c.name, c.parentId, c.isIncome ? 1 : 0, c.emoji, c.description,
       c.budgetType == BudgetType.goal ? 'goal' : 'limit', c.budgetPercent ? 1 : 0,
-      c.budgetValue, c.hasBudget ? 1 : 0, c.archived ? 1 : 0,
+      c.budgetValue, c.hasBudget ? 1 : 0, c.archived ? 1 : 0, c.activeFrom, c.activeTo,
     ];
     if (id == null) {
       _db.execute(
-          'INSERT INTO categories(name,parent_id,is_income,emoji,description,budget_type,budget_percent,budget_value,has_budget,archived) VALUES(?,?,?,?,?,?,?,?,?,?)',
+          'INSERT INTO categories(name,parent_id,is_income,emoji,description,budget_type,budget_percent,budget_value,has_budget,archived,active_from,active_to) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
           vals);
       return _db.lastInsertRowId;
     }
     _db.execute(
-        'UPDATE categories SET name=?,parent_id=?,is_income=?,emoji=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=? WHERE id=?',
+        'UPDATE categories SET name=?,parent_id=?,is_income=?,emoji=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=?,active_from=?,active_to=? WHERE id=?',
         [...vals, id]);
     return id;
   }

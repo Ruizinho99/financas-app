@@ -275,7 +275,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             },
           ),
           if (type != _Type.transfer)
-            CategorySelector(form: true, income: type == _Type.income, value: categoryId, onChanged: (v) => setState(() => categoryId = v)),
+            CategorySelector(form: true, income: type == _Type.income, when: DateTimeRange(start: date, end: date), value: categoryId, onChanged: (v) => setState(() => categoryId = v)),
           const FieldLabel('Descrição', optional: true),
           BoxField(icon: Icons.notes, controller: desc, hint: 'Adiciona uma descrição (opcional)', maxLength: 120),
           const SizedBox(height: 14),

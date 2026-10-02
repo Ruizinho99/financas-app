@@ -22,9 +22,10 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final key = monthKey(month);
     final salary = s.salaryFor(key);
     final own = s.totalsByCategory(period);
-    final allocated = s.totalAllocated(salary);
+    final allocated = s.totalAllocated(salary, key);
     final income = s.txnsIn(period).where((t) => t.amount > 0 && (s.cat(t.categoryId)?.isIncome ?? false)).fold(0, (a, t) => a + t.amount);
-    final expenseRoots = s.roots.where((c) => !c.isIncome).toList();
+    // só categorias que existem neste mês (ou que tiveram movimentos nele)
+    final expenseRoots = s.roots.where((c) => !c.isIncome && (s.isCategoryActive(c, key) || s.rollup(c, own) != 0)).toList();
     final unallocated = salary - allocated;
 
     return Scaffold(
@@ -38,7 +39,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           ),
         ],
       ),
-      body: ListView(padding: const EdgeInsets.fromLTRB(12, 0, 12, 90), children: [
+      body: ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 100), children: [
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           IconButton(icon: const Icon(Icons.chevron_left), onPressed: () => setState(() => month = DateTime(month.year, month.month - 1))),
           Text(fmtMonth(month), style: Theme.of(context).textTheme.titleMedium),
@@ -86,7 +87,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
   Widget _section(BuildContext context, AppState s, String title, List<Categoria> cats, Map<int, int> own, int salary, String month) {
     if (cats.isEmpty) return const SizedBox.shrink();
-    final total = cats.fold(0, (a, c) => a + s.effectiveMonthlyTarget(c, salary));
+    final total = cats.fold(0, (a, c) => a + s.effectiveMonthlyTarget(c, salary, month));
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
         padding: const EdgeInsets.fromLTRB(4, 16, 4, 4),
@@ -153,9 +154,9 @@ class _CategoryBudgetTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final c = category;
-    final kids = s.childrenOf(c.id);
+    final kids = s.childrenOf(c.id).where((k) => s.isCategoryActive(k, month) || (own[k.id] ?? 0) != 0).toList();
     final spent = s.rollup(c, own);
-    final target = s.effectiveMonthlyTarget(c, salary);
+    final target = s.effectiveMonthlyTarget(c, salary, month);
     final hasAny = target > 0;
     final type = c.hasBudget ? c.budgetType : (kids.firstWhere((k) => k.hasBudget, orElse: () => c).budgetType);
     return Card(
@@ -282,10 +283,11 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
           FilledButton(
             onPressed: () {
               final v = has ? (parseCents(ctrl.text) ?? 0) : 0;
-              s.updateCategory(Categoria(
-                id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, emoji: c.emoji,
-                description: c.description, budgetType: type, budgetPercent: percent, budgetValue: v,
-                hasBudget: has && v > 0, archived: c.archived,
+              s.updateCategory(c.copyWith(
+                budgetType: type,
+                budgetPercent: percent,
+                budgetValue: v,
+                hasBudget: has && v > 0,
               ));
               Navigator.pop(ctx);
             },

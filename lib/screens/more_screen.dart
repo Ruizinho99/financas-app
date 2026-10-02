@@ -123,17 +123,26 @@ class CategoriesScreen extends StatelessWidget {
 
   Widget _tile(BuildContext context, AppState s, Categoria c, int depth) {
     final count = s.transactions.where((t) => t.categoryId == c.id).length;
-    return ListTile(
+    final now = monthKey(DateTime.now());
+    final ended = c.activeTo != null && now.compareTo(c.activeTo!) > 0;
+    final future = c.activeFrom != null && now.compareTo(c.activeFrom!) < 0;
+    String m(String k) => '${k.substring(5, 7)}/${k.substring(0, 4)}';
+    final dates = !c.hasDates ? null : '${c.activeFrom == null ? 'desde sempre' : 'de ${m(c.activeFrom!)}'} ${c.activeTo == null ? 'em diante' : 'a ${m(c.activeTo!)}'}${ended ? ' · terminada' : (future ? ' · futura' : '')}';
+    return Opacity(opacity: (ended || c.archived) ? 0.55 : 1, child: ListTile(
       contentPadding: EdgeInsets.only(left: 16.0 + depth * 32, right: 8),
       leading: CatBadge(c, size: depth == 0 ? 24 : 20),
       title: Text(c.name, style: TextStyle(fontWeight: depth == 0 ? FontWeight.w700 : null, decoration: c.archived ? TextDecoration.lineThrough : null)),
-      subtitle: Text([if (c.isIncome) 'Rendimento', '$count mov.', if (s.rangesOf(c.id).isNotEmpty) 'Obrigatória em ${s.rangesOf(c.id).length} período(s)', if (c.description.isNotEmpty) c.description].join(' · ')),
+      subtitle: Text([if (c.isIncome) 'Rendimento', if (dates != null) dates, '$count mov.', if (s.rangesOf(c.id).isNotEmpty) 'Obrigatória em ${s.rangesOf(c.id).length} período(s)', if (c.description.isNotEmpty) c.description].join(' · ')),
       onTap: () => showCategoryEditor(context, edit: c),
       trailing: PopupMenuButton<String>(
         onSelected: (v) async {
           if (v == 'sub') showCategoryEditor(context, parentId: c.id);
           if (v == 'budget') showBudgetEditor(context, c);
-          if (v == 'archive') s.updateCategory(Categoria(id: c.id, name: c.name, parentId: c.parentId, isIncome: c.isIncome, emoji: c.emoji, description: c.description, budgetType: c.budgetType, budgetPercent: c.budgetPercent, budgetValue: c.budgetValue, hasBudget: c.hasBudget, archived: !c.archived));
+          if (v == 'archive') s.updateCategory(c.copyWith(archived: !c.archived));
+          if (v == 'dup') {
+            final id = s.duplicateForNextYear(c);
+            if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Criada “${s.cat(id)?.name}”.')));
+          }
           if (v == 'delete') {
             if (await confirm(context, 'Apagar “${c.name}”? Os $count movimentos ficam sem categoria${depth == 0 ? ' e as subcategorias são apagadas' : ''}.') && context.mounted) {
               s.deleteCategory(c.id);
@@ -143,10 +152,11 @@ class CategoriesScreen extends StatelessWidget {
         itemBuilder: (_) => [
           if (depth == 0) const PopupMenuItem(value: 'sub', child: Text('Nova subcategoria')),
           const PopupMenuItem(value: 'budget', child: Text('Orçamento')),
+          if (c.hasDates) const PopupMenuItem(value: 'dup', child: Text('Duplicar para o ano seguinte')),
           PopupMenuItem(value: 'archive', child: Text(c.archived ? 'Reativar' : 'Arquivar')),
           const PopupMenuItem(value: 'delete', child: Text('Apagar')),
         ],
       ),
-    );
+    ));
   }
 }

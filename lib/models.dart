@@ -1,5 +1,7 @@
 enum BudgetType { limit, goal }
 
+const Object _keep = Object();
+
 class Categoria {
   final int id;
   final String name;
@@ -12,6 +14,8 @@ class Categoria {
   final int budgetValue; // cêntimos ou percentagem*100 (ex.: 2500 = 25,00%)
   final bool hasBudget;
   final bool archived;
+  final String? activeFrom; // AAAA-MM: primeiro mês em que a categoria existe (nulo = desde sempre)
+  final String? activeTo; // AAAA-MM: último mês (nulo = sem fim)
 
   const Categoria({
     required this.id,
@@ -25,7 +29,45 @@ class Categoria {
     this.budgetValue = 0,
     this.hasBudget = false,
     this.archived = false,
+    this.activeFrom,
+    this.activeTo,
   });
+
+  bool get hasDates => activeFrom != null || activeTo != null;
+
+  /// A categoria (só pelas suas próprias datas) existe no mês [month] (AAAA-MM)?
+  bool activeIn(String month) =>
+      (activeFrom == null || month.compareTo(activeFrom!) >= 0) && (activeTo == null || month.compareTo(activeTo!) <= 0);
+
+  Categoria copyWith({
+    String? name,
+    int? parentId,
+    bool? isIncome,
+    String? emoji,
+    String? description,
+    BudgetType? budgetType,
+    bool? budgetPercent,
+    int? budgetValue,
+    bool? hasBudget,
+    bool? archived,
+    Object? activeFrom = _keep,
+    Object? activeTo = _keep,
+  }) =>
+      Categoria(
+        id: id,
+        name: name ?? this.name,
+        parentId: parentId ?? this.parentId,
+        isIncome: isIncome ?? this.isIncome,
+        emoji: emoji ?? this.emoji,
+        description: description ?? this.description,
+        budgetType: budgetType ?? this.budgetType,
+        budgetPercent: budgetPercent ?? this.budgetPercent,
+        budgetValue: budgetValue ?? this.budgetValue,
+        hasBudget: hasBudget ?? this.hasBudget,
+        archived: archived ?? this.archived,
+        activeFrom: identical(activeFrom, _keep) ? this.activeFrom : activeFrom as String?,
+        activeTo: identical(activeTo, _keep) ? this.activeTo : activeTo as String?,
+      );
 
   /// Alocação mensal em cêntimos dado o salário líquido.
   int monthlyTarget(int salaryCents) =>

@@ -237,4 +237,42 @@ RENDA JANEIRO 500,00 1.454,70
     expect(evalExpression('(1+2)*3-4/2'), 7);
     expect(evalExpression('2+'), isNull);
   });
+
+  test('categorias com datas: férias 2027 acabam e dão lugar a férias 2028', () {
+    final s = AppState(Db.memory());
+    s.setDefaultSalary(100000);
+    final ferias = s.addCategory(const Categoria(id: 0, name: 'Férias'));
+    final f27 = s.addCategory(Categoria(
+        id: 0, name: 'Verão 2027', parentId: ferias, hasBudget: true, budgetValue: 10000, activeFrom: '2026-10', activeTo: '2027-09'));
+    final c27 = s.cat(f27)!;
+    expect(s.isCategoryActive(c27, '2026-09'), isFalse);
+    expect(s.isCategoryActive(c27, '2026-10'), isTrue);
+    expect(s.isCategoryActive(c27, '2027-09'), isTrue);
+    expect(s.isCategoryActive(c27, '2027-10'), isFalse);
+    expect(s.isCategoryActiveDuring(c27, DateTime(2027, 8, 1), DateTime(2027, 12, 1)), isTrue);
+    expect(s.isCategoryActiveDuring(c27, DateTime(2028, 1, 1), DateTime(2028, 3, 1)), isFalse);
+    // o orçamento só conta nos meses em que a categoria existe
+    expect(s.effectiveMonthlyTarget(s.cat(ferias)!, 100000, '2027-03'), 10000);
+    expect(s.effectiveMonthlyTarget(s.cat(ferias)!, 100000, '2027-11'), 0);
+    expect(s.targetIn(s.cat(ferias)!, Period.year(2027)), 10000 * 9); // jan–set
+    // atualizar o orçamento não perde as datas
+    s.updateCategory(c27.copyWith(budgetValue: 20000));
+    expect(s.cat(f27)!.activeTo, '2027-09');
+    expect(s.cat(f27)!.activeFrom, '2026-10');
+    // duplicar para o ano seguinte
+    expect(AppState.nextYearName('Verão 2027'), 'Verão 2028');
+    expect(AppState.nextYearName('Natal'), 'Natal (seguinte)');
+    final f28 = s.duplicateForNextYear(s.cat(f27)!);
+    final c28 = s.cat(f28)!;
+    expect(c28.name, 'Verão 2028');
+    expect(c28.parentId, ferias);
+    expect(c28.activeFrom, '2027-10');
+    expect(c28.activeTo, '2028-09');
+    expect(c28.budgetValue, 20000);
+    // sobreposição: em 2027-10 só a de 2028 está ativa
+    expect(s.effectiveMonthlyTarget(s.cat(ferias)!, 100000, '2027-10'), 20000);
+    // desde sempre: sem datas
+    expect(s.cat(ferias)!.hasDates, isFalse);
+    expect(s.isCategoryActive(s.cat(ferias)!, '1999-01'), isTrue);
+  });
 }

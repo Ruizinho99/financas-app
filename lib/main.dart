@@ -35,7 +35,7 @@ class FinancasApp extends StatelessWidget {
         colorScheme: scheme,
         scaffoldBackgroundColor: black ? Colors.black : null,
         cardTheme: CardThemeData(
-          margin: const EdgeInsets.symmetric(vertical: 6),
+          margin: const EdgeInsets.symmetric(vertical: 8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -58,7 +58,9 @@ class FinancasApp extends StatelessWidget {
         outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(minimumSize: const Size(64, 48), shape: const StadiumBorder())),
         dialogTheme: DialogThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
         bottomSheetTheme: const BottomSheetThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28)))),
-        appBarTheme: const AppBarTheme(centerTitle: false),
+        appBarTheme: const AppBarTheme(centerTitle: false, toolbarHeight: 64),
+        listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 4), minVerticalPadding: 8),
+        dividerTheme: const DividerThemeData(space: 24),
       );
     }
 

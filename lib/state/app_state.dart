@@ -323,20 +323,88 @@ class AppState extends ChangeNotifier {
     return total;
   }
 
-  /// Alocação mensal efectiva: valor próprio, ou soma das filhas se a mãe não tiver.
-  int effectiveMonthlyTarget(Categoria c, int salary) {
-    if (c.hasBudget) return c.monthlyTarget(salary);
-    return childrenOf(c.id).fold(0, (s, ch) => s + ch.monthlyTarget(salary));
+  // ---------- Categorias com datas ----------
+  /// A categoria existe no mês [month]? Tem de estar dentro das suas datas e das da categoria-mãe.
+  bool isCategoryActive(Categoria c, String month) {
+    if (!c.activeIn(month)) return false;
+    final p = cat(c.parentId);
+    return p == null || p.activeIn(month);
   }
 
-  int totalAllocated(int salary) =>
-      roots.where((c) => !c.isIncome).fold(0, (s, c) => s + effectiveMonthlyTarget(c, salary));
+  bool isCategoryActiveNow(Categoria c) => isCategoryActive(c, monthKey(DateTime.now()));
+
+  /// Existe em algum mês entre [from] e [to]? (para escolher a categoria de movimentos antigos)
+  bool isCategoryActiveDuring(Categoria c, DateTime from, DateTime to) {
+    var m = DateTime(from.year, from.month);
+    final end = DateTime(to.year, to.month);
+    for (var i = 0; i < 600 && !m.isAfter(end); i++) {
+      if (isCategoryActive(c, monthKey(m))) return true;
+      m = DateTime(m.year, m.month + 1);
+    }
+    return false;
+  }
+
+  /// Nome para o ano seguinte: "Férias 2027" → "Férias 2028"; sem ano acrescenta " (seguinte)".
+  static String nextYearName(String name) {
+    final re = RegExp(r'\b(20\d{2})\b');
+    if (re.hasMatch(name)) return name.replaceAllMapped(re, (m) => '${int.parse(m[1]!) + 1}');
+    return '$name (seguinte)';
+  }
+
+  static String _shiftYear(String? month, int years) {
+    if (month == null) return '';
+    return '${(int.parse(month.substring(0, 4)) + years).toString().padLeft(4, '0')}${month.substring(4)}';
+  }
+
+  /// Cria a categoria do período seguinte (datas +1 ano, nome com o ano seguinte), com as suas
+  /// subcategorias e orçamento. Devolve o id da nova.
+  int duplicateForNextYear(Categoria c) {
+    int copy(Categoria src, int? parentId) {
+      final id = db.saveCategory(Categoria(
+        id: 0,
+        // subcategorias só mudam de nome se tiverem um ano no nome
+        name: (parentId == null || RegExp(r'\b20\d{2}\b').hasMatch(src.name)) ? nextYearName(src.name) : src.name,
+        parentId: parentId,
+        isIncome: src.isIncome,
+        emoji: src.emoji,
+        description: src.description,
+        budgetType: src.budgetType,
+        budgetPercent: src.budgetPercent,
+        budgetValue: src.budgetValue,
+        hasBudget: src.hasBudget,
+        activeFrom: src.activeFrom == null ? null : _shiftYear(src.activeFrom, 1),
+        activeTo: src.activeTo == null ? null : _shiftYear(src.activeTo, 1),
+      ));
+      return id;
+    }
+
+    final newId = copy(c, c.parentId);
+    for (final k in categories.where((x) => x.parentId == c.id)) {
+      copy(k, newId);
+    }
+    reload();
+    return newId;
+  }
+
+  /// Alocação mensal efectiva: valor próprio, ou soma das filhas se a mãe não tiver.
+  /// Com [month] (AAAA-MM), categorias fora das suas datas nesse mês não têm alocação.
+  int effectiveMonthlyTarget(Categoria c, int salary, [String? month]) {
+    if (month != null && !isCategoryActive(c, month)) return 0;
+    if (c.hasBudget) return c.monthlyTarget(salary);
+    return childrenOf(c.id)
+        .where((ch) => month == null || isCategoryActive(ch, month))
+        .fold(0, (s, ch) => s + ch.monthlyTarget(salary));
+  }
+
+  int totalAllocated(int salary, [String? month]) =>
+      roots.where((c) => !c.isIncome).fold(0, (s, c) => s + effectiveMonthlyTarget(c, salary, month));
 
   /// Alocação de [c] no período: soma mês a mês (suporta % e salários diferentes).
   int targetIn(Categoria c, Period p) {
     var t = 0;
     for (final (m, w) in p.monthWeights) {
-      t += (effectiveMonthlyTarget(c, salaryFor(monthKey(m))) * w).round();
+      final mk = monthKey(m);
+      t += (effectiveMonthlyTarget(c, salaryFor(mk), mk) * w).round();
     }
     return t;
   }

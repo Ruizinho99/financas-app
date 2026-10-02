@@ -69,7 +69,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Análise')),
-      body: ListView(padding: const EdgeInsets.fromLTRB(12, 0, 12, 40), children: [
+      body: ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 48), children: [
         _selector(context, s),
         const SizedBox(height: 8),
         // Resumo
@@ -159,7 +159,8 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   int _subTarget(AppState s, Categoria c, Period p) {
     var t = 0;
     for (final (m, w) in p.monthWeights) {
-      t += (c.monthlyTarget(s.salaryFor(monthKey(m))) * w).round();
+      final mk = monthKey(m);
+      t += s.isCategoryActive(c, mk) ? (c.monthlyTarget(s.salaryFor(mk)) * w).round() : 0;
     }
     return t;
   }

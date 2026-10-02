@@ -111,8 +111,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       ),
       body: Column(children: [
         SizedBox(
-          height: 52,
-          child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), children: [
+          height: 64,
+          child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), children: [
             for (final (f, label, icon) in [
               (_Filter.all, 'Todos', Icons.all_inclusive),
               (_Filter.expense, 'Despesas', Icons.arrow_downward),
@@ -152,7 +152,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ]),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('${list.length} movimentos'),
             Text('+${fmtMoney(inc)}  /  ${fmtMoney(exp)}', style: Theme.of(context).textTheme.bodySmall),
@@ -193,7 +193,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     if (!showHeader) return tile;
                     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                         child: Text(fmtDate(t.date), style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.grey)),
                       ),
                       tile,

@@ -250,7 +250,12 @@ class _ImportScreenState extends State<ImportScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          CategorySelector(value: value, compact: true, onChanged: (v) => setState(() => cats[key] = v)),
+          CategorySelector(
+            value: value,
+            compact: true,
+            when: DateTimeRange(start: idx.map((i) => rows[i].date).reduce((a, b) => a.isBefore(b) ? a : b), end: idx.map((i) => rows[i].date).reduce((a, b) => a.isAfter(b) ? a : b)),
+            onChanged: (v) => setState(() => cats[key] = v),
+          ),
           if (isNewRule || (names[key]?.trim().isNotEmpty ?? false))
             CheckboxListTile(
               dense: true,

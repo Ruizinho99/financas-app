@@ -83,15 +83,21 @@ class CategorySelector extends StatefulWidget {
   final bool compact; // lado a lado, para listas
   final bool form; // rótulos por cima e ícones, como nos formulários
   final bool? income; // filtra rendimentos (true) ou despesas (false)
-  const CategorySelector({super.key, required this.value, required this.onChanged, this.compact = false, this.form = false, this.income});
+  /// Intervalo de datas dos movimentos: só mostra categorias que existiam nessa altura
+  /// (por omissão, as que existem hoje).
+  final DateTimeRange? when;
+  const CategorySelector({super.key, required this.value, required this.onChanged, this.compact = false, this.form = false, this.income, this.when});
 
   @override
   State<CategorySelector> createState() => _CategorySelectorState();
 }
 
 class _CategorySelectorState extends State<CategorySelector> {
-  static const _none = -1, _newItem = -2;
+  static const _none = -1, _newItem = -2, _toggleAll = -3;
+  bool _showAll = false; // incluir categorias fora do período
   int _tick = 0; // força os dropdowns a voltarem ao valor real depois de "Nova…"
+
+  bool _showAllOrVisible(Categoria c, AppState s, DateTime from, DateTime to) => _showAll || s.isCategoryActiveDuring(c, from, to);
 
   int? get value => widget.value;
   ValueChanged<int?> get onChanged => widget.onChanged;
@@ -105,8 +111,21 @@ class _CategorySelectorState extends State<CategorySelector> {
     final chosen = s.cat(value);
     final rootId = chosen == null ? null : (chosen.parentId ?? chosen.id);
     final subId = chosen?.parentId == null ? null : chosen!.id;
-    final roots = s.roots.where((r) => income == null || r.isIncome == income).toList();
-    final subs = rootId == null ? <Categoria>[] : s.childrenOf(rootId);
+    final from = widget.when?.start ?? DateTime.now();
+    final to = widget.when?.end ?? from;
+    bool visible(Categoria c) {
+      if (_showAll || c.id == value || c.id == rootId) return true;
+      return s.isCategoryActiveDuring(c, from, to);
+    }
+
+    String tag(Categoria c) => (!c.hasDates && !(s.cat(c.parentId)?.hasDates ?? false))
+        ? ''
+        : (s.isCategoryActiveNow(c) ? '' : ((c.activeTo ?? s.cat(c.parentId)?.activeTo) != null && (c.activeTo ?? s.cat(c.parentId)!.activeTo!).compareTo(monthKey(DateTime.now())) < 0 ? '  · terminada' : '  · futura'));
+
+    final allRoots = s.roots.where((r) => income == null || r.isIncome == income).toList();
+    final roots = allRoots.where(visible).toList();
+    final subs = rootId == null ? <Categoria>[] : s.childrenOf(rootId).where(visible).toList();
+    final hiddenExist = s.categories.any((c) => !c.archived && c.hasDates && !_showAllOrVisible(c, s, from, to));
 
     Future<void> createRoot() async {
       final id = await showCategoryEditor(context);
@@ -130,13 +149,19 @@ class _CategorySelectorState extends State<CategorySelector> {
           ? const InputDecoration(hintText: 'Seleciona uma categoria', prefixIcon: Icon(Icons.sell_outlined))
           : InputDecoration(labelText: 'Categoria', isDense: compact),
       items: [
-        for (final r in roots) DropdownMenuItem(value: r.id, child: Text('${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}', overflow: TextOverflow.ellipsis)),
+        for (final r in roots) DropdownMenuItem(value: r.id, child: Text('${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}${tag(r)}', overflow: TextOverflow.ellipsis)),
         const DropdownMenuItem(value: _newItem, child: Text('➕  Nova categoria…')),
+        if (hiddenExist || _showAll) DropdownMenuItem(value: _toggleAll, child: Text(_showAll ? '🙈  Esconder terminadas e futuras' : '👁  Mostrar terminadas e futuras')),
         if (rootId != null) const DropdownMenuItem(value: _none, child: Text('✖️  Sem categoria')),
       ],
       onChanged: (v) {
         if (v == _newItem) {
           createRoot();
+        } else if (v == _toggleAll) {
+          setState(() {
+            _showAll = !_showAll;
+            _tick++;
+          });
         } else if (v == _none) {
           onChanged(null);
         } else if (v != rootId) {
@@ -155,7 +180,7 @@ class _CategorySelectorState extends State<CategorySelector> {
       items: rootId == null
           ? const []
           : [
-              for (final k in subs) DropdownMenuItem(value: k.id, child: Text('${k.emoji.isEmpty ? '🏷️' : k.emoji}  ${k.name}', overflow: TextOverflow.ellipsis)),
+              for (final k in subs) DropdownMenuItem(value: k.id, child: Text('${k.emoji.isEmpty ? '🏷️' : k.emoji}  ${k.name}${tag(k)}', overflow: TextOverflow.ellipsis)),
               const DropdownMenuItem(value: _newItem, child: Text('➕  Nova subcategoria…')),
               if (subId != null) const DropdownMenuItem(value: _none, child: Text('— Sem subcategoria —')),
             ],
@@ -287,6 +312,25 @@ class _CategoryEditorState extends State<_CategoryEditor> {
   late int? parent = widget.parentId;
   late bool income = widget.edit?.isIncome ?? false;
   late String emoji = widget.edit?.emoji ?? '';
+  late String? activeFrom = widget.edit?.activeFrom;
+  late String? activeTo = widget.edit?.activeTo;
+  late bool hasDates = widget.edit?.hasDates ?? false;
+
+  Widget _monthTile(String label, String? month, ValueChanged<String> onPick, {bool clearable = true, VoidCallback? onClear}) {
+    String txt(String? k) => k == null ? 'Escolher mês' : fmtMonth(DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))));
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () async {
+        final init = month == null ? DateTime.now() : DateTime(int.parse(month.substring(0, 4)), int.parse(month.substring(5, 7)));
+        final d = await showDatePicker(context: context, initialDate: init, firstDate: DateTime(2000), lastDate: DateTime(2100), helpText: 'Escolhe qualquer dia do mês');
+        if (d != null) onPick(monthKey(d));
+      },
+      child: InputDecorator(
+        decoration: InputDecoration(labelText: label, prefixIcon: const Icon(Icons.event), suffixIcon: onClear == null ? null : IconButton(icon: const Icon(Icons.close), onPressed: onClear)),
+        child: Text(txt(month)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -354,6 +398,24 @@ class _CategoryEditorState extends State<_CategoryEditor> {
               },
             ),
           TextField(controller: desc, decoration: const InputDecoration(labelText: 'Descrição (opcional)'), maxLines: 2),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Só existe num período'),
+            subtitle: const Text('Ex.: “Férias 2027”. Fora do período deixa de aparecer nas escolhas e no orçamento.'),
+            value: hasDates,
+            onChanged: (v) => setState(() {
+              hasDates = v;
+              if (v && activeFrom == null) activeFrom = monthKey(DateTime.now());
+            }),
+          ),
+          if (hasDates) ...[
+            _monthTile('Desde', activeFrom, (m) => setState(() => activeFrom = m), clearable: false),
+            const SizedBox(height: 8),
+            if (activeTo == null)
+              Align(alignment: Alignment.centerLeft, child: TextButton.icon(onPressed: () => setState(() => activeTo = activeFrom ?? monthKey(DateTime.now())), icon: const Icon(Icons.event_busy), label: const Text('Definir fim')))
+            else
+              _monthTile('Até', activeTo, (m) => setState(() => activeTo = m), onClear: () => setState(() => activeTo = null)),
+          ],
         ]),
       ),
       actions: [
@@ -375,6 +437,8 @@ class _CategoryEditorState extends State<_CategoryEditor> {
               budgetValue: e?.budgetValue ?? 0,
               hasBudget: e?.hasBudget ?? false,
               archived: e?.archived ?? false,
+              activeFrom: hasDates ? activeFrom : null,
+              activeTo: hasDates ? (activeTo != null && activeFrom != null && activeTo!.compareTo(activeFrom!) < 0 ? activeFrom : activeTo) : null,
             );
             if (e == null) {
               Navigator.pop(context, s.addCategory(cat));
