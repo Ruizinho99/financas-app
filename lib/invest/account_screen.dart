@@ -7,6 +7,7 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 import 'forms.dart';
+import 'import_trades_screen.dart';
 import 'holding_screen.dart';
 import 'invest.dart';
 import 'widgets.dart';
@@ -81,6 +82,7 @@ class _AccountScreenState extends State<AccountScreen> {
               Padding(padding: const EdgeInsets.fromLTRB(24, 20, 24, 8), child: Align(alignment: Alignment.centerLeft, child: Text('Adicionar a ${acc.name}', style: Theme.of(ctx).textTheme.titleLarge))),
               for (final (icon, t, sub, fn) in <(IconData, String, String?, VoidCallback)>[
                 (Icons.pie_chart_outline, 'Novo ativo', 'ETF, ação, cripto, fundo…', () => showHoldingEditor(context, accountId: acc.id)),
+                (Icons.upload_file, 'Importar compras e vendas', 'De um PDF, CSV ou Excel da corretora', () => Navigator.push(context, MaterialPageRoute(builder: (_) => ImportTradesScreen(accountId: acc.id)))),
                 (Icons.history, 'Posição que já tinha', 'Quantidade e preço médio antes de usar a app', () => showOpForm(context, type: OpType.initial, accountId: acc.id)),
                 (Icons.add_shopping_cart, 'Registar compra', null, () => showOpForm(context, type: OpType.buy, accountId: acc.id)),
                 (Icons.sell_outlined, 'Registar venda', null, () => showOpForm(context, type: OpType.sell, accountId: acc.id)),

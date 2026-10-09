@@ -520,6 +520,30 @@ class AppState extends ChangeNotifier {
     reload();
   }
 
+  /// Grava operações importadas de um ficheiro, criando antes os ativos novos ([newHoldings], por chave).
+  /// Cada operação traz a chave do instrumento; as que apontam para um ativo novo usam o id criado.
+  /// Devolve quantas operações gravou.
+  int importTradeOps({required Map<String, Holding> newHoldings, required List<({String key, InvestOp op})> ops}) {
+    var n = 0;
+    db.inTransaction(() {
+      final created = <String, int>{};
+      for (final e in newHoldings.entries) {
+        created[e.key] = db.saveHolding(e.value, isNew: true);
+      }
+      for (final e in ops) {
+        final id = e.op.holdingId ?? created[e.key];
+        if (id == null) continue;
+        db.saveInvestOp(
+          InvestOp(id: 0, accountId: e.op.accountId, holdingId: id, date: e.op.date, type: e.op.type, quantity: e.op.quantity, price: e.op.price, fx: e.op.fx, amount: e.op.amount, fee: e.op.fee, note: e.op.note),
+          isNew: true,
+        );
+        n++;
+      }
+    });
+    reload();
+    return n;
+  }
+
   /// Marca movimentos do banco como entregas (saída) ou levantamentos (entrada) de uma plataforma.
   /// Com [rememberTitles] lembra os títulos para as próximas importações.
   void linkTransfers(List<int> txnIds, int accountId, {bool rememberTitles = false}) {

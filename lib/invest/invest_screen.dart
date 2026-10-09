@@ -6,6 +6,7 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import 'account_screen.dart';
 import 'forms.dart';
+import 'import_trades_screen.dart';
 import 'holding_screen.dart';
 import 'invest.dart';
 import 'widgets.dart';
@@ -44,6 +45,7 @@ class _InvestScreenState extends State<InvestScreen> {
           _item(ctx, Icons.account_balance_outlined, 'Nova plataforma', 'XTB, Trade Republic, exchange…', () => showInvestAccountEditor(context)),
           if (hasAcc) ...[
             _item(ctx, Icons.pie_chart_outline, 'Novo ativo', 'ETF, ação, cripto, fundo…', () => showHoldingEditor(context)),
+            _item(ctx, Icons.upload_file, 'Importar compras e vendas', 'De um PDF, CSV ou Excel da corretora', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportTradesScreen()))),
             _item(ctx, Icons.history, 'Posição que já tinha', 'Quantidade e preço médio antes de usar a app', () => showOpForm(context, type: OpType.initial)),
             _item(ctx, Icons.add_shopping_cart, 'Registar compra', 'Aloca dinheiro a um ativo', () => showOpForm(context, type: OpType.buy)),
             _item(ctx, Icons.sell_outlined, 'Registar venda', null, () => showOpForm(context, type: OpType.sell)),
