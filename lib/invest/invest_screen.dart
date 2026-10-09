@@ -6,6 +6,7 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import 'account_screen.dart';
 import 'forms.dart';
+import 'transfers_screen.dart';
 import 'import_trades_screen.dart';
 import 'holding_screen.dart';
 import 'invest.dart';
@@ -120,6 +121,9 @@ class _InvestScreenState extends State<InvestScreen> {
               Padding(padding: const EdgeInsets.only(top: 4), child: Text('Ativos sem preço contam pelo custo, para não distorcer o total.', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant))),
           ]),
         ),
+
+        // ----- transferências do banco e o que se fez com elas -----
+        const TransfersCard(),
 
         // ----- alocação -----
         if (pf.total > 0) _allocation(context, pf, colors, cs),

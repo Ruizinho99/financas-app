@@ -254,3 +254,64 @@ Future<int?> showCalculator(BuildContext context, {String initial = ''}) {
     ),
   );
 }
+
+/// Restringe o que se importa a um intervalo de datas. [min]/[max] são as datas do ficheiro.
+class DateRangeCard extends StatelessWidget {
+  final DateTime min;
+  final DateTime max;
+  final DateTime? from;
+  final DateTime? to;
+  final int inRange;
+  final int total;
+  final void Function(DateTime? from, DateTime? to) onChanged;
+  const DateRangeCard({super.key, required this.min, required this.max, required this.from, required this.to, required this.inRange, required this.total, required this.onChanged});
+
+  Future<DateTime?> _pick(BuildContext context, DateTime initial) => showDatePicker(
+        context: context,
+        initialDate: initial.isBefore(min) ? min : (initial.isAfter(max) ? max : initial),
+        firstDate: min.isBefore(DateTime(2000)) ? min : DateTime(2000),
+        lastDate: max.isAfter(DateTime(2100)) ? max : DateTime(2100),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final f = from ?? min, t = to ?? max;
+    final restricted = from != null || to != null;
+    return FormCard(children: [
+      Row(children: [
+        Expanded(child: Text('Período a importar', style: tt.titleMedium)),
+        if (restricted) TextButton(onPressed: () => onChanged(null, null), child: const Text('Todo o ficheiro')),
+      ]),
+      Text('O ficheiro tem dados de ${fmtDate(min)} a ${fmtDate(max)}. Escolhe só o intervalo que queres importar.', style: tt.bodySmall),
+      const SizedBox(height: 12),
+      Row(children: [
+        Expanded(
+          child: TileField(
+            icon: Icons.event,
+            title: 'De',
+            text: fmtDate(f),
+            onTap: () async {
+              final d = await _pick(context, f);
+              if (d != null) onChanged(d, to != null && to!.isBefore(d) ? d : to);
+            },
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: TileField(
+            icon: Icons.event,
+            title: 'Até',
+            text: fmtDate(t),
+            onTap: () async {
+              final d = await _pick(context, t);
+              if (d != null) onChanged(from != null && from!.isAfter(d) ? d : from, d);
+            },
+          ),
+        ),
+      ]),
+      const SizedBox(height: 10),
+      Text(restricted ? '$inRange de $total no período' : '$total no ficheiro', style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+    ]);
+  }
+}

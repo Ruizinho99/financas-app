@@ -544,6 +544,22 @@ class AppState extends ChangeNotifier {
     return n;
   }
 
+  /// Diz que estas compras foram feitas com o dinheiro desta transferência (o resto fica em espera).
+  void allocateTransfer(int txnId, Iterable<int> opIds) {
+    db.inTransaction(() => db.setOpsTransfer(txnId, opIds));
+    reload();
+  }
+
+  /// Entregas do banco a plataformas (saídas), da mais recente para a mais antiga.
+  List<Txn> get investDeliveries => transactions.where((t) => t.investAccountId != null && t.amount < 0).toList()..sort((a, b) => b.date.compareTo(a.date));
+
+  /// Quanto de uma entrega já foi investido (compras ligadas) e quanto fica em espera.
+  ({int allocated, int onHold, List<InvestOp> ops}) transferAllocation(Txn t) {
+    final ops = investOps.where((o) => o.txnId == t.id && o.type == OpType.buy).toList();
+    final allocated = ops.fold(0, (a, o) => a + o.amount);
+    return (allocated: allocated, onHold: t.amount.abs() - allocated, ops: ops);
+  }
+
   /// Marca movimentos do banco como entregas (saída) ou levantamentos (entrada) de uma plataforma.
   /// Com [rememberTitles] lembra os títulos para as próximas importações.
   void linkTransfers(List<int> txnIds, int accountId, {bool rememberTitles = false}) {

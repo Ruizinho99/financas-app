@@ -235,6 +235,13 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 10');
     }
+    if (v < 11) {
+      // v11: compra ligada à transferência do banco que a financiou
+      try {
+        _db.execute('ALTER TABLE invest_ops ADD COLUMN txn_id INTEGER');
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 11');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -595,17 +602,26 @@ class Db {
             amount: r['amount'] as int,
             fee: r['fee'] as int,
             note: r['note'] as String,
+            txnId: r['txn_id'] as int?,
           ))
       .toList();
 
   int saveInvestOp(InvestOp o, {bool isNew = false}) {
-    final vals = [o.accountId, o.holdingId, isoDate(o.date), o.type.name, o.quantity, o.price, o.amount, o.fee, o.note, o.fx];
+    final vals = [o.accountId, o.holdingId, isoDate(o.date), o.type.name, o.quantity, o.price, o.amount, o.fee, o.note, o.fx, o.txnId];
     if (isNew) {
-      _db.execute('INSERT INTO invest_ops(account_id,holding_id,date,type,quantity,price,amount,fee,note,fx) VALUES(?,?,?,?,?,?,?,?,?,?)', vals);
+      _db.execute('INSERT INTO invest_ops(account_id,holding_id,date,type,quantity,price,amount,fee,note,fx,txn_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)', vals);
       return _db.lastInsertRowId;
     }
-    _db.execute('UPDATE invest_ops SET account_id=?,holding_id=?,date=?,type=?,quantity=?,price=?,amount=?,fee=?,note=?,fx=? WHERE id=?', [...vals, o.id]);
+    _db.execute('UPDATE invest_ops SET account_id=?,holding_id=?,date=?,type=?,quantity=?,price=?,amount=?,fee=?,note=?,fx=?,txn_id=? WHERE id=?', [...vals, o.id]);
     return o.id;
+  }
+
+  /// Liga [opIds] à transferência [txnId] e desliga as que estavam ligadas a ela e não estão na lista.
+  void setOpsTransfer(int txnId, Iterable<int> opIds) {
+    _db.execute('UPDATE invest_ops SET txn_id=NULL WHERE txn_id=?', [txnId]);
+    for (final id in opIds) {
+      _db.execute('UPDATE invest_ops SET txn_id=? WHERE id=?', [txnId, id]);
+    }
   }
 
   void deleteInvestOp(int id) => _db.execute('DELETE FROM invest_ops WHERE id=?', [id]);

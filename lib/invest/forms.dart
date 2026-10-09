@@ -806,6 +806,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
       amount: amt,
       fee: (type == OpType.buy || type == OpType.sell) ? fee : 0,
       note: noteCtrl.text.trim(),
+      txnId: _edit?.txnId,
     );
     final int keepId;
     if (_edit == null) {

@@ -30,6 +30,7 @@ class _ImportScreenState extends State<ImportScreen> {
   String? pdfRaw;
   List<String> skipped = []; // linhas com data que não foram reconhecidas
   Set<int> excluded = {};
+  DateTime? from, to; // intervalo de datas a importar (nulo = tudo)
   final cats = <String, int?>{}; // chave do grupo -> categoria escolhida
   final noRemember = <String>{};
   final names = <String, String>{}; // chave do grupo -> nome amigável
@@ -59,6 +60,7 @@ class _ImportScreenState extends State<ImportScreen> {
       skipped = [];
       accountMap.clear();
       excluded = {};
+      from = to = null;
       if (ext == 'pdf') {
         pdfRaw = pdfText(bytes);
         final det = parseStatementDetailed(pdfRaw!);
@@ -110,9 +112,15 @@ class _ImportScreenState extends State<ImportScreen> {
     }
   }
 
+  bool _outside(int i) {
+    final d = rows[i].date;
+    final day = DateTime(d.year, d.month, d.day);
+    return (from != null && day.isBefore(DateTime(from!.year, from!.month, from!.day))) || (to != null && day.isAfter(DateTime(to!.year, to!.month, to!.day)));
+  }
+
   List<ParsedRow> get finalRows => [
         for (var i = 0; i < rows.length; i++)
-          if (!excluded.contains(i)) invert ? rows[i].copy(amount: -rows[i].amount) : rows[i]
+          if (!excluded.contains(i) && !_outside(i)) invert ? rows[i].copy(amount: -rows[i].amount) : rows[i]
       ];
 
   @override
@@ -164,6 +172,19 @@ class _ImportScreenState extends State<ImportScreen> {
         if (table != null) _mappingCard(),
         if (filename != null && source == 'pdf' && rows.isNotEmpty) _pdfOptions(),
         if (rows.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          DateRangeCard(
+            min: rows.map((r) => r.date).reduce((a, b) => a.isBefore(b) ? a : b),
+            max: rows.map((r) => r.date).reduce((a, b) => a.isAfter(b) ? a : b),
+            from: from,
+            to: to,
+            inRange: [for (var i = 0; i < rows.length; i++) if (!_outside(i)) i].length,
+            total: rows.length,
+            onChanged: (f, t) => setState(() {
+              from = f;
+              to = t;
+            }),
+          ),
           const SizedBox(height: 8),
           Card(
             child: Padding(
@@ -222,13 +243,13 @@ class _ImportScreenState extends State<ImportScreen> {
     final st = context.watch<AppState>();
     final groups = <String, List<int>>{};
     for (var i = 0; i < rows.length; i++) {
-      if (rows[i].isTransfer) continue; // transferências entre contas não se classificam
+      if (rows[i].isTransfer || _outside(i)) continue; // transferências entre contas não se classificam
       groups.putIfAbsent(merchantKey(rows[i].description), () => []).add(i);
     }
     final keys = groups.keys.toList()..sort((a, b) => groups[b]!.length.compareTo(groups[a]!.length));
     final classified = keys.where((k) => (cats[k] ?? st.ruleFor(k)?.categoryId) != null).length;
     return [
-      if (rows.any((r) => r.isTransfer)) _transfersCard(),
+      if (rows.asMap().entries.any((e) => e.value.isTransfer && !_outside(e.key))) _transfersCard(),
       Padding(
         padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
         child: Text('Classificação: $classified de ${keys.length} grupos', style: Theme.of(context).textTheme.titleMedium),
@@ -369,7 +390,7 @@ class _ImportScreenState extends State<ImportScreen> {
       );
 
   Widget _transfersCard() {
-    final list = [for (var i = 0; i < rows.length; i++) if (rows[i].isTransfer) i];
+    final list = [for (var i = 0; i < rows.length; i++) if (rows[i].isTransfer && !_outside(i)) i];
     return Card(
       child: ExpansionTile(
         shape: const Border(),

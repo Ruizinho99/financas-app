@@ -138,6 +138,7 @@ class InvestOp {
   final int amount; // cêntimos: pago (compra, com comissão), recebido (venda/dividendo), custo da posição (initial) ou ± (cash)
   final int fee; // cêntimos (já incluída em amount nas compras)
   final String note;
+  final int? txnId; // transferência do banco que financiou esta compra (opcional)
   const InvestOp({
     required this.id,
     required this.accountId,
@@ -150,6 +151,7 @@ class InvestOp {
     this.amount = 0,
     this.fee = 0,
     this.note = '',
+    this.txnId,
   });
 }
 

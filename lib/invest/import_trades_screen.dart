@@ -34,6 +34,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   TradeMapping mapping = TradeMapping();
   List<ParsedTrade> trades = [];
   final Set<int> excluded = {};
+  DateTime? from, to; // intervalo de datas a importar (nulo = tudo)
   final Map<String, int> choice =
       {}; // chave do instrumento -> id do ativo, 0 = criar novo, -1 = ignorar
   final Map<String, TextEditingController> rateCtrls =
@@ -96,6 +97,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       source = ext == 'pdf' ? 'pdf' : (ext == 'xlsx' ? 'xlsx' : 'csv');
       table = null;
       excluded.clear();
+      from = to = null;
       if (ext == 'pdf') {
         trades = tradesFromText(pdfText(bytes));
       } else {
@@ -132,10 +134,15 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     );
   }
 
+  bool _inRange(ParsedTrade t) {
+    final d = DateTime(t.date.year, t.date.month, t.date.day);
+    return (from == null || !d.isBefore(DateTime(from!.year, from!.month, from!.day))) && (to == null || !d.isAfter(DateTime(to!.year, to!.month, to!.day)));
+  }
+
   // ---- instrumentos ----
   Map<String, List<ParsedTrade>> get groups {
     final m = <String, List<ParsedTrade>>{};
-    for (final t in trades) {
+    for (final t in trades.where(_inRange)) {
       if (t.key.isEmpty) continue;
       (m[t.key] ??= []).add(t);
     }
@@ -190,7 +197,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   /// Moedas para as quais falta indicar o câmbio.
   Set<String> _neededCcys(AppState s) {
     final out = <String>{};
-    for (final t in trades) {
+    for (final t in trades.where(_inRange)) {
       if (_ccyOf(t) != baseCcy && t.rate == null) out.add(_ccyOf(t));
     }
     for (final e in groups.entries) {
@@ -255,6 +262,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     final g = groups;
     for (var i = 0; i < trades.length; i++) {
       final t = trades[i];
+      if (!_inRange(t)) continue;
       final key = t.key;
       final c = choice[key];
       if (c == null || c < 0) continue;
@@ -439,6 +447,20 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
           ],
 
           if (trades.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            DateRangeCard(
+              min: trades.map((t) => t.date).reduce((a, b) => a.isBefore(b) ? a : b),
+              max: trades.map((t) => t.date).reduce((a, b) => a.isAfter(b) ? a : b),
+              from: from,
+              to: to,
+              inRange: trades.where(_inRange).length,
+              total: trades.length,
+              onChanged: (f, t) => setState(() {
+                from = f;
+                to = t;
+                _afterParse();
+              }),
+            ),
             const SizedBox(height: 14),
             // moeda e câmbio
             FormCard(

@@ -5,6 +5,7 @@ import 'package:financas/import/parsers.dart';
 import 'package:financas/invest/import_trades_screen.dart';
 import 'package:financas/invest/invest.dart';
 import 'package:financas/invest/trade_import.dart';
+import 'package:financas/invest/transfers_screen.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -170,6 +171,71 @@ Total geral 1.000,00
       await tester.pumpAndSettle();
       expect(find.textContaining('já existentes'), findsWidgets);
       expect(find.textContaining('Importar 0 operações'), findsOneWidget);
+    });
+  });
+
+  group('intervalo de datas e transferências', () {
+    testWidgets('importar compras só num intervalo de datas', (tester) async {
+      final s = AppState(Db.memory(), prices: fakePrices());
+      final acc = s.addInvestAccount('XTB');
+      tester.view.physicalSize = const Size(360, 2600) * 3;
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(ChangeNotifierProvider<AppState>.value(
+        value: s,
+        child: MaterialApp(
+          theme: ThemeData(useMaterial3: true),
+          home: Builder(builder: (c) => Scaffold(body: TextButton(onPressed: () => Navigator.push(c, MaterialPageRoute(builder: (_) => ImportTradesScreen(accountId: acc, preloaded: (name: 'e.csv', bytes: utf8.encode(csvPt) as dynamic)))), child: const Text('abrir')))),
+        ),
+      ));
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+      expect(find.text('Período a importar'), findsOneWidget);
+      expect(find.textContaining('06/01/2026 a 15/04/2026'), findsOneWidget);
+      expect(find.text('4 no ficheiro'), findsOneWidget);
+      // só de 20/01 em diante: ficam a compra da Apple, a venda e o dividendo
+      await tester.tap(find.text('06/01/2026'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('20'));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('3 de 4 no período'), findsOneWidget);
+      expect(find.textContaining('Vanguard'), findsNothing); // o ativo da compra de janeiro desapareceu da lista
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ecrã da transferência: sugerir, ver o que fica em espera e guardar', (tester) async {
+      final d = buildInvestData();
+      final t = d.s.transactions.firstWhere((x) => x.description.contains('XTB') && x.amount == -60000);
+      tester.view.physicalSize = const Size(360, 1800) * 3;
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(ChangeNotifierProvider<AppState>.value(value: d.s, child: MaterialApp(theme: ThemeData(useMaterial3: true), home: TransferAllocScreen(txnId: t.id))));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Em espera 600,00'), findsOneWidget);
+      await tester.tap(find.text('Sugerir'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Em espera'), findsWidgets);
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(d.s.transferAllocation(t).allocated, greaterThan(0));
+    });
+
+    test('transferência: compras associadas, resto em espera', () {
+      final d = buildInvestData();
+      final t = d.s.transactions.firstWhere((x) => x.description.contains('XTB') && x.amount == -60000);
+      final buy = d.s.investOps.firstWhere((o) => o.type == OpType.buy && o.holdingId == d.vwce);
+      expect(d.s.transferAllocation(t).allocated, 0);
+      d.s.allocateTransfer(t.id, [buy.id]);
+      final a = d.s.transferAllocation(t);
+      expect(a.allocated, 55100);
+      expect(a.onHold, 60000 - 55100);
+      expect(d.s.investOps.firstWhere((o) => o.id == buy.id).txnId, t.id);
+      // editar a compra não perde a ligação
+      d.s.allocateTransfer(t.id, []);
+      expect(d.s.transferAllocation(t).onHold, 60000);
+      expect(d.s.investDeliveries.length, 3);
     });
   });
 }
