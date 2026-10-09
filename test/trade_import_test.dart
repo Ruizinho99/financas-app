@@ -261,7 +261,7 @@ Total geral 1.000,00
       expect(reasons.any((e) => e.startsWith('Tipo não reconhecido')), isTrue);
       expect(r.skipped.firstWhere((e) => e.reason.startsWith('Data')).row, 4);
       expect(r.ignoredByUser, 1); // o depósito não é uma operação
-      expect(r.columns['quantity'], (ok: 4, total: 6)); // "abc" e a linha do depósito (vazia) não são números
+      expect(r.columns['quantity'], (ok: 4, total: 5)); // "abc" não é número; a linha do depósito não conta
       expect(r.columns['date']!.ok, 5);
       // decidir o que é "Permuta": passa a compra
       final r2 = parseTradeTable(t, m, typeOverrides: {typeKey('Permuta'): 'buy'});
@@ -308,7 +308,7 @@ Total geral 1.000,00
     await tester.pumpAndSettle();
     expect(find.text('Validação do ficheiro'), findsOneWidget);
     expect(find.textContaining('3 linhas com dados'), findsOneWidget);
-    expect(find.textContaining('Data (Data): 2 de 3 válidas'), findsOneWidget);
+    expect(find.textContaining('Data: 2 de 3 válidas'), findsOneWidget);
     expect(find.text('Tipos que não reconheci'), findsOneWidget);
     expect(find.textContaining('2 linhas não importadas'), findsOneWidget);
     await tester.tap(find.text('Escolher'));

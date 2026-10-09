@@ -907,7 +907,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                             ? Icons.error_outline
                             : Icons.warning_amber_rounded),
                   all ? ok : (c.ok == 0 ? cs.error : warn),
-                  '${label.split(' (').first} (${colName(mapping.get_(f))}): ${c.ok} de ${c.total} válidas',
+                  '${label.split(' (').first}${colName(mapping.get_(f)).toLowerCase() == label.split(' (').first.toLowerCase() ? '' : ' (${colName(mapping.get_(f))})'}: ${c.ok} de ${c.total} válidas',
                 );
               }(),
           if (r.unknownTypes.isNotEmpty) ...[

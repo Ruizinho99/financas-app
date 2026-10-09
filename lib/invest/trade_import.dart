@@ -252,20 +252,23 @@ TradeReport parseTradeTable(List<List<String>> table, TradeMapping m, {int? defa
     // uma linha só conta como "operação" se tiver data ou números nas colunas principais
     if (d == null && q == null && p == null && tot == null) continue;
     dataRows++;
-    // validação de cada coluna escolhida
-    stat('date', d != null);
-    if (m.quantity != null) stat('quantity', q != null);
-    if (m.price != null) stat('price', p != null);
-    if (m.total != null) stat('total', tot != null);
-    if (m.fee != null && at(r, m.fee).isNotEmpty) stat('fee', parseDecimal(at(r, m.fee)) != null);
-    if (m.rate != null && at(r, m.rate).isNotEmpty) stat('rate', (parseDecimal(at(r, m.rate)) ?? 0) > 0);
-    if (m.isin != null && at(r, m.isin).isNotEmpty) stat('isin', RegExp(r'^[A-Z]{2}[A-Z0-9]{9}\d$').hasMatch(at(r, m.isin).toUpperCase()));
-    if (m.currency != null && at(r, m.currency).isNotEmpty) stat('currency', RegExp(r'^[A-Za-z]{3}$').hasMatch(at(r, m.currency)));
-    if (m.name != null) stat('name', at(r, m.name).isNotEmpty);
-    if (m.symbol != null) stat('symbol', at(r, m.symbol).isNotEmpty);
     final rawType = at(r, m.type);
     final kind = _kindOf(rawType, q, typeOverrides);
+    // validação de cada coluna escolhida (as linhas que não são operações só validam data e tipo)
+    final isOp = kind != 'ignore';
+    stat('date', d != null);
     if (m.type != null) stat('type', kind.isNotEmpty);
+    if (isOp) {
+      if (m.quantity != null) stat('quantity', q != null);
+      if (m.price != null) stat('price', p != null);
+      if (m.total != null) stat('total', tot != null);
+      if (m.fee != null && at(r, m.fee).isNotEmpty) stat('fee', parseDecimal(at(r, m.fee)) != null);
+      if (m.rate != null && at(r, m.rate).isNotEmpty) stat('rate', (parseDecimal(at(r, m.rate)) ?? 0) > 0);
+      if (m.isin != null && at(r, m.isin).isNotEmpty) stat('isin', RegExp(r'^[A-Z]{2}[A-Z0-9]{9}\d$').hasMatch(at(r, m.isin).toUpperCase()));
+      if (m.currency != null && at(r, m.currency).isNotEmpty) stat('currency', RegExp(r'^[A-Za-z]{3}$').hasMatch(at(r, m.currency)));
+      if (m.name != null) stat('name', at(r, m.name).isNotEmpty);
+      if (m.symbol != null) stat('symbol', at(r, m.symbol).isNotEmpty);
+    }
 
     if (d == null) {
       skipped.add(SkippedRow(i + 1, 'Data inválida ou vazia', preview(r)));
