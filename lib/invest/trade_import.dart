@@ -158,10 +158,10 @@ String? _tradeHeader(String h) {
   return null;
 }
 
-TradeMapping guessTradeMapping(List<List<String>> table) {
+TradeMapping guessTradeMapping(List<List<String>> table, {int? headerRow}) {
   final m = TradeMapping();
-  var best = -1, bestScore = 0;
-  for (var i = 0; i < table.length && i < 20; i++) {
+  var best = headerRow ?? -1, bestScore = headerRow == null ? 0 : 3;
+  for (var i = 0; headerRow == null && i < table.length && i < 20; i++) {
     final kinds = {for (final c in table[i]) _tradeHeader(c)}..remove(null);
     if (kinds.length > bestScore) {
       bestScore = kinds.length;
@@ -180,34 +180,121 @@ TradeMapping guessTradeMapping(List<List<String>> table) {
   return m;
 }
 
-String _kindOf(String raw, double? qty) {
+/// Chave de um texto de tipo ("Compra a mercado" -> "COMPRA A MERCADO").
+String typeKey(String raw) => _norm(raw);
+
+/// 'buy' | 'sell' | 'dividend' | 'ignore' (decidido pelo utilizador) | '' (não reconhecido).
+String _kindOf(String raw, double? qty, Map<String, String> overrides) {
   final s = _norm(raw);
   if (s.isEmpty) return qty != null && qty < 0 ? 'sell' : 'buy';
+  final o = overrides[s];
+  if (o != null) return o;
+  if (RegExp(r'DEPOSIT|DEPOSIT|LEVANT|WITHDRAW|IMPOST|\bTAX|\bTAXA|^FEES?$|CUSTODI|CUSTODY|TRANSFER|SALDO|ABERTURA|OPENING|JUROS DE CONTA').hasMatch(s) && !RegExp(r'DIVID').hasMatch(s)) return 'ignore';
   if (RegExp(r'DIVID|JURO|INTEREST|COUPON|CUPAO').hasMatch(s)) return 'dividend';
-  if (RegExp(r'SELL|VEND|SALE|^V$|^S$|SOLD|LIQUID').hasMatch(s)) return 'sell';
-  if (RegExp(r'BUY|COMPR|PURCHASE|^C$|^B$|BOUGHT|SUBSCR').hasMatch(s)) return 'buy';
-  return ''; // outra coisa (depósito, taxa, impostos…): ignorar
+  if (RegExp(r'SELL|VEND|SALE|^V$|^S$|SOLD|LIQUID|RESGATE|REDEMPTION').hasMatch(s)) return 'sell';
+  if (RegExp(r'BUY|COMPR|PURCHASE|^C$|^B$|BOUGHT|SUBSCR|AQUISI|ACQUI').hasMatch(s)) return 'buy';
+  return '';
 }
 
-/// Compras, vendas e dividendos de uma tabela. As linhas que não são operações são ignoradas.
-List<ParsedTrade> tradesFromTable(List<List<String>> table, TradeMapping m, {int? defaultYear}) {
+/// Uma linha do ficheiro que não pôde ser importada, e porquê.
+class SkippedRow {
+  final int row; // número da linha no ficheiro (a contar de 1)
+  final String reason;
+  final String text;
+  const SkippedRow(this.row, this.reason, this.text);
+}
+
+/// Resultado da leitura de uma tabela, com a validação de cada coluna.
+class TradeReport {
+  final List<ParsedTrade> trades;
+  final List<SkippedRow> skipped;
+  final Map<String, int> unknownTypes; // tipo (como escrito) -> nº de linhas
+  final Map<String, ({int ok, int total})> columns; // campo -> células válidas / lidas
+  final int dataRows; // linhas que parecem operações
+  final int ignoredByUser;
+  const TradeReport({required this.trades, required this.skipped, required this.unknownTypes, required this.columns, required this.dataRows, required this.ignoredByUser});
+}
+
+DateTime? _dateCell(String s, int? defaultYear) {
+  final d = parseDate(s, defaultYear: defaultYear);
+  if (d != null) return d;
+  // data do Excel guardada como número (dias desde 1899-12-30)
+  final n = double.tryParse(s.trim().replaceAll(',', '.'));
+  if (n != null && n > 20000 && n < 80000) return DateTime(1899, 12, 30).add(Duration(days: n.floor()));
+  return null;
+}
+
+/// Lê as operações de uma tabela e valida todas as colunas escolhidas.
+/// [typeOverrides]: o que fazer com tipos não reconhecidos (chave de [typeKey] -> buy/sell/dividend/ignore).
+TradeReport parseTradeTable(List<List<String>> table, TradeMapping m, {int? defaultYear, Map<String, String> typeOverrides = const {}}) {
   final out = <ParsedTrade>[];
+  final skipped = <SkippedRow>[];
+  final unknown = <String, int>{};
+  final stats = <String, ({int ok, int total})>{};
+  var dataRows = 0, ignored = 0;
   String at(List<String> r, int? c) => (c == null || c >= r.length) ? '' : r[c].trim();
+  void stat(String f, bool ok) {
+    final c = stats[f] ?? (ok: 0, total: 0);
+    stats[f] = (ok: c.ok + (ok ? 1 : 0), total: c.total + 1);
+  }
+
+  String preview(List<String> r) {
+    final t = r.where((c) => c.trim().isNotEmpty).join(' · ');
+    return t.length > 110 ? '${t.substring(0, 110)}…' : t;
+  }
+
   for (var i = m.headerRow + 1; i < table.length; i++) {
     final r = table[i];
-    final d = parseDate(at(r, m.date), defaultYear: defaultYear);
-    if (d == null) continue;
+    final d = _dateCell(at(r, m.date), defaultYear);
     final q = parseDecimal(at(r, m.quantity));
-    var kind = _kindOf(at(r, m.type), q);
-    if (kind.isEmpty) continue;
-    var qty = q?.abs() ?? 0;
-    var price = parseDecimal(at(r, m.price))?.abs() ?? 0;
-    final total = parseDecimal(at(r, m.total))?.abs();
+    final p = parseDecimal(at(r, m.price));
+    final tot = parseDecimal(at(r, m.total));
+    // uma linha só conta como "operação" se tiver data ou números nas colunas principais
+    if (d == null && q == null && p == null && tot == null) continue;
+    dataRows++;
+    // validação de cada coluna escolhida
+    stat('date', d != null);
+    if (m.quantity != null) stat('quantity', q != null);
+    if (m.price != null) stat('price', p != null);
+    if (m.total != null) stat('total', tot != null);
+    if (m.fee != null && at(r, m.fee).isNotEmpty) stat('fee', parseDecimal(at(r, m.fee)) != null);
+    if (m.rate != null && at(r, m.rate).isNotEmpty) stat('rate', (parseDecimal(at(r, m.rate)) ?? 0) > 0);
+    if (m.isin != null && at(r, m.isin).isNotEmpty) stat('isin', RegExp(r'^[A-Z]{2}[A-Z0-9]{9}\d$').hasMatch(at(r, m.isin).toUpperCase()));
+    if (m.currency != null && at(r, m.currency).isNotEmpty) stat('currency', RegExp(r'^[A-Za-z]{3}$').hasMatch(at(r, m.currency)));
+    if (m.name != null) stat('name', at(r, m.name).isNotEmpty);
+    if (m.symbol != null) stat('symbol', at(r, m.symbol).isNotEmpty);
+    final rawType = at(r, m.type);
+    final kind = _kindOf(rawType, q, typeOverrides);
+    if (m.type != null) stat('type', kind.isNotEmpty);
+
+    if (d == null) {
+      skipped.add(SkippedRow(i + 1, 'Data inválida ou vazia', preview(r)));
+      continue;
+    }
+    if (kind.isEmpty) {
+      unknown[rawType] = (unknown[rawType] ?? 0) + 1;
+      skipped.add(SkippedRow(i + 1, 'Tipo não reconhecido: “$rawType”', preview(r)));
+      continue;
+    }
+    if (kind == 'ignore') {
+      ignored++;
+      continue;
+    }
+    final qty = q?.abs() ?? 0;
+    var price = p?.abs() ?? 0;
+    final total = tot?.abs();
     if (kind != 'dividend') {
-      if (qty <= 0) continue;
-      if (price <= 0 && total != null) price = total / qty;
-      if (price <= 0) continue;
+      if (qty <= 0) {
+        skipped.add(SkippedRow(i + 1, 'Quantidade em falta ou inválida', preview(r)));
+        continue;
+      }
+      if (price <= 0 && total != null && total > 0) price = total / qty;
+      if (price <= 0) {
+        skipped.add(SkippedRow(i + 1, 'Preço em falta (e sem valor total para o calcular)', preview(r)));
+        continue;
+      }
     } else if (total == null || total <= 0) {
+      skipped.add(SkippedRow(i + 1, 'Valor do dividendo em falta', preview(r)));
       continue;
     }
     final fx = parseDecimal(at(r, m.rate));
@@ -225,8 +312,11 @@ List<ParsedTrade> tradesFromTable(List<List<String>> table, TradeMapping m, {int
       rate: fx != null && fx > 0 ? fx : null,
     ));
   }
-  return out;
+  return TradeReport(trades: out, skipped: skipped, unknownTypes: unknown, columns: stats, dataRows: dataRows, ignoredByUser: ignored);
 }
+
+/// Compras, vendas e dividendos de uma tabela (sem o relatório de validação).
+List<ParsedTrade> tradesFromTable(List<List<String>> table, TradeMapping m, {int? defaultYear}) => parseTradeTable(table, m, defaultYear: defaultYear).trades;
 
 // ---------------------------------------------------------------------------
 // PDF (texto): tenta reconhecer linhas do tipo "05/01/2025 Compra Apple Inc 2 150,00 USD 300,00"

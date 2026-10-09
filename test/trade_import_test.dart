@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:financas/db/database.dart';
 import 'package:financas/import/parsers.dart';
@@ -7,6 +8,7 @@ import 'package:financas/invest/invest.dart';
 import 'package:financas/invest/trade_import.dart';
 import 'package:financas/invest/transfers_screen.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:excel/excel.dart' as xl;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -237,5 +239,83 @@ Total geral 1.000,00
       expect(d.s.transferAllocation(t).onHold, 60000);
       expect(d.s.investDeliveries.length, 3);
     });
+  });
+
+  group('validação do ficheiro', () {
+    const csvBad = 'Data;Tipo;Nome;Quantidade;Preço;Moeda\n'
+        '06/01/2026;Compra;Alpha SA;3;110,50;EUR\n'
+        '07/01/2026;Permuta;Beta SA;2;50,00;EUR\n'
+        'ontem;Compra;Gama SA;1;10,00;EUR\n'
+        '08/01/2026;Venda;Alpha SA;abc;110,50;EUR\n'
+        '09/01/2026;Depósito;;;;EUR\n'
+        '10/01/2026;Compra;Delta SA;1;;EUR\n';
+
+    test('cada linha problemática é explicada e os tipos novos podem ser escolhidos', () {
+      final t = parseCsv(csvBad);
+      final m = guessTradeMapping(t);
+      final r = parseTradeTable(t, m);
+      expect(r.trades.length, 1); // só a primeira está completa
+      expect(r.unknownTypes, {'Permuta': 1});
+      final reasons = r.skipped.map((e) => e.reason).toList();
+      expect(reasons, containsAll(['Data inválida ou vazia', 'Quantidade em falta ou inválida', 'Preço em falta (e sem valor total para o calcular)']));
+      expect(reasons.any((e) => e.startsWith('Tipo não reconhecido')), isTrue);
+      expect(r.skipped.firstWhere((e) => e.reason.startsWith('Data')).row, 4);
+      expect(r.ignoredByUser, 1); // o depósito não é uma operação
+      expect(r.columns['quantity'], (ok: 4, total: 6)); // "abc" e a linha do depósito (vazia) não são números
+      expect(r.columns['date']!.ok, 5);
+      // decidir o que é "Permuta": passa a compra
+      final r2 = parseTradeTable(t, m, typeOverrides: {typeKey('Permuta'): 'buy'});
+      expect(r2.trades.length, 2);
+      expect(r2.unknownTypes, isEmpty);
+    });
+
+    test('Excel: escolhe a folha certa, lê números e datas (inclusive em número de série)', () {
+      final ex = xl.Excel.createExcel();
+      ex.rename('Sheet1', 'Resumo');
+      final r = ex['Resumo'];
+      r.appendRow([xl.TextCellValue('Relatório'), xl.TextCellValue('2026')]);
+      final d = ex['Operações'];
+      d.appendRow([xl.TextCellValue('Data'), xl.TextCellValue('Tipo'), xl.TextCellValue('Produto'), xl.TextCellValue('Quantidade'), xl.TextCellValue('Preço'), xl.TextCellValue('Moeda')]);
+      d.appendRow([xl.DateCellValue(year: 2026, month: 1, day: 6), xl.TextCellValue('Compra'), xl.TextCellValue('Alpha SA'), xl.IntCellValue(3), xl.DoubleCellValue(110.5), xl.TextCellValue('EUR')]);
+      d.appendRow([xl.IntCellValue(46037), xl.TextCellValue('Venda'), xl.TextCellValue('Alpha SA'), xl.DoubleCellValue(1.5), xl.DoubleCellValue(0.00001234), xl.TextCellValue('EUR')]); // 2026-01-15 em série
+      final sheets = parseXlsxSheets(Uint8List.fromList(ex.encode()!));
+      expect(sheets.keys, containsAll(['Resumo', 'Operações']));
+      final m = guessTradeMapping(sheets['Operações']!);
+      expect(m.usable, isTrue);
+      final rep = parseTradeTable(sheets['Operações']!, m);
+      expect(rep.trades.length, 2);
+      expect(rep.trades[1].date, DateTime(2026, 1, 15));
+      expect(rep.trades[1].price, closeTo(0.00001234, 1e-12)); // sem notação científica
+      expect(rep.skipped, isEmpty);
+    });
+  });
+
+  testWidgets('ecrã mostra a validação das colunas e deixa resolver tipos novos', (tester) async {
+    final s = AppState(Db.memory(), prices: fakePrices());
+    final acc = s.addInvestAccount('XTB');
+    tester.view.physicalSize = const Size(360, 3200) * 3;
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    const csv = 'Data;Tipo;Nome;Quantidade;Preço;Moeda\n06/01/2026;Compra;Alpha SA;3;110,50;EUR\n07/01/2026;Permuta;Beta SA;2;50,00;EUR\nontem;Compra;Gama SA;1;10,00;EUR\n';
+    await tester.pumpWidget(ChangeNotifierProvider<AppState>.value(
+      value: s,
+      child: MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        home: Builder(builder: (c) => Scaffold(body: TextButton(onPressed: () => Navigator.push(c, MaterialPageRoute(builder: (_) => ImportTradesScreen(accountId: acc, preloaded: (name: 'e.csv', bytes: utf8.encode(csv) as dynamic)))), child: const Text('abrir')))),
+      ),
+    ));
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Validação do ficheiro'), findsOneWidget);
+    expect(find.textContaining('3 linhas com dados'), findsOneWidget);
+    expect(find.textContaining('Data (Data): 2 de 3 válidas'), findsOneWidget);
+    expect(find.text('Tipos que não reconheci'), findsOneWidget);
+    expect(find.textContaining('2 linhas não importadas'), findsOneWidget);
+    await tester.tap(find.text('Escolher'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Compra').last);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('1 linha não importada'), findsOneWidget); // só a data inválida
+    expect(tester.takeException(), isNull);
   });
 }

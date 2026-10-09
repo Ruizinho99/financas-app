@@ -51,7 +51,7 @@ DateTime? parseDate(String input, {int? defaultYear}) {
     if (y < 100) y += 2000;
     return _mk(y, int.parse(m[2]!), int.parse(m[1]!));
   }
-  m = RegExp(r'^(\d{1,2})\s+([A-Za-zçÇ]{3})\w*\.?\s+(\d{2,4})').firstMatch(s);
+  m = RegExp(r'^(\d{1,2})[\s-]+([A-Za-zçÇ]{3})\w*\.?[\s-]+(\d{2,4})').firstMatch(s);
   if (m != null) {
     final mo = _months[m[2]!.toUpperCase()];
     if (mo != null) {
@@ -403,28 +403,46 @@ String decodeText(Uint8List bytes) {
   }
 }
 
-List<List<String>> parseXlsx(Uint8List bytes) {
-  final excel = Excel.decodeBytes(bytes);
-  Sheet? best;
-  for (final s in excel.tables.values) {
-    if (best == null || s.maxRows > best.maxRows) best = s;
+String _xlsxCell(Data? d) {
+  final v = d?.value;
+  if (v == null) return '';
+  String two(int n) => n.toString().padLeft(2, '0');
+  if (v is TextCellValue) return v.value.text ?? '';
+  if (v is IntCellValue) return v.value.toString();
+  if (v is DoubleCellValue) {
+    final x = v.value;
+    var t = x.toString();
+    if (t.contains('e') || t.contains('E')) t = x.toStringAsFixed(10).replaceFirst(RegExp(r'\.?0+$'), '');
+    return t;
   }
-  if (best == null) return [];
-  String cell(Data? d) {
-    final v = d?.value;
-    if (v == null) return '';
-    if (v is TextCellValue) return v.value.text ?? '';
-    if (v is IntCellValue) return v.value.toString();
-    if (v is DoubleCellValue) return v.value.toString();
-    if (v is DateCellValue) return '${v.year}-${v.month.toString().padLeft(2, '0')}-${v.day.toString().padLeft(2, '0')}';
-    if (v is DateTimeCellValue) return '${v.year}-${v.month.toString().padLeft(2, '0')}-${v.day.toString().padLeft(2, '0')}';
-    return v.toString();
-  }
+  if (v is DateCellValue) return '${v.year}-${two(v.month)}-${two(v.day)}';
+  if (v is DateTimeCellValue) return '${v.year}-${two(v.month)}-${two(v.day)}';
+  if (v is BoolCellValue) return v.value ? 'true' : 'false';
+  if (v is FormulaCellValue) return v.formula; // o Excel não guarda aqui o resultado
+  return v.toString();
+}
 
-  return [
-    for (final r in best.rows)
-      if (r.any((c) => cell(c).trim().isNotEmpty)) [for (final c in r) cell(c)]
-  ];
+List<List<String>> _sheetRows(Sheet s) => [
+      for (final r in s.rows)
+        if (r.any((c) => _xlsxCell(c).trim().isNotEmpty)) [for (final c in r) _xlsxCell(c)]
+    ];
+
+/// Todas as folhas de um ficheiro Excel (nome -> linhas), sem as vazias.
+Map<String, List<List<String>>> parseXlsxSheets(Uint8List bytes) {
+  final excel = Excel.decodeBytes(bytes);
+  return {
+    for (final e in excel.tables.entries)
+      if (e.value.maxRows > 0) e.key: _sheetRows(e.value),
+  }..removeWhere((_, v) => v.isEmpty);
+}
+
+/// A folha com mais linhas (usado na importação de extratos).
+List<List<String>> parseXlsx(Uint8List bytes) {
+  List<List<String>> best = [];
+  for (final rows in parseXlsxSheets(bytes).values) {
+    if (rows.length > best.length) best = rows;
+  }
+  return best;
 }
 
 // ---------------------------------------------------------------------------

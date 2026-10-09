@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/widgets.dart';
-import '../import/parsers.dart' show decodeText, parseCsv, parseXlsx, pdfText;
+import '../import/parsers.dart'
+    show decodeText, parseCsv, parseXlsxSheets, pdfText;
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/form_kit.dart';
@@ -32,6 +33,11 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   String source = '';
   List<List<String>>? table;
   TradeMapping mapping = TradeMapping();
+  Map<String, List<List<String>>> sheets = {}; // folhas do Excel
+  String? sheet;
+  TradeReport? report; // validação da última leitura da tabela
+  final Map<String, String> typeOverrides =
+      {}; // tipo não reconhecido -> o que fazer
   List<ParsedTrade> trades = [];
   final Set<int> excluded = {};
   DateTime? from, to; // intervalo de datas a importar (nulo = tudo)
@@ -101,10 +107,37 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       if (ext == 'pdf') {
         trades = tradesFromText(pdfText(bytes));
       } else {
-        table = ext == 'xlsx' ? parseXlsx(bytes) : parseCsv(decodeText(bytes));
+        typeOverrides.clear();
+        report = null;
+        sheets = {};
+        if (ext == 'xlsx') {
+          sheets = parseXlsxSheets(bytes);
+          if (sheets.isEmpty)
+            throw const FormatException('O ficheiro Excel não tem dados.');
+          // escolhe a folha onde as colunas são melhor reconhecidas
+          var bestScore = -1;
+          for (final e in sheets.entries) {
+            final m = guessTradeMapping(e.value);
+            final score =
+                (m.usable ? 1000 : 0) +
+                [for (final (f, _) in TradeMapping.fields) m.get_(f)]
+                        .where((x) => x != null)
+                        .length *
+                    10 +
+                (e.value.length > 9 ? 9 : e.value.length);
+            if (score > bestScore) {
+              bestScore = score;
+              sheet = e.key;
+            }
+          }
+          table = sheets[sheet];
+        } else {
+          sheet = null;
+          table = parseCsv(decodeText(bytes));
+        }
         mapping = guessTradeMapping(table!);
         mappingOpen = !mapping.usable;
-        trades = mapping.usable ? tradesFromTable(table!, mapping) : [];
+        _parseTable();
       }
       _afterParse();
       if (trades.isEmpty) {
@@ -121,10 +154,19 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     if (mounted) setState(() => busy = false);
   }
 
+  /// Lê a tabela com as colunas escolhidas e guarda o relatório de validação.
+  void _parseTable() {
+    if (table == null || !mapping.usable) {
+      trades = [];
+      report = null;
+      return;
+    }
+    report = parseTradeTable(table!, mapping, typeOverrides: typeOverrides);
+    trades = report!.trades;
+  }
+
   void _reparse() {
-    trades = table == null || !mapping.usable
-        ? []
-        : tradesFromTable(table!, mapping);
+    _parseTable();
     excluded.clear();
     _afterParse();
     setState(
@@ -136,7 +178,9 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
 
   bool _inRange(ParsedTrade t) {
     final d = DateTime(t.date.year, t.date.month, t.date.day);
-    return (from == null || !d.isBefore(DateTime(from!.year, from!.month, from!.day))) && (to == null || !d.isAfter(DateTime(to!.year, to!.month, to!.day)));
+    return (from == null ||
+            !d.isBefore(DateTime(from!.year, from!.month, from!.day))) &&
+        (to == null || !d.isAfter(DateTime(to!.year, to!.month, to!.day)));
   }
 
   // ---- instrumentos ----
@@ -444,13 +488,21 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
           if (table != null) ...[
             const SizedBox(height: 14),
             _mappingCard(context),
+            if (report != null || !mapping.usable) ...[
+              const SizedBox(height: 14),
+              _validationCard(context),
+            ],
           ],
 
           if (trades.isNotEmpty) ...[
             const SizedBox(height: 14),
             DateRangeCard(
-              min: trades.map((t) => t.date).reduce((a, b) => a.isBefore(b) ? a : b),
-              max: trades.map((t) => t.date).reduce((a, b) => a.isAfter(b) ? a : b),
+              min: trades
+                  .map((t) => t.date)
+                  .reduce((a, b) => a.isBefore(b) ? a : b),
+              max: trades
+                  .map((t) => t.date)
+                  .reduce((a, b) => a.isAfter(b) ? a : b),
               from: from,
               to: to,
               inRange: trades.where(_inRange).length,
@@ -709,6 +761,55 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             ),
           ),
         if (mappingOpen) ...[
+          if (sheets.length > 1) ...[
+            const FieldLabel('Folha do Excel'),
+            DropdownButtonFormField<String>(
+              key: ValueKey('sheet-$sheet'),
+              initialValue: sheet,
+              isExpanded: true,
+              items: [
+                for (final n in sheets.keys)
+                  DropdownMenuItem(
+                    value: n,
+                    child: Text(
+                      '$n  ·  ${sheets[n]!.length} linhas',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+              onChanged: (v) {
+                if (v == null) return;
+                sheet = v;
+                table = sheets[v];
+                typeOverrides.clear();
+                mapping = guessTradeMapping(table!);
+                _reparse();
+              },
+            ),
+          ],
+          const FieldLabel('Linha dos títulos das colunas'),
+          DropdownButtonFormField<int>(
+            key: ValueKey('hdr-${mapping.headerRow}-$sheet'),
+            initialValue: mapping.headerRow,
+            isExpanded: true,
+            items: [
+              const DropdownMenuItem(value: -1, child: Text('Sem títulos')),
+              for (var i = 0; i < t.length && i < 30; i++)
+                DropdownMenuItem(
+                  value: i,
+                  child: Text(
+                    'Linha ${i + 1}: ${t[i].where((c) => c.trim().isNotEmpty).take(4).join(' · ')}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+            ],
+            onChanged: (v) {
+              if (v == null) return;
+              mapping = guessTradeMapping(t, headerRow: v);
+              mapping.headerRow = v;
+              _reparse();
+            },
+          ),
           for (final (f, label) in TradeMapping.fields) ...[
             FieldLabel(label, optional: !{'date', 'quantity'}.contains(f)),
             DropdownButtonFormField<int?>(
@@ -737,6 +838,164 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
               },
             ),
           ],
+        ],
+      ],
+    );
+  }
+
+  static const _requiredNote =
+      'Preciso, no mínimo, da data, da quantidade e do preço (ou do valor total).';
+
+  Widget _validationCard(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final r = report;
+    final t = table!;
+    final headers = mapping.headerRow >= 0 && mapping.headerRow < t.length
+        ? t[mapping.headerRow]
+        : <String>[];
+    String colName(int? c) => c == null
+        ? ''
+        : (c < headers.length && headers[c].trim().isNotEmpty
+              ? headers[c].trim()
+              : 'coluna ${c + 1}');
+    final missing = [
+      if (mapping.date == null) 'Data',
+      if (mapping.quantity == null) 'Quantidade',
+      if (mapping.price == null && mapping.total == null)
+        'Preço ou Valor total',
+    ];
+    Widget row(IconData icon, Color color, String text) => Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: tt.bodyMedium)),
+        ],
+      ),
+    );
+    final ok = Colors.green.shade700, warn = Colors.orange.shade800;
+    return FormCard(
+      children: [
+        Text('Validação do ficheiro', style: tt.titleMedium),
+        const SizedBox(height: 4),
+        if (r == null) ...[
+          Text(_requiredNote, style: tt.bodySmall),
+          for (final m in missing)
+            row(Icons.error_outline, cs.error, 'Falta escolher a coluna: $m'),
+        ] else ...[
+          Text(
+            '${r.dataRows} linhas com dados · ${r.trades.length} operações reconhecidas'
+            '${r.skipped.isEmpty ? '' : ' · ${r.skipped.length} com problemas'}'
+            '${r.ignoredByUser == 0 ? '' : ' · ${r.ignoredByUser} ignoradas (não são compras/vendas)'}',
+            style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          for (final m in missing)
+            row(Icons.error_outline, cs.error, 'Falta escolher a coluna: $m'),
+          const SizedBox(height: 6),
+          for (final (f, label) in TradeMapping.fields)
+            if (mapping.get_(f) != null && r.columns[f] != null)
+              () {
+                final c = r.columns[f]!;
+                final all = c.ok == c.total;
+                return row(
+                  all
+                      ? Icons.check_circle_outline
+                      : (c.ok == 0
+                            ? Icons.error_outline
+                            : Icons.warning_amber_rounded),
+                  all ? ok : (c.ok == 0 ? cs.error : warn),
+                  '${label.split(' (').first} (${colName(mapping.get_(f))}): ${c.ok} de ${c.total} válidas',
+                );
+              }(),
+          if (r.unknownTypes.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text('Tipos que não reconheci', style: tt.titleSmall),
+            Text(
+              'Diz-me o que são para os importar (ou ignora).',
+              style: tt.bodySmall,
+            ),
+            for (final e in r.unknownTypes.entries) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '“${e.key.isEmpty ? '(vazio)' : e.key}” · ${e.value} ${e.value == 1 ? 'linha' : 'linhas'}',
+                      style: tt.bodyMedium,
+                    ),
+                  ),
+                  DropdownButton<String>(
+                    hint: const Text('Escolher'),
+                    value: typeOverrides[typeKey(e.key)],
+                    items: const [
+                      DropdownMenuItem(value: 'buy', child: Text('Compra')),
+                      DropdownMenuItem(value: 'sell', child: Text('Venda')),
+                      DropdownMenuItem(
+                        value: 'dividend',
+                        child: Text('Dividendo'),
+                      ),
+                      DropdownMenuItem(value: 'ignore', child: Text('Ignorar')),
+                    ],
+                    onChanged: (v) {
+                      if (v == null) return;
+                      typeOverrides[typeKey(e.key)] = v;
+                      _reparse();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ],
+          if (r.skipped.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Material(
+              type: MaterialType.transparency,
+              child: Theme(
+                data: Theme.of(context)
+                    .copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: EdgeInsets.zero,
+                  title: Text(
+                    '${r.skipped.length} ${r.skipped.length == 1 ? 'linha não importada' : 'linhas não importadas'}',
+                    style: tt.titleSmall?.copyWith(color: warn),
+                  ),
+                  children: [
+                    for (final s in r.skipped.take(40))
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          'Linha ${s.row}: ${s.reason}',
+                          style: TextStyle(color: warn),
+                        ),
+                        subtitle: Text(
+                          s.text,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    if (r.skipped.length > 40)
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          '… e mais ${r.skipped.length - 40}',
+                          style: tt.bodySmall,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ] else if (r.trades.isNotEmpty)
+            row(
+              Icons.check_circle_outline,
+              ok,
+              'Todas as linhas foram lidas sem problemas.',
+            ),
         ],
       ],
     );
