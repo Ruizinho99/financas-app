@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -10,7 +11,7 @@ import '../util/format.dart';
 
 /// Acesso à base de dados SQLite local (sem rede).
 class Db {
-  late final Database _db;
+  late Database _db;
 
   static Future<Db> open() async {
     final dir = await getApplicationDocumentsDirectory();
@@ -666,6 +667,53 @@ class Db {
   void deleteSetting(String key) => _db.execute('DELETE FROM settings WHERE key=?', [key]);
 
   void close() => _db.close();
+
+  /// Cópia consistente de toda a base de dados (um ficheiro SQLite), para cópias de segurança.
+  Uint8List snapshotBytes() {
+    final dir = Directory.systemTemp.createTempSync('financas');
+    try {
+      final f = File(p.join(dir.path, 'copia.db'));
+      _db.execute('VACUUM INTO ?', [f.path]);
+      return f.readAsBytesSync();
+    } finally {
+      dir.deleteSync(recursive: true);
+    }
+  }
+
+  /// Substitui todos os dados pelos de uma cópia (ficheiro SQLite). Lança [FormatException] se não for válida.
+  Future<void> restoreBytes(Uint8List bytes) async {
+    final dir = Directory.systemTemp.createTempSync('financas');
+    try {
+      final f = File(p.join(dir.path, 'restauro.db'));
+      f.writeAsBytesSync(bytes);
+      final Database src;
+      try {
+        src = sqlite3.open(f.path, mode: OpenMode.readOnly);
+      } catch (_) {
+        throw const FormatException('O ficheiro não é uma cópia válida.');
+      }
+      try {
+        final bool ok;
+        final int v;
+        try {
+          ok = src.select("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('transactions','categories')").length == 2;
+          v = src.select('PRAGMA user_version').first.values.first as int;
+        } on SqliteException {
+          throw const FormatException('O ficheiro não é uma cópia válida.');
+        }
+        if (!ok) throw const FormatException('O ficheiro não é uma cópia desta app.');
+        if (v > _schemaVersion) throw const FormatException('A cópia é de uma versão mais recente da app. Atualiza a app primeiro.');
+        await src.backup(_db).drain<void>();
+      } finally {
+        src.dispose();
+      }
+      _migrate(); // cópias antigas sobem para o esquema atual
+    } finally {
+      dir.deleteSync(recursive: true);
+    }
+  }
+
+  static const _schemaVersion = 11;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

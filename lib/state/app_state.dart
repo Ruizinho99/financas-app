@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../db/database.dart';
 import '../import/parsers.dart';
+import '../cloud/apple_provider.dart';
+import '../cloud/cloud_provider.dart';
+import '../cloud/google_provider.dart';
 import '../invest/invest.dart';
 import '../invest/price_service.dart';
 import '../models.dart';
@@ -69,7 +72,10 @@ class CategoryStat {
 class AppState extends ChangeNotifier {
   final Db db;
   final PriceService prices;
-  AppState(this.db, {PriceService? prices}) : prices = prices ?? PriceService() {
+  /// Contas na nuvem onde se podem guardar cópias (Google; Apple em preparação).
+  late final List<CloudProvider> cloud;
+  AppState(this.db, {PriceService? prices, List<CloudProvider>? cloud}) : prices = prices ?? PriceService() {
+    this.cloud = cloud ?? [GoogleProvider(serverClientId: () => db.setting('google_server_client_id') ?? ''), AppleProvider()];
     reload();
   }
 
@@ -542,6 +548,42 @@ class AppState extends ChangeNotifier {
     });
     reload();
     return n;
+  }
+
+  // ---------- Cópia na nuvem ----------
+  String get googleClientId => db.setting('google_server_client_id') ?? '';
+  void setGoogleClientId(String v) {
+    db.putSetting('google_server_client_id', v.trim());
+    notifyListeners();
+  }
+
+  DateTime? get lastCloudBackup => DateTime.tryParse(db.setting('cloud_last_backup') ?? '');
+  String? get lastCloudProvider => db.setting('cloud_last_provider');
+
+  /// Guarda uma cópia de toda a base de dados na conta ligada (substitui a anterior).
+  Future<CloudBackupInfo> backupToCloud(CloudProvider p) async {
+    final info = await p.upload(db.snapshotBytes());
+    db.putSetting('cloud_last_backup', DateTime.now().toIso8601String());
+    db.putSetting('cloud_last_provider', p.id);
+    notifyListeners();
+    return info;
+  }
+
+  /// Substitui TODOS os dados pelos da última cópia da nuvem. Devolve a data da cópia.
+  Future<DateTime> restoreFromCloud(CloudProvider p) async {
+    final info = await p.latest();
+    if (info == null) throw const CloudException('Ainda não há nenhuma cópia nesta conta.');
+    final bytes = await p.download(info);
+    final cid = googleClientId; // a configuração desta app não se perde com o restauro
+    try {
+      await db.restoreBytes(bytes);
+    } on FormatException catch (e) {
+      throw CloudException(e.message);
+    }
+    if (cid.isNotEmpty) db.putSetting('google_server_client_id', cid);
+    baseCcy = db.setting('base_currency') ?? 'EUR';
+    reload();
+    return info.modified;
   }
 
   /// Diz que estas compras foram feitas com o dinheiro desta transferência (o resto fica em espera).

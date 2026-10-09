@@ -14,6 +14,7 @@ import 'accounts_screen.dart';
 import 'appearance_screen.dart';
 import 'budget_screen.dart' show showBudgetEditor;
 import 'classify_screen.dart';
+import 'cloud_screen.dart';
 import 'groups_screen.dart';
 import 'import_screen.dart';
 import 'transactions_screen.dart' show confirm;
@@ -46,6 +47,7 @@ class MoreScreen extends StatelessWidget {
             await FilePicker.saveFile(fileName: 'movimentos.csv', bytes: Uint8List.fromList(utf8.encode(b.toString())), mimeType: 'text/csv');
           },
         ),
+        ListTile(leading: const Icon(Icons.cloud_sync_outlined), title: const Text('Conta e cópia na nuvem'), subtitle: const Text('Google Drive (Apple em preparação)'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CloudScreen()))),
         ListTile(
           leading: const Icon(Icons.backup_outlined),
           title: const Text('Cópia de segurança (base de dados)'),

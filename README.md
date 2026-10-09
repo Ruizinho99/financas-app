@@ -32,3 +32,11 @@ Os APKs estão na secção **Releases** do GitHub.
 
 ## Licença
 MIT – ver `LICENSE`.
+
+## Conta Google e cópia na nuvem
+
+Em **Mais › Conta e cópia na nuvem** podes ligar a tua conta Google e guardar/restaurar uma cópia de todos os dados no Google Drive, numa pasta privada da app (`appDataFolder`, invisível no teu Drive e só acessível por esta app). Não inclui as fotos dos recibos. A internet só é usada quando carregas nos botões.
+
+A Google exige um projeto próprio (grátis): ativa a *Google Drive API*, configura o ecrã de consentimento OAuth (Externo, com o teu email como utilizador de teste) e cria dois IDs de cliente OAuth: um **Android** (pacote `pt.financas.financas` e a impressão digital SHA-1 do certificado com que a app foi assinada, que o ecrã da app mostra) e um **Web**, cujo ID colas na app. Nada disto fica no código.
+
+A camada é modular (`lib/cloud/`): `CloudProvider` é a interface comum; `GoogleProvider` usa o Drive; `AppleProvider` é um lugar reservado para o iCloud (só fará sentido numa versão para iPhone).
