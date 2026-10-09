@@ -106,6 +106,8 @@ void main() {
     final d = buildInvestData();
     await _pump(tester, d.s, OpFormScreen(type: OpType.buy, accountId: d.xtb, holdingId: d.aapl), size: const Size(360, 1800));
     expect(find.text('Compra'), findsWidgets);
+    await tester.tap(find.text('Mais opções (comissão, nota…)'));
+    await tester.pumpAndSettle();
     final fields = find.byType(TextField);
     // quantidade, preço (já sugerido: 150), comissão, nota
     await tester.enterText(fields.at(0), '2');
@@ -275,6 +277,8 @@ void main() {
     final d = buildInvestData();
     final nvda = d.s.addHolding(Holding(id: 0, accountId: d.xtb, name: 'Nvidia', kind: HoldingKind.stock, currency: 'USD', lastPrice: 110, lastPriceOrig: 120, lastFx: 110 / 120));
     await _pump(tester, d.s, OpFormScreen(type: OpType.buy, accountId: d.xtb, holdingId: nvda), size: const Size(360, 1900));
+    await tester.tap(find.text('Mais opções (comissão, nota…)'));
+    await tester.pumpAndSettle();
     final fields = find.byType(TextField);
     // quantidade, preço (USD, sugerido 120), câmbio (sugerido 1/0,9167), comissão
     expect((tester.widget(fields.at(1)) as TextField).controller!.text, '120');
@@ -330,5 +334,30 @@ void main() {
     await tester.tap(find.text('Importar compras e vendas'));
     await tester.pumpAndSettle();
     expect(find.text('Escolher ficheiro'), findsOneWidget);
+  });
+
+  testWidgets('formulário simples: só o essencial; o tipo muda nos chips; o resto fica em "Mais opções"', (tester) async {
+    final d = buildInvestData();
+    await _pump(tester, d.s, OpFormScreen(type: OpType.buy, accountId: d.xtb, holdingId: d.aapl), size: const Size(360, 1200));
+    // essencial: quantidade, preço (lado a lado) e data; sem comissão nem nota à vista
+    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('Comissão (€)'), findsNothing);
+    for (final t in ['Compra', 'Venda', 'Dividendo', 'Já tinha', 'Dinheiro']) {
+      expect(find.widgetWithText(ChoiceChip, t), findsOneWidget);
+    }
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Dividendo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Valor recebido (€)'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Venda'));
+    await tester.pumpAndSettle();
+    expect(find.text('Quantidade'), findsOneWidget);
+    // ao escrever o preço, "Mais opções" não fecha sozinho
+    await tester.tap(find.text('Mais opções (comissão, nota…)'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(0), '1');
+    await tester.enterText(find.byType(TextField).at(1), '150');
+    await tester.pump();
+    expect(find.text('Comissão (€)'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

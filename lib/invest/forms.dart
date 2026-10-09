@@ -611,6 +611,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
   late final noteCtrl = TextEditingController(text: _edit?.note ?? '');
   late bool cashIn = (_edit?.amount ?? 1) >= 0;
   String? error;
+  bool? _extrasOpen; // "Mais opções" abre logo se já houver comissão, nota ou modo valor
 
   bool get usesHolding => type != OpType.cash;
   bool get tradeLike =>
@@ -919,32 +920,71 @@ class _OpFormScreenState extends State<OpFormScreen> {
       }
     }
 
+    final typeLabels = <OpType, String>{
+      OpType.buy: 'Compra',
+      OpType.sell: 'Venda',
+      OpType.dividend: 'Dividendo',
+      OpType.initial: 'Já tinha',
+      OpType.cash: 'Dinheiro',
+    };
+
+    void switchType(OpType t) {
+      if (t == type) return;
+      setState(() {
+        type = t;
+        error = null;
+        final ex = t == OpType.initial ? _existingInitial(s, holdingId) : null;
+        if (ex != null) {
+          _edit = ex;
+          _applyOp(ex, s.holding(holdingId));
+        } else {
+          if (_edit != null) {
+            _edit = null;
+            _clearFields();
+            _prefillFx(s.holding(holdingId));
+          }
+          if (t != OpType.initial && priceCtrl.text.isEmpty) {
+            final lp = s.holding(holdingId)?.priceOrig;
+            if (lp != null) priceCtrl.text = _num(lp);
+          }
+        }
+      });
+    }
+
+    final priceLabel = type == OpType.initial ? 'Preço médio ($ccyLabel)' : 'Preço ($ccyLabel)';
+    _extrasOpen ??= feeCtrl.text.isNotEmpty || noteCtrl.text.isNotEmpty || !byQty;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _edit == null ? type.label : 'Editar · ${type.label}',
-        ),
+        title: Text(widget.edit == null ? 'Nova operação' : 'Editar · ${type.label}'),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         children: [
           FormCard(
             children: [
+              // tipo de operação (só ao criar)
+              if (widget.edit == null)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final e in typeLabels.entries)
+                      ChoiceChip(label: Text(e.value), selected: type == e.key, onSelected: (_) => switchType(e.key)),
+                  ],
+                ),
               if (s.investAccounts.length > 1 || accountId == null) ...[
-                const FieldLabel('Plataforma').withTop0(),
+                const SizedBox(height: 14),
                 DropdownButtonFormField<int>(
                   initialValue: accountId,
                   isExpanded: true,
                   decoration: const InputDecoration(
+                    labelText: 'Plataforma',
                     prefixIcon: Icon(Icons.account_balance_outlined),
-                    hintText: 'Escolher plataforma',
                   ),
                   items: [
                     for (final a in s.investAccounts)
-                      DropdownMenuItem(
-                        value: a.id,
-                        child: Text('${a.emoji} ${a.name}'.trim()),
-                      ),
+                      DropdownMenuItem(value: a.id, child: Text('${a.emoji} ${a.name}'.trim())),
                   ],
                   onChanged: widget.edit != null
                       ? null
@@ -955,35 +995,26 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 ),
               ],
               if (usesHolding && accountId != null) ...[
-                const FieldLabel('Ativo'),
+                const SizedBox(height: 14),
                 DropdownButtonFormField<int>(
                   key: ValueKey('h-$accountId-${holdings.length}-$holdingId'),
                   initialValue: holdingId,
                   isExpanded: true,
                   decoration: const InputDecoration(
+                    labelText: 'Ativo',
                     prefixIcon: Icon(Icons.pie_chart_outline),
-                    hintText: 'Escolher ativo',
                   ),
                   items: [
                     for (final h in holdings)
                       DropdownMenuItem(
                         value: h.id,
-                        child: Text(
-                          '${h.kind.emoji}  ${h.name}',
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: Text('${h.kind.emoji}  ${h.name}', overflow: TextOverflow.ellipsis),
                       ),
-                    const DropdownMenuItem(
-                      value: -1,
-                      child: Text('➕  Novo ativo…'),
-                    ),
+                    const DropdownMenuItem(value: -1, child: Text('➕  Novo ativo…')),
                   ],
                   onChanged: (v) async {
                     if (v == -1) {
-                      final id = await showHoldingEditor(
-                        context,
-                        accountId: accountId,
-                      );
+                      final id = await showHoldingEditor(context, accountId: accountId);
                       if (id != null && mounted) {
                         setState(() {
                           holdingId = id;
@@ -1014,24 +1045,92 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   },
                 ),
               ],
-              if (tradeLike && _holding != null && widget.edit == null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: ActionChip(
-                      avatar: const Icon(Icons.currency_exchange, size: 16),
-                      label: Text('Moeda do ativo: ${_holding!.currency} · alterar'),
-                      onPressed: () async {
-                        await showCurrencyPicker(context, _holding!);
-                        if (mounted) setState(() => _prefillFx(_holding));
-                      },
+              if (tradeLike) ...[
+                const SizedBox(height: 14),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: byQty
+                          ? TextField(
+                              controller: qtyCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(labelText: 'Quantidade', hintText: '0'),
+                            )
+                          : TextField(
+                              controller: totalCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(labelText: 'Valor ($baseSym)', prefixText: '$baseSym  ', hintText: '0,00'),
+                            ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: priceCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: InputDecoration(
+                          labelText: priceLabel,
+                          prefixText: ccy == baseCcy ? '$baseSym  ' : null,
+                          suffixText: ccy == baseCcy ? null : ccy,
+                          hintText: '0,00',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (foreignTrade) ...[
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: fxCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: type == OpType.initial ? 'Câmbio médio (1 $baseSym = ? $ccy)' : 'Câmbio (1 $baseSym = ? $ccy)',
+                      prefixIcon: const Icon(Icons.currency_exchange),
+                      hintText: '1,0850',
+                      suffixIcon: IconButton(tooltip: 'Câmbio atual (internet)', icon: const Icon(Icons.sync), onPressed: () => _liveFx(s)),
                     ),
                   ),
+                ],
+                if (total != null || (!byQty && qty != null))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      [
+                        if (!byQty && qty != null) '= ${fmtQty(qty!)} unidades',
+                        if (byQty && total != null) '= ${fmtMoney((total! * 100).round())}',
+                      ].join(' '),
+                      style: tt.bodySmall,
+                    ),
+                  ),
+              ],
+              if (type == OpType.dividend || type == OpType.cash) ...[
+                if (type == OpType.cash) ...[
+                  const SizedBox(height: 14),
+                  SegmentedButton<bool>(
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment(value: true, label: Text('Entrada'), icon: Icon(Icons.south_west)),
+                      ButtonSegment(value: false, label: Text('Saída'), icon: Icon(Icons.north_east)),
+                    ],
+                    selected: {cashIn},
+                    onSelectionChanged: (v) => setState(() => cashIn = v.first),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                TextField(
+                  controller: amountCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: type == OpType.dividend ? 'Valor recebido ($baseSym)' : 'Valor ($baseSym)',
+                    prefixText: '$baseSym  ',
+                    hintText: '0,00',
+                  ),
                 ),
-              const FieldLabel('Data'),
+              ],
+              const SizedBox(height: 14),
               TileField(
                 icon: Icons.event,
+                title: 'Data',
                 text: fmtDate(date),
                 onTap: () async {
                   final d = await showDatePicker(
@@ -1043,175 +1142,61 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   if (d != null) setState(() => date = d);
                 },
               ),
-              if (tradeLike) ...[
-                const SizedBox(height: 14),
-                SegmentedButton<bool>(
-                  showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(
-                      value: true,
-                      label: Text('Quantidade e preço'),
-                    ),
-                    ButtonSegment(value: false, label: Text('Valor e preço')),
-                  ],
-                  selected: {byQty},
-                  onSelectionChanged: (v) => setState(() {
-                    final q = qty, t = total;
-                    byQty = v.first;
-                    // mantém o que já foi escrito ao trocar de modo
-                    if (byQty && q != null)
-                      qtyCtrl.text = q
-                          .toStringAsFixed(6)
-                          .replaceFirst(RegExp(r'\.?0+$'), '')
-                          .replaceAll('.', ',');
-                    if (!byQty && t != null)
-                      totalCtrl.text = t
-                          .toStringAsFixed(2)
-                          .replaceAll('.', ',');
-                  }),
-                ),
-                if (byQty) ...[
-                  FieldLabel(
-                    type == OpType.initial
-                        ? 'Quantidade que já tens'
-                        : 'Quantidade',
-                  ),
-                  TextField(
-                    controller: qtyCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.numbers),
-                      hintText: '0',
-                    ),
-                  ),
-                ] else ...[
-                  FieldLabel(
-                    type == OpType.initial
-                        ? 'Valor investido ($baseSym)'
-                        : (type == OpType.buy
-                              ? 'Valor a investir ($baseSym)'
-                              : 'Valor da venda ($baseSym)'),
-                  ),
-                  TextField(
-                    controller: totalCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      prefixText: '$baseSym  ',
-                      hintText: '0,00',
-                    ),
-                  ),
-                ],
-                FieldLabel(
-                  type == OpType.initial
-                      ? 'Preço médio de compra ($ccyLabel)'
-                      : 'Preço por unidade ($ccyLabel)',
-                ),
-                TextField(
-                  controller: priceCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: InputDecoration(
-                    prefixText: ccy == baseCcy ? '$baseSym  ' : null,
-                    suffixText: ccy == baseCcy ? null : ccy,
-                    hintText: '0,00',
-                  ),
-                ),
-                if (foreignTrade) ...[
-                  FieldLabel(type == OpType.initial ? 'Câmbio médio na compra (1 $baseSym = ? $ccy)' : 'Câmbio (1 $baseSym = ? $ccy)'),
-                  TextField(
-                    controller: fxCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.currency_exchange),
-                      hintText: '1,0850',
-                      suffixIcon: IconButton(tooltip: 'Câmbio atual (internet)', icon: const Icon(Icons.sync), onPressed: () => _liveFx(s)),
-                    ),
-                  ),
-                  if (price != null && qty != null && eurPerUnit != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text('${fmtQty(qty!)} un. × ${fmtPriceIn(price!, ccy)} = ${fmtPriceIn(qty! * price!, ccy)} ≈ ${fmtMoney((qty! * price! * eurPerUnit! * 100).round())}', style: tt.bodySmall),
-                    ),
-                ],
-                if (!byQty && qty != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(
-                      '= ${fmtQty(qty!)} unidades',
-                      style: tt.bodySmall,
-                    ),
-                  ),
-                if (byQty && total != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(
-                      '= ${fmtMoney((total! * 100).round())} sem comissão',
-                      style: tt.bodySmall,
-                    ),
-                  ),
-                if (type != OpType.initial) ...[
-                  FieldLabel('Comissão ($baseSym)', optional: true),
-                  TextField(
-                    controller: feeCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      prefixText: '$baseSym  ',
-                      hintText: '0,00',
-                    ),
-                  ),
-                ],
-              ],
-              if (type == OpType.dividend || type == OpType.cash) ...[
-                if (type == OpType.cash) ...[
-                  const SizedBox(height: 14),
-                  SegmentedButton<bool>(
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(
-                        value: true,
-                        label: Text('Entrada'),
-                        icon: Icon(Icons.south_west),
+              // o resto, escondido até ser preciso
+              Material(
+                key: const ValueKey('extras'), // mantém o estado aberto/fechado quando a coluna muda
+                type: MaterialType.transparency,
+                child: Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    key: const ValueKey('extras-tile'),
+                    tilePadding: EdgeInsets.zero,
+                    childrenPadding: EdgeInsets.zero,
+                    initiallyExpanded: _extrasOpen!,
+                    title: Text(tradeLike ? 'Mais opções (comissão, nota…)' : 'Nota', style: tt.titleSmall),
+                    children: [
+                      if (tradeLike && type != OpType.initial)
+                        TextField(
+                          controller: feeCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(labelText: 'Comissão ($baseSym)', prefixText: '$baseSym  ', hintText: '0,00'),
+                        ),
+                      if (tradeLike) ...[
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Indicar o valor total em vez da quantidade'),
+                          value: !byQty,
+                          onChanged: (v) => setState(() {
+                            final q = qty, t = total;
+                            byQty = !v;
+                            if (byQty && q != null) qtyCtrl.text = _num(q);
+                            if (!byQty && t != null) totalCtrl.text = t.toStringAsFixed(2).replaceAll('.', ',');
+                          }),
+                        ),
+                        if (widget.edit == null && _holding != null)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              icon: const Icon(Icons.currency_exchange, size: 16),
+                              label: Text('Moeda do ativo: ${_holding!.currency} · alterar'),
+                              onPressed: () async {
+                                await showCurrencyPicker(context, _holding!);
+                                if (mounted) setState(() => _prefillFx(_holding));
+                              },
+                            ),
+                          ),
+                      ],
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: noteCtrl,
+                        decoration: const InputDecoration(labelText: 'Nota', prefixIcon: Icon(Icons.notes)),
                       ),
-                      ButtonSegment(
-                        value: false,
-                        label: Text('Saída'),
-                        icon: Icon(Icons.north_east),
-                      ),
+                      const SizedBox(height: 8),
                     ],
-                    selected: {cashIn},
-                    onSelectionChanged: (v) => setState(() => cashIn = v.first),
                   ),
-                ],
-                FieldLabel(
-                  type == OpType.dividend ? 'Valor recebido ($baseSym)' : 'Valor ($baseSym)',
-                ),
-                TextField(
-                  controller: amountCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: InputDecoration(
-                    prefixText: '$baseSym  ',
-                    hintText: '0,00',
-                  ),
-                ),
-              ],
-              const FieldLabel('Nota', optional: true),
-              TextField(
-                controller: noteCtrl,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.notes),
-                  hintText: 'Opcional',
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               if (widget.edit == null && _edit != null && type == OpType.initial) ...[
                 Callout(
                   icon: Icons.history,
@@ -1230,9 +1215,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => _save(s),
-                child: Text(
-                  _edit == null ? 'Guardar' : 'Guardar alterações',
-                ),
+                child: Text(_edit == null ? 'Guardar' : 'Guardar alterações'),
               ),
               if (_edit != null)
                 TextButton.icon(

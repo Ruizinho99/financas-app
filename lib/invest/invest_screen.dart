@@ -43,16 +43,10 @@ class _InvestScreenState extends State<InvestScreen> {
       builder: (ctx) => SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Padding(padding: const EdgeInsets.fromLTRB(24, 20, 24, 8), child: Align(alignment: Alignment.centerLeft, child: Text('Adicionar', style: Theme.of(ctx).textTheme.titleLarge))),
+          if (hasAcc) _item(ctx, Icons.edit_note, 'Registar operação', 'Compra, venda, dividendo ou o que já tinhas', () => showOpForm(context, type: OpType.buy)),
+          _item(ctx, Icons.upload_file, 'Importar de um ficheiro', 'PDF, CSV ou Excel da corretora', () => _openImport(context)),
+          if (hasAcc) _item(ctx, Icons.pie_chart_outline, 'Novo ativo', 'ETF, ação, cripto, fundo…', () => showHoldingEditor(context)),
           _item(ctx, Icons.account_balance_outlined, 'Nova plataforma', 'XTB, Trade Republic, exchange…', () => showInvestAccountEditor(context)),
-          _item(ctx, Icons.upload_file, 'Importar compras e vendas', 'De um PDF, CSV ou Excel da corretora', () => _openImport(context)),
-          if (hasAcc) ...[
-            _item(ctx, Icons.pie_chart_outline, 'Novo ativo', 'ETF, ação, cripto, fundo…', () => showHoldingEditor(context)),
-            _item(ctx, Icons.history, 'Posição que já tinha', 'Quantidade e preço médio antes de usar a app', () => showOpForm(context, type: OpType.initial)),
-            _item(ctx, Icons.add_shopping_cart, 'Registar compra', 'Aloca dinheiro a um ativo', () => showOpForm(context, type: OpType.buy)),
-            _item(ctx, Icons.sell_outlined, 'Registar venda', null, () => showOpForm(context, type: OpType.sell)),
-            _item(ctx, Icons.payments_outlined, 'Dividendo ou juros', null, () => showOpForm(context, type: OpType.dividend)),
-            _item(ctx, Icons.account_balance_wallet_outlined, 'Acertar dinheiro por alocar', 'Dinheiro que já estava na plataforma', () => showOpForm(context, type: OpType.cash)),
-          ],
           const SizedBox(height: 8),
         ]),
       ),
