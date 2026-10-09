@@ -44,9 +44,9 @@ class _InvestScreenState extends State<InvestScreen> {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Padding(padding: const EdgeInsets.fromLTRB(24, 20, 24, 8), child: Align(alignment: Alignment.centerLeft, child: Text('Adicionar', style: Theme.of(ctx).textTheme.titleLarge))),
           _item(ctx, Icons.account_balance_outlined, 'Nova plataforma', 'XTB, Trade Republic, exchange…', () => showInvestAccountEditor(context)),
+          _item(ctx, Icons.upload_file, 'Importar compras e vendas', 'De um PDF, CSV ou Excel da corretora', () => _openImport(context)),
           if (hasAcc) ...[
             _item(ctx, Icons.pie_chart_outline, 'Novo ativo', 'ETF, ação, cripto, fundo…', () => showHoldingEditor(context)),
-            _item(ctx, Icons.upload_file, 'Importar compras e vendas', 'De um PDF, CSV ou Excel da corretora', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportTradesScreen()))),
             _item(ctx, Icons.history, 'Posição que já tinha', 'Quantidade e preço médio antes de usar a app', () => showOpForm(context, type: OpType.initial)),
             _item(ctx, Icons.add_shopping_cart, 'Registar compra', 'Aloca dinheiro a um ativo', () => showOpForm(context, type: OpType.buy)),
             _item(ctx, Icons.sell_outlined, 'Registar venda', null, () => showOpForm(context, type: OpType.sell)),
@@ -55,6 +55,23 @@ class _InvestScreenState extends State<InvestScreen> {
           ],
           const SizedBox(height: 8),
         ]),
+      ),
+    );
+  }
+
+  void _openImport(BuildContext context) => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImportTradesScreen()));
+
+  /// Cartão bem visível para importar um ficheiro da corretora.
+  Widget _importCard(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Card(
+      color: cs.primaryContainer.withValues(alpha: 0.45),
+      child: ListTile(
+        leading: CircleAvatar(backgroundColor: cs.primary, child: Icon(Icons.upload_file, color: cs.onPrimary)),
+        title: const Text('Importar compras e vendas', style: TextStyle(fontWeight: FontWeight.w700)),
+        subtitle: const Text('Escolhe um ficheiro PDF, CSV ou Excel da tua corretora'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => _openImport(context),
       ),
     );
   }
@@ -83,6 +100,7 @@ class _InvestScreenState extends State<InvestScreen> {
       appBar: AppBar(
         title: const Text('Investimentos'),
         actions: [
+          IconButton(tooltip: 'Importar compras e vendas', icon: const Icon(Icons.upload_file), onPressed: () => _openImport(context)),
           if (anyAuto)
             refreshing
                 ? const Padding(padding: EdgeInsets.all(14), child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5)))
@@ -121,6 +139,8 @@ class _InvestScreenState extends State<InvestScreen> {
               Padding(padding: const EdgeInsets.only(top: 4), child: Text('Ativos sem preço contam pelo custo, para não distorcer o total.', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant))),
           ]),
         ),
+
+        _importCard(context),
 
         // ----- transferências do banco e o que se fez com elas -----
         const TransfersCard(),
@@ -272,6 +292,8 @@ class _InvestScreenState extends State<InvestScreen> {
           step(Icons.sync, '5. Atualiza os preços', 'Com APIs gratuitas (Yahoo Finance e CoinGecko), só quando tu pedires.'),
           const SizedBox(height: 12),
           FilledButton.icon(onPressed: () => showInvestAccountEditor(context), icon: const Icon(Icons.add), label: const Text('Criar a primeira plataforma')),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(onPressed: () => _openImport(context), icon: const Icon(Icons.upload_file), label: const Text('Importar compras e vendas de um ficheiro')),
         ]),
       ),
     ]);

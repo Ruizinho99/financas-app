@@ -311,4 +311,24 @@ void main() {
     expect(saved.amount, 28000);
     expect(saved.fx, closeTo(0.9, 1e-5));
   });
+
+  testWidgets('a Carteira tem botões visíveis para importar um ficheiro (vazia e com dados)', (tester) async {
+    final empty = AppState(Db.memory(), prices: fakePrices());
+    await _pump(tester, empty, const InvestScreen(), size: const Size(360, 1400));
+    expect(find.text('Importar compras e vendas de um ficheiro'), findsOneWidget);
+    expect(find.byTooltip('Importar compras e vendas'), findsOneWidget);
+    await tester.tap(find.text('Importar compras e vendas de um ficheiro'));
+    await tester.pumpAndSettle();
+    expect(find.text('Importar compras e vendas'), findsWidgets);
+    expect(find.text('Escolher ficheiro'), findsOneWidget);
+  });
+
+  testWidgets('com dados, a Carteira mostra o cartão para importar um ficheiro', (tester) async {
+    final d = buildInvestData();
+    await _pump(tester, d.s, const InvestScreen(), size: const Size(360, 1800));
+    expect(find.text('Escolhe um ficheiro PDF, CSV ou Excel da tua corretora'), findsOneWidget);
+    await tester.tap(find.text('Importar compras e vendas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Escolher ficheiro'), findsOneWidget);
+  });
 }
