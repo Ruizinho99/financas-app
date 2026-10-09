@@ -318,4 +318,90 @@ Total geral 1.000,00
     expect(find.textContaining('1 linha não importada'), findsOneWidget); // só a data inválida
     expect(tester.takeException(), isNull);
   });
+
+  group('export só com valor + comentário (formato XTB, dados inventados)', () {
+    test('o comentário dá a quantidade e o preço; o câmbio sai do valor pago', () {
+      expect(parseFillComment('OPEN BUY IONQ.US 1/1.8671 @ 45.73'), (qty: 1.0, price: 45.73));
+      expect(parseFillComment('OPEN BUY 0.4296 @ 263.71'), (qty: 0.4296, price: 263.71));
+      expect(parseFillComment('OPEN BUY 5 @ 181.16'), (qty: 5.0, price: 181.16));
+      expect(parseFillComment('OPEN BUY'), isNull);
+      expect(currencyFromTicker('IONQ.US'), 'USD');
+      expect(currencyFromTicker('AMZN.DE'), 'EUR');
+      expect(currencyFromTicker('AAPL'), '');
+      expect(yahooSymbol('IONQ.US'), 'IONQ');
+      expect(yahooSymbol('AMZN.DE'), 'AMZN.DE');
+
+      const csv = 'Type;Instrument;Ticker;Category;Time;Amount;Comment\n'
+          'Stock purchase;Alpha;ALFA.US;STOCK;2026-09-28T13:30:59.893Z;-40,44;OPEN BUY ALFA.US 1/1.8671 @ 45.73\n'
+          'Stock purchase;Alpha;ALFA.US;STOCK;2026-09-28T13:30:02.081Z;-35,13;OPEN BUY ALFA.US 0.8671/1.8671 @ 45.81\n'
+          'Stock purchase;Beta Euro;BETA.DE;ETF;2026-09-04T09:31:29.110Z;-99,99;OPEN BUY BETA.DE 0.4575 @ 218.55\n';
+      final t = parseCsv(csv);
+      final m = guessTradeMapping(t);
+      expect(m.usable, isTrue);
+      expect((m.quantity, m.price), (null, null));
+      expect(m.comment, 6);
+      final r = parseTradeTable(t, m);
+      expect(r.skipped, isEmpty);
+      expect(r.trades.length, 3);
+      final a = r.trades[0];
+      expect((a.quantity, a.price, a.currency, a.total, a.category), (1.0, 45.73, 'USD', 40.44, 'STOCK'));
+      expect(a.rate, closeTo(45.73 / 40.44, 1e-9));
+      expect(r.trades[2].currency, 'EUR');
+      // a operação fica com exatamente o valor pago, em euros, e o preço em dólares
+      final op = tradeToOp(a, accountId: 1, holdingId: 1, base: 'EUR', defaultCcy: 'EUR', rates: {}, holdingCcy: 'USD')!;
+      expect(op.amount, 4044);
+      expect(op.price, 45.73);
+      expect(op.fx, closeTo(40.44 / 45.73, 1e-9));
+      final eu = tradeToOp(r.trades[2], accountId: 1, holdingId: 2, base: 'EUR', defaultCcy: 'EUR', rates: {}, holdingCcy: 'EUR')!;
+      expect(eu.amount, 9999);
+      expect(eu.fx, isNull);
+    });
+
+    test('sem quantidade nem comentário, a compra fica "só valor" e pede a quantidade', () {
+      const csv = 'Type;Instrument;Ticker;Time;Amount\nStock purchase;Alpha;ALFA.US;2026-09-28;-40,44\n';
+      final t = parseCsv(csv);
+      final r = parseTradeTable(t, guessTradeMapping(t));
+      expect(r.trades.single.valueOnly, isTrue);
+      expect(tradeToOp(r.trades.single, accountId: 1, holdingId: 1, base: 'EUR', defaultCcy: 'EUR', rates: {}, holdingCcy: 'EUR'), isNull);
+    });
+
+    testWidgets('importar o Excel (como o do XTB) cria os ativos pelo ticker e categoria, com os valores certos', (tester) async {
+      final ex = xl.Excel.createExcel();
+      ex.rename('Sheet1', 'Sheet1');
+      final sh = ex['Sheet1'];
+      sh.appendRow(['Type', 'Instrument', 'Ticker', 'Category', 'Time', 'Amount', 'Comment'].map((e) => xl.TextCellValue(e)).toList());
+      void row(String inst, String tick, String cat, int d, double amt, String c) => sh.appendRow([xl.TextCellValue('Stock purchase'), xl.TextCellValue(inst), xl.TextCellValue(tick), xl.TextCellValue(cat), xl.DateTimeCellValue(year: 2026, month: 9, day: d, hour: 13, minute: 30), xl.DoubleCellValue(amt), xl.TextCellValue(c)]);
+      row('Alpha', 'ALFA.US', 'STOCK', 28, -40.44, 'OPEN BUY ALFA.US 1/1.8671 @ 45.73');
+      row('Alpha', 'ALFA.US', 'STOCK', 27, -35.13, 'OPEN BUY ALFA.US 0.8671/1.8671 @ 45.81');
+      row('Gama ETF', 'GAMA.DE', 'ETF', 26, -50.0, 'OPEN BUY GAMA.DE 0.4 @ 125.00');
+      final bytes = Uint8List.fromList(ex.encode()!);
+      final s = AppState(Db.memory(), prices: fakePrices());
+      final acc = s.addInvestAccount('XTB');
+      tester.view.physicalSize = const Size(360, 3200) * 3;
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(ChangeNotifierProvider<AppState>.value(
+        value: s,
+        child: MaterialApp(
+          theme: ThemeData(useMaterial3: true),
+          home: Builder(builder: (c) => Scaffold(body: TextButton(onPressed: () => Navigator.push(c, MaterialPageRoute(builder: (_) => ImportTradesScreen(accountId: acc, preloaded: (name: 'Stock.xlsx', bytes: bytes)))), child: const Text('abrir')))),
+        ),
+      ));
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+      expect(find.text('Validação do ficheiro'), findsOneWidget);
+      expect(find.textContaining('Falta o câmbio'), findsNothing); // o câmbio sai do valor pago
+      expect(find.text('Importar 3 operações'), findsOneWidget);
+      await tester.tap(find.text('Importar 3 operações'));
+      await tester.pumpAndSettle();
+      final h = {for (final x in s.holdings) x.name: x};
+      expect((h['Alpha']!.symbol, h['Alpha']!.currency, h['Alpha']!.kind, h['Alpha']!.provider), ('ALFA', 'USD', HoldingKind.stock, PriceProvider.yahoo));
+      expect((h['Gama ETF']!.symbol, h['Gama ETF']!.currency, h['Gama ETF']!.kind), ('GAMA.DE', 'EUR', HoldingKind.etf));
+      final alpha = s.portfolio.positions.firstWhere((p) => p.holding.name == 'Alpha');
+      expect(alpha.qty, closeTo(1.8671, 1e-9));
+      expect(alpha.costCents, 4044 + 3513); // exatamente o que saiu da conta
+      expect(alpha.avgCostOrig, closeTo((1 * 45.73 + 0.8671 * 45.81) / 1.8671, 1e-6)); // preço médio em USD
+      expect(s.portfolio.positions.firstWhere((p) => p.holding.name == 'Gama ETF').costCents, 5000);
+    });
+  });
 }

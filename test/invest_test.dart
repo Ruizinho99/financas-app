@@ -407,4 +407,22 @@ void main() {
       expect(db.holdings().single.currencyManual, isTrue);
     });
   });
+
+  test('símbolo de outra corretora que o Yahoo não conhece: encontra-o pelo nome, na mesma bolsa', () async {
+    final client = MockClient((r) async {
+      if (r.url.path.contains('/v1/finance/search')) {
+        return http.Response(jsonEncode({'quotes': [{'symbol': 'AMZN', 'shortname': 'Amazon.com, Inc.'}, {'symbol': 'AMZ.DE', 'shortname': 'AMAZON.COM INC.'}]}), 200);
+      }
+      final sym = r.url.pathSegments.last;
+      if (sym == 'AMZ.DE') return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': 232.65, 'currency': 'EUR'}}]}}), 200);
+      return http.Response('{}', 404);
+    });
+    final s = AppState(Db.memory(), prices: PriceService(client: client));
+    final a = s.addInvestAccount('XTB');
+    final id = s.addHolding(Holding(id: 0, accountId: a, name: 'Amazon', symbol: 'AMZN.DE', provider: PriceProvider.yahoo));
+    final r = await s.refreshPrices();
+    expect(r.updated, 1);
+    expect(s.holding(id)!.symbol, 'AMZ.DE');
+    expect(s.holding(id)!.lastPrice, 232.65);
+  });
 }

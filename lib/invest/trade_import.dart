@@ -15,6 +15,7 @@ class ParsedTrade {
   double? total; // valor total da linha, na mesma moeda (positivo), se indicado
   double? rate; // unidades da moeda por 1 unidade da moeda de base, se o ficheiro indicar
   String note;
+  String category; // ETF, STOCK… (se o ficheiro indicar)
   ParsedTrade({
     required this.date,
     required this.kind,
@@ -28,10 +29,15 @@ class ParsedTrade {
     this.total,
     this.rate,
     this.note = '',
+    this.category = '',
   });
 
+  /// Compra ou venda só com o valor (sem quantidade nem preço no ficheiro).
+  bool get valueOnly => kind != 'dividend' && quantity <= 0 && (total ?? 0) > 0;
+
   /// Valor sem comissão, na moeda da linha.
-  double get gross => kind == 'dividend' ? (total ?? 0) : quantity * price;
+  double get gross =>
+      kind == 'dividend' || valueOnly ? (total ?? 0) : quantity * price;
 
   /// Chave que identifica o instrumento: ISIN, símbolo ou nome.
   String get key {
@@ -45,12 +51,17 @@ class ParsedTrade {
 double? parseDecimal(String input) {
   var s = input.trim();
   if (s.isEmpty) return null;
-  final neg = s.startsWith('-') || s.endsWith('-') || (s.startsWith('(') && s.endsWith(')'));
+  final neg =
+      s.startsWith('-') ||
+      s.endsWith('-') ||
+      (s.startsWith('(') && s.endsWith(')'));
   s = s.replaceAll(RegExp(r'[^\d,.]'), '');
   if (s.isEmpty) return null;
   final lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
   if (lc >= 0 && ld >= 0) {
-    s = lc > ld ? s.replaceAll('.', '').replaceAll(',', '.') : s.replaceAll(',', '');
+    s = lc > ld
+        ? s.replaceAll('.', '').replaceAll(',', '.')
+        : s.replaceAll(',', '');
   } else if (lc >= 0) {
     // só vírgulas: decimal ("12,5"), ou milhares se houver várias ("1,234,567")
     s = s.indexOf(',') != lc ? s.replaceAll(',', '') : s.replaceAll(',', '.');
@@ -67,16 +78,47 @@ double? parseDecimal(String input) {
 // ---------------------------------------------------------------------------
 class TradeMapping {
   int headerRow; // -1: sem cabeçalho
-  int? date, type, name, symbol, isin, quantity, price, currency, fee, total, rate;
-  TradeMapping({this.headerRow = 0, this.date, this.type, this.name, this.symbol, this.isin, this.quantity, this.price, this.currency, this.fee, this.total, this.rate});
+  int? date,
+      type,
+      name,
+      symbol,
+      isin,
+      quantity,
+      price,
+      currency,
+      fee,
+      total,
+      rate,
+      category,
+      comment;
+  TradeMapping({
+    this.headerRow = 0,
+    this.date,
+    this.type,
+    this.name,
+    this.symbol,
+    this.isin,
+    this.quantity,
+    this.price,
+    this.currency,
+    this.fee,
+    this.total,
+    this.rate,
+    this.category,
+    this.comment,
+  });
 
-  bool get usable => date != null && quantity != null && (price != null || total != null);
+  /// Basta a data e o valor; a quantidade e o preço podem faltar (export só com valores).
+  bool get usable =>
+      date != null && (total != null || (quantity != null && price != null));
 
   /// Colunas, na ordem em que aparecem no ecrã de mapeamento.
   static const fields = <(String, String)>[
     ('date', 'Data'),
     ('type', 'Tipo (compra / venda)'),
     ('name', 'Nome do ativo'),
+    ('category', 'Categoria (ETF, ação…)'),
+    ('comment', 'Comentário (ex.: OPEN BUY 0.5 @ 100)'),
     ('symbol', 'Símbolo'),
     ('isin', 'ISIN'),
     ('quantity', 'Quantidade'),
@@ -88,19 +130,21 @@ class TradeMapping {
   ];
 
   int? get_(String f) => switch (f) {
-        'date' => date,
-        'type' => type,
-        'name' => name,
-        'symbol' => symbol,
-        'isin' => isin,
-        'quantity' => quantity,
-        'price' => price,
-        'total' => total,
-        'fee' => fee,
-        'currency' => currency,
-        'rate' => rate,
-        _ => null,
-      };
+    'date' => date,
+    'type' => type,
+    'name' => name,
+    'symbol' => symbol,
+    'isin' => isin,
+    'quantity' => quantity,
+    'price' => price,
+    'total' => total,
+    'fee' => fee,
+    'currency' => currency,
+    'rate' => rate,
+    'category' => category,
+    'comment' => comment,
+    _ => null,
+  };
 
   void set_(String f, int? v) {
     switch (f) {
@@ -126,6 +170,10 @@ class TradeMapping {
         currency = v;
       case 'rate':
         rate = v;
+      case 'category':
+        category = v;
+      case 'comment':
+        comment = v;
     }
   }
 }
@@ -145,16 +193,44 @@ String? _tradeHeader(String h) {
   final s = _norm(h);
   if (s.isEmpty) return null;
   if (RegExp(r'^ISIN').hasMatch(s)) return 'isin';
-  if (RegExp(r'CAMBIO|EXCHANGE RATE|^FX|FX RATE|TAXA DE CAMBIO').hasMatch(s)) return 'rate';
-  if (RegExp(r'COMISS|COMMISSION|^FEES?$|FEE\b|CUSTOS|CHARGES|TAXAS? DE TRANS|TRANSACTION COST').hasMatch(s)) return 'fee';
+  if (RegExp(r'^(COMMENT|COMENTARIO|OBSERVACO|REMARKS)').hasMatch(s))
+    return 'comment';
+  if (RegExp(r'^(CATEGORY|CATEGORIA|CLASSE|ASSET CLASS|ASSET TYPE)')
+      .hasMatch(s))
+    return 'category';
+  if (RegExp(r'CAMBIO|EXCHANGE RATE|^FX|FX RATE|TAXA DE CAMBIO').hasMatch(s))
+    return 'rate';
+  if (RegExp(
+    r'COMISS|COMMISSION|^FEES?$|FEE\b|CUSTOS|CHARGES|TAXAS? DE TRANS|TRANSACTION COST',
+  ).hasMatch(s))
+    return 'fee';
   if (RegExp(r'^(MOEDA|CURRENCY|DIVISA)').hasMatch(s)) return 'currency';
-  if (RegExp(r'QUANTIDADE|^QTD|QUANTITY|^SHARES|^UNITS|^VOLUME|NO\. OF SHARES|N[O°] DE ACOES|ACOES|UNIDADES').hasMatch(s)) return 'quantity';
-  if (RegExp(r'^(PRECO|PRICE|COTACAO|COTACAO|OPEN PRICE|PRECO MEDIO|PRECO UNIT|UNIT PRICE|PRICE PER SHARE)').hasMatch(s)) return 'price';
+  if (RegExp(
+    r'QUANTIDADE|^QTD|QUANTITY|^SHARES|^UNITS|^VOLUME|NO\. OF SHARES|N[O°] DE ACOES|ACOES|UNIDADES',
+  ).hasMatch(s))
+    return 'quantity';
+  if (RegExp(
+    r'^(PRECO|PRICE|COTACAO|COTACAO|OPEN PRICE|PRECO MEDIO|PRECO UNIT|UNIT PRICE|PRICE PER SHARE)',
+  ).hasMatch(s))
+    return 'price';
   if (RegExp(r'^SIMBOLO|^SYMBOL|^TICKER').hasMatch(s)) return 'symbol';
-  if (RegExp(r'^(TIPO|TYPE|SIDE|ACTION|ACAO|OPERACAO|DIRECAO|DIRECTION|BUY/SELL|COMPRA/VENDA)').hasMatch(s)) return 'type';
-  if (RegExp(r'^(NOME|NAME|PRODUTO|PRODUCT|INSTRUMENT|INSTRUMENTO|ATIVO|ASSET|SECURITY|TITULO|DESCRI)').hasMatch(s)) return 'name';
-  if (RegExp(r'^(DATA|DATE|TIME|HORA DE|EXECUTION|OPEN TIME|TRADE DATE|DATA DA ORDEM|DATA OPERACAO)').hasMatch(s) && !RegExp(r'VALOR|VALUE').hasMatch(s)) return 'date';
-  if (RegExp(r'^(TOTAL|VALOR|AMOUNT|MONTANTE|VALUE|PROCEEDS|NET|VALOR LOCAL|VALOR EUR|GROSS)').hasMatch(s)) return 'total';
+  if (RegExp(
+    r'^(TIPO|TYPE|SIDE|ACTION|ACAO|OPERACAO|DIRECAO|DIRECTION|BUY/SELL|COMPRA/VENDA)',
+  ).hasMatch(s))
+    return 'type';
+  if (RegExp(
+    r'^(NOME|NAME|PRODUTO|PRODUCT|INSTRUMENT|INSTRUMENTO|ATIVO|ASSET|SECURITY|TITULO|DESCRI)',
+  ).hasMatch(s))
+    return 'name';
+  if (RegExp(
+        r'^(DATA|DATE|TIME|HORA DE|EXECUTION|OPEN TIME|TRADE DATE|DATA DA ORDEM|DATA OPERACAO)',
+      ).hasMatch(s) &&
+      !RegExp(r'VALOR|VALUE').hasMatch(s))
+    return 'date';
+  if (RegExp(
+    r'^(TOTAL|VALOR|AMOUNT|MONTANTE|VALUE|PROCEEDS|NET|VALOR LOCAL|VALOR EUR|GROSS)',
+  ).hasMatch(s))
+    return 'total';
   return null;
 }
 
@@ -189,10 +265,19 @@ String _kindOf(String raw, double? qty, Map<String, String> overrides) {
   if (s.isEmpty) return qty != null && qty < 0 ? 'sell' : 'buy';
   final o = overrides[s];
   if (o != null) return o;
-  if (RegExp(r'DEPOSIT|DEPOSIT|LEVANT|WITHDRAW|IMPOST|\bTAX|\bTAXA|^FEES?$|CUSTODI|CUSTODY|TRANSFER|SALDO|ABERTURA|OPENING|JUROS DE CONTA').hasMatch(s) && !RegExp(r'DIVID').hasMatch(s)) return 'ignore';
-  if (RegExp(r'DIVID|JURO|INTEREST|COUPON|CUPAO').hasMatch(s)) return 'dividend';
-  if (RegExp(r'SELL|VEND|SALE|^V$|^S$|SOLD|LIQUID|RESGATE|REDEMPTION').hasMatch(s)) return 'sell';
-  if (RegExp(r'BUY|COMPR|PURCHASE|^C$|^B$|BOUGHT|SUBSCR|AQUISI|ACQUI').hasMatch(s)) return 'buy';
+  if (RegExp(
+        r'DEPOSIT|DEPOSIT|LEVANT|WITHDRAW|IMPOST|\bTAX|\bTAXA|^FEES?$|CUSTODI|CUSTODY|TRANSFER|SALDO|ABERTURA|OPENING|JUROS DE CONTA',
+      ).hasMatch(s) &&
+      !RegExp(r'DIVID').hasMatch(s))
+    return 'ignore';
+  if (RegExp(r'DIVID|JURO|INTEREST|COUPON|CUPAO').hasMatch(s))
+    return 'dividend';
+  if (RegExp(r'SELL|VEND|SALE|^V$|^S$|SOLD|LIQUID|RESGATE|REDEMPTION')
+      .hasMatch(s))
+    return 'sell';
+  if (RegExp(r'BUY|COMPR|PURCHASE|^C$|^B$|BOUGHT|SUBSCR|AQUISI|ACQUI')
+      .hasMatch(s))
+    return 'buy';
   return '';
 }
 
@@ -209,10 +294,18 @@ class TradeReport {
   final List<ParsedTrade> trades;
   final List<SkippedRow> skipped;
   final Map<String, int> unknownTypes; // tipo (como escrito) -> nº de linhas
-  final Map<String, ({int ok, int total})> columns; // campo -> células válidas / lidas
+  final Map<String, ({int ok, int total})>
+  columns; // campo -> células válidas / lidas
   final int dataRows; // linhas que parecem operações
   final int ignoredByUser;
-  const TradeReport({required this.trades, required this.skipped, required this.unknownTypes, required this.columns, required this.dataRows, required this.ignoredByUser});
+  const TradeReport({
+    required this.trades,
+    required this.skipped,
+    required this.unknownTypes,
+    required this.columns,
+    required this.dataRows,
+    required this.ignoredByUser,
+  });
 }
 
 DateTime? _dateCell(String s, int? defaultYear) {
@@ -220,19 +313,26 @@ DateTime? _dateCell(String s, int? defaultYear) {
   if (d != null) return d;
   // data do Excel guardada como número (dias desde 1899-12-30)
   final n = double.tryParse(s.trim().replaceAll(',', '.'));
-  if (n != null && n > 20000 && n < 80000) return DateTime(1899, 12, 30).add(Duration(days: n.floor()));
+  if (n != null && n > 20000 && n < 80000)
+    return DateTime(1899, 12, 30).add(Duration(days: n.floor()));
   return null;
 }
 
 /// Lê as operações de uma tabela e valida todas as colunas escolhidas.
 /// [typeOverrides]: o que fazer com tipos não reconhecidos (chave de [typeKey] -> buy/sell/dividend/ignore).
-TradeReport parseTradeTable(List<List<String>> table, TradeMapping m, {int? defaultYear, Map<String, String> typeOverrides = const {}}) {
+TradeReport parseTradeTable(
+  List<List<String>> table,
+  TradeMapping m, {
+  int? defaultYear,
+  Map<String, String> typeOverrides = const {},
+}) {
   final out = <ParsedTrade>[];
   final skipped = <SkippedRow>[];
   final unknown = <String, int>{};
   final stats = <String, ({int ok, int total})>{};
   var dataRows = 0, ignored = 0;
-  String at(List<String> r, int? c) => (c == null || c >= r.length) ? '' : r[c].trim();
+  String at(List<String> r, int? c) =>
+      (c == null || c >= r.length) ? '' : r[c].trim();
   void stat(String f, bool ok) {
     final c = stats[f] ?? (ok: 0, total: 0);
     stats[f] = (ok: c.ok + (ok ? 1 : 0), total: c.total + 1);
@@ -246,9 +346,17 @@ TradeReport parseTradeTable(List<List<String>> table, TradeMapping m, {int? defa
   for (var i = m.headerRow + 1; i < table.length; i++) {
     final r = table[i];
     final d = _dateCell(at(r, m.date), defaultYear);
-    final q = parseDecimal(at(r, m.quantity));
-    final p = parseDecimal(at(r, m.price));
+    var q = parseDecimal(at(r, m.quantity));
+    var p = parseDecimal(at(r, m.price));
     final tot = parseDecimal(at(r, m.total));
+    // quantidade e preço escritos no comentário (ex.: XTB: "OPEN BUY IONQ.US 1/1.8671 @ 45.73")
+    final fill = (m.comment != null && (q == null || p == null))
+        ? parseFillComment(at(r, m.comment))
+        : null;
+    if (fill != null) {
+      q ??= fill.qty;
+      p ??= fill.price;
+    }
     // uma linha só conta como "operação" se tiver data ou números nas colunas principais
     if (d == null && q == null && p == null && tot == null) continue;
     dataRows++;
@@ -262,10 +370,20 @@ TradeReport parseTradeTable(List<List<String>> table, TradeMapping m, {int? defa
       if (m.quantity != null) stat('quantity', q != null);
       if (m.price != null) stat('price', p != null);
       if (m.total != null) stat('total', tot != null);
-      if (m.fee != null && at(r, m.fee).isNotEmpty) stat('fee', parseDecimal(at(r, m.fee)) != null);
-      if (m.rate != null && at(r, m.rate).isNotEmpty) stat('rate', (parseDecimal(at(r, m.rate)) ?? 0) > 0);
-      if (m.isin != null && at(r, m.isin).isNotEmpty) stat('isin', RegExp(r'^[A-Z]{2}[A-Z0-9]{9}\d$').hasMatch(at(r, m.isin).toUpperCase()));
-      if (m.currency != null && at(r, m.currency).isNotEmpty) stat('currency', RegExp(r'^[A-Za-z]{3}$').hasMatch(at(r, m.currency)));
+      if (m.fee != null && at(r, m.fee).isNotEmpty)
+        stat('fee', parseDecimal(at(r, m.fee)) != null);
+      if (m.rate != null && at(r, m.rate).isNotEmpty)
+        stat('rate', (parseDecimal(at(r, m.rate)) ?? 0) > 0);
+      if (m.isin != null && at(r, m.isin).isNotEmpty)
+        stat(
+          'isin',
+          RegExp(r'^[A-Z]{2}[A-Z0-9]{9}\d$')
+              .hasMatch(at(r, m.isin).toUpperCase()),
+        );
+      if (m.currency != null && at(r, m.currency).isNotEmpty)
+        stat('currency', RegExp(r'^[A-Za-z]{3}$').hasMatch(at(r, m.currency)));
+      if (m.comment != null)
+        stat('comment', parseFillComment(at(r, m.comment)) != null);
       if (m.name != null) stat('name', at(r, m.name).isNotEmpty);
       if (m.symbol != null) stat('symbol', at(r, m.symbol).isNotEmpty);
     }
@@ -276,7 +394,9 @@ TradeReport parseTradeTable(List<List<String>> table, TradeMapping m, {int? defa
     }
     if (kind.isEmpty) {
       unknown[rawType] = (unknown[rawType] ?? 0) + 1;
-      skipped.add(SkippedRow(i + 1, 'Tipo não reconhecido: “$rawType”', preview(r)));
+      skipped.add(
+        SkippedRow(i + 1, 'Tipo não reconhecido: “$rawType”', preview(r)),
+      );
       continue;
     }
     if (kind == 'ignore') {
@@ -287,48 +407,99 @@ TradeReport parseTradeTable(List<List<String>> table, TradeMapping m, {int? defa
     var price = p?.abs() ?? 0;
     final total = tot?.abs();
     if (kind != 'dividend') {
-      if (qty <= 0) {
-        skipped.add(SkippedRow(i + 1, 'Quantidade em falta ou inválida', preview(r)));
+      final valueOnly = qty <= 0 && price <= 0 && total != null && total > 0;
+      if (qty <= 0 && !valueOnly) {
+        skipped.add(
+          SkippedRow(i + 1, 'Quantidade em falta ou inválida', preview(r)),
+        );
         continue;
       }
-      if (price <= 0 && total != null && total > 0) price = total / qty;
-      if (price <= 0) {
-        skipped.add(SkippedRow(i + 1, 'Preço em falta (e sem valor total para o calcular)', preview(r)));
+      if (price <= 0 && total != null && total > 0 && qty > 0)
+        price = total / qty;
+      if (price <= 0 && !valueOnly) {
+        skipped.add(
+          SkippedRow(
+            i + 1,
+            'Preço em falta (e sem valor total para o calcular)',
+            preview(r),
+          ),
+        );
         continue;
       }
     } else if (total == null || total <= 0) {
       skipped.add(SkippedRow(i + 1, 'Valor do dividendo em falta', preview(r)));
       continue;
     }
-    final fx = parseDecimal(at(r, m.rate));
-    out.add(ParsedTrade(
-      date: d,
-      kind: kind,
-      name: at(r, m.name),
-      symbol: at(r, m.symbol),
-      isin: at(r, m.isin),
-      quantity: kind == 'dividend' ? 0 : qty,
-      price: kind == 'dividend' ? 0 : price,
-      currency: at(r, m.currency).toUpperCase(),
-      fee: parseDecimal(at(r, m.fee))?.abs() ?? 0,
-      total: total,
-      rate: fx != null && fx > 0 ? fx : null,
-    ));
+    var fx = parseDecimal(at(r, m.rate));
+    var ccy = at(r, m.currency).toUpperCase();
+    if (fill != null && kind != 'dividend') {
+      // moeda do ativo pelo sufixo do ticker; o câmbio sai do valor pago: preço × quantidade ÷ valor
+      if (ccy.isEmpty) ccy = currencyFromTicker(at(r, m.symbol));
+      if (fx == null && total != null && total > 0 && qty > 0 && price > 0)
+        fx = qty * price / total;
+    }
+    out.add(
+      ParsedTrade(
+        date: d,
+        kind: kind,
+        name: at(r, m.name),
+        symbol: at(r, m.symbol),
+        isin: at(r, m.isin),
+        quantity: kind == 'dividend' ? 0 : qty,
+        price: kind == 'dividend' ? 0 : price,
+        currency: ccy,
+        fee: parseDecimal(at(r, m.fee))?.abs() ?? 0,
+        total: total,
+        rate: fx != null && fx > 0 ? fx : null,
+        category: at(r, m.category),
+      ),
+    );
   }
-  return TradeReport(trades: out, skipped: skipped, unknownTypes: unknown, columns: stats, dataRows: dataRows, ignoredByUser: ignored);
+  return TradeReport(
+    trades: out,
+    skipped: skipped,
+    unknownTypes: unknown,
+    columns: stats,
+    dataRows: dataRows,
+    ignoredByUser: ignored,
+  );
 }
 
 /// Compras, vendas e dividendos de uma tabela (sem o relatório de validação).
-List<ParsedTrade> tradesFromTable(List<List<String>> table, TradeMapping m, {int? defaultYear}) => parseTradeTable(table, m, defaultYear: defaultYear).trades;
+List<ParsedTrade> tradesFromTable(
+  List<List<String>> table,
+  TradeMapping m, {
+  int? defaultYear,
+}) => parseTradeTable(table, m, defaultYear: defaultYear).trades;
 
 // ---------------------------------------------------------------------------
 // PDF (texto): tenta reconhecer linhas do tipo "05/01/2025 Compra Apple Inc 2 150,00 USD 300,00"
 // ---------------------------------------------------------------------------
 final _isinRe = RegExp(r'\b[A-Z]{2}[A-Z0-9]{9}\d\b');
-final _dateTok = RegExp(r'\b(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4})\b');
-final _kindTok = RegExp(r'\b(COMPRA|COMPRAS|BUY|BOUGHT|PURCHASE|VENDA|VENDAS|SELL|SOLD|SALE|DIVIDENDO|DIVIDEND|DIVIDENDOS|JUROS)\b', caseSensitive: false);
-final _numTok = RegExp(r'(?<![\w.,])[-+]?\(?\d{1,3}(?:\.\d{3})+(?:,\d+)?\)?(?![\w])|(?<![\w.,])[-+]?\(?\d+(?:[.,]\d+)?\)?(?![\w])');
-const _knownCcy = {'EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL'};
+final _dateTok = RegExp(
+  r'\b(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4})\b',
+);
+final _kindTok = RegExp(
+  r'\b(COMPRA|COMPRAS|BUY|BOUGHT|PURCHASE|VENDA|VENDAS|SELL|SOLD|SALE|DIVIDENDO|DIVIDEND|DIVIDENDOS|JUROS)\b',
+  caseSensitive: false,
+);
+final _numTok = RegExp(
+  r'(?<![\w.,])[-+]?\(?\d{1,3}(?:\.\d{3})+(?:,\d+)?\)?(?![\w])|(?<![\w.,])[-+]?\(?\d+(?:[.,]\d+)?\)?(?![\w])',
+);
+const _knownCcy = {
+  'EUR',
+  'USD',
+  'GBP',
+  'CHF',
+  'CAD',
+  'AUD',
+  'JPY',
+  'SEK',
+  'NOK',
+  'DKK',
+  'PLN',
+  'BRL',
+};
 
 List<ParsedTrade> tradesFromText(String text, {int? defaultYear}) {
   final out = <ParsedTrade>[];
@@ -344,8 +515,8 @@ List<ParsedTrade> tradesFromText(String text, {int? defaultYear}) {
     final kind = RegExp(r'^(VEND|SELL|SOLD|SALE)').hasMatch(w)
         ? 'sell'
         : RegExp(r'^(DIV|JUROS)').hasMatch(w)
-            ? 'dividend'
-            : 'buy';
+        ? 'dividend'
+        : 'buy';
     final isin = _isinRe.firstMatch(line)?[0] ?? '';
     // tudo o que vem depois da palavra do tipo (ou depois da data, se vier antes)
     final from = km.end > dm.end ? km.end : dm.end;
@@ -367,11 +538,24 @@ List<ParsedTrade> tradesFromText(String text, {int? defaultYear}) {
       if (nums.isEmpty) firstNum = m.start;
       nums.add(v);
     }
-    var name = rest.substring(0, firstNum).replaceAll(isin, '').replaceAll(RegExp(r'\b(EUR|USD|GBP|CHF)\b'), '').trim();
+    var name = rest
+        .substring(0, firstNum)
+        .replaceAll(isin, '')
+        .replaceAll(RegExp(r'\b(EUR|USD|GBP|CHF)\b'), '')
+        .trim();
     name = name.replaceAll(RegExp(r'^[-–:|\s]+|[-–:|\s]+$'), '');
     if (kind == 'dividend') {
       if (nums.isEmpty) continue;
-      out.add(ParsedTrade(date: date, kind: kind, name: name, isin: isin, currency: ccy, total: nums.last.abs()));
+      out.add(
+        ParsedTrade(
+          date: date,
+          kind: kind,
+          name: name,
+          isin: isin,
+          currency: ccy,
+          total: nums.last.abs(),
+        ),
+      );
       continue;
     }
     if (nums.length < 2) continue;
@@ -388,10 +572,23 @@ List<ParsedTrade> tradesFromText(String text, {int? defaultYear}) {
         total = nums[3].abs();
       } else {
         final gross = qty * price;
-        if ((total - gross).abs() > 0.02 && total > 0) fee = (total - gross).abs();
+        if ((total - gross).abs() > 0.02 && total > 0)
+          fee = (total - gross).abs();
       }
     }
-    out.add(ParsedTrade(date: date, kind: kind, name: name, isin: isin, quantity: qty, price: price, currency: ccy, fee: fee, total: total));
+    out.add(
+      ParsedTrade(
+        date: date,
+        kind: kind,
+        name: name,
+        isin: isin,
+        quantity: qty,
+        price: price,
+        currency: ccy,
+        fee: fee,
+        total: total,
+      ),
+    );
   }
   return out;
 }
@@ -412,6 +609,8 @@ InvestOp? tradeToOp(
   required String defaultCcy,
   required Map<String, double> rates,
   required String holdingCcy,
+  double?
+  quantity, // quando o ficheiro só tem o valor: a quantidade desta compra/venda
 }) {
   double? eurPer(String ccy, [double? rowRate]) {
     if (ccy == base) return 1;
@@ -425,21 +624,32 @@ InvestOp? tradeToOp(
   int cents(double v) => (v * e * 100).round();
 
   if (t.kind == 'dividend') {
-    return InvestOp(id: 0, accountId: accountId, holdingId: holdingId, date: t.date, type: OpType.dividend, amount: cents(t.total ?? 0), note: t.note);
+    return InvestOp(
+      id: 0,
+      accountId: accountId,
+      holdingId: holdingId,
+      date: t.date,
+      type: OpType.dividend,
+      amount: cents(t.total ?? 0),
+      note: t.note,
+    );
   }
-  final gross = t.quantity * t.price;
+  final qty = t.quantity > 0 ? t.quantity : (quantity ?? 0);
+  if (qty <= 0) return null; // sem quantidade não há posição
+  final unit = t.price > 0 ? t.price : (t.total ?? 0) / qty;
+  final gross = qty * unit;
   final amount = t.kind == 'buy' ? cents(gross + t.fee) : cents(gross - t.fee);
   // preço na moeda do ativo (se a linha estiver noutra moeda, passa pelo valor na moeda de base)
   final eh = eurPer(holdingCcy, holdingCcy == ccy ? t.rate : null);
   if (eh == null) return null;
-  final price = holdingCcy == ccy ? t.price : gross * e / eh / t.quantity;
+  final price = holdingCcy == ccy ? unit : gross * e / eh / qty;
   return InvestOp(
     id: 0,
     accountId: accountId,
     holdingId: holdingId,
     date: t.date,
     type: t.kind == 'buy' ? OpType.buy : OpType.sell,
-    quantity: t.quantity,
+    quantity: qty,
     price: price,
     fx: holdingCcy == base ? null : eh,
     amount: amount,
@@ -448,11 +658,77 @@ InvestOp? tradeToOp(
   );
 }
 
+/// Quantidade e preço de um comentário tipo "OPEN BUY IONQ.US 1/1.8671 @ 45.73" (1 = parte executada
+/// nesta linha, 1.8671 = total da ordem) ou "OPEN BUY 0.4296 @ 263.71".
+({double qty, double price})? parseFillComment(String s) {
+  final m = RegExp(
+    r'(\d+(?:[.,]\d+)?)(?:\s*/\s*\d+(?:[.,]\d+)?)?\s*@\s*(\d+(?:[.,]\d+)?)',
+  ).firstMatch(s);
+  if (m == null) return null;
+  final q = parseDecimal(m[1]!), p = parseDecimal(m[2]!);
+  return q != null && p != null && q > 0 && p > 0 ? (qty: q, price: p) : null;
+}
+
+/// Moeda de um ativo pelo sufixo do ticker (IONQ.US -> USD, AMZN.DE -> EUR). Vazio se não souber.
+String currencyFromTicker(String ticker) {
+  final i = ticker.lastIndexOf('.');
+  if (i < 0) return '';
+  return switch (ticker.substring(i + 1).toUpperCase()) {
+    'US' => 'USD',
+    'DE' ||
+    'FR' ||
+    'NL' ||
+    'ES' ||
+    'IT' ||
+    'PT' ||
+    'BE' ||
+    'AT' ||
+    'IE' ||
+    'FI' => 'EUR',
+    'UK' => 'GBP',
+    'CH' => 'CHF',
+    'PL' => 'PLN',
+    'SE' => 'SEK',
+    'NO' => 'NOK',
+    'DK' => 'DKK',
+    'CA' => 'CAD',
+    _ => '',
+  };
+}
+
+/// Símbolo do XTB (IONQ.US, AMZN.DE…) no formato do Yahoo Finance (IONQ, AMZN.DE…).
+String yahooSymbol(String s) {
+  final t = s.trim();
+  return t.toUpperCase().endsWith('.US') ? t.substring(0, t.length - 3) : t;
+}
+
+HoldingKind kindFromCategory(String category, String name) {
+  final c = category.toUpperCase();
+  if (c.contains('ETF')) return HoldingKind.etf;
+  if (c.contains('CRYPTO') || c.contains('CRIPTO')) return HoldingKind.crypto;
+  if (c.contains('FUND')) return HoldingKind.fund;
+  if (c.contains('BOND')) return HoldingKind.bond;
+  if (c.contains('STOCK') ||
+      c.contains('SHARE') ||
+      c.contains('EQUIT') ||
+      c.contains('AÇ') ||
+      c.contains('ACO'))
+    return HoldingKind.stock;
+  return HoldingKind.other;
+}
+
 /// Duas operações são a mesma se tiverem o mesmo ativo, dia, tipo e quantidade
 /// (nos dividendos, o mesmo ativo e dia).
-String opSignature(InvestOp o) => _sig(o.holdingId, o.date, o.type.name, o.quantity);
+String opSignature(InvestOp o) =>
+    _sig(o.holdingId, o.date, o.type.name, o.quantity);
 
 /// Assinatura de uma linha lida (para detetar o que já foi importado, mesmo sem câmbio).
-String tradeSignature(int? holdingId, ParsedTrade t) => _sig(holdingId, t.date, t.kind == 'buy' ? 'buy' : (t.kind == 'sell' ? 'sell' : 'dividend'), t.quantity);
+String tradeSignature(int? holdingId, ParsedTrade t) => _sig(
+  holdingId,
+  t.date,
+  t.kind == 'buy' ? 'buy' : (t.kind == 'sell' ? 'sell' : 'dividend'),
+  t.quantity,
+);
 
-String _sig(int? holdingId, DateTime d, String type, double qty) => '$holdingId|${d.year}-${d.month}-${d.day}|$type|${type == 'dividend' ? '' : qty.toStringAsFixed(6)}';
+String _sig(int? holdingId, DateTime d, String type, double qty) =>
+    '$holdingId|${d.year}-${d.month}-${d.day}|$type|${type == 'dividend' ? '' : qty.toStringAsFixed(6)}';

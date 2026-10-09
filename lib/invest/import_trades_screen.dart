@@ -217,6 +217,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       if (hs.isNotEmpty &&
           (hs == key ||
               hs == sym ||
+              hs == yahooSymbol(sym).toUpperCase() ||
               hs.split('.').first == sym ||
               hs.split('.').first == key))
         return h;
@@ -294,11 +295,12 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   ({
     List<({String key, InvestOp op, ParsedTrade t, bool dup})> ops,
     int missingRate,
+    int missingQty,
   })
   _build(AppState s) {
     final out = <({String key, InvestOp op, ParsedTrade t, bool dup})>[];
-    var missing = 0;
-    if (accountId == null) return (ops: out, missingRate: 0);
+    var missing = 0, missingQty = 0;
+    if (accountId == null) return (ops: out, missingRate: 0, missingQty: 0);
     final existing = {
       for (final o in s.investOps.where((o) => o.accountId == accountId))
         opSignature(o),
@@ -323,7 +325,11 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
         holdingCcy: hCcy,
       );
       if (op == null && !dup) {
-        missing++;
+        if (t.valueOnly) {
+          missingQty++;
+        } else {
+          missing++;
+        }
         continue;
       }
       out.add((
@@ -343,7 +349,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
         dup: dup,
       ));
     }
-    return (ops: out, missingRate: missing);
+    return (ops: out, missingRate: missing, missingQty: missingQty);
   }
 
   HoldingKind _guessKind(String name, String symbol) {
@@ -375,9 +381,11 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
           id: 0,
           accountId: accountId!,
           name: name,
-          symbol: sym,
+          symbol: yahooSymbol(sym),
           provider: sym.isEmpty ? PriceProvider.manual : PriceProvider.yahoo,
-          kind: _guessKind(name, sym),
+          kind: l.first.category.isNotEmpty
+              ? kindFromCategory(l.first.category, name)
+              : _guessKind(name, sym),
           currency: _ccyOf(l.first),
         );
       }
@@ -386,11 +394,16 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       newHoldings: newH,
       ops: [for (final e in toSave) (key: e.key, op: e.op)],
     );
+    final negativeCash = s.portfolio.accounts.any(
+      (a) => a.account.id == accountId && a.cashCents < 0,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '$n operações importadas${newH.isEmpty ? '' : ' e ${newH.length} ${newH.length == 1 ? 'ativo criado' : 'ativos criados'}'}. Atualiza os preços na Carteira.',
+          '$n operações importadas${newH.isEmpty ? '' : ' e ${newH.length} ${newH.length == 1 ? 'ativo criado' : 'ativos criados'}'}. Atualiza os preços na Carteira.'
+          '${negativeCash ? ' O dinheiro por alocar ficou negativo: associa as transferências do banco a esta plataforma ou acerta o dinheiro.' : ''}',
         ),
+        duration: Duration(seconds: negativeCash ? 8 : 4),
       ),
     );
     Navigator.pop(context, true);
@@ -661,6 +674,16 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                           'Indica o câmbio de ${missingRate.isEmpty ? 'todas as moedas' : missingRate.join(', ')} para importar essas operações.',
                     ),
                   ),
+                if (b.missingQty > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Callout(
+                      icon: Icons.warning_amber_rounded,
+                      color: Colors.orange.shade700,
+                      title: '${b.missingQty} operações sem quantidade',
+                      body: 'O ficheiro só tem o valor pago. Escolhe a coluna que traz a quantidade e o preço (ex.: o comentário) em "Colunas do ficheiro".',
+                    ),
+                  ),
                 const SizedBox(height: 6),
                 for (final e in b.ops.take(300))
                   Material(
@@ -861,7 +884,8 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
               : 'coluna ${c + 1}');
     final missing = [
       if (mapping.date == null) 'Data',
-      if (mapping.quantity == null) 'Quantidade',
+      if (mapping.quantity == null && mapping.comment == null)
+        'Quantidade (ou o comentário que a traz)',
       if (mapping.price == null && mapping.total == null)
         'Preço ou Valor total',
     ];

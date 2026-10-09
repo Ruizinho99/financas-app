@@ -43,9 +43,11 @@ class Period {
 
   bool contains(DateTime d) => !d.isBefore(start) && d.isBefore(end);
 
-  static Period month(DateTime d) => Period(DateTime(d.year, d.month), DateTime(d.year, d.month + 1));
+  static Period month(DateTime d) =>
+      Period(DateTime(d.year, d.month), DateTime(d.year, d.month + 1));
   static Period year(int y) => Period(DateTime(y), DateTime(y + 1));
-  static Period years(int from, int to) => Period(DateTime(from), DateTime(to + 1));
+  static Period years(int from, int to) =>
+      Period(DateTime(from), DateTime(to + 1));
 
   /// 1 de janeiro até hoje (inclusive).
   static Period ytd([DateTime? today]) {
@@ -56,13 +58,17 @@ class Period {
   /// Intervalo de dias, ambos inclusivos.
   static Period custom(DateTime from, DateTime to) {
     final a = from.isBefore(to) ? from : to, b = from.isBefore(to) ? to : from;
-    return Period(DateTime(a.year, a.month, a.day), DateTime(b.year, b.month, b.day + 1));
+    return Period(
+      DateTime(a.year, a.month, a.day),
+      DateTime(b.year, b.month, b.day + 1),
+    );
   }
 }
 
 class CategoryStat {
   final Categoria category;
-  final int spent; // cêntimos, valor positivo (despesa) ou entrada (rendimentos)
+  final int
+  spent; // cêntimos, valor positivo (despesa) ou entrada (rendimentos)
   final int target; // alocação no período
   const CategoryStat(this.category, this.spent, this.target);
 
@@ -72,10 +78,19 @@ class CategoryStat {
 class AppState extends ChangeNotifier {
   final Db db;
   final PriceService prices;
+
   /// Contas na nuvem onde se podem guardar cópias (Google; Apple em preparação).
   late final List<CloudProvider> cloud;
-  AppState(this.db, {PriceService? prices, List<CloudProvider>? cloud}) : prices = prices ?? PriceService() {
-    this.cloud = cloud ?? [GoogleProvider(serverClientId: () => db.setting('google_server_client_id') ?? ''), AppleProvider()];
+  AppState(this.db, {PriceService? prices, List<CloudProvider>? cloud})
+    : prices = prices ?? PriceService() {
+    this.cloud =
+        cloud ??
+        [
+          GoogleProvider(
+            serverClientId: () => db.setting('google_server_client_id') ?? '',
+          ),
+          AppleProvider(),
+        ];
     reload();
   }
 
@@ -106,11 +121,15 @@ class AppState extends ChangeNotifier {
     salaries = db.salaries();
     baseCcy = db.setting('base_currency') ?? 'EUR';
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
-    themeMode = ThemeMode.values.firstWhere((m) => m.name == db.setting('theme_mode'), orElse: () => ThemeMode.system);
+    themeMode = ThemeMode.values.firstWhere(
+      (m) => m.name == db.setting('theme_mode'),
+      orElse: () => ThemeMode.system,
+    );
     seedColor = int.tryParse(db.setting('seed_color') ?? '') ?? 0xFF2E7D6B;
     amoled = db.setting('amoled') == '1';
     incomeColor = int.tryParse(db.setting('income_color') ?? '') ?? 0xFF43A047;
-    expenseColor = int.tryParse(db.setting('expense_color') ?? '') ?? 0xFFE53935;
+    expenseColor =
+        int.tryParse(db.setting('expense_color') ?? '') ?? 0xFFE53935;
     notifyListeners();
   }
 
@@ -118,6 +137,7 @@ class AppState extends ChangeNotifier {
   ThemeMode themeMode = ThemeMode.system;
   int seedColor = 0xFF2E7D6B;
   bool amoled = false;
+
   /// Moeda de base escolhida (a mesma de `baseCcy`, usada na formatação).
   String get baseCurrency => baseCcy;
 
@@ -133,7 +153,13 @@ class AppState extends ChangeNotifier {
   int incomeColor = 0xFF43A047;
   int expenseColor = 0xFFE53935;
 
-  void setAppearance({ThemeMode? mode, int? seed, bool? amoledBlack, int? income, int? expense}) {
+  void setAppearance({
+    ThemeMode? mode,
+    int? seed,
+    bool? amoledBlack,
+    int? income,
+    int? expense,
+  }) {
     if (mode != null) db.putSetting('theme_mode', mode.name);
     if (seed != null) db.putSetting('seed_color', seed.toString());
     if (amoledBlack != null) db.putSetting('amoled', amoledBlack ? '1' : '0');
@@ -143,7 +169,13 @@ class AppState extends ChangeNotifier {
   }
 
   void resetAppearance() {
-    for (final k in ['theme_mode', 'seed_color', 'amoled', 'income_color', 'expense_color']) {
+    for (final k in [
+      'theme_mode',
+      'seed_color',
+      'amoled',
+      'income_color',
+      'expense_color',
+    ]) {
       db.deleteSetting(k);
     }
     reload();
@@ -152,14 +184,17 @@ class AppState extends ChangeNotifier {
   // ---------- Obrigatoriedade por mês ----------
   /// Uma categoria é obrigatória num mês se ela (ou a mãe) tiver um período que o cobre.
   bool isMandatory(Categoria c, String month, {bool inherit = true}) {
-    bool own(int id) => mandatoryRanges.any((r) => r.categoryId == id && r.covers(month));
+    bool own(int id) =>
+        mandatoryRanges.any((r) => r.categoryId == id && r.covers(month));
     if (own(c.id)) return true;
     return inherit && c.parentId != null && own(c.parentId!);
   }
 
-  bool isMandatoryDirect(Categoria c, String month) => isMandatory(c, month, inherit: false);
+  bool isMandatoryDirect(Categoria c, String month) =>
+      isMandatory(c, month, inherit: false);
 
-  List<MandatoryRange> rangesOf(int categoryId) => mandatoryRanges.where((r) => r.categoryId == categoryId).toList();
+  List<MandatoryRange> rangesOf(int categoryId) =>
+      mandatoryRanges.where((r) => r.categoryId == categoryId).toList();
 
   void addRange(int categoryId, String start, String? end) {
     db.addMandatoryRange(categoryId, start, end);
@@ -172,7 +207,8 @@ class AppState extends ChangeNotifier {
   }
 
   static String _shift(String month, int delta) {
-    final y = int.parse(month.substring(0, 4)), m = int.parse(month.substring(5, 7));
+    final y = int.parse(month.substring(0, 4)),
+        m = int.parse(month.substring(5, 7));
     return monthKey(DateTime(y, m + delta));
   }
 
@@ -180,19 +216,23 @@ class AppState extends ChangeNotifier {
   void setMandatoryInMonth(int categoryId, String month, bool value) {
     final own = rangesOf(categoryId);
     if (value) {
-      if (!own.any((r) => r.covers(month))) db.addMandatoryRange(categoryId, month, month);
+      if (!own.any((r) => r.covers(month)))
+        db.addMandatoryRange(categoryId, month, month);
     } else {
       for (final r in own.where((r) => r.covers(month))) {
         db.deleteMandatoryRange(r.id);
-        if (r.start.compareTo(month) < 0) db.addMandatoryRange(categoryId, r.start, _shift(month, -1));
-        if (r.end == null || r.end!.compareTo(month) > 0) db.addMandatoryRange(categoryId, _shift(month, 1), r.end);
+        if (r.start.compareTo(month) < 0)
+          db.addMandatoryRange(categoryId, r.start, _shift(month, -1));
+        if (r.end == null || r.end!.compareTo(month) > 0)
+          db.addMandatoryRange(categoryId, _shift(month, 1), r.end);
       }
     }
     reload();
   }
 
   /// Despesa por categoria dividida em obrigatória / opcional, conforme o mês de cada movimento.
-  ({Map<int, int> mandatory, Map<int, int> optional, int unclassified}) mandatorySplit(Period p) {
+  ({Map<int, int> mandatory, Map<int, int> optional, int unclassified})
+  mandatorySplit(Period p) {
     final mand = <int, int>{}, opt = <int, int>{};
     var unclassified = 0;
     for (final t in txnsIn(p)) {
@@ -218,8 +258,10 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
-  List<Categoria> get roots => categories.where((c) => c.parentId == null && !c.archived).toList();
-  List<Categoria> childrenOf(int id) => categories.where((c) => c.parentId == id && !c.archived).toList();
+  List<Categoria> get roots =>
+      categories.where((c) => c.parentId == null && !c.archived).toList();
+  List<Categoria> childrenOf(int id) =>
+      categories.where((c) => c.parentId == id && !c.archived).toList();
   Categoria? parentOf(Categoria c) => cat(c.parentId);
 
   /// "Pai › Filha" – permite distinguir categorias com o mesmo nome.
@@ -255,7 +297,8 @@ class AppState extends ChangeNotifier {
     return total;
   }
 
-  List<Txn> txnsIn(Period p) => transactions.where((t) => p.contains(t.date)).toList();
+  List<Txn> txnsIn(Period p) =>
+      transactions.where((t) => p.contains(t.date)).toList();
 
   List<TxnGroup> _cards(Iterable<Txn> txns) {
     final map = <String, List<Txn>>{};
@@ -267,14 +310,18 @@ class AppState extends ChangeNotifier {
       map.putIfAbsent(k, () => []).add(t);
       gid[k] = id;
     }
-    return map.entries.map((e) => TxnGroup(e.key, e.value, groupId: gid[e.key])).toList()
+    return map.entries
+        .map((e) => TxnGroup(e.key, e.value, groupId: gid[e.key]))
+        .toList()
       ..sort((a, b) => b.txns.length.compareTo(a.txns.length));
   }
 
   /// Cartões da aba Classificar: um por título, ou um por grupo quando o título pertence a um.
-  List<TxnGroup> unclassifiedGroups() => _cards(transactions.where((t) => t.categoryId == null && !t.isTransfer));
+  List<TxnGroup> unclassifiedGroups() =>
+      _cards(transactions.where((t) => t.categoryId == null && !t.isTransfer));
 
-  List<TxnGroup> allGroups() => _cards(transactions.where((t) => !t.isTransfer));
+  List<TxnGroup> allGroups() =>
+      _cards(transactions.where((t) => !t.isTransfer));
 
   Conta? account(int? id) {
     if (id == null) return null;
@@ -317,7 +364,8 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
-  List<Rule> rulesOfGroup(int id) => rules.where((r) => r.groupId == id).toList();
+  List<Rule> rulesOfGroup(int id) =>
+      rules.where((r) => r.groupId == id).toList();
 
   /// Títulos distintos dos movimentos, com a contagem (para escolher o que juntar num grupo).
   Map<String, int> titleCounts() {
@@ -361,7 +409,8 @@ class AppState extends ChangeNotifier {
     return p == null || p.activeIn(month);
   }
 
-  bool isCategoryActiveNow(Categoria c) => isCategoryActive(c, monthKey(DateTime.now()));
+  bool isCategoryActiveNow(Categoria c) =>
+      isCategoryActive(c, monthKey(DateTime.now()));
 
   /// Existe em algum mês entre [from] e [to]? (para escolher a categoria de movimentos antigos)
   bool isCategoryActiveDuring(Categoria c, DateTime from, DateTime to) {
@@ -377,7 +426,8 @@ class AppState extends ChangeNotifier {
   /// Nome para o ano seguinte: "Férias 2027" → "Férias 2028"; sem ano acrescenta " (seguinte)".
   static String nextYearName(String name) {
     final re = RegExp(r'\b(20\d{2})\b');
-    if (re.hasMatch(name)) return name.replaceAllMapped(re, (m) => '${int.parse(m[1]!) + 1}');
+    if (re.hasMatch(name))
+      return name.replaceAllMapped(re, (m) => '${int.parse(m[1]!) + 1}');
     return '$name (seguinte)';
   }
 
@@ -390,21 +440,27 @@ class AppState extends ChangeNotifier {
   /// subcategorias e orçamento. Devolve o id da nova.
   int duplicateForNextYear(Categoria c) {
     int copy(Categoria src, int? parentId) {
-      final id = db.saveCategory(Categoria(
-        id: 0,
-        // subcategorias só mudam de nome se tiverem um ano no nome
-        name: (parentId == null || RegExp(r'\b20\d{2}\b').hasMatch(src.name)) ? nextYearName(src.name) : src.name,
-        parentId: parentId,
-        isIncome: src.isIncome,
-        emoji: src.emoji,
-        description: src.description,
-        budgetType: src.budgetType,
-        budgetPercent: src.budgetPercent,
-        budgetValue: src.budgetValue,
-        hasBudget: src.hasBudget,
-        activeFrom: src.activeFrom == null ? null : _shiftYear(src.activeFrom, 1),
-        activeTo: src.activeTo == null ? null : _shiftYear(src.activeTo, 1),
-      ));
+      final id = db.saveCategory(
+        Categoria(
+          id: 0,
+          // subcategorias só mudam de nome se tiverem um ano no nome
+          name: (parentId == null || RegExp(r'\b20\d{2}\b').hasMatch(src.name))
+              ? nextYearName(src.name)
+              : src.name,
+          parentId: parentId,
+          isIncome: src.isIncome,
+          emoji: src.emoji,
+          description: src.description,
+          budgetType: src.budgetType,
+          budgetPercent: src.budgetPercent,
+          budgetValue: src.budgetValue,
+          hasBudget: src.hasBudget,
+          activeFrom: src.activeFrom == null
+              ? null
+              : _shiftYear(src.activeFrom, 1),
+          activeTo: src.activeTo == null ? null : _shiftYear(src.activeTo, 1),
+        ),
+      );
       return id;
     }
 
@@ -426,8 +482,9 @@ class AppState extends ChangeNotifier {
         .fold(0, (s, ch) => s + ch.monthlyTarget(salary));
   }
 
-  int totalAllocated(int salary, [String? month]) =>
-      roots.where((c) => !c.isIncome).fold(0, (s, c) => s + effectiveMonthlyTarget(c, salary, month));
+  int totalAllocated(int salary, [String? month]) => roots
+      .where((c) => !c.isIncome)
+      .fold(0, (s, c) => s + effectiveMonthlyTarget(c, salary, month));
 
   /// Alocação de [c] no período: soma mês a mês (suporta % e salários diferentes).
   int targetIn(Categoria c, Period p) {
@@ -442,11 +499,11 @@ class AppState extends ChangeNotifier {
   // ---------- Investimentos ----------
   /// Plataformas, posições, dinheiro por alocar e totais (tudo em EUR).
   Portfolio get portfolio => Portfolio.compute(
-        accounts: investAccounts.where((a) => !a.archived).toList(),
-        holdings: holdings.where((h) => !h.archived).toList(),
-        ops: investOps,
-        txns: transactions.where((t) => t.investAccountId != null).toList(),
-      );
+    accounts: investAccounts.where((a) => !a.archived).toList(),
+    holdings: holdings.where((h) => !h.archived).toList(),
+    ops: investOps,
+    txns: transactions.where((t) => t.investAccountId != null).toList(),
+  );
 
   InvestAccount? investAccount(int? id) {
     if (id == null) return null;
@@ -465,13 +522,23 @@ class AppState extends ChangeNotifier {
   }
 
   int addInvestAccount(String name, {String emoji = '', String note = ''}) {
-    final id = db.saveInvestAccount(name: name.trim(), emoji: emoji, note: note);
+    final id = db.saveInvestAccount(
+      name: name.trim(),
+      emoji: emoji,
+      note: note,
+    );
     reload();
     return id;
   }
 
   void updateInvestAccount(InvestAccount a) {
-    db.saveInvestAccount(id: a.id, name: a.name.trim(), emoji: a.emoji, note: a.note, archived: a.archived);
+    db.saveInvestAccount(
+      id: a.id,
+      name: a.name.trim(),
+      emoji: a.emoji,
+      note: a.note,
+      archived: a.archived,
+    );
     reload();
   }
 
@@ -518,10 +585,24 @@ class AppState extends ChangeNotifier {
     final h = holding(holdingId);
     if (h == null) return;
     if (!h.foreign) {
-      db.saveHolding(h.copyWith(lastPrice: price, lastPriceOrig: price, lastFx: 1.0, lastPriceAt: DateTime.now()));
+      db.saveHolding(
+        h.copyWith(
+          lastPrice: price,
+          lastPriceOrig: price,
+          lastFx: 1.0,
+          lastPriceAt: DateTime.now(),
+        ),
+      );
     } else {
       final fx = eurPerUnit ?? h.lastFx ?? 1;
-      db.saveHolding(h.copyWith(lastPrice: price * fx, lastPriceOrig: price, lastFx: fx, lastPriceAt: DateTime.now()));
+      db.saveHolding(
+        h.copyWith(
+          lastPrice: price * fx,
+          lastPriceOrig: price,
+          lastFx: fx,
+          lastPriceAt: DateTime.now(),
+        ),
+      );
     }
     reload();
   }
@@ -529,7 +610,10 @@ class AppState extends ChangeNotifier {
   /// Grava operações importadas de um ficheiro, criando antes os ativos novos ([newHoldings], por chave).
   /// Cada operação traz a chave do instrumento; as que apontam para um ativo novo usam o id criado.
   /// Devolve quantas operações gravou.
-  int importTradeOps({required Map<String, Holding> newHoldings, required List<({String key, InvestOp op})> ops}) {
+  int importTradeOps({
+    required Map<String, Holding> newHoldings,
+    required List<({String key, InvestOp op})> ops,
+  }) {
     var n = 0;
     db.inTransaction(() {
       final created = <String, int>{};
@@ -540,7 +624,19 @@ class AppState extends ChangeNotifier {
         final id = e.op.holdingId ?? created[e.key];
         if (id == null) continue;
         db.saveInvestOp(
-          InvestOp(id: 0, accountId: e.op.accountId, holdingId: id, date: e.op.date, type: e.op.type, quantity: e.op.quantity, price: e.op.price, fx: e.op.fx, amount: e.op.amount, fee: e.op.fee, note: e.op.note),
+          InvestOp(
+            id: 0,
+            accountId: e.op.accountId,
+            holdingId: id,
+            date: e.op.date,
+            type: e.op.type,
+            quantity: e.op.quantity,
+            price: e.op.price,
+            fx: e.op.fx,
+            amount: e.op.amount,
+            fee: e.op.fee,
+            note: e.op.note,
+          ),
           isNew: true,
         );
         n++;
@@ -557,7 +653,8 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  DateTime? get lastCloudBackup => DateTime.tryParse(db.setting('cloud_last_backup') ?? '');
+  DateTime? get lastCloudBackup =>
+      DateTime.tryParse(db.setting('cloud_last_backup') ?? '');
   String? get lastCloudProvider => db.setting('cloud_last_provider');
 
   /// Guarda uma cópia de toda a base de dados na conta ligada (substitui a anterior).
@@ -572,9 +669,11 @@ class AppState extends ChangeNotifier {
   /// Substitui TODOS os dados pelos da última cópia da nuvem. Devolve a data da cópia.
   Future<DateTime> restoreFromCloud(CloudProvider p) async {
     final info = await p.latest();
-    if (info == null) throw const CloudException('Ainda não há nenhuma cópia nesta conta.');
+    if (info == null)
+      throw const CloudException('Ainda não há nenhuma cópia nesta conta.');
     final bytes = await p.download(info);
-    final cid = googleClientId; // a configuração desta app não se perde com o restauro
+    final cid =
+        googleClientId; // a configuração desta app não se perde com o restauro
     try {
       await db.restoreBytes(bytes);
     } on FormatException catch (e) {
@@ -593,21 +692,34 @@ class AppState extends ChangeNotifier {
   }
 
   /// Entregas do banco a plataformas (saídas), da mais recente para a mais antiga.
-  List<Txn> get investDeliveries => transactions.where((t) => t.investAccountId != null && t.amount < 0).toList()..sort((a, b) => b.date.compareTo(a.date));
+  List<Txn> get investDeliveries =>
+      transactions
+          .where((t) => t.investAccountId != null && t.amount < 0)
+          .toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
 
   /// Quanto de uma entrega já foi investido (compras ligadas) e quanto fica em espera.
   ({int allocated, int onHold, List<InvestOp> ops}) transferAllocation(Txn t) {
-    final ops = investOps.where((o) => o.txnId == t.id && o.type == OpType.buy).toList();
+    final ops = investOps
+        .where((o) => o.txnId == t.id && o.type == OpType.buy)
+        .toList();
     final allocated = ops.fold(0, (a, o) => a + o.amount);
     return (allocated: allocated, onHold: t.amount.abs() - allocated, ops: ops);
   }
 
   /// Marca movimentos do banco como entregas (saída) ou levantamentos (entrada) de uma plataforma.
   /// Com [rememberTitles] lembra os títulos para as próximas importações.
-  void linkTransfers(List<int> txnIds, int accountId, {bool rememberTitles = false}) {
+  void linkTransfers(
+    List<int> txnIds,
+    int accountId, {
+    bool rememberTitles = false,
+  }) {
     db.setInvestAccount(txnIds, accountId);
     if (rememberTitles) {
-      for (final k in {for (final t in transactions) if (txnIds.contains(t.id)) t.merchantKey}) {
+      for (final k in {
+        for (final t in transactions)
+          if (txnIds.contains(t.id)) t.merchantKey,
+      }) {
         db.addInvestPattern(k, accountId);
       }
     }
@@ -649,26 +761,73 @@ class AppState extends ChangeNotifier {
   }
 
   /// Dinheiro enviado para plataformas num período (entregas menos levantamentos).
-  int investedIn(Period p) =>
-      transactions.where((t) => t.investAccountId != null && p.contains(t.date)).fold(0, (a, t) => a - t.amount);
+  int investedIn(Period p) => transactions
+      .where((t) => t.investAccountId != null && p.contains(t.date))
+      .fold(0, (a, t) => a - t.amount);
 
   /// Atualiza pela internet (só a pedido) os preços dos ativos com fonte automática e os câmbios de
   /// todos os ativos noutras moedas, ao valor de mercado atual.
   /// A moeda escolhida à mão para o ativo é respeitada: o preço é convertido para ela.
-  Future<({int updated, Map<String, String> failed})> refreshPrices({int? accountId, int? holdingId}) async {
-    final targets = holdings.where((h) => !h.archived && h.needsRefresh && (accountId == null || h.accountId == accountId) && (holdingId == null || h.id == holdingId)).toList();
+  Future<({int updated, Map<String, String> failed})> refreshPrices({
+    int? accountId,
+    int? holdingId,
+  }) async {
+    final targets = holdings
+        .where(
+          (h) =>
+              !h.archived &&
+              h.needsRefresh &&
+              (accountId == null || h.accountId == accountId) &&
+              (holdingId == null || h.id == holdingId),
+        )
+        .toList();
     var updated = 0;
     final failed = <String, String>{};
     final base = baseCcy;
 
     Future<Holding> one(Holding h) async {
       if (h.canAutoPrice) {
-        final q = await prices.quote(h.provider, h.symbol, base: base);
+        var sym = h.symbol;
+        PriceQuote q;
+        try {
+          q = await prices.quote(h.provider, sym, base: base);
+        } on PriceException catch (e) {
+          // símbolo de outra corretora que o Yahoo não conhece (ex.: AMZN.DE -> AMZ.DE): procura pelo nome
+          // e aceita só um resultado na mesma bolsa (mesmo sufixo)
+          final i = sym.lastIndexOf('.');
+          if (h.provider != PriceProvider.yahoo ||
+              !e.message.contains('não encontrado') ||
+              i < 0)
+            rethrow;
+          final suffix = sym.substring(i).toUpperCase();
+          final hits = await prices.search(PriceProvider.yahoo, h.name);
+          final hit = hits
+              .where(
+                (x) =>
+                    x.symbol.toUpperCase().endsWith(suffix) &&
+                    x.symbol.toUpperCase() != sym.toUpperCase(),
+              )
+              .firstOrNull;
+          if (hit == null) rethrow;
+          sym = hit.symbol;
+          q = await prices.quote(h.provider, sym, base: base);
+        }
         // moeda do ativo: a escolhida pelo utilizador ou, se for automática, a do preço
         final ccy = h.currencyManual ? h.currency : q.currency;
-        final orig = ccy == q.currency ? q.original : q.original * await prices.fxRate(q.currency, ccy);
-        final fx = ccy == base ? 1.0 : (ccy == q.currency ? q.fx : await prices.fxRate(ccy, base));
-        return h.copyWith(currency: ccy, lastPriceOrig: orig, lastFx: fx, lastPrice: orig * fx, lastPriceAt: q.at);
+        final orig = ccy == q.currency
+            ? q.original
+            : q.original * await prices.fxRate(q.currency, ccy);
+        final fx = ccy == base
+            ? 1.0
+            : (ccy == q.currency ? q.fx : await prices.fxRate(ccy, base));
+        return h.copyWith(
+          symbol: sym,
+          currency: ccy,
+          lastPriceOrig: orig,
+          lastFx: fx,
+          lastPrice: orig * fx,
+          lastPriceAt: q.at,
+        );
       }
       // preço manual noutra moeda: só o câmbio
       final fx = await prices.fxRate(h.currency, base);
@@ -707,7 +866,12 @@ class AppState extends ChangeNotifier {
   /// Já existe, no mesmo nível (mesma categoria-mãe), uma categoria com este nome?
   bool categoryNameTaken(String name, int? parentId, {int? excludeId}) {
     final n = name.trim().toLowerCase();
-    return categories.any((c) => c.parentId == parentId && c.id != excludeId && c.name.trim().toLowerCase() == n);
+    return categories.any(
+      (c) =>
+          c.parentId == parentId &&
+          c.id != excludeId &&
+          c.name.trim().toLowerCase() == n,
+    );
   }
 
   /// Guarda uma categoria e as suas subcategorias numa única operação.
@@ -723,7 +887,9 @@ class AppState extends ChangeNotifier {
   }) {
     late int mainId;
     db.inTransaction(() {
-      mainId = main.id == 0 ? db.saveCategory(main) : db.saveCategory(main, id: main.id);
+      mainId = main.id == 0
+          ? db.saveCategory(main)
+          : db.saveCategory(main, id: main.id);
       final subParent = subsAreSiblings ? main.parentId : mainId;
       for (final id in removedIds) {
         db.deleteCategory(id);
@@ -731,9 +897,20 @@ class AppState extends ChangeNotifier {
       for (final d in subs) {
         final ex = cat(d.id);
         if (ex != null) {
-          db.saveCategory(ex.copyWith(name: d.name, emoji: d.emoji, isIncome: main.isIncome), id: ex.id);
+          db.saveCategory(
+            ex.copyWith(name: d.name, emoji: d.emoji, isIncome: main.isIncome),
+            id: ex.id,
+          );
         } else {
-          db.saveCategory(Categoria(id: 0, name: d.name, parentId: subParent, isIncome: main.isIncome, emoji: d.emoji));
+          db.saveCategory(
+            Categoria(
+              id: 0,
+              name: d.name,
+              parentId: subParent,
+              isIncome: main.isIncome,
+              emoji: d.emoji,
+            ),
+          );
         }
       }
     });
@@ -772,17 +949,18 @@ class AppState extends ChangeNotifier {
     var cid = isTransfer ? null : categoryId;
     if (!isTransfer) cid ??= ruleFor(key)?.categoryId;
     db.insertTransaction(
-        date: date,
-        description: description,
-        amount: amount,
-        categoryId: cid,
-        note: note,
-        source: 'manual',
-        merchantKey: key,
-        accountId: accountId,
-        isTransfer: isTransfer,
-        receiptPath: receiptPath,
-        investAccountId: investAccountId);
+      date: date,
+      description: description,
+      amount: amount,
+      categoryId: cid,
+      note: note,
+      source: 'manual',
+      merchantKey: key,
+      accountId: accountId,
+      isTransfer: isTransfer,
+      receiptPath: receiptPath,
+      investAccountId: investAccountId,
+    );
     reload();
   }
 
@@ -797,12 +975,25 @@ class AppState extends ChangeNotifier {
   }) {
     final key = merchantKey(description);
     db.insertTransaction(
-        date: date, description: description, amount: -amount.abs(), source: 'manual', merchantKey: key,
-        accountId: fromAccount, isTransfer: true, receiptPath: receiptPath);
+      date: date,
+      description: description,
+      amount: -amount.abs(),
+      source: 'manual',
+      merchantKey: key,
+      accountId: fromAccount,
+      isTransfer: true,
+      receiptPath: receiptPath,
+    );
     if (toAccount != null) {
       db.insertTransaction(
-          date: date, description: description, amount: amount.abs(), source: 'manual', merchantKey: key,
-          accountId: toAccount, isTransfer: true);
+        date: date,
+        description: description,
+        amount: amount.abs(),
+        source: 'manual',
+        merchantKey: key,
+        accountId: toAccount,
+        isTransfer: true,
+      );
     }
     reload();
   }
@@ -816,7 +1007,10 @@ class AppState extends ChangeNotifier {
     final files = db.receiptsOf(ids);
     db.deleteTransactions(ids);
     // só apaga o ficheiro se mais nenhum movimento o usar
-    final still = {for (final t in db.transactions()) if (t.receiptPath != null) t.receiptPath!};
+    final still = {
+      for (final t in db.transactions())
+        if (t.receiptPath != null) t.receiptPath!,
+    };
     for (final f in files) {
       if (!still.contains(f)) Receipts.delete(f);
     }
@@ -825,7 +1019,13 @@ class AppState extends ChangeNotifier {
 
   /// Move movimentos para uma categoria. Se [remember], cria/actualiza regra para o futuro
   /// e aplica-a a todos os movimentos sem categoria com a mesma chave.
-  void assign(List<Txn> txns, int? categoryId, {bool remember = false, String label = '', String note = ''}) {
+  void assign(
+    List<Txn> txns,
+    int? categoryId, {
+    bool remember = false,
+    String label = '',
+    String note = '',
+  }) {
     db.setCategory(txns.map((t) => t.id).toList(), categoryId);
     if (remember && categoryId != null && txns.isNotEmpty) {
       for (final key in {for (final t in txns) t.merchantKey}) {
@@ -833,19 +1033,28 @@ class AppState extends ChangeNotifier {
         if (r?.groupId != null) {
           // o título pertence a um grupo: a categoria é a do grupo
           final g = groupById(r!.groupId)!;
-          db.saveRuleGroup(id: g.id, name: g.name, categoryId: categoryId, note: g.note);
+          db.saveRuleGroup(
+            id: g.id,
+            name: g.name,
+            categoryId: categoryId,
+            note: g.note,
+          );
           rules = db.rules();
           groups = db.ruleGroups();
         } else {
           db.upsertRule(key, categoryId, label: label, note: note);
         }
-        final others = transactions.where((t) => t.merchantKey == key && t.categoryId == null).map((t) => t.id).toList();
+        final others = transactions
+            .where((t) => t.merchantKey == key && t.categoryId == null)
+            .map((t) => t.id)
+            .toList();
         db.setCategory(others, categoryId);
       }
       // movimentos de outros títulos do mesmo grupo
       for (final t in transactions.where((t) => t.categoryId == null)) {
         final r = ruleFor(t.merchantKey);
-        if (r?.groupId != null && r!.categoryId != null) db.setCategory([t.id], r.categoryId);
+        if (r?.groupId != null && r!.categoryId != null)
+          db.setCategory([t.id], r.categoryId);
       }
     }
     reload();
@@ -856,7 +1065,13 @@ class AppState extends ChangeNotifier {
     reload();
   }
 
-  void saveRule(String pattern, int? categoryId, {bool exact = true, String label = '', String note = ''}) {
+  void saveRule(
+    String pattern,
+    int? categoryId, {
+    bool exact = true,
+    String label = '',
+    String note = '',
+  }) {
     db.upsertRule(pattern, categoryId, exact: exact, label: label, note: note);
     reload();
   }
@@ -869,7 +1084,9 @@ class AppState extends ChangeNotifier {
   /// Aplica todas as regras a movimentos sem categoria. Devolve quantos foram classificados.
   int applyRules() {
     var n = 0;
-    for (final t in transactions.where((t) => t.categoryId == null && !t.isTransfer)) {
+    for (final t in transactions.where(
+      (t) => t.categoryId == null && !t.isTransfer,
+    )) {
       final r = ruleFor(t.merchantKey);
       if (r != null && r.categoryId != null) {
         db.setCategory([t.id], r.categoryId);
@@ -882,8 +1099,17 @@ class AppState extends ChangeNotifier {
 
   // ---------- Grupos ----------
   /// Cria um grupo e (opcionalmente) junta-lhe títulos. Devolve o id.
-  int createGroup(String name, {int? categoryId, String note = '', Iterable<String> keys = const []}) {
-    final id = db.saveRuleGroup(name: name.trim(), categoryId: categoryId, note: note);
+  int createGroup(
+    String name, {
+    int? categoryId,
+    String note = '',
+    Iterable<String> keys = const [],
+  }) {
+    final id = db.saveRuleGroup(
+      name: name.trim(),
+      categoryId: categoryId,
+      note: note,
+    );
     for (final k in keys) {
       db.setRuleGroup(db.ensureRule(k), id);
     }
@@ -895,7 +1121,12 @@ class AppState extends ChangeNotifier {
   /// (ou na categoria antiga do grupo) passam para a nova.
   void updateGroup(Grupo g) {
     final old = groupById(g.id)?.categoryId;
-    db.saveRuleGroup(id: g.id, name: g.name.trim(), categoryId: g.categoryId, note: g.note);
+    db.saveRuleGroup(
+      id: g.id,
+      name: g.name.trim(),
+      categoryId: g.categoryId,
+      note: g.note,
+    );
     _afterGroupChange(g.id, old);
   }
 
@@ -924,7 +1155,9 @@ class AppState extends ChangeNotifier {
     if (cid != null) {
       final ids = [
         for (final t in transactions)
-          if (ruleFor(t.merchantKey)?.groupId == groupId && (t.categoryId == null || t.categoryId == oldCategory)) t.id
+          if (ruleFor(t.merchantKey)?.groupId == groupId &&
+              (t.categoryId == null || t.categoryId == oldCategory))
+            t.id,
       ];
       db.setCategory(ids, cid);
     }
@@ -932,12 +1165,16 @@ class AppState extends ChangeNotifier {
   }
 
   /// Importa linhas; ignora duplicados. Devolve (novos, duplicados).
-  (int, int) importRows(String filename, String source, List<ParsedRow> rows,
-      {Map<String, int?> categories = const {},
-      Set<String> remember = const {},
-      Map<String, String> names = const {},
-      int? accountId,
-      Map<String, int> accountsByName = const {}}) {
+  (int, int) importRows(
+    String filename,
+    String source,
+    List<ParsedRow> rows, {
+    Map<String, int?> categories = const {},
+    Set<String> remember = const {},
+    Map<String, String> names = const {},
+    int? accountId,
+    Map<String, int> accountsByName = const {},
+  }) {
     // Regras: categoria memorizada e/ou nome amigável. Aplicam-se a esta e às próximas importações.
     for (final k in {...remember, ...names.keys}) {
       // se o nome escrito é o de um grupo existente, o título junta-se a esse grupo
@@ -946,7 +1183,13 @@ class AppState extends ChangeNotifier {
       if (grp != null) {
         db.setRuleGroup(db.ensureRule(k), grp.id);
         final c = remember.contains(k) ? categories[k] : null;
-        if (c != null && c != grp.categoryId) db.saveRuleGroup(id: grp.id, name: grp.name, categoryId: c, note: grp.note);
+        if (c != null && c != grp.categoryId)
+          db.saveRuleGroup(
+            id: grp.id,
+            name: grp.name,
+            categoryId: c,
+            note: grp.note,
+          );
         rules = db.rules();
         groups = db.ruleGroups();
         continue;
@@ -971,17 +1214,24 @@ class AppState extends ChangeNotifier {
       }
       seen.add(h);
       final key = merchantKey(r.description);
-      final inv = investAccountForKey(key); // título memorizado como entrega a uma plataforma
+      final inv = investAccountForKey(
+        key,
+      ); // título memorizado como entrega a uma plataforma
       db.insertTransaction(
         date: r.date,
         description: r.description,
         amount: r.amount,
         balance: r.balance,
-        categoryId: (r.isTransfer || inv != null) ? null : (categories.containsKey(key) ? categories[key] : ruleFor(key)?.categoryId),
+        categoryId: (r.isTransfer || inv != null)
+            ? null
+            : (categories.containsKey(key)
+                  ? categories[key]
+                  : ruleFor(key)?.categoryId),
         source: source,
         merchantKey: key,
         importId: importId,
-        accountId: (r.account != null ? accountsByName[r.account] : null) ?? accountId,
+        accountId:
+            (r.account != null ? accountsByName[r.account] : null) ?? accountId,
         isTransfer: r.isTransfer || inv != null,
         investAccountId: inv,
       );
