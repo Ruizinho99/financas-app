@@ -206,7 +206,7 @@ void main() {
     expect(d.s.holding(d.vwce)!.lastPrice, 125.5);
   });
 
-  testWidgets('etiquetas da barra de navegação ficam numa só linha em 360 dp', (tester) async {
+  testWidgets('barra com 4 separadores: etiquetas numa só linha em 360 dp e todas visíveis', (tester) async {
     final d = buildInvestData();
     tester.view.physicalSize = const Size(360, 640) * 3;
     tester.view.devicePixelRatio = 3;
@@ -214,23 +214,29 @@ void main() {
     // usa o tema real da app (com a letra reduzida das etiquetas)
     await tester.pumpWidget(ChangeNotifierProvider<AppState>.value(value: d.s, child: const FinancasApp()));
     await tester.pumpAndSettle();
-    final one = tester.getSize(find.text('Movimentos').last).height;
-    expect(one, lessThan(16), reason: 'Movimentos deve ocupar uma só linha');
-    for (final (icon, label) in [(Icons.style_outlined, 'Classificar'), (Icons.savings_outlined, 'Orçamento'), (Icons.insights_outlined, 'Análise'), (Icons.account_balance_outlined, 'Carteira')]) {
+    for (final label in ['Mês', 'Movimentos', 'Carteira', 'Mais']) {
+      expect(find.text(label), findsWidgets, reason: '$label visível');
+      expect(tester.getSize(find.text(label).last).height, lessThan(16), reason: '$label deve ocupar uma só linha');
+    }
+    for (final icon in [Icons.receipt_long_outlined, Icons.account_balance_outlined, Icons.more_horiz]) {
       await tester.tap(find.byIcon(icon));
       await tester.pumpAndSettle();
-      expect(tester.getSize(find.text(label).last).height, lessThan(16), reason: '$label deve ocupar uma só linha');
       expect(tester.takeException(), isNull);
     }
   });
 
-  testWidgets('barra de navegação com 6 separadores e o separador Carteira', (tester) async {
+  testWidgets('a Carteira abre pelo separador Carteira; Orçamento, Análise e Classificar estão em Mais', (tester) async {
     final d = buildInvestData();
     await _pump(tester, d.s, const HomeShell());
     expect(tester.takeException(), isNull);
     await tester.tap(find.byIcon(Icons.account_balance_outlined));
     await tester.pumpAndSettle();
     expect(find.text('A minha carteira'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+    for (final t in ['Orçamento', 'Análise', 'Classificar movimentos']) {
+      expect(find.text(t), findsOneWidget, reason: t);
+    }
     expect(tester.takeException(), isNull);
   });
 

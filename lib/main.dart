@@ -5,9 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'db/database.dart';
 import 'invest/invest_screen.dart';
-import 'screens/analysis_screen.dart';
-import 'screens/budget_screen.dart';
-import 'screens/classify_screen.dart';
+import 'screens/month_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'state/app_state.dart';
@@ -18,7 +16,12 @@ Future<void> main() async {
   await initializeDateFormatting('pt_PT');
   await Receipts.init();
   final db = await Db.open();
-  runApp(ChangeNotifierProvider(create: (_) => AppState(db), child: const FinancasApp()));
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AppState(db),
+      child: const FinancasApp(),
+    ),
+  );
 }
 
 class FinancasApp extends StatelessWidget {
@@ -27,26 +30,56 @@ class FinancasApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final st = context.watch<AppState>();
     ThemeData theme(Brightness b) {
-      var scheme = ColorScheme.fromSeed(seedColor: Color(st.seedColor), brightness: b);
+      var scheme = ColorScheme.fromSeed(
+        seedColor: Color(st.seedColor),
+        brightness: b,
+      );
       final black = b == Brightness.dark && st.amoled;
-      if (black) scheme = scheme.copyWith(surface: Colors.black, surfaceContainerLowest: Colors.black, surfaceContainerLow: const Color(0xFF0A0A0A), surfaceContainer: const Color(0xFF101010));
-      final outline = OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: scheme.outlineVariant));
+      if (black)
+        scheme = scheme.copyWith(
+          surface: Colors.black,
+          surfaceContainerLowest: Colors.black,
+          surfaceContainerLow: const Color(0xFF0A0A0A),
+          surfaceContainer: const Color(0xFF101010),
+        );
+      final outline = OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: scheme.outlineVariant),
+      );
       return ThemeData(
         useMaterial3: true,
         colorScheme: scheme,
         scaffoldBackgroundColor: black ? Colors.black : null,
         cardTheme: CardThemeData(
           margin: const EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: outline,
           enabledBorder: outline,
-          disabledBorder: outline.copyWith(borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
-          focusedBorder: outline.copyWith(borderSide: BorderSide(color: scheme.primary, width: 2)),
-          errorBorder: outline.copyWith(borderSide: BorderSide(color: scheme.error)),
-          focusedErrorBorder: outline.copyWith(borderSide: BorderSide(color: scheme.error, width: 2)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          disabledBorder: outline.copyWith(
+            borderSide: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+            ),
+          ),
+          focusedBorder: outline.copyWith(
+            borderSide: BorderSide(color: scheme.primary, width: 2),
+          ),
+          errorBorder: outline.copyWith(
+            borderSide: BorderSide(color: scheme.error),
+          ),
+          focusedErrorBorder: outline.copyWith(
+            borderSide: BorderSide(color: scheme.error, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 16,
+          ),
         ),
         chipTheme: ChipThemeData(
           shape: const StadiumBorder(),
@@ -55,14 +88,44 @@ class FinancasApp extends StatelessWidget {
           showCheckmark: false,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         ),
-        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(minimumSize: const Size(64, 52), shape: const StadiumBorder(), textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
-        outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(minimumSize: const Size(64, 48), shape: const StadiumBorder())),
-        dialogTheme: DialogThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
-        bottomSheetTheme: const BottomSheetThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28)))),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(64, 52),
+            shape: const StadiumBorder(),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(64, 48),
+            shape: const StadiumBorder(),
+          ),
+        ),
+        dialogTheme: DialogThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+        ),
+        bottomSheetTheme: const BottomSheetThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+        ),
         appBarTheme: const AppBarTheme(centerTitle: false, toolbarHeight: 64),
         // 6 separadores: etiquetas mais pequenas para "Movimentos" e "Classificar" caberem numa só linha em ecrãs de 360 dp
-        navigationBarTheme: const NavigationBarThemeData(labelTextStyle: WidgetStatePropertyAll(TextStyle(fontSize: 10, fontWeight: FontWeight.w600)), labelPadding: EdgeInsets.zero),
-        listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 4), minVerticalPadding: 8),
+        navigationBarTheme: const NavigationBarThemeData(
+          labelTextStyle: WidgetStatePropertyAll(
+            TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+          ),
+          labelPadding: EdgeInsets.zero,
+        ),
+        listTileTheme: const ListTileThemeData(
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+          minVerticalPadding: 8,
+        ),
         dividerTheme: const DividerThemeData(space: 24),
       );
     }
@@ -93,28 +156,53 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int index = 0;
-  static const pages = <Widget>[TransactionsScreen(), ClassifyScreen(), BudgetScreen(), AnalysisScreen(), InvestScreen(), MoreScreen()];
+  static const pages = <Widget>[
+    MonthScreen(),
+    TransactionsScreen(),
+    InvestScreen(),
+    MoreScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final pending = context.select<AppState, int>((s) => s.transactions.where((t) => t.categoryId == null && !t.isTransfer).length);
+    final pending = context.select<AppState, int>(
+      (s) => s.transactions
+          .where((t) => t.categoryId == null && !t.isTransfer)
+          .length,
+    );
     return Scaffold(
       body: IndexedStack(index: index, children: pages),
       bottomNavigationBar: NavigationBar(
-        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected, // 6 separadores: só o selecionado mostra o nome
         selectedIndex: index,
         onDestinationSelected: (i) => setState(() => index = i),
         destinations: [
-          const NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Movimentos'),
           NavigationDestination(
-            icon: Badge(isLabelVisible: pending > 0, label: Text('$pending'), child: const Icon(Icons.style_outlined)),
-            selectedIcon: Badge(isLabelVisible: pending > 0, label: Text('$pending'), child: const Icon(Icons.style)),
-            label: 'Classificar',
+            icon: Badge(
+              isLabelVisible: pending > 0,
+              label: Text('$pending'),
+              child: const Icon(Icons.calendar_month_outlined),
+            ),
+            selectedIcon: Badge(
+              isLabelVisible: pending > 0,
+              label: Text('$pending'),
+              child: const Icon(Icons.calendar_month),
+            ),
+            label: 'Mês',
           ),
-          const NavigationDestination(icon: Icon(Icons.savings_outlined), selectedIcon: Icon(Icons.savings), label: 'Orçamento'),
-          const NavigationDestination(icon: Icon(Icons.insights_outlined), selectedIcon: Icon(Icons.insights), label: 'Análise'),
-          const NavigationDestination(icon: Icon(Icons.account_balance_outlined), selectedIcon: Icon(Icons.account_balance), label: 'Carteira'),
-          const NavigationDestination(icon: Icon(Icons.more_horiz), label: 'Mais'),
+          const NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'Movimentos',
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.account_balance_outlined),
+            selectedIcon: Icon(Icons.account_balance),
+            label: 'Carteira',
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.more_horiz),
+            label: 'Mais',
+          ),
         ],
       ),
     );

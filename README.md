@@ -40,3 +40,7 @@ Em **Mais › Conta e cópia na nuvem** podes ligar a tua conta Google e guardar
 A Google exige um projeto próprio (grátis): ativa a *Google Drive API*, configura o ecrã de consentimento OAuth (Externo, com o teu email como utilizador de teste) e cria dois IDs de cliente OAuth: um **Android** (pacote `pt.financas.financas` e a impressão digital SHA-1 do certificado com que a app foi assinada, que o ecrã da app mostra) e um **Web**, cujo ID colas na app. Nada disto fica no código.
 
 A camada é modular (`lib/cloud/`): `CloudProvider` é a interface comum; `GoogleProvider` usa o Drive; `AppleProvider` é um lugar reservado para o iCloud (só fará sentido numa versão para iPhone).
+
+## Navegação
+
+Quatro separadores: **Mês** (anel de gasto contra o rendimento, receitas, poupado, onde gastas mais, o que falta classificar), **Movimentos**, **Carteira** e **Mais**. O Orçamento, a Análise e o Classificar abrem a partir do Mês e do Mais.

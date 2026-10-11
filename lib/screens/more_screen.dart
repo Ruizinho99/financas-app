@@ -12,7 +12,8 @@ import '../util/format.dart';
 import '../widgets/common.dart';
 import 'accounts_screen.dart';
 import 'appearance_screen.dart';
-import 'budget_screen.dart' show showBudgetEditor;
+import 'analysis_screen.dart';
+import 'budget_screen.dart' show BudgetScreen, showBudgetEditor;
 import 'classify_screen.dart';
 import 'cloud_screen.dart';
 import 'groups_screen.dart';
@@ -27,6 +28,10 @@ class MoreScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Mais')),
       body: ListView(children: [
+        ListTile(leading: const Icon(Icons.savings_outlined), title: const Text('Orçamento'), subtitle: const Text('Salário e limites por categoria'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()))),
+        ListTile(leading: const Icon(Icons.insights_outlined), title: const Text('Análise'), subtitle: const Text('Onde gastas e onde podes poupar'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnalysisScreen()))),
+        ListTile(leading: const Icon(Icons.style_outlined), title: const Text('Classificar movimentos'), subtitle: const Text('Um cartão por nome'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassifyScreen()))),
+        const Divider(),
         ListTile(leading: const Icon(Icons.palette_outlined), title: const Text('Aparência'), subtitle: const Text('Modo escuro e cores'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppearanceScreen()))),
         ListTile(leading: const Icon(Icons.account_balance_wallet_outlined), title: const Text('Contas'), subtitle: Text('${s.accounts.length} contas'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountsScreen()))),
         ListTile(leading: const Icon(Icons.category_outlined), title: const Text('Categorias e subcategorias'), subtitle: Text('${s.categories.length} categorias'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()))),
