@@ -39,7 +39,7 @@ class _SubRow {
 }
 
 /// O que a categoria é: define como entra nas contas do mês.
-enum _Kind { optional, mandatory, income, investment }
+enum _Kind { optional, mandatory, income, investment, both }
 
 extension on _Kind {
   String get label => switch (this) {
@@ -47,12 +47,14 @@ extension on _Kind {
     _Kind.mandatory => 'Despesa obrigatória',
     _Kind.income => 'Rendimento',
     _Kind.investment => 'Investimento',
+    _Kind.both => 'Despesas e receitas',
   };
   IconData get icon => switch (this) {
     _Kind.optional => Icons.shopping_bag_outlined,
     _Kind.mandatory => Icons.event_repeat,
     _Kind.income => Icons.south_west,
     _Kind.investment => Icons.trending_up,
+    _Kind.both => Icons.swap_vert,
   };
   String get help => switch (this) {
     _Kind.optional => 'Gasto que podes cortar (lazer, restaurantes…).',
@@ -60,6 +62,7 @@ extension on _Kind {
     _Kind.income =>
       'Entradas de dinheiro (ex.: salário). Não conta como despesa.',
     _Kind.investment => 'Dinheiro que pões a render. Não conta como gasto; aparece como investido.',
+    _Kind.both => 'Aceita gastos e entradas (ex.: vendas, reembolsos). Os gastos contam como despesa e as entradas como receita.',
   };
 }
 
@@ -99,6 +102,8 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
         ? _Kind.income
         : e.isInvestment
         ? _Kind.investment
+        : e.both
+        ? _Kind.both
         : (st.rangesOf(e.id).isNotEmpty ? _Kind.mandatory : _Kind.optional);
     initialKind = kind;
     if (e != null && e.parentId == null) {
@@ -230,6 +235,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       parentId: parent,
       isIncome: parentCat?.isIncome ?? income,
       isInvestment: parentCat?.isInvestment ?? (kind == _Kind.investment),
+      both: parentCat?.both ?? (kind == _Kind.both),
       emoji: emoji,
       description: desc.text.trim(),
       budgetType:

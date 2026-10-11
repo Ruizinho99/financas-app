@@ -125,7 +125,7 @@ class _CategorySelectorState extends State<CategorySelector> {
         ? ''
         : (s.isCategoryActiveNow(c) ? '' : ((c.activeTo ?? s.cat(c.parentId)?.activeTo) != null && (c.activeTo ?? s.cat(c.parentId)!.activeTo!).compareTo(monthKey(DateTime.now())) < 0 ? '  · terminada' : '  · futura'));
 
-    final allRoots = s.roots.where((r) => income == null || r.isIncome == income).toList();
+    final allRoots = s.roots.where((r) => income == null || r.both || r.isIncome == income).toList();
     final roots = allRoots.where(visible).toList();
     final subs = rootId == null ? <Categoria>[] : s.childrenOf(rootId).where(visible).toList();
     final hiddenExist = s.categories.any((c) => !c.archived && c.hasDates && !_showAllOrVisible(c, s, from, to));

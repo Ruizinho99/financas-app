@@ -2,6 +2,7 @@ import 'package:financas/analysis/analytics.dart';
 import 'package:financas/db/database.dart';
 import 'package:financas/models.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/widgets/category_picker.dart';
 import 'package:financas/widgets/common.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -334,4 +335,95 @@ void main() {
       });
     },
   );
+
+  group('categoria de despesas e receitas', () {
+    testWidgets('criar como "Despesas e receitas" e as subcategorias herdam', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(900, 2400);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      final s = AppState(Db.memory());
+      await tester.pumpWidget(_app(s));
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nome'),
+        'Vendas e compras',
+      );
+      await tester.ensureVisible(find.text('Despesa opcional'));
+      await tester.tap(find.text('Despesa opcional'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Despesas e receitas').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+      final c = s.categories.single;
+      expect((c.both, c.isIncome, c.isInvestment), (true, false, false));
+      final id = s.saveCategoryWithSubs(c, [
+        (id: null, name: 'OLX', emoji: ''),
+      ]);
+      expect(s.childrenOf(id).single.both, isTrue);
+    });
+
+    test('os gastos contam como despesa e as entradas como receita, sem se anularem', () {
+      final s = AppState(Db.memory());
+      final olx = s.addCategory(
+        const Categoria(id: 0, name: 'OLX', both: true),
+      );
+      s.addManual(
+        date: DateTime(2026, 6, 5),
+        description: 'compra',
+        amount: -4000,
+        categoryId: olx,
+      );
+      s.addManual(
+        date: DateTime(2026, 6, 9),
+        description: 'venda',
+        amount: 15000,
+        categoryId: olx,
+      );
+      final a = Analytics(
+        s,
+        Period.month(DateTime(2026, 6)),
+        const AnalysisFilter(),
+      );
+      expect(a.spent, 4000);
+      expect(a.incomeReceived, 15000);
+      // no orçamento, a parte das receitas não abate ao gasto da categoria
+      final own = s.totalsByCategory(Period.month(DateTime(2026, 6)));
+      expect(own[olx], 4000);
+    });
+
+    testWidgets(
+      'aparece na escolha de categoria tanto em despesa como em receita',
+      (tester) async {
+        final s = AppState(Db.memory());
+        s.addCategory(const Categoria(id: 0, name: 'OLX', both: true));
+        s.addCategory(const Categoria(id: 0, name: 'Salário', isIncome: true));
+        s.addCategory(const Categoria(id: 0, name: 'Lazer'));
+        await tester.pumpWidget(
+          ChangeNotifierProvider<AppState>.value(
+            value: s,
+            child: MaterialApp(
+              home: Scaffold(
+                body: Builder(
+                  builder: (c) => TextButton(
+                    onPressed: () => chooseCategory(c, income: false),
+                    child: const Text('d'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('d'));
+        await tester.pumpAndSettle();
+        expect(find.widgetWithText(ChoiceChip, 'OLX'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Lazer'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Salário'), findsNothing);
+        Navigator.of(tester.element(find.byType(Scaffold).first)).pop();
+      },
+    );
+  });
 }

@@ -387,6 +387,7 @@ class AppState extends ChangeNotifier {
       if (id == null) continue;
       final c = cat(id);
       if (c == null) continue;
+      if (c.both && t.amount > 0) continue; // a parte das receitas não abate ao gasto
       own[id] = (own[id] ?? 0) + (c.isIncome ? t.amount : -t.amount);
     }
     return own;
@@ -450,6 +451,7 @@ class AppState extends ChangeNotifier {
           parentId: parentId,
           isIncome: src.isIncome,
           isInvestment: src.isInvestment,
+          both: src.both,
           emoji: src.emoji,
           description: src.description,
           budgetType: src.budgetType,
@@ -899,7 +901,7 @@ class AppState extends ChangeNotifier {
         final ex = cat(d.id);
         if (ex != null) {
           db.saveCategory(
-            ex.copyWith(name: d.name, emoji: d.emoji, isIncome: main.isIncome, isInvestment: main.isInvestment),
+            ex.copyWith(name: d.name, emoji: d.emoji, isIncome: main.isIncome, isInvestment: main.isInvestment, both: main.both),
             id: ex.id,
           );
         } else {
@@ -910,6 +912,7 @@ class AppState extends ChangeNotifier {
               parentId: subParent,
               isIncome: main.isIncome,
               isInvestment: main.isInvestment,
+              both: main.both,
               emoji: d.emoji,
             ),
           );

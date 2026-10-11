@@ -47,4 +47,4 @@ Quatro separadores: **Mês** (anel de gasto contra o rendimento, receitas, poupa
 
 ## Tipos de categoria
 
-Ao criar uma categoria escolhes o **tipo**: despesa opcional, despesa obrigatória (fixa; depois podes limitá-la a alguns meses), rendimento ou investimento. As de investimento não contam como gasto: somam ao "investido" do mês, tal como as transferências para as plataformas.
+Ao criar uma categoria escolhes o **tipo**: despesa opcional, despesa obrigatória (fixa; depois podes limitá-la a alguns meses), rendimento, investimento ou despesas e receitas (aceita as duas coisas, ex.: vendas e reembolsos; cada movimento conta como despesa ou receita conforme o sinal). As de investimento não contam como gasto: somam ao "investido" do mês, tal como as transferências para as plataformas.

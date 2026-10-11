@@ -139,7 +139,7 @@ class CategoriesScreen extends StatelessWidget {
       contentPadding: EdgeInsets.only(left: 16.0 + depth * 32, right: 8),
       leading: CatBadge(c, size: depth == 0 ? 24 : 20),
       title: Text(c.name, style: TextStyle(fontWeight: depth == 0 ? FontWeight.w700 : null, decoration: c.archived ? TextDecoration.lineThrough : null)),
-      subtitle: Text([if (c.isIncome) 'Rendimento', if (c.isInvestment) 'Investimento', if (dates != null) dates, '$count mov.', if (s.rangesOf(c.id).isNotEmpty) 'Obrigatória em ${s.rangesOf(c.id).length} período(s)', if (c.description.isNotEmpty) c.description].join(' · ')),
+      subtitle: Text([if (c.isIncome) 'Rendimento', if (c.isInvestment) 'Investimento', if (c.both) 'Despesas e receitas', if (dates != null) dates, '$count mov.', if (s.rangesOf(c.id).isNotEmpty) 'Obrigatória em ${s.rangesOf(c.id).length} período(s)', if (c.description.isNotEmpty) c.description].join(' · ')),
       onTap: () => showCategoryEditor(context, edit: c),
       trailing: PopupMenuButton<String>(
         onSelected: (v) async {

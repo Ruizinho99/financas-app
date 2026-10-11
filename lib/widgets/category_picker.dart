@@ -43,7 +43,7 @@ class _CategorySheetState extends State<_CategorySheet> {
     final query = q.trim().toLowerCase();
 
     final groups = <(Categoria, List<Categoria>)>[];
-    for (final r in s.roots.where((r) => widget.income == null || r.isIncome == widget.income)) {
+    for (final r in s.roots.where((r) => widget.income == null || r.both || r.isIncome == widget.income)) {
       final subs = s.childrenOf(r.id).where(visible).toList();
       final rootMatches = r.name.toLowerCase().contains(query);
       final subMatches = subs.where((k) => k.name.toLowerCase().contains(query)).toList();

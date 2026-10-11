@@ -233,7 +233,8 @@ class Analytics {
     var total = 0;
     for (final t in s.transactions) {
       if (!p.contains(t.date) || t.isTransfer || t.amount <= 0) continue;
-      if (!(s.cat(t.categoryId)?.isIncome ?? false)) continue;
+      final ic = s.cat(t.categoryId);
+      if (!((ic?.isIncome ?? false) || (ic?.both ?? false))) continue;
       if (filter.accountIds.isNotEmpty && (t.accountId == null || !filter.accountIds.contains(t.accountId))) continue;
       total += t.amount;
     }

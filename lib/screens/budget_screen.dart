@@ -23,7 +23,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final salary = s.salaryFor(key);
     final own = s.totalsByCategory(period);
     final allocated = s.totalAllocated(salary, key);
-    final income = s.txnsIn(period).where((t) => t.amount > 0 && (s.cat(t.categoryId)?.isIncome ?? false)).fold(0, (a, t) => a + t.amount);
+    final income = s.txnsIn(period).where((t) => t.amount > 0 && ((s.cat(t.categoryId)?.isIncome ?? false) || (s.cat(t.categoryId)?.both ?? false))).fold(0, (a, t) => a + t.amount);
     // só categorias que existem neste mês (ou que tiveram movimentos nele)
     final expenseRoots = s.roots.where((c) => !c.isIncome && (s.isCategoryActive(c, key) || s.rollup(c, own) != 0)).toList();
     final unallocated = salary - allocated;
