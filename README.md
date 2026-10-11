@@ -44,3 +44,7 @@ A camada é modular (`lib/cloud/`): `CloudProvider` é a interface comum; `Googl
 ## Navegação
 
 Quatro separadores: **Mês** (anel de gasto contra o rendimento, receitas, poupado, onde gastas mais, o que falta classificar), **Movimentos**, **Carteira** e **Mais**. O Orçamento, a Análise e o Classificar abrem a partir do Mês e do Mais.
+
+## Tipos de categoria
+
+Ao criar uma categoria escolhes o **tipo**: despesa opcional, despesa obrigatória (fixa; depois podes limitá-la a alguns meses), rendimento ou investimento. As de investimento não contam como gasto: somam ao "investido" do mês, tal como as transferências para as plataformas.

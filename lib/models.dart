@@ -7,6 +7,7 @@ class Categoria {
   final String name;
   final int? parentId;
   final bool isIncome;
+  final bool isInvestment; // despesa que é dinheiro investido (não conta como gasto)
   final String emoji; // ícone da categoria (um emoji); vazio = sem ícone
   final String description;
   final BudgetType budgetType;
@@ -22,6 +23,7 @@ class Categoria {
     required this.name,
     this.parentId,
     this.isIncome = false,
+    this.isInvestment = false,
     this.emoji = '',
     this.description = '',
     this.budgetType = BudgetType.limit,
@@ -43,6 +45,7 @@ class Categoria {
     String? name,
     int? parentId,
     bool? isIncome,
+    bool? isInvestment,
     String? emoji,
     String? description,
     BudgetType? budgetType,
@@ -58,6 +61,7 @@ class Categoria {
         name: name ?? this.name,
         parentId: parentId ?? this.parentId,
         isIncome: isIncome ?? this.isIncome,
+        isInvestment: isInvestment ?? this.isInvestment,
         emoji: emoji ?? this.emoji,
         description: description ?? this.description,
         budgetType: budgetType ?? this.budgetType,

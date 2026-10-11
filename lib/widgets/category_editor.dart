@@ -8,11 +8,17 @@ import '../util/format.dart';
 import 'common.dart';
 
 /// Cria ou edita uma categoria (e as suas subcategorias) numa única operação. Devolve o id guardado.
-Future<int?> showCategoryEditor(BuildContext context, {Categoria? edit, int? parentId}) {
+Future<int?> showCategoryEditor(
+  BuildContext context, {
+  Categoria? edit,
+  int? parentId,
+}) {
   return showDialog<int>(
     context: context,
-    barrierDismissible: false, // não perder o que já foi escrito por um toque fora do modal
-    builder: (_) => CategoryEditorDialog(edit: edit, parentId: parentId ?? edit?.parentId),
+    barrierDismissible:
+        false, // não perder o que já foi escrito por um toque fora do modal
+    builder: (_) =>
+        CategoryEditorDialog(edit: edit, parentId: parentId ?? edit?.parentId),
   );
 }
 
@@ -23,12 +29,38 @@ class _SubRow {
   final FocusNode focus = FocusNode();
   String emoji;
   String? error;
-  _SubRow({this.id, String name = '', this.emoji = ''}) : name = TextEditingController(text: name);
+  _SubRow({this.id, String name = '', this.emoji = ''})
+    : name = TextEditingController(text: name);
 
   void dispose() {
     name.dispose();
     focus.dispose();
   }
+}
+
+/// O que a categoria é: define como entra nas contas do mês.
+enum _Kind { optional, mandatory, income, investment }
+
+extension on _Kind {
+  String get label => switch (this) {
+    _Kind.optional => 'Despesa opcional',
+    _Kind.mandatory => 'Despesa obrigatória',
+    _Kind.income => 'Rendimento',
+    _Kind.investment => 'Investimento',
+  };
+  IconData get icon => switch (this) {
+    _Kind.optional => Icons.shopping_bag_outlined,
+    _Kind.mandatory => Icons.event_repeat,
+    _Kind.income => Icons.south_west,
+    _Kind.investment => Icons.trending_up,
+  };
+  String get help => switch (this) {
+    _Kind.optional => 'Gasto que podes cortar (lazer, restaurantes…).',
+    _Kind.mandatory => 'Gasto fixo do mês (renda, seguros…). Depois podes escolher só alguns meses.',
+    _Kind.income =>
+      'Entradas de dinheiro (ex.: salário). Não conta como despesa.',
+    _Kind.investment => 'Dinheiro que pões a render. Não conta como gasto; aparece como investido.',
+  };
 }
 
 class CategoryEditorDialog extends StatefulWidget {
@@ -43,7 +75,9 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   late final name = TextEditingController(text: widget.edit?.name ?? '');
   late final desc = TextEditingController(text: widget.edit?.description ?? '');
   late int? parent = widget.parentId;
-  late bool income = widget.edit?.isIncome ?? false;
+  late _Kind kind;
+  late final _Kind initialKind;
+  bool get income => kind == _Kind.income;
   late String emoji = widget.edit?.emoji ?? '';
   late String? activeFrom = widget.edit?.activeFrom;
   late String? activeTo = widget.edit?.activeTo;
@@ -58,9 +92,20 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   void initState() {
     super.initState();
     final e = widget.edit;
+    final st = context.read<AppState>();
+    kind = e == null
+        ? _Kind.optional
+        : e.isIncome
+        ? _Kind.income
+        : e.isInvestment
+        ? _Kind.investment
+        : (st.rangesOf(e.id).isNotEmpty ? _Kind.mandatory : _Kind.optional);
+    initialKind = kind;
     if (e != null && e.parentId == null) {
       // subcategorias existentes: editáveis aqui
-      for (final k in context.read<AppState>().categories.where((c) => c.parentId == e.id)) {
+      for (final k in context.read<AppState>().categories.where(
+        (c) => c.parentId == e.id,
+      )) {
         subs.add(_SubRow(id: k.id, name: k.name, emoji: k.emoji));
       }
     }
@@ -77,8 +122,11 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   }
 
   // ---------- helpers ----------
-  bool get _showSubs => parent == null || !isEdit; // em edição de uma subcategoria não há subcategorias
-  bool get _subsAreSiblings => parent != null; // com categoria-mãe escolhida, as extra ficam ao lado
+  bool get _showSubs =>
+      parent == null ||
+      !isEdit; // em edição de uma subcategoria não há subcategorias
+  bool get _subsAreSiblings =>
+      parent != null; // com categoria-mãe escolhida, as extra ficam ao lado
 
   void _addSub() {
     final r = _SubRow();
@@ -91,7 +139,11 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     if (r.id != null) {
       final n = s.transactions.where((t) => t.categoryId == r.id).length;
       if (n > 0 &&
-          !await confirm(context, 'Remover “${r.name.text.trim()}”? Os $n movimentos ficam sem categoria (só depois de guardares).', ok: 'Remover')) {
+          !await confirm(
+            context,
+            'Remover “${r.name.text.trim()}”? Os $n movimentos ficam sem categoria (só depois de guardares).',
+            ok: 'Remover',
+          )) {
         return;
       }
       removed.add(r.id!);
@@ -116,14 +168,21 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       nameError = 'Indica um nome';
       ok = false;
     } else if (s.categoryNameTaken(main, parent, excludeId: widget.edit?.id)) {
-      nameError = parent == null ? 'Já existe uma categoria principal com este nome' : 'Já existe esta subcategoria em ${parentCat?.name ?? 'esta categoria'}';
+      nameError = parent == null
+          ? 'Já existe uma categoria principal com este nome'
+          : 'Já existe esta subcategoria em ${parentCat?.name ?? 'esta categoria'}';
       ok = false;
     }
 
     // nomes já usados no mesmo nível das subcategorias a guardar
     final used = <String>{};
     if (_subsAreSiblings) {
-      used.addAll(s.childrenOf(parent!).where((c) => c.id != widget.edit?.id).map((c) => key(c.name)));
+      used.addAll(
+        s
+            .childrenOf(parent!)
+            .where((c) => c.id != widget.edit?.id)
+            .map((c) => key(c.name)),
+      );
       if (main.isNotEmpty) used.add(key(main));
     }
     for (final r in subs) {
@@ -140,6 +199,23 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     return ok;
   }
 
+  /// Despesa obrigatória ou opcional: cria ou apaga os períodos de obrigatoriedade quando o tipo muda.
+  void _applyMandatory(AppState s, int id, Categoria? parentCat) {
+    if (parentCat != null || kind == initialKind) return;
+    if (kind == _Kind.mandatory) {
+      if (s.rangesOf(id).isEmpty)
+        s.addRange(
+          id,
+          hasDates && activeFrom != null ? activeFrom! : '2000-01',
+          hasDates ? activeTo : null,
+        );
+    } else {
+      for (final r in s.rangesOf(id)) {
+        s.removeRange(r.id);
+      }
+    }
+  }
+
   void _save(AppState s) {
     setState(() {});
     if (!_validate(s)) {
@@ -153,27 +229,51 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       name: name.text.trim(),
       parentId: parent,
       isIncome: parentCat?.isIncome ?? income,
+      isInvestment: parentCat?.isInvestment ?? (kind == _Kind.investment),
       emoji: emoji,
       description: desc.text.trim(),
-      budgetType: e?.budgetType ?? ((parentCat?.isIncome ?? income) ? BudgetType.goal : BudgetType.limit),
+      budgetType:
+          e?.budgetType ??
+          (((parentCat?.isIncome ?? income) ||
+                  (parentCat?.isInvestment ?? (kind == _Kind.investment)))
+              ? BudgetType.goal
+              : BudgetType.limit),
       budgetPercent: e?.budgetPercent ?? false,
       budgetValue: e?.budgetValue ?? 0,
       hasBudget: e?.hasBudget ?? false,
       archived: e?.archived ?? false,
       activeFrom: hasDates ? activeFrom : null,
-      activeTo: hasDates ? (activeTo != null && activeFrom != null && activeTo!.compareTo(activeFrom!) < 0 ? activeFrom : activeTo) : null,
+      activeTo: hasDates
+          ? (activeTo != null &&
+                    activeFrom != null &&
+                    activeTo!.compareTo(activeFrom!) < 0
+                ? activeFrom
+                : activeTo)
+          : null,
     );
     final toSave = [
       if (_showSubs)
         for (final r in subs)
-          if (r.name.text.trim().isNotEmpty) (id: r.id, name: r.name.text.trim(), emoji: r.emoji),
+          if (r.name.text.trim().isNotEmpty)
+            (id: r.id, name: r.name.text.trim(), emoji: r.emoji),
     ];
-    final id = s.saveCategoryWithSubs(main, toSave, removedIds: removed, subsAreSiblings: _subsAreSiblings);
+    final id = s.saveCategoryWithSubs(
+      main,
+      toSave,
+      removedIds: removed,
+      subsAreSiblings: _subsAreSiblings,
+    );
+    _applyMandatory(s, id, parentCat);
     Navigator.pop(context, id);
   }
 
   // ---------- UI ----------
-  Widget _emojiBox(String value, VoidCallback onTap, {double size = 48, String empty = '🙂'}) {
+  Widget _emojiBox(
+    String value,
+    VoidCallback onTap, {
+    double size = 48,
+    String empty = '🙂',
+  }) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
@@ -185,38 +285,83 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
           width: size,
           height: size,
           alignment: Alignment.center,
-          decoration: BoxDecoration(border: Border.all(color: cs.outlineVariant), borderRadius: BorderRadius.circular(14)),
-          child: Text(value.isEmpty ? empty : value, style: TextStyle(fontSize: size * 0.5, color: value.isEmpty ? cs.onSurfaceVariant : null)),
+          decoration: BoxDecoration(
+            border: Border.all(color: cs.outlineVariant),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            value.isEmpty ? empty : value,
+            style: TextStyle(
+              fontSize: size * 0.5,
+              color: value.isEmpty ? cs.onSurfaceVariant : null,
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _section(String text) => Padding(
-        padding: const EdgeInsets.only(top: 20, bottom: 12),
-        child: LayoutBuilder(
-          builder: (context, c) => Row(children: [
-            // o título nunca ocupa a linha toda: a divisória fica sempre com pelo menos 56 px
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: c.maxWidth - 68),
-              child: Text(text,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+    padding: const EdgeInsets.only(top: 20, bottom: 12),
+    child: LayoutBuilder(
+      builder: (context, c) => Row(
+        children: [
+          // o título nunca ocupa a linha toda: a divisória fica sempre com pelo menos 56 px
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: c.maxWidth - 68),
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(width: 12),
-            Expanded(child: Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.6))),
-          ]),
-        ),
-      );
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Divider(
+              height: 1,
+              color: Theme.of(context).colorScheme.outlineVariant
+                  .withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
-  Widget _monthTile(String label, String? month, ValueChanged<String> onPick, {VoidCallback? onClear}) {
-    String txt(String? k) => k == null ? 'Escolher mês' : fmtMonth(DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))));
+  Widget _monthTile(
+    String label,
+    String? month,
+    ValueChanged<String> onPick, {
+    VoidCallback? onClear,
+  }) {
+    String txt(String? k) => k == null
+        ? 'Escolher mês'
+        : fmtMonth(
+            DateTime(
+              int.parse(k.substring(0, 4)),
+              int.parse(k.substring(5, 7)),
+            ),
+          );
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () async {
-        final init = month == null ? DateTime.now() : DateTime(int.parse(month.substring(0, 4)), int.parse(month.substring(5, 7)));
-        final d = await showDatePicker(context: context, initialDate: init, firstDate: DateTime(2000), lastDate: DateTime(2100), helpText: 'Escolhe qualquer dia do mês');
+        final init = month == null
+            ? DateTime.now()
+            : DateTime(
+                int.parse(month.substring(0, 4)),
+                int.parse(month.substring(5, 7)),
+              );
+        final d = await showDatePicker(
+          context: context,
+          initialDate: init,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+          helpText: 'Escolhe qualquer dia do mês',
+        );
         if (d != null) onPick(monthKey(d));
       },
       child: InputDecorator(
@@ -224,7 +369,13 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
           labelText: label,
           isDense: true,
           prefixIcon: const Icon(Icons.event, size: 20),
-          suffixIcon: onClear == null ? null : IconButton(icon: const Icon(Icons.close, size: 20), tooltip: 'Remover', onPressed: onClear),
+          suffixIcon: onClear == null
+              ? null
+              : IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  tooltip: 'Remover',
+                  onPressed: onClear,
+                ),
         ),
         child: Text(txt(month)),
       ),
@@ -238,222 +389,382 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     final tt = Theme.of(context).textTheme;
     final roots = s.roots.where((r) => r.id != widget.edit?.id).toList();
     final parentCat = s.cat(parent);
-    final liveSubs = subs.where((r) => r.name.text.trim().isNotEmpty || r.id != null).length;
+    final liveSubs = subs
+        .where((r) => r.name.text.trim().isNotEmpty || r.id != null)
+        .length;
     // uma categoria que já tem subcategorias não pode passar a ser subcategoria (só 2 níveis)
     final lockParent = isEdit && widget.edit!.parentId == null && liveSubs > 0;
     final subMode = parentCat != null;
 
-    final title = isEdit ? (widget.edit!.parentId == null ? 'Editar categoria' : 'Editar subcategoria') : (subMode ? 'Nova subcategoria' : 'Nova categoria');
+    final title = isEdit
+        ? (widget.edit!.parentId == null
+              ? 'Editar categoria'
+              : 'Editar subcategoria')
+        : (subMode ? 'Nova subcategoria' : 'Nova categoria');
     final subtitle = isEdit
-        ? (widget.edit!.parentId == null ? 'Altera os dados e as subcategorias' : 'Altera os dados desta subcategoria')
-        : (subMode ? 'Cria subcategorias dentro de ${parentCat.name}' : 'Cria uma categoria e as suas subcategorias');
+        ? (widget.edit!.parentId == null
+              ? 'Altera os dados e as subcategorias'
+              : 'Altera os dados desta subcategoria')
+        : (subMode
+              ? 'Cria subcategorias dentro de ${parentCat.name}'
+              : 'Cria uma categoria e as suas subcategorias');
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          // ----- cabeçalho fixo -----
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 8, 0),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(title, style: tt.titleLarge),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-                ]),
-              ),
-              IconButton(tooltip: 'Fechar', icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
-            ]),
-          ),
-          // ----- corpo com scroll -----
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _emojiBox(emoji, () => _pickEmojiFor(emoji, (e) => emoji = e), size: 52),
-                  const SizedBox(width: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ----- cabeçalho fixo -----
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 8, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Expanded(
-                    child: TextField(
-                      controller: name,
-                      autofocus: !isEdit,
-                      textCapitalization: TextCapitalization.sentences,
-                      textInputAction: TextInputAction.next,
-                      onChanged: (_) => setState(() => nameError = null),
-                      decoration: InputDecoration(
-                        labelText: subMode && !isEdit ? 'Nome da subcategoria' : 'Nome',
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                        errorText: nameError,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: tt.titleLarge),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: tt.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ]),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<int?>(
-                  initialValue: parent,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    labelText: 'Categoria-mãe',
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    helperText: lockParent ? 'Tem subcategorias, por isso não pode ser uma subcategoria.' : null,
-                    helperMaxLines: 2,
-                  ),
-                  items: [
-                    const DropdownMenuItem(value: null, child: Text('Nenhuma (categoria principal)')),
-                    for (final r in roots) DropdownMenuItem(value: r.id, child: Text('${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}', overflow: TextOverflow.ellipsis)),
-                  ],
-                  onChanged: lockParent
-                      ? null
-                      : (v) => setState(() {
-                            parent = v;
-                            nameError = null;
-                            final p = s.cat(v);
-                            if (p != null) income = p.isIncome;
-                          }),
-                ),
-                if (subMode) ...[
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(color: cs.primaryContainer.withValues(alpha: 0.35), borderRadius: BorderRadius.circular(12)),
-                    child: Row(children: [
-                      Icon(Icons.subdirectory_arrow_right, size: 18, color: cs.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text.rich(TextSpan(style: tt.bodyMedium, children: [
-                          TextSpan(text: isEdit ? 'Subcategoria de ' : 'A criar subcategoria de '),
-                          TextSpan(text: '${parentCat.emoji.isEmpty ? '🏷️' : parentCat.emoji} ${parentCat.name}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                        ])),
-                      ),
-                    ]),
+                  IconButton(
+                    tooltip: 'Fechar',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
-                // ----- subcategorias -----
-                if (_showSubs) ...[
-                  _section(subMode ? 'Mais subcategorias de ${parentCat.name}' : 'Subcategorias'),
-                  for (final r in subs)
-                    Padding(
-                      key: ObjectKey(r),
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        _emojiBox(r.emoji, () => _pickEmojiFor(r.emoji, (e) => r.emoji = e), size: 48, empty: '🏷️'),
-                        const SizedBox(width: 8),
+              ),
+            ),
+            // ----- corpo com scroll -----
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _emojiBox(
+                          emoji,
+                          () => _pickEmojiFor(emoji, (e) => emoji = e),
+                          size: 52,
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: TextField(
-                            controller: r.name,
-                            focusNode: r.focus,
+                            controller: name,
+                            autofocus: !isEdit,
                             textCapitalization: TextCapitalization.sentences,
                             textInputAction: TextInputAction.next,
-                            onChanged: (_) => setState(() => r.error = null),
-                            onSubmitted: (_) {
-                              if (identical(r, subs.last) && r.name.text.trim().isNotEmpty) _addSub();
-                            },
+                            onChanged: (_) => setState(() => nameError = null),
                             decoration: InputDecoration(
-                              hintText: 'Nome da subcategoria',
+                              labelText: subMode && !isEdit
+                                  ? 'Nome da subcategoria'
+                                  : 'Nome',
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
-                              errorText: r.error,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 16,
+                              ),
+                              errorText: nameError,
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: IconButton(tooltip: 'Remover subcategoria', icon: const Icon(Icons.close), onPressed: () => _removeSub(r)),
-                        ),
-                      ]),
+                      ],
                     ),
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
-                    onPressed: _addSub,
-                    icon: const Icon(Icons.add, size: 20),
-                    label: const Text('Adicionar subcategoria'),
-                  ),
-                ],
-                // ----- opções -----
-                _section('Opções'),
-                if (!subMode)
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    title: const Text('Rendimento'),
-                    subtitle: const Text('Entradas de dinheiro (ex.: salário). Não conta como despesa.'),
-                    value: income,
-                    onChanged: (v) => setState(() => income = v),
-                  ),
-                if (!subMode) const SizedBox(height: 8),
-                TextField(
-                  controller: desc,
-                  maxLines: 2,
-                  minLines: 1,
-                  decoration: const InputDecoration(labelText: 'Descrição (opcional)', isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14)),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<int?>(
+                      initialValue: parent,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: 'Categoria-mãe',
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        helperText: lockParent
+                            ? 'Tem subcategorias, por isso não pode ser uma subcategoria.'
+                            : null,
+                        helperMaxLines: 2,
+                      ),
+                      items: [
+                        const DropdownMenuItem(
+                          value: null,
+                          child: Text('Nenhuma (categoria principal)'),
+                        ),
+                        for (final r in roots)
+                          DropdownMenuItem(
+                            value: r.id,
+                            child: Text(
+                              '${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
+                      onChanged: lockParent
+                          ? null
+                          : (v) => setState(() {
+                              parent = v;
+                              nameError = null;
+                            }),
+                    ),
+                    if (subMode) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: cs.primaryContainer.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.subdirectory_arrow_right,
+                              size: 18,
+                              color: cs.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text.rich(
+                                TextSpan(
+                                  style: tt.bodyMedium,
+                                  children: [
+                                    TextSpan(
+                                      text: isEdit
+                                          ? 'Subcategoria de '
+                                          : 'A criar subcategoria de ',
+                                    ),
+                                    TextSpan(
+                                      text:
+                                          '${parentCat.emoji.isEmpty ? '🏷️' : parentCat.emoji} ${parentCat.name}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    // ----- subcategorias -----
+                    if (_showSubs) ...[
+                      _section(
+                        subMode
+                            ? 'Mais subcategorias de ${parentCat.name}'
+                            : 'Subcategorias',
+                      ),
+                      for (final r in subs)
+                        Padding(
+                          key: ObjectKey(r),
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _emojiBox(
+                                r.emoji,
+                                () =>
+                                    _pickEmojiFor(r.emoji, (e) => r.emoji = e),
+                                size: 48,
+                                empty: '🏷️',
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextField(
+                                  controller: r.name,
+                                  focusNode: r.focus,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  textInputAction: TextInputAction.next,
+                                  onChanged: (_) =>
+                                      setState(() => r.error = null),
+                                  onSubmitted: (_) {
+                                    if (identical(r, subs.last) &&
+                                        r.name.text.trim().isNotEmpty)
+                                      _addSub();
+                                  },
+                                  decoration: InputDecoration(
+                                    hintText: 'Nome da subcategoria',
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 15,
+                                    ),
+                                    errorText: r.error,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 48,
+                                height: 48,
+                                child: IconButton(
+                                  tooltip: 'Remover subcategoria',
+                                  icon: const Icon(Icons.close),
+                                  onPressed: () => _removeSub(r),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(46),
+                        ),
+                        onPressed: _addSub,
+                        icon: const Icon(Icons.add, size: 20),
+                        label: const Text('Adicionar subcategoria'),
+                      ),
+                    ],
+                    // ----- opções -----
+                    _section('Opções'),
+                    if (!subMode)
+                      DropdownButtonFormField<_Kind>(
+                        key: ValueKey('kind-$kind'),
+                        initialValue: kind,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: 'Tipo',
+                          prefixIcon: Icon(kind.icon),
+                          helperText: kind.help,
+                          helperMaxLines: 3,
+                        ),
+                        items: [
+                          for (final k in _Kind.values)
+                            DropdownMenuItem(value: k, child: Text(k.label)),
+                        ],
+                        onChanged: (v) => setState(() => kind = v ?? kind),
+                      ),
+                    if (!subMode) const SizedBox(height: 8),
+                    TextField(
+                      controller: desc,
+                      maxLines: 2,
+                      minLines: 1,
+                      decoration: const InputDecoration(
+                        labelText: 'Descrição (opcional)',
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: const Text('Só existe num período'),
+                      subtitle: const Text(
+                        'Ex.: “Férias 2027”. Fora do período deixa de aparecer nas escolhas.',
+                      ),
+                      value: hasDates,
+                      onChanged: (v) => setState(() {
+                        hasDates = v;
+                        if (v && activeFrom == null)
+                          activeFrom = monthKey(DateTime.now());
+                      }),
+                    ),
+                    if (hasDates) ...[
+                      const SizedBox(height: 4),
+                      _monthTile(
+                        'Desde',
+                        activeFrom,
+                        (m) => setState(() => activeFrom = m),
+                      ),
+                      const SizedBox(height: 10),
+                      if (activeTo == null)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            onPressed: () => setState(
+                              () => activeTo =
+                                  activeFrom ?? monthKey(DateTime.now()),
+                            ),
+                            icon: const Icon(Icons.event_busy, size: 20),
+                            label: const Text('Definir fim'),
+                          ),
+                        )
+                      else
+                        _monthTile(
+                          'Até',
+                          activeTo,
+                          (m) => setState(() => activeTo = m),
+                          onClear: () => setState(() => activeTo = null),
+                        ),
+                    ],
+                    if (isEdit &&
+                        (kind == _Kind.optional || kind == _Kind.mandatory))
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        leading: const Icon(Icons.event_repeat),
+                        title: const Text('Obrigatória em…'),
+                        subtitle: Text(() {
+                          final n = s.rangesOf(widget.edit!.id).length;
+                          return n == 0
+                              ? 'Opcional em todos os meses'
+                              : '$n período(s) definido(s)';
+                        }()),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          await showMandatoryDialog(context, widget.edit!);
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                  title: const Text('Só existe num período'),
-                  subtitle: const Text('Ex.: “Férias 2027”. Fora do período deixa de aparecer nas escolhas.'),
-                  value: hasDates,
-                  onChanged: (v) => setState(() {
-                    hasDates = v;
-                    if (v && activeFrom == null) activeFrom = monthKey(DateTime.now());
-                  }),
-                ),
-                if (hasDates) ...[
-                  const SizedBox(height: 4),
-                  _monthTile('Desde', activeFrom, (m) => setState(() => activeFrom = m)),
-                  const SizedBox(height: 10),
-                  if (activeTo == null)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(onPressed: () => setState(() => activeTo = activeFrom ?? monthKey(DateTime.now())), icon: const Icon(Icons.event_busy, size: 20), label: const Text('Definir fim')),
-                    )
-                  else
-                    _monthTile('Até', activeTo, (m) => setState(() => activeTo = m), onClear: () => setState(() => activeTo = null)),
-                ],
-                if (isEdit && !income)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    leading: const Icon(Icons.event_repeat),
-                    title: const Text('Obrigatória em…'),
-                    subtitle: Text(() {
-                      final n = s.rangesOf(widget.edit!.id).length;
-                      return n == 0 ? 'Opcional em todos os meses' : '$n período(s) definido(s)';
-                    }()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () async {
-                      await showMandatoryDialog(context, widget.edit!);
-                      if (mounted) setState(() {});
-                    },
-                  ),
-                const SizedBox(height: 8),
-              ]),
+              ),
             ),
-          ),
-          // ----- rodapé fixo -----
-          Container(
-            decoration: BoxDecoration(border: Border(top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.5)))),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              TextButton(
-                style: TextButton.styleFrom(minimumSize: const Size(88, 46)),
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
+            // ----- rodapé fixo -----
+            Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: cs.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                ),
               ),
-              const SizedBox(width: 8),
-              FilledButton(
-                style: FilledButton.styleFrom(minimumSize: const Size(112, 46)),
-                onPressed: () => _save(s),
-                child: const Text('Guardar'),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(88, 46),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancelar'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(112, 46),
+                    ),
+                    onPressed: () => _save(s),
+                    child: const Text('Guardar'),
+                  ),
+                ],
               ),
-            ]),
-          ),
-        ]),
+            ),
+          ],
+        ),
       ),
     );
   }

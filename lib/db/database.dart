@@ -243,6 +243,13 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 11');
     }
+    if (v < 12) {
+      // v12: categorias de investimento (dinheiro investido, não é gasto)
+      try {
+        _db.execute('ALTER TABLE categories ADD COLUMN is_investment INTEGER NOT NULL DEFAULT 0');
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 12');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -263,6 +270,7 @@ class Db {
         name: r['name'] as String,
         parentId: r['parent_id'] as int?,
         isIncome: r['is_income'] == 1,
+        isInvestment: r['is_investment'] == 1,
         emoji: r['emoji'] as String,
         description: r['description'] as String,
         budgetType: r['budget_type'] == 'goal' ? BudgetType.goal : BudgetType.limit,
@@ -281,16 +289,16 @@ class Db {
     final vals = [
       c.name, c.parentId, c.isIncome ? 1 : 0, c.emoji, c.description,
       c.budgetType == BudgetType.goal ? 'goal' : 'limit', c.budgetPercent ? 1 : 0,
-      c.budgetValue, c.hasBudget ? 1 : 0, c.archived ? 1 : 0, c.activeFrom, c.activeTo,
+      c.budgetValue, c.hasBudget ? 1 : 0, c.archived ? 1 : 0, c.activeFrom, c.activeTo, c.isInvestment ? 1 : 0,
     ];
     if (id == null) {
       _db.execute(
-          'INSERT INTO categories(name,parent_id,is_income,emoji,description,budget_type,budget_percent,budget_value,has_budget,archived,active_from,active_to) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+          'INSERT INTO categories(name,parent_id,is_income,emoji,description,budget_type,budget_percent,budget_value,has_budget,archived,active_from,active_to,is_investment) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
           vals);
       return _db.lastInsertRowId;
     }
     _db.execute(
-        'UPDATE categories SET name=?,parent_id=?,is_income=?,emoji=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=?,active_from=?,active_to=? WHERE id=?',
+        'UPDATE categories SET name=?,parent_id=?,is_income=?,emoji=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=?,active_from=?,active_to=?,is_investment=? WHERE id=?',
         [...vals, id]);
     return id;
   }
@@ -713,7 +721,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 11;
+  static const _schemaVersion = 12;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

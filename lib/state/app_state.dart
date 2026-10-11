@@ -242,7 +242,7 @@ class AppState extends ChangeNotifier {
         unclassified += -t.amount;
         continue;
       }
-      if (c.isIncome) continue;
+      if (c.isIncome || c.isInvestment) continue;
       final target = isMandatory(c, monthKey(t.date)) ? mand : opt;
       target[c.id] = (target[c.id] ?? 0) - t.amount;
     }
@@ -449,6 +449,7 @@ class AppState extends ChangeNotifier {
               : src.name,
           parentId: parentId,
           isIncome: src.isIncome,
+          isInvestment: src.isInvestment,
           emoji: src.emoji,
           description: src.description,
           budgetType: src.budgetType,
@@ -898,7 +899,7 @@ class AppState extends ChangeNotifier {
         final ex = cat(d.id);
         if (ex != null) {
           db.saveCategory(
-            ex.copyWith(name: d.name, emoji: d.emoji, isIncome: main.isIncome),
+            ex.copyWith(name: d.name, emoji: d.emoji, isIncome: main.isIncome, isInvestment: main.isInvestment),
             id: ex.id,
           );
         } else {
@@ -908,6 +909,7 @@ class AppState extends ChangeNotifier {
               name: d.name,
               parentId: subParent,
               isIncome: main.isIncome,
+              isInvestment: main.isInvestment,
               emoji: d.emoji,
             ),
           );

@@ -153,7 +153,7 @@ class Analytics {
     for (final t in s.transactions) {
       if (!p.contains(t.date) || t.isTransfer || t.amount >= 0) continue;
       final c = s.cat(t.categoryId);
-      if (c != null && c.isIncome) continue;
+      if (c != null && (c.isIncome || c.isInvestment)) continue; // investir não é gastar
       final mand = c != null && s.isMandatory(c, monthKey(t.date));
       if (_matches(t, c, mand)) out.add(Spend(t, c, mand));
     }
@@ -189,7 +189,20 @@ class Analytics {
   late final int prevSpent = _sum(prevSpends);
 
   /// Dinheiro enviado para plataformas de investimento no período (entregas menos levantamentos).
-  late final int invested = s.investedIn(period);
+  late final int invested = s.investedIn(period) + _investedByCategory(period);
+
+  /// Despesas lançadas em categorias de investimento (fora das transferências para plataformas).
+  int _investedByCategory(Period p) {
+    var total = 0;
+    for (final t in s.transactions) {
+      if (!p.contains(t.date) || t.isTransfer || t.amount >= 0) continue;
+      final c = s.cat(t.categoryId);
+      if (c == null || !c.isInvestment) continue;
+      if (filter.accountIds.isNotEmpty && (t.accountId == null || !filter.accountIds.contains(t.accountId))) continue;
+      total += -t.amount;
+    }
+    return total;
+  }
   int get count => spends.length;
   int get avgTicket => spends.isEmpty ? 0 : (spent / spends.length).round();
   late final int mandatoryTotal = _sum(spends.where((e) => e.mandatory));
