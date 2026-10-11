@@ -19,6 +19,7 @@ import 'cloud_screen.dart';
 import 'groups_screen.dart';
 import 'import_screen.dart';
 import 'transactions_screen.dart' show confirm;
+import 'update_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -32,6 +33,7 @@ class MoreScreen extends StatelessWidget {
         ListTile(leading: const Icon(Icons.insights_outlined), title: const Text('Análise'), subtitle: const Text('Onde gastas e onde podes poupar'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnalysisScreen()))),
         ListTile(leading: const Icon(Icons.style_outlined), title: const Text('Classificar movimentos'), subtitle: const Text('Um cartão por nome'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassifyScreen()))),
         const Divider(),
+        ListTile(leading: const Icon(Icons.system_update_alt), title: const Text('Atualizações'), subtitle: const Text('Procurar e instalar uma versão nova'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpdateScreen()))),
         ListTile(leading: const Icon(Icons.palette_outlined), title: const Text('Aparência'), subtitle: const Text('Modo escuro e cores'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppearanceScreen()))),
         ListTile(leading: const Icon(Icons.account_balance_wallet_outlined), title: const Text('Contas'), subtitle: Text('${s.accounts.length} contas'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountsScreen()))),
         ListTile(leading: const Icon(Icons.category_outlined), title: const Text('Categorias e subcategorias'), subtitle: Text('${s.categories.length} categorias'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesScreen()))),

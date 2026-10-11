@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Só usada quando carregas em "Atualizar preços" na Carteira. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Só para instalar uma atualização que o utilizador escolheu descarregar (Mais > Atualizações). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
         android:label="Finanças"
         android:name="${applicationName}"

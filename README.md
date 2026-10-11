@@ -48,3 +48,7 @@ Quatro separadores: **Mês** (anel de gasto contra o rendimento, receitas, poupa
 ## Tipos de categoria
 
 Ao criar uma categoria escolhes o **tipo**: despesa opcional, despesa obrigatória (fixa; depois podes limitá-la a alguns meses), rendimento, investimento ou despesas e receitas (aceita as duas coisas, ex.: vendas e reembolsos; cada movimento conta como despesa ou receita conforme o sinal). As de investimento não contam como gasto: somam ao "investido" do mês, tal como as transferências para as plataformas.
+
+## Updates
+
+**More › Updates** checks the latest GitHub release (only when you tap the button), shows what changed and downloads the APK, then hands it to Android's installer. The first time, Android asks you to allow installs from this app. The version shown comes from `version:` in `pubspec.yaml`, so bump it to match the release tag before building a release.
