@@ -519,6 +519,7 @@ Future<int?> showHoldingEditor(
                 id = edit.id;
               }
               Navigator.pop(ctx, id);
+              s.fetchLogo(id);
               if (base.canAutoPrice) {
                 final r = await s.refreshPrices(holdingId: id);
                 if (context.mounted && r.failed.isNotEmpty) {
@@ -673,6 +674,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
   );
   late final noteCtrl = TextEditingController(text: _edit?.note ?? '');
   late bool cashIn = (_edit?.amount ?? 1) >= 0;
+  // false: a compra/venda/dividendo não mexe no dinheiro por alocar (ex.: a transferência ainda não está registada)
+  late bool allocate = _edit?.allocate ?? true;
   String? error;
   bool? _extrasOpen; // "Mais opções" abre logo se já houver comissão, nota ou modo valor
 
@@ -902,6 +905,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
       fee: (type == OpType.buy || type == OpType.sell) ? fee : 0,
       note: noteCtrl.text.trim(),
       txnId: _edit?.txnId,
+      allocate: !_affectsCash || allocate,
     );
     final int keepId;
     if (_edit == null) {
@@ -937,11 +941,17 @@ class _OpFormScreenState extends State<OpFormScreen> {
             : 0);
   }
 
+  /// Compra, venda ou dividendo: mexem no dinheiro por alocar da plataforma (se [allocate]).
+  bool get _affectsCash =>
+      type == OpType.buy || type == OpType.sell || type == OpType.dividend;
+
   int _cashBefore(AppState s) {
     final a = s.portfolio.accounts.where((a) => a.account.id == accountId);
     var cash = a.isEmpty ? 0 : a.first.cashCents;
     final e = _edit;
-    if (e != null && e.accountId == accountId) {
+    if (e != null &&
+        e.accountId == accountId &&
+        (e.allocate || e.type == OpType.cash)) {
       cash += switch (e.type) {
         OpType.buy => e.amount,
         OpType.sell || OpType.dividend || OpType.cash => -e.amount,
@@ -967,6 +977,15 @@ class _OpFormScreenState extends State<OpFormScreen> {
       switch (type) {
         case OpType.buy:
           final after = cash - amt;
+          if (!allocate) {
+            return Callout(
+              icon: Icons.link_off,
+              color: cs.primary,
+              title:
+                  'Total a pagar: ${fmtMoney(amt)}${fee > 0 ? ' (com ${fmtMoney(fee)} de comissão)' : ''}',
+              body: 'Sem alocação: não desconta do dinheiro por alocar. Podes registar a transferência do banco quando quiseres.',
+            );
+          }
           return Callout(
             icon: after < 0
                 ? Icons.warning_amber_rounded
@@ -975,7 +994,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
             title:
                 'Total a pagar: ${fmtMoney(amt)}${fee > 0 ? ' (com ${fmtMoney(fee)} de comissão)' : ''}',
             body: after < 0
-                ? 'Só tens ${fmtMoney(cash)} por alocar nesta plataforma. Associa a transferência do banco ou acerta o dinheiro (pode guardar na mesma).'
+                ? 'Ainda não tens ${fmtMoney(amt)} por alocar nesta plataforma (tens ${fmtMoney(cash)}). Regista a transferência do banco depois, ou desliga "Descontar do dinheiro por alocar" em Mais opções.'
                 : 'Dinheiro por alocar: ${fmtMoney(cash)} → ${fmtMoney(after)}.',
           );
         case OpType.sell:
@@ -1056,7 +1075,10 @@ class _OpFormScreenState extends State<OpFormScreen> {
         ? 'Preço médio ($ccyLabel)'
         : 'Preço ($ccyLabel)';
     _extrasOpen ??=
-        feeCtrl.text.isNotEmpty || noteCtrl.text.isNotEmpty || !byQty;
+        feeCtrl.text.isNotEmpty ||
+        noteCtrl.text.isNotEmpty ||
+        !byQty ||
+        !allocate;
 
     return Scaffold(
       appBar: AppBar(
@@ -1332,6 +1354,16 @@ class _OpFormScreenState extends State<OpFormScreen> {
                             prefixText: '$baseSym  ',
                             hintText: '0,00',
                           ),
+                        ),
+                      if (_affectsCash)
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Descontar do dinheiro por alocar'),
+                          subtitle: const Text(
+                            'Desliga se ainda não registaste a transferência do banco para a plataforma, ou se esta operação já está contada noutro lado.',
+                          ),
+                          value: allocate,
+                          onChanged: (v) => setState(() => allocate = v),
                         ),
                       if (tradeLike) ...[
                         SwitchListTile(

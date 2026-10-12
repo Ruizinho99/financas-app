@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../models.dart';
 import '../util/format.dart' show baseCcy;
 
@@ -94,6 +96,8 @@ class Holding {
   currencyManual; // true: escolhida pelo utilizador; false: detetada pelo preço
   final double? lastPriceOrig; // último preço na moeda do ativo
   final double? lastFx; // moeda de base por 1 unidade da moeda do ativo, no momento do último preço
+  final Uint8List?
+  logo; // imagem do ativo, obtida uma vez e guardada na base de dados
   Holding({
     required this.id,
     required this.accountId,
@@ -108,6 +112,7 @@ class Holding {
     this.currencyManual = false,
     this.lastPriceOrig,
     this.lastFx,
+    this.logo,
   }) : currency = currency ?? baseCcy;
 
   bool get foreign => currency != baseCcy;
@@ -134,6 +139,7 @@ class Holding {
     bool? currencyManual,
     Object? lastPriceOrig = _k,
     Object? lastFx = _k,
+    Object? logo = _k,
   }) => Holding(
     id: id,
     accountId: accountId ?? this.accountId,
@@ -152,6 +158,7 @@ class Holding {
         ? this.lastPriceOrig
         : lastPriceOrig as double?,
     lastFx: identical(lastFx, _k) ? this.lastFx : lastFx as double?,
+    logo: identical(logo, _k) ? this.logo : logo as Uint8List?,
   );
 }
 
@@ -189,6 +196,7 @@ class InvestOp {
   final String note;
   final int?
   txnId; // transferência do banco que financiou esta compra (opcional)
+  final bool allocate; // false: não mexe no dinheiro por alocar (já contabilizada noutro lado, ou transferência ainda não registada)
   const InvestOp({
     required this.id,
     required this.accountId,
@@ -202,6 +210,7 @@ class InvestOp {
     this.fee = 0,
     this.note = '',
     this.txnId,
+    this.allocate = true,
   });
 }
 
@@ -344,6 +353,8 @@ class Portfolio {
         positions.add(Position(h, qty, cost, realized, divs, costOrig));
       }
       for (final o in aops) {
+        // compras/vendas/dividendos sem alocação não mexem no dinheiro por alocar
+        if (!o.allocate && o.type != OpType.cash) continue;
         switch (o.type) {
           case OpType.buy:
             cash -= o.amount;

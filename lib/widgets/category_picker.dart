@@ -35,6 +35,11 @@ class _CategorySheet extends StatefulWidget {
 class _CategorySheetState extends State<_CategorySheet> {
   String q = '';
   bool showAll = false; // inclui categorias terminadas e futuras
+  int? openRoot; // passo 2: a categoria principal aberta, cujas subcategorias se mostram
+
+  /// Aceita o tipo pedido (despesa/receita). "Despesas e receitas" aceita sempre.
+  bool fits(Categoria c) =>
+      widget.income == null || c.both || c.isIncome == widget.income;
 
   @override
   Widget build(BuildContext context) {
@@ -51,19 +56,33 @@ class _CategorySheetState extends State<_CategorySheet> {
         c.id == selRoot ||
         s.isCategoryActiveDuring(c, from, to);
     final query = q.trim().toLowerCase();
+    final searching = query.isNotEmpty;
 
-    final groups = <(Categoria, List<Categoria>)>[];
-    for (final r in s.roots.where(
-      (r) => widget.income == null || r.both || r.isIncome == widget.income,
-    )) {
-      final subs = s.childrenOf(r.id).where(visible).toList();
-      final rootMatches = r.name.toLowerCase().contains(query);
-      final subMatches = subs
-          .where((k) => k.name.toLowerCase().contains(query))
-          .toList();
-      if (!visible(r) && subMatches.isEmpty) continue;
-      if (query.isNotEmpty && !rootMatches && subMatches.isEmpty) continue;
-      groups.add((r, query.isEmpty || rootMatches ? subs : subMatches));
+    // subcategorias de uma principal que se podem escolher agora
+    List<Categoria> subsOf(Categoria r) => s
+        .childrenOf(r.id)
+        .where((k) => visible(k) && (fits(k) || r.both))
+        .toList();
+
+    // passo 1: principais (ou, a pesquisar, principais e subcategorias que coincidem)
+    final tops = <(Categoria, List<Categoria>)>[];
+    for (final r in s.roots.where((r) => fits(r) || r.both)) {
+      final subs = subsOf(r);
+      if (searching) {
+        final rootMatches = r.name.toLowerCase().contains(query);
+        final subMatches = subs
+            .where((k) => k.name.toLowerCase().contains(query))
+            .toList();
+        if (!rootMatches && subMatches.isEmpty) continue;
+        tops.add((r, rootMatches ? subs : subMatches));
+      } else {
+        if (!visible(r) && subs.isEmpty) continue;
+        tops.add((r, subs));
+      }
+    }
+    (Categoria, List<Categoria>)? open;
+    for (final t in tops) {
+      if (t.$1.id == openRoot) open = t;
     }
     final hiddenExist = s.categories.any(
       (c) =>
@@ -73,15 +92,102 @@ class _CategorySheetState extends State<_CategorySheet> {
           !s.isCategoryActiveDuring(c, from, to),
     );
 
-    Widget chip(Categoria c, {bool root = false}) {
+    Widget chip(Categoria c, {String? label, bool root = false}) {
       final on = c.id == widget.selected;
       return ChoiceChip(
         selected: on,
         showCheckmark: false,
         avatar: c.emoji.isEmpty ? null : Text(c.emoji),
-        label: Text(c.name),
+        label: Text(label ?? c.name),
         onSelected: (_) => Navigator.pop(context, c.id),
         labelStyle: root ? const TextStyle(fontWeight: FontWeight.w700) : null,
+      );
+    }
+
+    final body = <Widget>[];
+    if (searching || open == null) {
+      // lista de principais; as que têm subcategorias abrem o passo 2
+      for (final (r, subs) in tops) {
+        if (searching) {
+          body.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 4),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [chip(r, root: true), for (final k in subs) chip(k)],
+              ),
+            ),
+          );
+        } else {
+          body.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  if (subs.isEmpty)
+                    chip(r, root: true)
+                  else
+                    ChoiceChip(
+                      selected: r.id == widget.selected,
+                      showCheckmark: false,
+                      avatar: r.emoji.isEmpty ? null : Text(r.emoji),
+                      label: Text('${r.name} ›'),
+                      labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+                      onSelected: (_) => setState(() => openRoot = r.id),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+    } else {
+      // passo 2: subcategorias da principal escolhida
+      final (r, subs) = open;
+      body.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 4),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              ActionChip(
+                avatar: const Icon(Icons.arrow_back, size: 18),
+                label: const Text('Principais'),
+                onPressed: () => setState(() => openRoot = null),
+              ),
+              chip(r, label: 'Só ${r.name}', root: true),
+            ],
+          ),
+        ),
+      );
+      body.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          child: Text(
+            '${r.emoji} ${r.name}',
+            style: tt.titleSmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ),
+      );
+      body.add(
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            for (final k in subs) chip(k),
+            if (subs.isEmpty)
+              Text(
+                'Esta categoria não tem subcategorias.',
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              ),
+          ],
+        ),
       );
     }
 
@@ -108,21 +214,8 @@ class _CategorySheetState extends State<_CategorySheet> {
               controller: scroll,
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
               children: [
-                for (final (r, subs) in groups) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 4),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        chip(r, root: true),
-                        for (final k in subs) chip(k),
-                      ],
-                    ),
-                  ),
-                ],
-                if (groups.isEmpty)
+                ...body,
+                if (tops.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Center(
