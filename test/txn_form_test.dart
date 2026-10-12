@@ -72,6 +72,9 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '12,5');
       await tester.tap(find.text('Escolher categoria'));
       await tester.pumpAndSettle();
+      // passo 1: a categoria principal; passo 2: a subcategoria
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Alimentação ›'));
+      await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ChoiceChip, 'Restaurantes').last);
       await tester.pumpAndSettle();
       expect(find.textContaining('Alimentação › Restaurantes'), findsOneWidget);

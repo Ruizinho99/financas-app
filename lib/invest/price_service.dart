@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -156,6 +157,32 @@ class PriceService {
   }
 
   /// Procura ativos pelo nome ou símbolo.
+  /// Logótipo de uma ação ou ETF pelo símbolo (sem o sufixo da bolsa, ex.: VWCE.DE → VWCE).
+  /// Devolve nulo se não houver imagem: a app mostra então o emoji do tipo de ativo.
+  Future<Uint8List?> logo(String symbol) async {
+    final base = symbol.trim().split('.').first.toUpperCase();
+    if (base.isEmpty || !RegExp(r'^[A-Z0-9-]{1,12}$').hasMatch(base))
+      return null;
+    try {
+      final r = await _client
+          .get(
+            Uri.https('assets.parqet.com', '/logos/symbol/$base', {
+              'format': 'png',
+            }),
+            headers: const {
+              'User-Agent': 'Mozilla/5.0 (Linux; Android 14) FinancasApp/1.0',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+      if (r.statusCode != 200 || r.bodyBytes.isEmpty) return null;
+      if (!r.headers['content-type'].toString().startsWith('image/'))
+        return null;
+      return r.bodyBytes;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<List<SymbolHit>> search(PriceProvider provider, String query) async {
     final q = query.trim();
     if (q.isEmpty) return [];

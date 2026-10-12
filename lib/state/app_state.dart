@@ -551,6 +551,23 @@ class AppState extends ChangeNotifier {
     reload();
   }
 
+  /// Guarda o logótipo do ativo (uma vez). Sem imagem, a app mostra o emoji do tipo.
+  Future<void> fetchLogo(int id) async {
+    final h = holding(id);
+    if (h == null ||
+        h.logo != null ||
+        h.provider != PriceProvider.yahoo ||
+        h.symbol.trim().isEmpty ||
+        h.kind == HoldingKind.crypto)
+      return;
+    final bytes = await prices.logo(h.symbol);
+    if (bytes == null) return;
+    final cur = holding(id);
+    if (cur == null) return;
+    db.saveHolding(cur.copyWith(logo: bytes));
+    reload();
+  }
+
   void deleteHolding(int id) {
     db.deleteHolding(id);
     reload();
@@ -832,6 +849,10 @@ class AppState extends ChangeNotifier {
       }
     }
     reload();
+    // logótipos em falta (ativos criados antes desta versão)
+    for (final h in holdings.where((h) => h.logo == null)) {
+      await fetchLogo(h.id);
+    }
     return (updated: updated, failed: failed);
   }
 

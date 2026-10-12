@@ -272,6 +272,22 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 13');
     }
+    if (v < 14) {
+      // v14: compra sem alocação (não desconta do dinheiro por alocar da plataforma)
+      try {
+        _db.execute(
+          'ALTER TABLE invest_ops ADD COLUMN allocate INTEGER NOT NULL DEFAULT 1',
+        );
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 14');
+    }
+    if (v < 15) {
+      // v15: logótipo do ativo (imagem guardada na base de dados)
+      try {
+        _db.execute('ALTER TABLE holdings ADD COLUMN logo BLOB');
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 15');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -771,6 +787,7 @@ class Db {
           currencyManual: r['currency_manual'] == 1,
           lastPriceOrig: (r['last_price_orig'] as num?)?.toDouble(),
           lastFx: (r['last_fx'] as num?)?.toDouble(),
+          logo: r['logo'] as Uint8List?,
         );
       })
       .toList();
@@ -789,16 +806,17 @@ class Db {
       h.lastPriceOrig,
       h.lastFx,
       h.currencyManual ? 1 : 0,
+      h.logo,
     ];
     if (isNew) {
       _db.execute(
-        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual,logo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
         vals,
       );
       return _db.lastInsertRowId;
     }
     _db.execute(
-      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=? WHERE id=?',
+      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=?,logo=? WHERE id=?',
       [...vals, h.id],
     );
     return h.id;
@@ -826,6 +844,7 @@ class Db {
           fee: r['fee'] as int,
           note: r['note'] as String,
           txnId: r['txn_id'] as int?,
+          allocate: (r['allocate'] as int? ?? 1) == 1,
         ),
       )
       .toList();
@@ -843,16 +862,17 @@ class Db {
       o.note,
       o.fx,
       o.txnId,
+      o.allocate ? 1 : 0,
     ];
     if (isNew) {
       _db.execute(
-        'INSERT INTO invest_ops(account_id,holding_id,date,type,quantity,price,amount,fee,note,fx,txn_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO invest_ops(account_id,holding_id,date,type,quantity,price,amount,fee,note,fx,txn_id,allocate) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
         vals,
       );
       return _db.lastInsertRowId;
     }
     _db.execute(
-      'UPDATE invest_ops SET account_id=?,holding_id=?,date=?,type=?,quantity=?,price=?,amount=?,fee=?,note=?,fx=?,txn_id=? WHERE id=?',
+      'UPDATE invest_ops SET account_id=?,holding_id=?,date=?,type=?,quantity=?,price=?,amount=?,fee=?,note=?,fx=?,txn_id=?,allocate=? WHERE id=?',
       [...vals, o.id],
     );
     return o.id;
@@ -991,7 +1011,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 13;
+  static const _schemaVersion = 15;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

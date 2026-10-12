@@ -30,6 +30,41 @@ class PlText extends StatelessWidget {
   );
 }
 
+/// Logótipo do ativo (se já foi obtido) ou o emoji do tipo de ativo.
+class HoldingAvatar extends StatelessWidget {
+  final Holding h;
+  final double size;
+  const HoldingAvatar(this.h, {super.key, this.size = 30});
+  @override
+  Widget build(BuildContext context) {
+    final logo = h.logo;
+    if (logo == null) {
+      return SizedBox(
+        width: size,
+        child: Text(
+          h.kind.emoji,
+          style: TextStyle(fontSize: size * 0.66),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size * 0.25),
+      child: Image.memory(
+        logo,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        gaplessPlayback: true,
+        errorBuilder: (_, _, _) => SizedBox(
+          width: size,
+          child: Text(h.kind.emoji, textAlign: TextAlign.center),
+        ),
+      ),
+    );
+  }
+}
+
 /// Linha de uma posição: nome, quantidade, preço médio → preço atual, valor e ganho/perda.
 class PositionRow extends StatelessWidget {
   final Position p;
@@ -49,14 +84,7 @@ class PositionRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 30,
-              child: Text(
-                h.kind.emoji,
-                style: const TextStyle(fontSize: 20),
-                textAlign: TextAlign.center,
-              ),
-            ),
+            HoldingAvatar(h, size: 30),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
