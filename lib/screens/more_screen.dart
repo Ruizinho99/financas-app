@@ -54,7 +54,7 @@ class MoreScreen extends StatelessWidget {
             await FilePicker.saveFile(fileName: 'movimentos.csv', bytes: Uint8List.fromList(utf8.encode(b.toString())), mimeType: 'text/csv');
           },
         ),
-        ListTile(leading: const Icon(Icons.cloud_sync_outlined), title: const Text('Conta e cópia na nuvem'), subtitle: const Text('Google Drive (Apple em preparação)'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CloudScreen()))),
+        ListTile(leading: const Icon(Icons.cloud_sync_outlined), title: const Text('Cópia no OneDrive'), subtitle: const Text('Guardar e restaurar os dados'), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CloudScreen()))),
         ListTile(
           leading: const Icon(Icons.backup_outlined),
           title: const Text('Cópia de segurança (base de dados)'),

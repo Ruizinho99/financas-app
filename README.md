@@ -33,13 +33,13 @@ Os APKs estão na secção **Releases** do GitHub.
 ## Licença
 MIT – ver `LICENSE`.
 
-## Conta Google e cópia na nuvem
+## Cópia no OneDrive
 
-Em **Mais › Conta e cópia na nuvem** podes ligar a tua conta Google e guardar/restaurar uma cópia de todos os dados no Google Drive, numa pasta privada da app (`appDataFolder`, invisível no teu Drive e só acessível por esta app). Não inclui as fotos dos recibos. A internet só é usada quando carregas nos botões.
+Em **Mais › Cópia no OneDrive** podes ligar uma conta Microsoft (pessoal ou de trabalho) e guardar/restaurar uma cópia de todos os dados numa pasta privada da app no OneDrive (`approot`, invisível no resto do teu OneDrive). Não inclui as fotos dos recibos. A internet só é usada quando carregas nos botões.
 
-A Google exige um projeto próprio (grátis): ativa a *Google Drive API*, configura o ecrã de consentimento OAuth (Externo, com o teu email como utilizador de teste) e cria dois IDs de cliente OAuth: um **Android** (pacote `pt.financas.financas` e a impressão digital SHA-1 do certificado com que a app foi assinada, que o ecrã da app mostra) e um **Web**, cujo ID colas na app. Nada disto fica no código.
+Configuração única: registar a app no Azure (portal.azure.com › Microsoft Entra ID › Registos de aplicações), com tipo de conta "qualquer diretório organizacional e contas pessoais", plataforma "Clientes públicos/nativos" com o URI de redirecionamento `pt.financas.financas:/oauth`, e as permissões delegadas Microsoft Graph `Files.ReadWrite.AppFolder`, `offline_access` e `User.Read`. Depois cola o "ID da aplicação (cliente)" no ecrã. Os passos estão também dentro da app.
 
-A camada é modular (`lib/cloud/`): `CloudProvider` é a interface comum; `GoogleProvider` usa o Drive; `AppleProvider` é um lugar reservado para o iCloud (só fará sentido numa versão para iPhone).
+O login usa OAuth com PKCE (`flutter_appauth`); a app não guarda palavra-passe, só o token de renovação, na base de dados local. Código em `lib/cloud/`: `CloudProvider` é a interface, `MicrosoftAuth` faz o login e `OneDriveProvider` fala com o Graph.
 
 ## Navegação
 
