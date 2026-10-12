@@ -61,6 +61,36 @@ class UpdateService {
     return false;
   }
 
+  /// Tag da última release, lida do redirecionamento de github.com (não usa a API, por isso não tem o limite de 60 pedidos/hora).
+  Future<String> latestTag() async {
+    final req =
+        http.Request(
+            'GET',
+            Uri.parse('https://github.com/$owner/$repo/releases/latest'),
+          )
+          ..followRedirects = false
+          ..headers['User-Agent'] = 'FinancasApp';
+    final http.StreamedResponse res;
+    try {
+      res = await _client.send(req).timeout(const Duration(seconds: 15));
+    } on TimeoutException {
+      throw const UpdateException('O GitHub demorou demasiado a responder.');
+    } catch (_) {
+      throw const UpdateException('Sem ligação à internet.');
+    }
+    await res.stream.drain<void>();
+    final m = RegExp(r'/releases/tag/([^/?#]+)')
+        .firstMatch(res.headers['location'] ?? '');
+    if (m == null) {
+      if (res.statusCode == 404)
+        throw const UpdateException('Ainda não há nenhuma versão publicada.');
+      throw UpdateException(
+        'Resposta inesperada do GitHub (${res.statusCode}).',
+      );
+    }
+    return Uri.decodeComponent(m[1]!);
+  }
+
   Future<ReleaseInfo> latest() async {
     final http.Response r;
     try {

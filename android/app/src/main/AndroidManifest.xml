@@ -3,6 +3,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Só para instalar uma atualização que o utilizador escolheu descarregar (Mais > Atualizações). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- Aviso quando sai uma versão nova (Android 13+ pede a permissão ao utilizador). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="Finanças"
         android:name="${applicationName}"

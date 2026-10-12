@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -9,13 +11,32 @@ import 'screens/month_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'state/app_state.dart';
+import 'update/update_checker.dart';
+import 'update/update_notifications.dart';
+import 'update/update_service.dart';
 import 'util/receipts.dart';
+
+Future<void> _checkUpdates(Db db) async {
+  try {
+    final checker = UpdateChecker(
+      db: db,
+      service: UpdateService(),
+      currentVersion: await UpdateChecker.installedVersion(),
+      notify: UpdateNotifications.show,
+    );
+    await checker.check();
+  } catch (_) {
+    // sem internet ou sem permissão: a app abre normalmente
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT');
   await Receipts.init();
   final db = await Db.open();
+  // ao abrir: verifica se há versão nova (no máximo uma vez por dia) e avisa com uma notificação
+  unawaited(_checkUpdates(db));
   runApp(
     ChangeNotifierProvider(
       create: (_) => AppState(db),
