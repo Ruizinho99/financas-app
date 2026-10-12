@@ -3,7 +3,20 @@ import 'package:intl/intl.dart';
 /// Moeda de base da app (todos os valores guardados estão nela). Por omissão, euros.
 String baseCcy = 'EUR';
 
-const _ccySymbols = {'EUR': '€', 'USD': r'US$', 'GBP': '£', 'CHF': 'CHF', 'CAD': r'CA$', 'AUD': r'A$', 'JPY': '¥', 'SEK': 'kr', 'NOK': 'kr', 'DKK': 'kr', 'PLN': 'zł', 'BRL': r'R$'};
+const _ccySymbols = {
+  'EUR': '€',
+  'USD': r'US$',
+  'GBP': '£',
+  'CHF': 'CHF',
+  'CAD': r'CA$',
+  'AUD': r'A$',
+  'JPY': '¥',
+  'SEK': 'kr',
+  'NOK': 'kr',
+  'DKK': 'kr',
+  'PLN': 'zł',
+  'BRL': r'R$',
+};
 String ccySymbol(String c) => _ccySymbols[c] ?? c;
 String get baseSym => ccySymbol(baseCcy);
 
@@ -21,8 +34,16 @@ NumberFormat get _moneyShort {
 
 void _resetFmt() {
   _fmtKey = baseCcy;
-  _moneyF = NumberFormat.currency(locale: 'pt_PT', symbol: baseSym, decimalDigits: 2);
-  _moneyShortF = NumberFormat.currency(locale: 'pt_PT', symbol: baseSym, decimalDigits: 0);
+  _moneyF = NumberFormat.currency(
+    locale: 'pt_PT',
+    symbol: baseSym,
+    decimalDigits: 2,
+  );
+  _moneyShortF = NumberFormat.currency(
+    locale: 'pt_PT',
+    symbol: baseSym,
+    decimalDigits: 0,
+  );
 }
 
 final _dateFmt = DateFormat('dd/MM/yyyy');
@@ -41,14 +62,18 @@ String fmtMonth(DateTime d) {
 String fmtMonthShort(DateTime d) => _monthShort.format(d);
 String isoDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-String monthKey(DateTime d) => '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}';
+String monthKey(DateTime d) =>
+    '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}';
 String fmtPercent(double v) => '${(v * 100).toStringAsFixed(0)}%';
 
 /// "12,50" / "12.50" / "1.234,56" -> cêntimos. Devolve null se inválido.
 int? parseCents(String input) {
   var s = input.trim().replaceAll(RegExp(r'[€\s]'), '');
   if (s.isEmpty) return null;
-  final neg = s.startsWith('-') || s.endsWith('-') || (s.startsWith('(') && s.endsWith(')'));
+  final neg =
+      s.startsWith('-') ||
+      s.endsWith('-') ||
+      (s.startsWith('(') && s.endsWith(')'));
   s = s.replaceAll(RegExp(r'[^\d,.]'), '');
   if (s.isEmpty) return null;
   final lastComma = s.lastIndexOf(',');
@@ -61,7 +86,9 @@ int? parseCents(String input) {
     }
   } else if (lastComma >= 0) {
     final decimals = s.length - lastComma - 1;
-    s = (decimals == 3 && lastComma > 0) ? s.replaceAll(',', '') : s.replaceAll(',', '.');
+    s = (decimals == 3 && lastComma > 0)
+        ? s.replaceAll(',', '')
+        : s.replaceAll(',', '.');
   } else if (lastDot >= 0) {
     final decimals = s.length - lastDot - 1;
     if (decimals == 3 || s.indexOf('.') != lastDot) s = s.replaceAll('.', '');
@@ -78,10 +105,17 @@ final _qtyFmt = NumberFormat('#,##0.######', 'pt_PT');
 String fmtQty(double q) => _qtyFmt.format(q);
 
 /// Preço unitário: 2 casas, ou 4 se for menor que 1 €.
-String fmtPrice(double p) => NumberFormat.currency(locale: 'pt_PT', symbol: baseSym, decimalDigits: p.abs() < 1 ? 4 : 2).format(p);
+String fmtPrice(double p) => NumberFormat.currency(
+  locale: 'pt_PT',
+  symbol: baseSym,
+  decimalDigits: p.abs() < 1 ? 4 : 2,
+).format(p);
 
 /// Número com [digits] casas, no formato português ("1,0850").
-String fmtNum(double v, int digits) => NumberFormat.decimalPatternDigits(locale: 'pt_PT', decimalDigits: digits).format(v);
+String fmtNum(double v, int digits) => NumberFormat.decimalPatternDigits(
+  locale: 'pt_PT',
+  decimalDigits: digits,
+).format(v);
 
 /// Preço na moeda do ativo: euros com €, outras moedas como "123,45 USD".
 String fmtPriceIn(double p, String ccy) {
@@ -90,13 +124,16 @@ String fmtPriceIn(double p, String ccy) {
 }
 
 /// "+12,3%" / "−4,0%"
-String fmtSignedPercent(double v) => '${v >= 0 ? '+' : '−'}${(v.abs() * 100).toStringAsFixed(1).replaceAll('.', ',')}%';
+String fmtSignedPercent(double v) =>
+    '${v >= 0 ? '+' : '−'}${(v.abs() * 100).toStringAsFixed(1).replaceAll('.', ',')}%';
 
 /// "+12,50 €" / "−3,00 €"
-String fmtSignedMoney(int cents) => '${cents >= 0 ? '+' : '−'}${fmtMoney(cents.abs())}';
+String fmtSignedMoney(int cents) =>
+    '${cents >= 0 ? '+' : '−'}${fmtMoney(cents.abs())}';
 
 /// Número decimal escrito pelo utilizador ("12,5", "1 234.56").
-double? parseNum(String s) => double.tryParse(s.trim().replaceAll(' ', '').replaceAll(',', '.'));
+double? parseNum(String s) =>
+    double.tryParse(s.trim().replaceAll(' ', '').replaceAll(',', '.'));
 
 /// "há 5 min", "há 3 h", "há 2 dias"
 String fmtAgo(DateTime at, [DateTime? now]) {

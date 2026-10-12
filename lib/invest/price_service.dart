@@ -12,7 +12,13 @@ class PriceQuote {
   final double original; // preço na moeda original
   final DateTime at;
   final double fx; // moeda de base por 1 unidade da moeda original (1 se já estiver na moeda de base)
-  const PriceQuote(this.eur, this.currency, this.original, this.at, [this.fx = 1]);
+  const PriceQuote(
+    this.eur,
+    this.currency,
+    this.original,
+    this.at, [
+    this.fx = 1,
+  ]);
 }
 
 class SymbolHit {
@@ -37,20 +43,30 @@ class PriceService {
   final http.Client _client;
   final Map<String, double> _fx = {};
 
-  static const _headers = {'User-Agent': 'Mozilla/5.0 (Linux; Android 14) FinancasApp/1.0', 'Accept': 'application/json'};
+  static const _headers = {
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 14) FinancasApp/1.0',
+    'Accept': 'application/json',
+  };
 
   Future<dynamic> _getJson(Uri uri) async {
     final http.Response r;
     try {
-      r = await _client.get(uri, headers: _headers).timeout(const Duration(seconds: 12));
+      r = await _client
+          .get(uri, headers: _headers)
+          .timeout(const Duration(seconds: 12));
     } on TimeoutException {
       throw const PriceException('O serviço demorou demasiado a responder.');
     } catch (_) {
       throw const PriceException('Sem ligação à internet.');
     }
-    if (r.statusCode == 429) throw const PriceException('Limite do serviço atingido. Tenta daqui a um minuto.');
-    if (r.statusCode == 404) throw const PriceException('Símbolo não encontrado.');
-    if (r.statusCode != 200) throw PriceException('Erro do serviço (${r.statusCode}).');
+    if (r.statusCode == 429)
+      throw const PriceException(
+        'Limite do serviço atingido. Tenta daqui a um minuto.',
+      );
+    if (r.statusCode == 404)
+      throw const PriceException('Símbolo não encontrado.');
+    if (r.statusCode != 200)
+      throw PriceException('Erro do serviço (${r.statusCode}).');
     try {
       return jsonDecode(utf8.decode(r.bodyBytes));
     } catch (_) {
@@ -59,27 +75,43 @@ class PriceService {
   }
 
   /// Preço atual na moeda [base].
-  Future<PriceQuote> quote(PriceProvider provider, String symbol, {String base = 'EUR'}) {
+  Future<PriceQuote> quote(
+    PriceProvider provider,
+    String symbol, {
+    String base = 'EUR',
+  }) {
     final s = symbol.trim();
     if (s.isEmpty) throw const PriceException('Falta o símbolo.');
     return switch (provider) {
       PriceProvider.yahoo => _yahoo(s, base),
       PriceProvider.coingecko => _gecko(s, base),
-      PriceProvider.manual => throw const PriceException('Preço manual: não há nada para atualizar.'),
+      PriceProvider.manual => throw const PriceException(
+        'Preço manual: não há nada para atualizar.',
+      ),
     };
   }
 
   Future<({double price, String currency})> _yahooRaw(String symbol) async {
     // pathSegments codifica uma só vez (encodeComponent + Uri.https dava %253D em "USDEUR=X" e o Yahoo respondia 404)
-    final uri = Uri(scheme: 'https', host: 'query1.finance.yahoo.com', pathSegments: ['v8', 'finance', 'chart', symbol], queryParameters: {'range': '1d', 'interval': '1d'});
+    final uri = Uri(
+      scheme: 'https',
+      host: 'query1.finance.yahoo.com',
+      pathSegments: ['v8', 'finance', 'chart', symbol],
+      queryParameters: {'range': '1d', 'interval': '1d'},
+    );
     final j = await _getJson(uri);
     final chart = j is Map ? j['chart'] : null;
     final result = chart is Map ? chart['result'] : null;
-    if (result is! List || result.isEmpty) throw const PriceException('Símbolo não encontrado.');
+    if (result is! List || result.isEmpty)
+      throw const PriceException('Símbolo não encontrado.');
     final meta = result.first['meta'];
     final price = meta is Map ? meta['regularMarketPrice'] : null;
-    if (price is! num) throw const PriceException('Sem preço disponível para este símbolo.');
-    return (price: price.toDouble(), currency: (meta['currency'] as String?) ?? 'EUR');
+    if (price is! num)
+      throw const PriceException('Sem preço disponível para este símbolo.');
+    return (
+      price: price.toDouble(),
+      currency: (meta['currency'] as String?) ?? 'EUR',
+    );
   }
 
   /// Quanto vale 1 unidade de [from] na moeda [to] (ex.: USD → EUR = 0,92).
@@ -108,10 +140,18 @@ class PriceService {
 
   Future<PriceQuote> _gecko(String id, String base) async {
     final key = id.toLowerCase();
-    final j = await _getJson(Uri.https('api.coingecko.com', '/api/v3/simple/price', {'ids': key, 'vs_currencies': base.toLowerCase()}));
+    final j = await _getJson(
+      Uri.https('api.coingecko.com', '/api/v3/simple/price', {
+        'ids': key,
+        'vs_currencies': base.toLowerCase(),
+      }),
+    );
     final v = j is Map ? j[key] : null;
     final eur = v is Map ? v[base.toLowerCase()] : null;
-    if (eur is! num) throw const PriceException('Id não encontrado no CoinGecko (usa o id, ex.: bitcoin).');
+    if (eur is! num)
+      throw const PriceException(
+        'Id não encontrado no CoinGecko (usa o id, ex.: bitcoin).',
+      );
     return PriceQuote(eur.toDouble(), base, eur.toDouble(), DateTime.now());
   }
 
@@ -121,21 +161,40 @@ class PriceService {
     if (q.isEmpty) return [];
     switch (provider) {
       case PriceProvider.yahoo:
-        final j = await _getJson(Uri.https('query2.finance.yahoo.com', '/v1/finance/search', {'q': q, 'quotesCount': '10', 'newsCount': '0'}));
+        final j = await _getJson(
+          Uri.https('query2.finance.yahoo.com', '/v1/finance/search', {
+            'q': q,
+            'quotesCount': '10',
+            'newsCount': '0',
+          }),
+        );
         final quotes = j is Map ? j['quotes'] : null;
         if (quotes is! List) return [];
         return [
           for (final e in quotes)
             if (e is Map && e['symbol'] is String)
-              SymbolHit(e['symbol'] as String, (e['shortname'] ?? e['longname'] ?? e['symbol']) as String, (e['exchDisp'] ?? e['exchange'] ?? '') as String, provider),
+              SymbolHit(
+                e['symbol'] as String,
+                (e['shortname'] ?? e['longname'] ?? e['symbol']) as String,
+                (e['exchDisp'] ?? e['exchange'] ?? '') as String,
+                provider,
+              ),
         ];
       case PriceProvider.coingecko:
-        final j = await _getJson(Uri.https('api.coingecko.com', '/api/v3/search', {'query': q}));
+        final j = await _getJson(
+          Uri.https('api.coingecko.com', '/api/v3/search', {'query': q}),
+        );
         final coins = j is Map ? j['coins'] : null;
         if (coins is! List) return [];
         return [
           for (final e in coins.take(10))
-            if (e is Map && e['id'] is String) SymbolHit(e['id'] as String, '${e['name']} (${(e['symbol'] as String?)?.toUpperCase() ?? ''})', 'CoinGecko', provider),
+            if (e is Map && e['id'] is String)
+              SymbolHit(
+                e['id'] as String,
+                '${e['name']} (${(e['symbol'] as String?)?.toUpperCase() ?? ''})',
+                'CoinGecko',
+                provider,
+              ),
         ];
       case PriceProvider.manual:
         return [];

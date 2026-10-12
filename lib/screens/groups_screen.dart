@@ -24,7 +24,11 @@ class GroupsScreen extends StatelessWidget {
           if (name == null || name.isEmpty || !context.mounted) return;
           final existing = s.groupByName(name);
           final id = existing?.id ?? s.createGroup(name);
-          if (context.mounted) Navigator.push(context, MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: id)));
+          if (context.mounted)
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: id)),
+            );
         },
       ),
       body: s.groups.isEmpty
@@ -37,21 +41,39 @@ class GroupsScreen extends StatelessWidget {
                 ),
               ),
             )
-          : ListView(padding: const EdgeInsets.only(bottom: 90), children: [
-              for (final g in s.groups)
-                Builder(builder: (_) {
-                  final rules = s.rulesOfGroup(g.id);
-                  final n = rules.fold(0, (a, r) => a + (counts[r.pattern] ?? 0));
-                  final cat = s.cat(g.categoryId);
-                  return ListTile(
-                    leading: CatBadge(cat),
-                    title: Text(g.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: Text('${s.path(g.categoryId)} · ${rules.length} ${rules.length == 1 ? 'título' : 'títulos'} · $n movimentos'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GroupDetailScreen(groupId: g.id))),
-                  );
-                }),
-            ]),
+          : ListView(
+              padding: const EdgeInsets.only(bottom: 90),
+              children: [
+                for (final g in s.groups)
+                  Builder(
+                    builder: (_) {
+                      final rules = s.rulesOfGroup(g.id);
+                      final n = rules.fold(
+                        0,
+                        (a, r) => a + (counts[r.pattern] ?? 0),
+                      );
+                      final cat = s.cat(g.categoryId);
+                      return ListTile(
+                        leading: CatBadge(cat),
+                        title: Text(
+                          g.name,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          '${s.path(g.categoryId)} · ${rules.length} ${rules.length == 1 ? 'título' : 'títulos'} · $n movimentos',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => GroupDetailScreen(groupId: g.id),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
     );
   }
 }
@@ -62,10 +84,24 @@ Future<String?> _askName(BuildContext context, String title, String initial) {
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(title),
-      content: TextField(controller: ctrl, autofocus: true, textCapitalization: TextCapitalization.sentences, decoration: const InputDecoration(labelText: 'Nome', hintText: 'Ex.: Restaurante Arminda')),
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: const InputDecoration(
+          labelText: 'Nome',
+          hintText: 'Ex.: Restaurante Arminda',
+        ),
+      ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-        FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text.trim()), child: const Text('Criar')),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+          child: const Text('Criar'),
+        ),
       ],
     ),
   );
@@ -98,7 +134,11 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     final s = context.watch<AppState>();
     if (!loaded) _load(s);
     final g = s.groupById(widget.groupId);
-    if (g == null) return Scaffold(appBar: AppBar(), body: const Center(child: Text('Grupo apagado.')));
+    if (g == null)
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('Grupo apagado.')),
+      );
     final rules = s.rulesOfGroup(g.id);
     final counts = s.titleCounts();
 
@@ -107,11 +147,18 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
       if (n.isEmpty) return;
       final other = s.groupByName(n);
       if (other != null && other.id != g.id) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Já existe um grupo chamado “${other.name}”.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Já existe um grupo chamado “${other.name}”.'),
+          ),
+        );
         return;
       }
-      s.updateGroup(Grupo(id: g.id, name: n, categoryId: category, note: note.text.trim()));
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Grupo guardado.')));
+      s.updateGroup(
+        Grupo(id: g.id, name: n, categoryId: category, note: note.text.trim()),
+      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Grupo guardado.')));
     }
 
     return Scaffold(
@@ -122,7 +169,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
             tooltip: 'Apagar grupo',
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
-              if (await confirm(context, 'Apagar o grupo “${g.name}”? Os títulos ficam com o nome e a categoria que tinham no grupo, mas deixam de estar juntos.')) {
+              if (await confirm(
+                context,
+                'Apagar o grupo “${g.name}”? Os títulos ficam com o nome e a categoria que tinham no grupo, mas deixam de estar juntos.',
+              )) {
                 s.deleteGroup(g.id);
                 if (context.mounted) Navigator.pop(context);
               }
@@ -135,32 +185,68 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
         label: const Text('Juntar títulos'),
         onPressed: () => _addTitles(context, s, g),
       ),
-      body: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 100), children: [
-        TextField(controller: name, decoration: const InputDecoration(labelText: 'Nome do grupo')),
-        const SizedBox(height: 12),
-        CategorySelector(value: category, onChanged: (v) => setState(() => category = v)),
-        const SizedBox(height: 12),
-        TextField(controller: note, decoration: const InputDecoration(labelText: 'Descrição (opcional)'), maxLines: 2),
-        const SizedBox(height: 12),
-        Align(alignment: Alignment.centerRight, child: FilledButton.icon(onPressed: save, icon: const Icon(Icons.check), label: const Text('Guardar'))),
-        const Divider(height: 32),
-        Text('Títulos neste grupo (${rules.length})', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 4),
-        const Text('Qualquer movimento com um destes títulos recebe o nome e a categoria do grupo, agora e nas próximas importações.'),
-        if (rules.isEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Text('Ainda vazio. Usa “Juntar títulos”.', style: TextStyle(fontStyle: FontStyle.italic))),
-        for (final r in rules)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.link),
-            title: Text(r.pattern),
-            subtitle: Text('${r.exact ? 'Igual a' : 'Contém'} · ${counts[r.pattern] ?? 0} movimentos'),
-            trailing: IconButton(
-              tooltip: 'Tirar do grupo',
-              icon: const Icon(Icons.link_off),
-              onPressed: () => s.removeFromGroup(r.id),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+        children: [
+          TextField(
+            controller: name,
+            decoration: const InputDecoration(labelText: 'Nome do grupo'),
+          ),
+          const SizedBox(height: 12),
+          CategorySelector(
+            value: category,
+            onChanged: (v) => setState(() => category = v),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: note,
+            decoration: const InputDecoration(
+              labelText: 'Descrição (opcional)',
+            ),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              onPressed: save,
+              icon: const Icon(Icons.check),
+              label: const Text('Guardar'),
             ),
           ),
-      ]),
+          const Divider(height: 32),
+          Text(
+            'Títulos neste grupo (${rules.length})',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Qualquer movimento com um destes títulos recebe o nome e a categoria do grupo, agora e nas próximas importações.',
+          ),
+          if (rules.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                'Ainda vazio. Usa “Juntar títulos”.',
+                style: TextStyle(fontStyle: FontStyle.italic),
+              ),
+            ),
+          for (final r in rules)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.link),
+              title: Text(r.pattern),
+              subtitle: Text(
+                '${r.exact ? 'Igual a' : 'Contém'} · ${counts[r.pattern] ?? 0} movimentos',
+              ),
+              trailing: IconButton(
+                tooltip: 'Tirar do grupo',
+                icon: const Icon(Icons.link_off),
+                onPressed: () => s.removeFromGroup(r.id),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -168,7 +254,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   Future<void> _addTitles(BuildContext context, AppState s, Grupo g) async {
     final counts = s.titleCounts();
     final inGroup = s.rulesOfGroup(g.id).map((r) => r.pattern).toSet();
-    final others = counts.keys.where((k) => !inGroup.contains(k)).toList()..sort();
+    final others = counts.keys.where((k) => !inGroup.contains(k)).toList()
+      ..sort();
     final chosen = <String>{};
     final custom = TextEditingController();
     var q = '';
@@ -176,45 +263,78 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, set) {
-          final shown = others.where((k) => k.toLowerCase().contains(q.toLowerCase())).toList();
+          final shown = others
+              .where((k) => k.toLowerCase().contains(q.toLowerCase()))
+              .toList();
           return AlertDialog(
             title: const Text('Juntar títulos'),
             content: SizedBox(
               width: double.maxFinite,
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                TextField(
-                  decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Pesquisar títulos', isDense: true),
-                  onChanged: (v) => set(() => q = v),
-                ),
-                const SizedBox(height: 8),
-                Flexible(
-                  child: shown.isEmpty
-                      ? const Padding(padding: EdgeInsets.all(16), child: Text('Nenhum título encontrado.'))
-                      : ListView(shrinkWrap: true, children: [
-                          for (final k in shown)
-                            Builder(builder: (_) {
-                              final r = s.ruleFor(k);
-                              final other = r?.groupId != null && r!.groupId != g.id ? s.groupById(r.groupId) : null;
-                              return CheckboxListTile(
-                                dense: true,
-                                value: chosen.contains(k),
-                                onChanged: (v) => set(() => v! ? chosen.add(k) : chosen.remove(k)),
-                                title: Text(k),
-                                subtitle: Text('${counts[k]} movimentos${other != null ? ' · já está em “${other.name}”' : ''}'),
-                              );
-                            }),
-                        ]),
-                ),
-                const Divider(),
-                TextField(
-                  controller: custom,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: 'Ou: qualquer título que contenha…', hintText: 'ARMINDA', isDense: true),
-                ),
-              ]),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      hintText: 'Pesquisar títulos',
+                      isDense: true,
+                    ),
+                    onChanged: (v) => set(() => q = v),
+                  ),
+                  const SizedBox(height: 8),
+                  Flexible(
+                    child: shown.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Text('Nenhum título encontrado.'),
+                          )
+                        : ListView(
+                            shrinkWrap: true,
+                            children: [
+                              for (final k in shown)
+                                Builder(
+                                  builder: (_) {
+                                    final r = s.ruleFor(k);
+                                    final other =
+                                        r?.groupId != null && r!.groupId != g.id
+                                        ? s.groupById(r.groupId)
+                                        : null;
+                                    return CheckboxListTile(
+                                      dense: true,
+                                      value: chosen.contains(k),
+                                      onChanged: (v) => set(
+                                        () => v!
+                                            ? chosen.add(k)
+                                            : chosen.remove(k),
+                                      ),
+                                      title: Text(k),
+                                      subtitle: Text(
+                                        '${counts[k]} movimentos${other != null ? ' · já está em “${other.name}”' : ''}',
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
+                  ),
+                  const Divider(),
+                  TextField(
+                    controller: custom,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(
+                      labelText: 'Ou: qualquer título que contenha…',
+                      hintText: 'ARMINDA',
+                      isDense: true,
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
               FilledButton(
                 onPressed: () {
                   if (chosen.isNotEmpty) s.addKeysToGroup(g.id, chosen);
@@ -233,7 +353,11 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 }
 
 /// Junta títulos a um grupo existente ou cria um grupo novo com o nome escrito.
-Future<void> joinGroupDialog(BuildContext context, Set<String> keys, {int? suggestedCategory}) async {
+Future<void> joinGroupDialog(
+  BuildContext context,
+  Set<String> keys, {
+  int? suggestedCategory,
+}) async {
   final s = context.read<AppState>();
   final ctrl = TextEditingController();
   int? existing;
@@ -246,35 +370,61 @@ Future<void> joinGroupDialog(BuildContext context, Set<String> keys, {int? sugge
         return AlertDialog(
           title: const Text('Juntar a um grupo'),
           content: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Text(keys.length == 1 ? 'Título: ${keys.first}' : '${keys.length} títulos: ${keys.join(', ')}', style: Theme.of(ctx).textTheme.bodySmall),
-              const SizedBox(height: 12),
-              if (s.groups.isNotEmpty)
-                DropdownButtonFormField<int>(
-                  initialValue: existing,
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Grupo existente'),
-                  items: [for (final g in s.groups) DropdownMenuItem(value: g.id, child: Text(g.name, overflow: TextOverflow.ellipsis))],
-                  onChanged: (v) => set(() {
-                    existing = v;
-                    ctrl.clear();
-                  }),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  keys.length == 1
+                      ? 'Título: ${keys.first}'
+                      : '${keys.length} títulos: ${keys.join(', ')}',
+                  style: Theme.of(ctx).textTheme.bodySmall,
                 ),
-              if (s.groups.isNotEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Center(child: Text('ou'))),
-              TextField(
-                controller: ctrl,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  labelText: 'Novo grupo',
-                  hintText: 'Ex.: Restaurante Arminda',
-                  helperText: match != null ? 'Já existe: vai juntar-se a “${match.name}”' : null,
+                const SizedBox(height: 12),
+                if (s.groups.isNotEmpty)
+                  DropdownButtonFormField<int>(
+                    initialValue: existing,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Grupo existente',
+                    ),
+                    items: [
+                      for (final g in s.groups)
+                        DropdownMenuItem(
+                          value: g.id,
+                          child: Text(g.name, overflow: TextOverflow.ellipsis),
+                        ),
+                    ],
+                    onChanged: (v) => set(() {
+                      existing = v;
+                      ctrl.clear();
+                    }),
+                  ),
+                if (s.groups.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Center(child: Text('ou')),
+                  ),
+                TextField(
+                  controller: ctrl,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    labelText: 'Novo grupo',
+                    hintText: 'Ex.: Restaurante Arminda',
+                    helperText: match != null
+                        ? 'Já existe: vai juntar-se a “${match.name}”'
+                        : null,
+                  ),
+                  onChanged: (_) => set(() => existing = null),
                 ),
-                onChanged: (_) => set(() => existing = null),
-              ),
-            ]),
+              ],
+            ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
             FilledButton(
               onPressed: (existing == null && typed.isEmpty)
                   ? null
@@ -283,7 +433,11 @@ Future<void> joinGroupDialog(BuildContext context, Set<String> keys, {int? sugge
                       if (gid != null) {
                         s.addKeysToGroup(gid, keys);
                       } else {
-                        s.createGroup(typed, categoryId: suggestedCategory, keys: keys);
+                        s.createGroup(
+                          typed,
+                          categoryId: suggestedCategory,
+                          keys: keys,
+                        );
                       }
                       Navigator.pop(ctx);
                     },

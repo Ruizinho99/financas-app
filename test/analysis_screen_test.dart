@@ -9,18 +9,34 @@ import 'package:provider/provider.dart';
 import 'support/analysis_data.dart';
 import 'support/fonts.dart';
 
-Future<void> _pump(WidgetTester tester, AppState s, {Brightness brightness = Brightness.light, Size size = const Size(360, 640), double textScale = 1.0}) async {
+Future<void> _pump(
+  WidgetTester tester,
+  AppState s, {
+  Brightness brightness = Brightness.light,
+  Size size = const Size(360, 640),
+  double textScale = 1.0,
+}) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(ChangeNotifierProvider<AppState>.value(
-    value: s,
-    child: MaterialApp(
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFF2E7D6B), brightness: brightness),
-      builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)), child: child!),
-      home: AnalysisScreen(initialMonth: DateTime(2026, 6)),
+  await tester.pumpWidget(
+    ChangeNotifierProvider<AppState>.value(
+      value: s,
+      child: MaterialApp(
+        theme: ThemeData(
+          useMaterial3: true,
+          colorSchemeSeed: const Color(0xFF2E7D6B),
+          brightness: brightness,
+        ),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
+        home: AnalysisScreen(initialMonth: DateTime(2026, 6)),
+      ),
     ),
-  ));
+  );
   await tester.pumpAndSettle();
 }
 
@@ -45,7 +61,9 @@ void main() {
     ('fonte a 130%', Brightness.light, const Size(360, 640), 1.3),
     ('ecrã grande', Brightness.light, const Size(800, 1280), 1.0),
   ]) {
-    testWidgets('percorre os 4 separadores sem erros de layout ($name)', (tester) async {
+    testWidgets('percorre os 4 separadores sem erros de layout ($name)', (
+      tester,
+    ) async {
       final d = buildAnalysisData();
       await _pump(tester, d.s, brightness: b, size: size, textScale: scale);
       expect(find.text('Visão geral'), findsOneWidget);
@@ -60,7 +78,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: 'separador $tab');
         await _scrollThrough(tester);
-        expect(tester.takeException(), isNull, reason: 'separador $tab (scroll)');
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: 'separador $tab (scroll)',
+        );
       }
     });
   }
@@ -72,21 +94,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Potencial de poupança'), findsOneWidget);
     expect(find.text('E se cortasse nas opcionais?'), findsOneWidget);
-    await tester.scrollUntilVisible(find.textContaining('Alimentação subiu'), 300, scrollable: find.byType(Scrollable).last);
-    expect(find.textContaining('Alimentação subiu'), findsOneWidget); // +74% face a maio
+    await tester.scrollUntilVisible(
+      find.textContaining('Alimentação subiu'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(
+      find.textContaining('Alimentação subiu'),
+      findsOneWidget,
+    ); // +74% face a maio
     await tester.ensureVisible(find.text('20%'));
     await tester.tap(find.text('20%'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Gastos: abrir o detalhe de uma categoria e filtrar só por ela', (tester) async {
+  testWidgets('Gastos: abrir o detalhe de uma categoria e filtrar só por ela', (
+    tester,
+  ) async {
     final d = buildAnalysisData();
     await _pump(tester, d.s);
     await tester.tap(find.text('Gastos'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.widgetWithText(InkWell, 'Alimentação'), 200, scrollable: find.byType(Scrollable).last);
-    tester.widget<InkWell>(find.widgetWithText(InkWell, 'Alimentação')).onTap!();
+    await tester.scrollUntilVisible(
+      find.widgetWithText(InkWell, 'Alimentação'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    tester
+        .widget<InkWell>(find.widgetWithText(InkWell, 'Alimentação'))
+        .onTap!();
     await tester.pumpAndSettle();
     expect(find.text('De onde vem'), findsOneWidget);
     expect(find.text('Analisar só esta'), findsOneWidget);
@@ -101,7 +138,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Filtros: abrir a folha, escolher "Opcionais" e aplicar', (tester) async {
+  testWidgets('Filtros: abrir a folha, escolher "Opcionais" e aplicar', (
+    tester,
+  ) async {
     final d = buildAnalysisData();
     await _pump(tester, d.s);
     await tester.tap(find.text('Filtros'));

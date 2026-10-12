@@ -1,10 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../db/database.dart';
 import '../import/parsers.dart';
-import '../cloud/cloud_provider.dart';
-import '../cloud/microsoft_auth.dart';
-import '../cloud/onedrive_provider.dart';
 import '../invest/invest.dart';
 import '../invest/price_service.dart';
 import '../models.dart';
@@ -79,15 +78,8 @@ class AppState extends ChangeNotifier {
   final Db db;
   final PriceService prices;
 
-  /// Onde se guardam cópias dos dados (OneDrive).
-  late final CloudProvider cloud;
-  AppState(this.db, {PriceService? prices, CloudProvider? cloud})
+  AppState(this.db, {PriceService? prices})
     : prices = prices ?? PriceService() {
-    this.cloud =
-        cloud ??
-        OneDriveProvider(
-          auth: MicrosoftAuth(db: db, clientId: () => oneDriveClientId),
-        );
     reload();
   }
 
@@ -647,46 +639,23 @@ class AppState extends ChangeNotifier {
     return n;
   }
 
-  // ---------- Cópia no OneDrive ----------
-  /// ID da aplicação (cliente) registada no Azure. Não é segredo.
-  String get oneDriveClientId => db.setting('onedrive_client_id') ?? '';
-  void setOneDriveClientId(String v) {
-    db.putSetting('onedrive_client_id', v.trim());
+  // ---------- Cópia de segurança ----------
+  DateTime? get lastBackup =>
+      DateTime.tryParse(db.setting('last_backup') ?? '');
+
+  /// Bytes de uma cópia completa da base de dados (ficheiro SQLite).
+  Uint8List backupBytes() => db.snapshotBytes();
+
+  void markBackup() {
+    db.putSetting('last_backup', DateTime.now().toIso8601String());
     notifyListeners();
   }
 
-  DateTime? get lastCloudBackup =>
-      DateTime.tryParse(db.setting('cloud_last_backup') ?? '');
-
-  /// Guarda uma cópia de toda a base de dados no OneDrive (substitui a anterior).
-  Future<CloudBackupInfo> backupToCloud(CloudProvider p) async {
-    final info = await p.upload(db.snapshotBytes());
-    db.putSetting('cloud_last_backup', DateTime.now().toIso8601String());
-    notifyListeners();
-    return info;
-  }
-
-  /// Substitui TODOS os dados pelos da última cópia. Devolve a data da cópia.
-  Future<DateTime> restoreFromCloud(CloudProvider p) async {
-    final info = await p.latest();
-    if (info == null) {
-      throw const CloudException('Ainda não há nenhuma cópia no OneDrive.');
-    }
-    final bytes = await p.download(info);
-    // configuração e sessão deste telemóvel não se perdem com o restauro
-    const keep = ['onedrive_client_id', 'onedrive_refresh', 'onedrive_account'];
-    final saved = {for (final k in keep) k: db.setting(k)};
-    try {
-      await db.restoreBytes(bytes);
-    } on FormatException catch (e) {
-      throw CloudException(e.message);
-    }
-    for (final e in saved.entries) {
-      if (e.value != null) db.putSetting(e.key, e.value!);
-    }
+  /// Substitui TODOS os dados pelos de uma cópia. Lança FormatException se o ficheiro não for uma cópia desta app.
+  Future<void> restoreBackup(Uint8List bytes) async {
+    await db.restoreBytes(bytes);
     baseCcy = db.setting('base_currency') ?? 'EUR';
     reload();
-    return info.modified;
   }
 
   /// Diz que estas compras foram feitas com o dinheiro desta transferência (o resto fica em espera).

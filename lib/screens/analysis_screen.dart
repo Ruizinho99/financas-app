@@ -21,10 +21,14 @@ class AnalysisScreen extends StatefulWidget {
   State<AnalysisScreen> createState() => _AnalysisScreenState();
 }
 
-class _AnalysisScreenState extends State<AnalysisScreen> with SingleTickerProviderStateMixin {
+class _AnalysisScreenState extends State<AnalysisScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController tabs = TabController(length: 4, vsync: this);
   _Mode mode = _Mode.month;
-  late DateTime month = DateTime((widget.initialMonth ?? DateTime.now()).year, (widget.initialMonth ?? DateTime.now()).month);
+  late DateTime month = DateTime(
+    (widget.initialMonth ?? DateTime.now()).year,
+    (widget.initialMonth ?? DateTime.now()).month,
+  );
   late int year = month.year;
   late DateTime customFrom = month;
   late DateTime customTo = DateTime(month.year, month.month + 1, 0);
@@ -38,18 +42,21 @@ class _AnalysisScreenState extends State<AnalysisScreen> with SingleTickerProvid
   }
 
   Period get period => switch (mode) {
-        _Mode.month => Period.month(month),
-        _Mode.year => Period.year(year),
-        _Mode.ytd => Period.ytd(),
-        _Mode.custom => Period.custom(customFrom, customTo),
-      };
+    _Mode.month => Period.month(month),
+    _Mode.year => Period.year(year),
+    _Mode.ytd => Period.ytd(),
+    _Mode.custom => Period.custom(customFrom, customTo),
+  };
 
   String get periodLabel => switch (mode) {
-        _Mode.month => fmtMonth(month),
-        _Mode.year => '$year',
-        _Mode.ytd => 'YTD ${DateTime.now().year} · 1 jan – hoje',
-        _Mode.custom => customFrom.isAfter(customTo) ? '${fmtDate(customTo)} – ${fmtDate(customFrom)}' : '${fmtDate(customFrom)} – ${fmtDate(customTo)}',
-      };
+    _Mode.month => fmtMonth(month),
+    _Mode.year => '$year',
+    _Mode.ytd => 'YTD ${DateTime.now().year} · 1 jan – hoje',
+    _Mode.custom =>
+      customFrom.isAfter(customTo)
+          ? '${fmtDate(customTo)} – ${fmtDate(customFrom)}'
+          : '${fmtDate(customFrom)} – ${fmtDate(customTo)}',
+  };
 
   void _viewCategory(int id) {
     setState(() => filter = filter.copyWith(categoryIds: {id}));
@@ -60,23 +67,31 @@ class _AnalysisScreenState extends State<AnalysisScreen> with SingleTickerProvid
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final p = period;
-    final a = Analytics(s, p, filter, previous: compare ? previousPeriod(p, today: DateTime.now()) : null);
+    final a = Analytics(
+      s,
+      p,
+      filter,
+      previous: compare ? previousPeriod(p, today: DateTime.now()) : null,
+    );
     final cs = Theme.of(context).colorScheme;
 
     Widget chev(int dir) => IconButton(
-          icon: Icon(dir < 0 ? Icons.chevron_left : Icons.chevron_right),
-          onPressed: () => setState(() {
-            if (mode == _Mode.month) month = DateTime(month.year, month.month + dir);
-            if (mode == _Mode.year) year += dir;
-          }),
-        );
+      icon: Icon(dir < 0 ? Icons.chevron_left : Icons.chevron_right),
+      onPressed: () => setState(() {
+        if (mode == _Mode.month)
+          month = DateTime(month.year, month.month + dir);
+        if (mode == _Mode.year) year += dir;
+      }),
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Análise'),
         actions: [
           IconButton(
-            tooltip: compare ? 'A comparar com o período anterior' : 'Comparar com o período anterior',
+            tooltip: compare
+                ? 'A comparar com o período anterior'
+                : 'Comparar com o período anterior',
             isSelected: compare,
             icon: const Icon(Icons.compare_arrows),
             selectedIcon: Icon(Icons.compare_arrows, color: cs.primary),
@@ -88,52 +103,84 @@ class _AnalysisScreenState extends State<AnalysisScreen> with SingleTickerProvid
       body: NestedScrollView(
         headerSliverBuilder: (context, inner) => [
           SliverToBoxAdapter(
-            child: Column(children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<_Mode>(
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(value: _Mode.month, label: Text('Mês')),
-                      ButtonSegment(value: _Mode.year, label: Text('Ano')),
-                      ButtonSegment(value: _Mode.ytd, label: Text('YTD')),
-                      ButtonSegment(value: _Mode.custom, label: Text('Custom')),
-                    ],
-                    selected: {mode},
-                    onSelectionChanged: (v) => setState(() => mode = v.first),
-                  ),
-                ),
-              ),
-              if (mode == _Mode.month || mode == _Mode.year)
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [chev(-1), Text(periodLabel, style: Theme.of(context).textTheme.titleMedium), chev(1)])
-              else if (mode == _Mode.ytd)
-                Padding(padding: const EdgeInsets.symmetric(vertical: 14), child: Text(periodLabel, style: Theme.of(context).textTheme.titleMedium))
-              else
+            child: Column(
+              children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.date_range),
-                    label: Text(periodLabel),
-                    onPressed: () async {
-                      final r = await showDateRangePicker(
-                        context: context,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2100),
-                        initialDateRange: DateTimeRange(start: customFrom.isAfter(customTo) ? customTo : customFrom, end: customFrom.isAfter(customTo) ? customFrom : customTo),
-                        helpText: 'Escolhe o intervalo',
-                        saveText: 'Aplicar',
-                      );
-                      if (r != null) setState(() {
-                        customFrom = r.start;
-                        customTo = r.end;
-                      });
-                    },
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<_Mode>(
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(value: _Mode.month, label: Text('Mês')),
+                        ButtonSegment(value: _Mode.year, label: Text('Ano')),
+                        ButtonSegment(value: _Mode.ytd, label: Text('YTD')),
+                        ButtonSegment(
+                          value: _Mode.custom,
+                          label: Text('Custom'),
+                        ),
+                      ],
+                      selected: {mode},
+                      onSelectionChanged: (v) => setState(() => mode = v.first),
+                    ),
                   ),
                 ),
-              FilterBar(filter: filter, onChanged: (f) => setState(() => filter = f)),
-            ]),
+                if (mode == _Mode.month || mode == _Mode.year)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      chev(-1),
+                      Text(
+                        periodLabel,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      chev(1),
+                    ],
+                  )
+                else if (mode == _Mode.ytd)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Text(
+                      periodLabel,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.date_range),
+                      label: Text(periodLabel),
+                      onPressed: () async {
+                        final r = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                          initialDateRange: DateTimeRange(
+                            start: customFrom.isAfter(customTo)
+                                ? customTo
+                                : customFrom,
+                            end: customFrom.isAfter(customTo)
+                                ? customFrom
+                                : customTo,
+                          ),
+                          helpText: 'Escolhe o intervalo',
+                          saveText: 'Aplicar',
+                        );
+                        if (r != null)
+                          setState(() {
+                            customFrom = r.start;
+                            customTo = r.end;
+                          });
+                      },
+                    ),
+                  ),
+                FilterBar(
+                  filter: filter,
+                  onChanged: (f) => setState(() => filter = f),
+                ),
+              ],
+            ),
           ),
           SliverPersistentHeader(
             pinned: true,
@@ -144,7 +191,12 @@ class _AnalysisScreenState extends State<AnalysisScreen> with SingleTickerProvid
                   controller: tabs,
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
-                  tabs: const [Tab(text: 'Visão geral'), Tab(text: 'Gastos'), Tab(text: 'Poupar'), Tab(text: 'Evolução')],
+                  tabs: const [
+                    Tab(text: 'Visão geral'),
+                    Tab(text: 'Gastos'),
+                    Tab(text: 'Poupar'),
+                    Tab(text: 'Evolução'),
+                  ],
                 ),
               ),
             ),
@@ -153,7 +205,12 @@ class _AnalysisScreenState extends State<AnalysisScreen> with SingleTickerProvid
         body: TabBarView(
           controller: tabs,
           children: [
-            OverviewTab(a: a, periodLabel: periodLabel, compare: compare, onSavings: () => tabs.animateTo(2)),
+            OverviewTab(
+              a: a,
+              periodLabel: periodLabel,
+              compare: compare,
+              onSavings: () => tabs.animateTo(2),
+            ),
             SpendTab(a: a, compare: compare, onFilterCategory: _viewCategory),
             SaveTab(a: a, onViewCategory: _viewCategory),
             TrendTab(a: a),
@@ -172,7 +229,11 @@ class _TabsDelegate extends SliverPersistentHeaderDelegate {
   @override
   double get maxExtent => 48;
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => child;
   @override
   bool shouldRebuild(covariant _TabsDelegate old) => true;
 }

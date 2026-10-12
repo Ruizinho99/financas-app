@@ -4,16 +4,21 @@ import 'package:financas/import/parsers.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('PDF com 3 páginas e colunas em blocos separados: lê todos os movimentos', () {
-    final text = pdfText(File('test/fixtures/extrato_multipagina.pdf').readAsBytesSync());
-    final rows = parseStatementText(text);
-    expect(rows.length, 45); // 15 por página × 3 páginas
-    expect(rows.first.description, 'COMPRA LOJA 1 LISBOA');
-    expect(rows.first.amount, -1508);
-    expect(rows.first.balance, 98492);
-    expect(rows.last.description, 'COMPRA LOJA 45 LISBOA');
-    expect(rows.every((r) => r.amount < 0), isTrue);
-  });
+  test(
+    'PDF com 3 páginas e colunas em blocos separados: lê todos os movimentos',
+    () {
+      final text = pdfText(
+        File('test/fixtures/extrato_multipagina.pdf').readAsBytesSync(),
+      );
+      final rows = parseStatementText(text);
+      expect(rows.length, 45); // 15 por página × 3 páginas
+      expect(rows.first.description, 'COMPRA LOJA 1 LISBOA');
+      expect(rows.first.amount, -1508);
+      expect(rows.first.balance, 98492);
+      expect(rows.last.description, 'COMPRA LOJA 45 LISBOA');
+      expect(rows.every((r) => r.amount < 0), isTrue);
+    },
+  );
 
   test('linhas com data que não dão movimento são devolvidas para avisar', () {
     const text = '''
@@ -93,20 +98,33 @@ SALDO FINAL 73.00
     expect(cc.first.date, DateTime(2025, 6, 2));
     expect(cc.first.amount, -5000); // sinal deduzido a partir do SALDO INICIAL
     expect(cc[1].amount, -1000);
-    expect(cc[2].amount, 10000); // crédito (usa o TRANSPORTE da página seguinte)
+    expect(
+      cc[2].amount,
+      10000,
+    ); // crédito (usa o TRANSPORTE da página seguinte)
     // linha partida em 3 e com a descrição a meio
     final cafe = cc.firstWhere((r) => r.description.contains('CAFE'));
     expect(cafe.description, 'COMPRA 1111 CAFE CENTRAL');
     expect(cafe.amount, -350);
     expect(cafe.date, DateTime(2025, 6, 9));
     // o rodapé com data fora do extrato e o texto com letras espaçadas não viram movimentos
-    expect(det.rows.any((r) => r.description.contains('EXT. N.') || r.description.startsWith('B a n c o')), isFalse);
+    expect(
+      det.rows.any(
+        (r) =>
+            r.description.contains('EXT. N.') ||
+            r.description.startsWith('B a n c o'),
+      ),
+      isFalse,
+    );
     // os saldos fecham: saldo inicial + movimentos = saldo final
     expect(20000 + cc.fold(0, (a, r) => a + r.amount), 110000);
     expect(13650 + pp.fold(0, (a, r) => a + r.amount), 7300);
     // transferências entre as duas contas (2 pares)
     expect(markTransfers(det.rows), 2);
     expect(det.rows.where((r) => r.isTransfer).length, 4);
-    expect(cc.firstWhere((r) => r.description.contains('VENCIMENTO')).isTransfer, isFalse);
+    expect(
+      cc.firstWhere((r) => r.description.contains('VENCIMENTO')).isTransfer,
+      isFalse,
+    );
   });
 }

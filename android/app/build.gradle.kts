@@ -27,8 +27,6 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        // redirecionamento do login Microsoft (ver lib/cloud/microsoft_auth.dart)
-        manifestPlaceholders["appAuthRedirectScheme"] = "pt.financas.financas"
     }
 
     buildTypes {

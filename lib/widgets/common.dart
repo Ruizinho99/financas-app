@@ -11,8 +11,18 @@ import 'form_kit.dart';
 export 'category_editor.dart' show showCategoryEditor;
 
 const palette = <int>[
-  0xFF5C6BC0, 0xFF66BB6A, 0xFF26A69A, 0xFFEF5350, 0xFF8D6E63, 0xFFFFA726,
-  0xFFAB47BC, 0xFF29B6F6, 0xFF9CCC65, 0xFF43A047, 0xFFEC407A, 0xFF78909C,
+  0xFF5C6BC0,
+  0xFF66BB6A,
+  0xFF26A69A,
+  0xFFEF5350,
+  0xFF8D6E63,
+  0xFFFFA726,
+  0xFFAB47BC,
+  0xFF29B6F6,
+  0xFF9CCC65,
+  0xFF43A047,
+  0xFFEC407A,
+  0xFF78909C,
 ];
 
 /// Emoji da categoria (ou um marcador neutro se ainda não tem).
@@ -23,8 +33,17 @@ class CatBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final e = category?.emoji ?? '';
-    if (category == null) return Icon(Icons.help_outline, size: size, color: Colors.grey);
-    return SizedBox(width: size * 1.3, child: Center(child: Text(e.isEmpty ? '🏷️' : e, style: TextStyle(fontSize: size * 0.9))));
+    if (category == null)
+      return Icon(Icons.help_outline, size: size, color: Colors.grey);
+    return SizedBox(
+      width: size * 1.3,
+      child: Center(
+        child: Text(
+          e.isEmpty ? '🏷️' : e,
+          style: TextStyle(fontSize: size * 0.9),
+        ),
+      ),
+    );
   }
 }
 
@@ -36,8 +55,16 @@ class MoneyText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final st = context.watch<AppState>();
-    final color = !colored ? null : Color(cents < 0 ? st.expenseColor : st.incomeColor);
-    return Text(fmtMoney(cents), style: (style ?? const TextStyle()).copyWith(color: color, fontWeight: FontWeight.w600));
+    final color = !colored
+        ? null
+        : Color(cents < 0 ? st.expenseColor : st.incomeColor);
+    return Text(
+      fmtMoney(cents),
+      style: (style ?? const TextStyle()).copyWith(
+        color: color,
+        fontWeight: FontWeight.w600,
+      ),
+    );
   }
 }
 
@@ -46,7 +73,13 @@ class BudgetBar extends StatelessWidget {
   final int spent, target;
   final BudgetType type;
   final double height;
-  const BudgetBar({super.key, required this.spent, required this.target, required this.type, this.height = 10});
+  const BudgetBar({
+    super.key,
+    required this.spent,
+    required this.target,
+    required this.type,
+    this.height = 10,
+  });
 
   static Color colorFor(BudgetType type, double ratio) {
     if (type == BudgetType.limit) {
@@ -65,13 +98,15 @@ class BudgetBar extends StatelessWidget {
     final c = colorFor(type, ratio);
     return ClipRRect(
       borderRadius: BorderRadius.circular(height),
-      child: Stack(children: [
-        Container(height: height, color: c.withValues(alpha: 0.18)),
-        FractionallySizedBox(
-          widthFactor: ratio.clamp(0.0, 1.0),
-          child: Container(height: height, color: c),
-        ),
-      ]),
+      child: Stack(
+        children: [
+          Container(height: height, color: c.withValues(alpha: 0.18)),
+          FractionallySizedBox(
+            widthFactor: ratio.clamp(0.0, 1.0),
+            child: Container(height: height, color: c),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -89,7 +124,15 @@ class CategorySelector extends StatefulWidget {
   /// Intervalo de datas dos movimentos: só mostra categorias que existiam nessa altura
   /// (por omissão, as que existem hoje).
   final DateTimeRange? when;
-  const CategorySelector({super.key, required this.value, required this.onChanged, this.compact = false, this.form = false, this.income, this.when});
+  const CategorySelector({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.compact = false,
+    this.form = false,
+    this.income,
+    this.when,
+  });
 
   @override
   State<CategorySelector> createState() => _CategorySelectorState();
@@ -98,9 +141,11 @@ class CategorySelector extends StatefulWidget {
 class _CategorySelectorState extends State<CategorySelector> {
   static const _none = -1, _newItem = -2, _toggleAll = -3;
   bool _showAll = false; // incluir categorias fora do período
-  int _tick = 0; // força os dropdowns a voltarem ao valor real depois de "Nova…"
+  int _tick =
+      0; // força os dropdowns a voltarem ao valor real depois de "Nova…"
 
-  bool _showAllOrVisible(Categoria c, AppState s, DateTime from, DateTime to) => _showAll || s.isCategoryActiveDuring(c, from, to);
+  bool _showAllOrVisible(Categoria c, AppState s, DateTime from, DateTime to) =>
+      _showAll || s.isCategoryActiveDuring(c, from, to);
 
   int? get value => widget.value;
   ValueChanged<int?> get onChanged => widget.onChanged;
@@ -121,14 +166,29 @@ class _CategorySelectorState extends State<CategorySelector> {
       return s.isCategoryActiveDuring(c, from, to);
     }
 
-    String tag(Categoria c) => (!c.hasDates && !(s.cat(c.parentId)?.hasDates ?? false))
+    String tag(Categoria c) =>
+        (!c.hasDates && !(s.cat(c.parentId)?.hasDates ?? false))
         ? ''
-        : (s.isCategoryActiveNow(c) ? '' : ((c.activeTo ?? s.cat(c.parentId)?.activeTo) != null && (c.activeTo ?? s.cat(c.parentId)!.activeTo!).compareTo(monthKey(DateTime.now())) < 0 ? '  · terminada' : '  · futura'));
+        : (s.isCategoryActiveNow(c)
+              ? ''
+              : ((c.activeTo ?? s.cat(c.parentId)?.activeTo) != null &&
+                        (c.activeTo ?? s.cat(c.parentId)!.activeTo!).compareTo(
+                              monthKey(DateTime.now()),
+                            ) <
+                            0
+                    ? '  · terminada'
+                    : '  · futura'));
 
-    final allRoots = s.roots.where((r) => income == null || r.both || r.isIncome == income).toList();
+    final allRoots = s.roots
+        .where((r) => income == null || r.both || r.isIncome == income)
+        .toList();
     final roots = allRoots.where(visible).toList();
-    final subs = rootId == null ? <Categoria>[] : s.childrenOf(rootId).where(visible).toList();
-    final hiddenExist = s.categories.any((c) => !c.archived && c.hasDates && !_showAllOrVisible(c, s, from, to));
+    final subs = rootId == null
+        ? <Categoria>[]
+        : s.childrenOf(rootId).where(visible).toList();
+    final hiddenExist = s.categories.any(
+      (c) => !c.archived && c.hasDates && !_showAllOrVisible(c, s, from, to),
+    );
 
     Future<void> createRoot() async {
       final id = await showCategoryEditor(context);
@@ -149,13 +209,38 @@ class _CategorySelectorState extends State<CategorySelector> {
       initialValue: rootId,
       isExpanded: true,
       decoration: form
-          ? const InputDecoration(hintText: 'Seleciona uma categoria', prefixIcon: Icon(Icons.sell_outlined))
+          ? const InputDecoration(
+              hintText: 'Seleciona uma categoria',
+              prefixIcon: Icon(Icons.sell_outlined),
+            )
           : InputDecoration(labelText: 'Categoria', isDense: compact),
       items: [
-        for (final r in roots) DropdownMenuItem(value: r.id, child: Text('${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}${tag(r)}', overflow: TextOverflow.ellipsis)),
-        const DropdownMenuItem(value: _newItem, child: Text('➕  Nova categoria…')),
-        if (hiddenExist || _showAll) DropdownMenuItem(value: _toggleAll, child: Text(_showAll ? '🙈  Esconder terminadas e futuras' : '👁  Mostrar terminadas e futuras')),
-        if (rootId != null) const DropdownMenuItem(value: _none, child: Text('✖️  Sem categoria')),
+        for (final r in roots)
+          DropdownMenuItem(
+            value: r.id,
+            child: Text(
+              '${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}${tag(r)}',
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        const DropdownMenuItem(
+          value: _newItem,
+          child: Text('➕  Nova categoria…'),
+        ),
+        if (hiddenExist || _showAll)
+          DropdownMenuItem(
+            value: _toggleAll,
+            child: Text(
+              _showAll
+                  ? '🙈  Esconder terminadas e futuras'
+                  : '👁  Mostrar terminadas e futuras',
+            ),
+          ),
+        if (rootId != null)
+          const DropdownMenuItem(
+            value: _none,
+            child: Text('✖️  Sem categoria'),
+          ),
       ],
       onChanged: (v) {
         if (v == _newItem) {
@@ -178,14 +263,36 @@ class _CategorySelectorState extends State<CategorySelector> {
       initialValue: subId,
       isExpanded: true,
       decoration: form
-          ? InputDecoration(hintText: 'Seleciona uma subcategoria', prefixIcon: const Icon(Icons.format_list_bulleted), enabled: rootId != null)
-          : InputDecoration(labelText: 'Subcategoria', isDense: compact, enabled: rootId != null),
+          ? InputDecoration(
+              hintText: 'Seleciona uma subcategoria',
+              prefixIcon: const Icon(Icons.format_list_bulleted),
+              enabled: rootId != null,
+            )
+          : InputDecoration(
+              labelText: 'Subcategoria',
+              isDense: compact,
+              enabled: rootId != null,
+            ),
       items: rootId == null
           ? const []
           : [
-              for (final k in subs) DropdownMenuItem(value: k.id, child: Text('${k.emoji.isEmpty ? '🏷️' : k.emoji}  ${k.name}${tag(k)}', overflow: TextOverflow.ellipsis)),
-              const DropdownMenuItem(value: _newItem, child: Text('➕  Nova subcategoria…')),
-              if (subId != null) const DropdownMenuItem(value: _none, child: Text('— Sem subcategoria —')),
+              for (final k in subs)
+                DropdownMenuItem(
+                  value: k.id,
+                  child: Text(
+                    '${k.emoji.isEmpty ? '🏷️' : k.emoji}  ${k.name}${tag(k)}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              const DropdownMenuItem(
+                value: _newItem,
+                child: Text('➕  Nova subcategoria…'),
+              ),
+              if (subId != null)
+                const DropdownMenuItem(
+                  value: _none,
+                  child: Text('— Sem subcategoria —'),
+                ),
             ],
       onChanged: rootId == null
           ? null
@@ -201,33 +308,66 @@ class _CategorySelectorState extends State<CategorySelector> {
     );
 
     if (form) {
-      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const FieldLabel('Categoria'),
-        catDrop,
-        const FieldLabel('Subcategoria', optional: true),
-        subDrop,
-      ]);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const FieldLabel('Categoria'),
+          catDrop,
+          const FieldLabel('Subcategoria', optional: true),
+          subDrop,
+        ],
+      );
     }
     if (compact) {
-      return Row(children: [Expanded(child: catDrop), const SizedBox(width: 8), Expanded(child: subDrop)]);
+      return Row(
+        children: [
+          Expanded(child: catDrop),
+          const SizedBox(width: 8),
+          Expanded(child: subDrop),
+        ],
+      );
     }
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [catDrop, const SizedBox(height: 12), subDrop]);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [catDrop, const SizedBox(height: 12), subDrop],
+    );
   }
 }
 
 /// Diálogo com o seletor. Devolve o id, -1 para "sem categoria", ou null se cancelado.
-Future<int?> pickCategory(BuildContext context, {int? selected, bool? income, bool allowClear = true}) {
+Future<int?> pickCategory(
+  BuildContext context, {
+  int? selected,
+  bool? income,
+  bool allowClear = true,
+}) {
   int? v = selected;
   return showDialog<int>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
         title: const Text('Escolher categoria'),
-        content: SingleChildScrollView(child: CategorySelector(value: v, income: income, onChanged: (x) => set(() => v = x))),
+        content: SingleChildScrollView(
+          child: CategorySelector(
+            value: v,
+            income: income,
+            onChanged: (x) => set(() => v = x),
+          ),
+        ),
         actions: [
-          if (allowClear) TextButton(onPressed: () => Navigator.pop(ctx, -1), child: const Text('Sem categoria')),
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          FilledButton(onPressed: v == null ? null : () => Navigator.pop(ctx, v), child: const Text('Escolher')),
+          if (allowClear)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, -1),
+              child: const Text('Sem categoria'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: v == null ? null : () => Navigator.pop(ctx, v),
+            child: const Text('Escolher'),
+          ),
         ],
       ),
     ),
@@ -238,11 +378,76 @@ Future<int?> pickCategory(BuildContext context, {int? selected, bool? income, bo
 // Emoji
 // ---------------------------------------------------------------------------
 const _emojis = <String>[
-  '🏠', '🔑', '💡', '💧', '🔥', '📶', '📱', '📺', '🛒', '🥦', '🍎', '🥩', '🐟', '🍞', '☕', '🍽️',
-  '🍕', '🍔', '🍺', '🚗', '⛽', '🚌', '🚆', '✈️', '🚲', '🅿️', '🛣️', '🏥', '💊', '🦷', '👓', '🧘',
-  '🏋️', '⚽', '🎬', '🎮', '🎵', '📚', '🎓', '👕', '👟', '💄', '💇', '🛍️', '🎁', '🧸', '👶', '🐶',
-  '🐱', '🌴', '🏖️', '🏨', '🧾', '🏦', '💳', '💰', '📈', '🪙', '🐷', '🎯', '🛡️', '🔧', '🧹', '🪴',
-  '💼', '🧑‍💻', '📦', '❤️', '⭐', '🏷️',
+  '🏠',
+  '🔑',
+  '💡',
+  '💧',
+  '🔥',
+  '📶',
+  '📱',
+  '📺',
+  '🛒',
+  '🥦',
+  '🍎',
+  '🥩',
+  '🐟',
+  '🍞',
+  '☕',
+  '🍽️',
+  '🍕',
+  '🍔',
+  '🍺',
+  '🚗',
+  '⛽',
+  '🚌',
+  '🚆',
+  '✈️',
+  '🚲',
+  '🅿️',
+  '🛣️',
+  '🏥',
+  '💊',
+  '🦷',
+  '👓',
+  '🧘',
+  '🏋️',
+  '⚽',
+  '🎬',
+  '🎮',
+  '🎵',
+  '📚',
+  '🎓',
+  '👕',
+  '👟',
+  '💄',
+  '💇',
+  '🛍️',
+  '🎁',
+  '🧸',
+  '👶',
+  '🐶',
+  '🐱',
+  '🌴',
+  '🏖️',
+  '🏨',
+  '🧾',
+  '🏦',
+  '💳',
+  '💰',
+  '📈',
+  '🪙',
+  '🐷',
+  '🎯',
+  '🛡️',
+  '🔧',
+  '🧹',
+  '🪴',
+  '💼',
+  '🧑‍💻',
+  '📦',
+  '❤️',
+  '⭐',
+  '🏷️',
 ];
 
 Future<String?> pickEmoji(BuildContext context, String current) {
@@ -254,37 +459,64 @@ Future<String?> pickEmoji(BuildContext context, String current) {
       content: SizedBox(
         width: 340,
         child: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Wrap(spacing: 4, runSpacing: 4, children: [
-              for (final e in _emojis)
-                InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () => Navigator.pop(ctx, e),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  for (final e in _emojis)
+                    InkWell(
                       borderRadius: BorderRadius.circular(8),
-                      color: e == current ? Theme.of(ctx).colorScheme.primaryContainer : null,
+                      onTap: () => Navigator.pop(ctx, e),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: e == current
+                              ? Theme.of(ctx).colorScheme.primaryContainer
+                              : null,
+                        ),
+                        child: Text(e, style: const TextStyle(fontSize: 24)),
+                      ),
                     ),
-                    child: Text(e, style: const TextStyle(fontSize: 24)),
-                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: ctrl,
+                decoration: const InputDecoration(
+                  labelText: 'Ou usa outro emoji do teclado',
                 ),
-            ]),
-            const SizedBox(height: 12),
-            TextField(
-              controller: ctrl,
-              decoration: const InputDecoration(labelText: 'Ou usa outro emoji do teclado'),
-              onSubmitted: (v) => Navigator.pop(ctx, v.trim().isEmpty ? '' : v.characters.first),
-            ),
-          ]),
+                onSubmitted: (v) => Navigator.pop(
+                  ctx,
+                  v.trim().isEmpty ? '' : v.characters.first,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
-        if (current.isNotEmpty) TextButton(onPressed: () => Navigator.pop(ctx, ''), child: const Text('Remover')),
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-        FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text.trim().isEmpty ? '' : ctrl.text.trim().characters.first), child: const Text('OK')),
+        if (current.isNotEmpty)
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, ''),
+            child: const Text('Remover'),
+          ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(
+            ctx,
+            ctrl.text.trim().isEmpty ? '' : ctrl.text.trim().characters.first,
+          ),
+          child: const Text('OK'),
+        ),
       ],
     ),
   );
@@ -293,8 +525,10 @@ Future<String?> pickEmoji(BuildContext context, String current) {
 // ---------------------------------------------------------------------------
 // Editor de movimento (manual ou existente): ecrã completo
 // ---------------------------------------------------------------------------
-Future<void> showTxnEditor(BuildContext context, {Txn? edit}) =>
-    Navigator.push(context, MaterialPageRoute(builder: (_) => TxnFormScreen(edit: edit)));
+Future<void> showTxnEditor(BuildContext context, {Txn? edit}) => Navigator.push(
+  context,
+  MaterialPageRoute(builder: (_) => TxnFormScreen(edit: edit)),
+);
 
 // ---------------------------------------------------------------------------
 // Escolha de cor: paleta + seletor livre
@@ -303,43 +537,74 @@ class ColorChoice extends StatelessWidget {
   final int color;
   final ValueChanged<int> onChanged;
   final List<int> colors;
-  const ColorChoice({super.key, required this.color, required this.onChanged, this.colors = palette});
+  const ColorChoice({
+    super.key,
+    required this.color,
+    required this.onChanged,
+    this.colors = palette,
+  });
 
   @override
   Widget build(BuildContext context) {
     final custom = !colors.contains(color);
-    return Wrap(spacing: 8, runSpacing: 8, children: [
-      for (final c in colors)
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final c in colors)
+          GestureDetector(
+            onTap: () => onChanged(c),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Color(c),
+                shape: BoxShape.circle,
+                border: color == c
+                    ? Border.all(
+                        width: 3,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      )
+                    : null,
+              ),
+            ),
+          ),
         GestureDetector(
-          onTap: () => onChanged(c),
+          onTap: () async {
+            final c = await pickCustomColor(context, color);
+            if (c != null) onChanged(c);
+          },
           child: Container(
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: Color(c),
               shape: BoxShape.circle,
-              border: color == c ? Border.all(width: 3, color: Theme.of(context).colorScheme.onSurface) : null,
+              color: custom ? Color(color) : null,
+              gradient: custom
+                  ? null
+                  : const SweepGradient(
+                      colors: [
+                        Colors.red,
+                        Colors.yellow,
+                        Colors.green,
+                        Colors.cyan,
+                        Colors.blue,
+                        Colors.purple,
+                        Colors.red,
+                      ],
+                    ),
+              border: custom
+                  ? Border.all(
+                      width: 3,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    )
+                  : null,
             ),
+            child: const Icon(Icons.colorize, size: 16, color: Colors.white),
           ),
         ),
-      GestureDetector(
-        onTap: () async {
-          final c = await pickCustomColor(context, color);
-          if (c != null) onChanged(c);
-        },
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: custom ? Color(color) : null,
-            gradient: custom ? null : const SweepGradient(colors: [Colors.red, Colors.yellow, Colors.green, Colors.cyan, Colors.blue, Colors.purple, Colors.red]),
-            border: custom ? Border.all(width: 3, color: Theme.of(context).colorScheme.onSurface) : null,
-          ),
-          child: const Icon(Icons.colorize, size: 16, color: Colors.white),
-        ),
-      ),
-    ]);
+      ],
+    );
   }
 }
 
@@ -354,25 +619,70 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
         builder: (ctx, set) => AlertDialog(
           title: const Text('Escolher cor'),
           content: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Container(height: 56, decoration: BoxDecoration(color: hsv.toColor(), borderRadius: BorderRadius.circular(12))),
-              const SizedBox(height: 8),
-              _slider('Matiz', hsv.hue, 360, (v) => set(() { hsv = hsv.withHue(v); hex.text = _hex(hsv.toColor()); })),
-              _slider('Saturação', hsv.saturation, 1, (v) => set(() { hsv = hsv.withSaturation(v); hex.text = _hex(hsv.toColor()); })),
-              _slider('Brilho', hsv.value, 1, (v) => set(() { hsv = hsv.withValue(v); hex.text = _hex(hsv.toColor()); })),
-              TextField(
-                controller: hex,
-                decoration: const InputDecoration(labelText: 'Hexadecimal', prefixText: '#'),
-                onChanged: (v) {
-                  final n = int.tryParse(v.replaceAll('#', ''), radix: 16);
-                  if (n != null && v.replaceAll('#', '').length == 6) set(() => hsv = HSVColor.fromColor(Color(0xFF000000 | n)));
-                },
-              ),
-            ]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: hsv.toColor(),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _slider(
+                  'Matiz',
+                  hsv.hue,
+                  360,
+                  (v) => set(() {
+                    hsv = hsv.withHue(v);
+                    hex.text = _hex(hsv.toColor());
+                  }),
+                ),
+                _slider(
+                  'Saturação',
+                  hsv.saturation,
+                  1,
+                  (v) => set(() {
+                    hsv = hsv.withSaturation(v);
+                    hex.text = _hex(hsv.toColor());
+                  }),
+                ),
+                _slider(
+                  'Brilho',
+                  hsv.value,
+                  1,
+                  (v) => set(() {
+                    hsv = hsv.withValue(v);
+                    hex.text = _hex(hsv.toColor());
+                  }),
+                ),
+                TextField(
+                  controller: hex,
+                  decoration: const InputDecoration(
+                    labelText: 'Hexadecimal',
+                    prefixText: '#',
+                  ),
+                  onChanged: (v) {
+                    final n = int.tryParse(v.replaceAll('#', ''), radix: 16);
+                    if (n != null && v.replaceAll('#', '').length == 6)
+                      set(
+                        () => hsv = HSVColor.fromColor(Color(0xFF000000 | n)),
+                      );
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, hsv.toColor().toARGB32()), child: const Text('Usar')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, hsv.toColor().toARGB32()),
+              child: const Text('Usar'),
+            ),
           ],
         ),
       );
@@ -380,18 +690,27 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
   );
 }
 
-String _hex(Color c) => (c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase();
+String _hex(Color c) =>
+    (c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase();
 
-Widget _slider(String label, double v, double max, ValueChanged<double> on) => Row(children: [
-      SizedBox(width: 78, child: Text(label)),
-      Expanded(child: Slider(value: v.clamp(0, max), max: max, onChanged: on)),
-    ]);
+Widget _slider(String label, double v, double max, ValueChanged<double> on) =>
+    Row(
+      children: [
+        SizedBox(width: 78, child: Text(label)),
+        Expanded(
+          child: Slider(value: v.clamp(0, max), max: max, onChanged: on),
+        ),
+      ],
+    );
 
 // ---------------------------------------------------------------------------
 // Períodos em que uma categoria é obrigatória
 // ---------------------------------------------------------------------------
 Future<void> showMandatoryDialog(BuildContext context, Categoria c) {
-  return showDialog(context: context, builder: (_) => _MandatoryDialog(category: c));
+  return showDialog(
+    context: context,
+    builder: (_) => _MandatoryDialog(category: c),
+  );
 }
 
 class _MandatoryDialog extends StatelessWidget {
@@ -402,30 +721,60 @@ class _MandatoryDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final ranges = s.rangesOf(category.id);
-    String m(String k) => fmtMonth(DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))));
+    String m(String k) => fmtMonth(
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))),
+    );
     return AlertDialog(
       title: Text('Obrigatória · ${category.name}'),
       content: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Os meses abaixo contam como despesa obrigatória nesta categoria. Nos restantes meses é opcional.'),
-          const SizedBox(height: 8),
-          if (ranges.isEmpty) const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('Nenhum período definido.', style: TextStyle(fontStyle: FontStyle.italic))),
-          for (final r in ranges)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: Text(r.end == null ? 'A partir de ${m(r.start)}' : (r.start == r.end ? m(r.start) : '${m(r.start)} → ${m(r.end!)}')),
-              trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => s.removeRange(r.id)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Os meses abaixo contam como despesa obrigatória nesta categoria. Nos restantes meses é opcional.',
             ),
-        ]),
+            const SizedBox(height: 8),
+            if (ranges.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'Nenhum período definido.',
+                  style: TextStyle(fontStyle: FontStyle.italic),
+                ),
+              ),
+            for (final r in ranges)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                title: Text(
+                  r.end == null
+                      ? 'A partir de ${m(r.start)}'
+                      : (r.start == r.end
+                            ? m(r.start)
+                            : '${m(r.start)} → ${m(r.end!)}'),
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: () => s.removeRange(r.id),
+                ),
+              ),
+          ],
+        ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fechar')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Fechar'),
+        ),
         FilledButton.icon(
           icon: const Icon(Icons.add),
           label: const Text('Adicionar período'),
           onPressed: () async {
-            final r = await showDialog<(String, String?)>(context: context, builder: (_) => const _RangePicker());
+            final r = await showDialog<(String, String?)>(
+              context: context,
+              builder: (_) => const _RangePicker(),
+            );
             if (r != null) s.addRange(category.id, r.$1, r.$2);
           },
         ),
@@ -446,7 +795,13 @@ class _RangePickerState extends State<_RangePicker> {
   bool open = false;
 
   Future<DateTime?> _pick(DateTime initial) async {
-    final d = await showDatePicker(context: context, initialDate: initial, firstDate: DateTime(2000), lastDate: DateTime(2100), helpText: 'Escolhe qualquer dia do mês');
+    final d = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      helpText: 'Escolhe qualquer dia do mês',
+    );
     return d == null ? null : DateTime(d.year, d.month);
   }
 
@@ -454,22 +809,45 @@ class _RangePickerState extends State<_RangePicker> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Novo período'),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        OutlinedButton(onPressed: () async { final d = await _pick(from); if (d != null) setState(() => from = d); }, child: Text('Desde ${fmtMonth(from)}')),
-        SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Sem data de fim'), value: open, onChanged: (v) => setState(() => open = v)),
-        if (!open)
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           OutlinedButton(
-            onPressed: () async { final d = await _pick(to ?? from); if (d != null) setState(() => to = d); },
-            child: Text('Até ${fmtMonth(to ?? from)}'),
+            onPressed: () async {
+              final d = await _pick(from);
+              if (d != null) setState(() => from = d);
+            },
+            child: Text('Desde ${fmtMonth(from)}'),
           ),
-      ]),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Sem data de fim'),
+            value: open,
+            onChanged: (v) => setState(() => open = v),
+          ),
+          if (!open)
+            OutlinedButton(
+              onPressed: () async {
+                final d = await _pick(to ?? from);
+                if (d != null) setState(() => to = d);
+              },
+              child: Text('Até ${fmtMonth(to ?? from)}'),
+            ),
+        ],
+      ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
         FilledButton(
           onPressed: () {
             var a = from, b = open ? null : (to ?? from);
             if (b != null && b.isBefore(a)) (a, b) = (b, a);
-            Navigator.pop(context, (monthKey(a), b == null ? null : monthKey(b)));
+            Navigator.pop(context, (
+              monthKey(a),
+              b == null ? null : monthKey(b),
+            ));
           },
           child: const Text('Adicionar'),
         ),

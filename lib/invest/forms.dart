@@ -246,7 +246,9 @@ Future<int?> showHoldingEditor(
         : edit!.priceOrig!.toString().replaceAll('.', ','),
   );
   final fxCtrl = TextEditingController(
-    text: edit?.lastFx != null && edit!.lastFx! > 0 ? (1 / edit.lastFx!).toStringAsFixed(4).replaceAll('.', ',') : '',
+    text: edit?.lastFx != null && edit!.lastFx! > 0
+        ? (1 / edit.lastFx!).toStringAsFixed(4).replaceAll('.', ',')
+        : '',
   );
   var currency = edit?.currency ?? baseCcy;
   var manualCcy = edit?.currencyManual ?? false;
@@ -310,12 +312,22 @@ Future<int?> showHoldingEditor(
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
                 key: ValueKey('ccy-$provider'),
-                initialValue: provider != PriceProvider.manual && !manualCcy ? 'AUTO' : (kCurrencies.contains(currency) ? currency : null),
+                initialValue: provider != PriceProvider.manual && !manualCcy
+                    ? 'AUTO'
+                    : (kCurrencies.contains(currency) ? currency : null),
                 isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Moeda do ativo'),
                 items: [
-                  if (provider != PriceProvider.manual) const DropdownMenuItem(value: 'AUTO', child: Text('Automática (a do preço)')),
-                  for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == baseCcy ? '$c · moeda de base' : c)),
+                  if (provider != PriceProvider.manual)
+                    const DropdownMenuItem(
+                      value: 'AUTO',
+                      child: Text('Automática (a do preço)'),
+                    ),
+                  for (final c in kCurrencies)
+                    DropdownMenuItem(
+                      value: c,
+                      child: Text(c == baseCcy ? '$c · moeda de base' : c),
+                    ),
                 ],
                 onChanged: (v) => set(() {
                   if (v == 'AUTO') {
@@ -331,8 +343,8 @@ Future<int?> showHoldingEditor(
                 provider != PriceProvider.manual && !manualCcy
                     ? 'Usa a moeda em que o ativo cota (${currency == baseCcy && edit?.lastPrice == null ? 'detetada ao obter o preço' : currency}). Podes escolher outra à mão.'
                     : currency == baseCcy
-                        ? 'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'
-                        : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para a moeda de base ao câmbio de mercado (atualizado em "Atualizar preços").',
+                    ? 'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'
+                    : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para a moeda de base ao câmbio de mercado (atualizado em "Atualizar preços").',
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
               const SizedBox(height: 14),
@@ -406,7 +418,9 @@ Future<int?> showHoldingEditor(
                   const SizedBox(height: 12),
                   TextField(
                     controller: fxCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Câmbio: 1 $baseSym = ? $currency',
                       suffixIcon: IconButton(
@@ -415,9 +429,17 @@ Future<int?> showHoldingEditor(
                         onPressed: () async {
                           try {
                             final r = await s.prices.fxRate(currency, baseCcy);
-                            if (r > 0) set(() => fxCtrl.text = (1 / r).toStringAsFixed(4).replaceAll('.', ','));
+                            if (r > 0)
+                              set(
+                                () => fxCtrl.text = (1 / r)
+                                    .toStringAsFixed(4)
+                                    .replaceAll('.', ','),
+                              );
                           } on PriceException catch (e) {
-                            set(() => error = 'Não consegui obter o câmbio: ${e.message}');
+                            set(
+                              () => error =
+                                  'Não consegui obter o câmbio: ${e.message}',
+                            );
                           }
                         },
                       ),
@@ -449,9 +471,16 @@ Future<int?> showHoldingEditor(
                   ? parseNum(price.text)
                   : null;
               final rate = parseNum(fxCtrl.text);
-              final fx = currency == baseCcy ? 1.0 : (rate != null && rate > 0 ? 1 / rate : edit?.lastFx);
-              if (provider == PriceProvider.manual && manual != null && currency != baseCcy && fx == null) {
-                set(() => error = 'Indica o câmbio, ou usa o botão de sincronizar para o câmbio de mercado.');
+              final fx = currency == baseCcy
+                  ? 1.0
+                  : (rate != null && rate > 0 ? 1 / rate : edit?.lastFx);
+              if (provider == PriceProvider.manual &&
+                  manual != null &&
+                  currency != baseCcy &&
+                  fx == null) {
+                set(
+                  () => error = 'Indica o câmbio, ou usa o botão de sincronizar para o câmbio de mercado.',
+                );
                 return;
               }
               final base = (edit ?? Holding(id: 0, accountId: acc!, name: n))
@@ -464,13 +493,18 @@ Future<int?> showHoldingEditor(
                         ? ''
                         : symbol.text.trim(),
                     currency: currency,
-                    currencyManual: manualCcy || provider == PriceProvider.manual,
+                    currencyManual:
+                        manualCcy || provider == PriceProvider.manual,
                     lastPriceOrig: provider == PriceProvider.manual
                         ? (manual ?? edit?.lastPriceOrig)
                         : edit?.lastPriceOrig,
-                    lastFx: provider == PriceProvider.manual && manual != null ? fx : edit?.lastFx,
+                    lastFx: provider == PriceProvider.manual && manual != null
+                        ? fx
+                        : edit?.lastFx,
                     lastPrice: provider == PriceProvider.manual
-                        ? (manual == null ? edit?.lastPrice : manual * (fx ?? 1))
+                        ? (manual == null
+                              ? edit?.lastPrice
+                              : manual * (fx ?? 1))
                         : edit?.lastPrice,
                     lastPriceAt:
                         provider == PriceProvider.manual && manual != null
@@ -515,38 +549,70 @@ Future<void> showCurrencyPicker(BuildContext context, Holding h) async {
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
         title: const Text('Moeda do ativo'),
-        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          DropdownButtonFormField<String>(
-            initialValue: value,
-            isExpanded: true,
-            items: [
-              if (h.canAutoPrice) const DropdownMenuItem(value: 'AUTO', child: Text('Automática (a do preço)')),
-              for (final c in kCurrencies) DropdownMenuItem(value: c, child: Text(c == baseCcy ? '$c · moeda de base' : c)),
-            ],
-            onChanged: (v) => set(() => value = v ?? value),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'O valor é convertido para ${baseCcy} ao câmbio de mercado, atualizado em "Atualizar preços". As operações já registadas mantêm os valores que lá estão.',
-            style: Theme.of(ctx).textTheme.bodySmall,
-          ),
-        ]),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DropdownButtonFormField<String>(
+              initialValue: value,
+              isExpanded: true,
+              items: [
+                if (h.canAutoPrice)
+                  const DropdownMenuItem(
+                    value: 'AUTO',
+                    child: Text('Automática (a do preço)'),
+                  ),
+                for (final c in kCurrencies)
+                  DropdownMenuItem(
+                    value: c,
+                    child: Text(c == baseCcy ? '$c · moeda de base' : c),
+                  ),
+              ],
+              onChanged: (v) => set(() => value = v ?? value),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'O valor é convertido para ${baseCcy} ao câmbio de mercado, atualizado em "Atualizar preços". As operações já registadas mantêm os valores que lá estão.',
+              style: Theme.of(ctx).textTheme.bodySmall,
+            ),
+          ],
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Guardar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Guardar'),
+          ),
         ],
       ),
     ),
   );
   if (ok != true) return;
   final auto = value == 'AUTO';
-  final nh = h.copyWith(currency: auto ? h.currency : value, currencyManual: !auto, lastFx: null);
+  final nh = h.copyWith(
+    currency: auto ? h.currency : value,
+    currencyManual: !auto,
+    lastFx: null,
+  );
   // sem câmbio conhecido, o valor em moeda de base fica por atualizar até haver internet
-  s.updateHolding(nh.currency == baseCcy ? nh.copyWith(lastFx: 1.0, lastPrice: nh.lastPriceOrig ?? nh.lastPrice) : nh);
+  s.updateHolding(
+    nh.currency == baseCcy
+        ? nh.copyWith(lastFx: 1.0, lastPrice: nh.lastPriceOrig ?? nh.lastPrice)
+        : nh,
+  );
   if (nh.needsRefresh || nh.canAutoPrice) {
     final r = await s.refreshPrices(holdingId: h.id);
     if (context.mounted && r.failed.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Não consegui obter o câmbio: ${r.failed.values.first}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Não consegui obter o câmbio: ${r.failed.values.first}',
+          ),
+        ),
+      );
     }
   }
 }
@@ -601,11 +667,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
   );
   final fxCtrl = TextEditingController();
   late final amountCtrl = TextEditingController(
-    text:
-        _edit != null && (type == OpType.dividend || type == OpType.cash)
-        ? (_edit!.amount.abs() / 100)
-              .toStringAsFixed(2)
-              .replaceAll('.', ',')
+    text: _edit != null && (type == OpType.dividend || type == OpType.cash)
+        ? (_edit!.amount.abs() / 100).toStringAsFixed(2).replaceAll('.', ',')
         : '',
   );
   late final noteCtrl = TextEditingController(text: _edit?.note ?? '');
@@ -619,14 +682,18 @@ class _OpFormScreenState extends State<OpFormScreen> {
 
   double? get price => parseNum(priceCtrl.text);
   double? get totalIn => parseNum(totalCtrl.text);
-  Holding? get _holding => holdingId == null ? null : context.read<AppState>().holding(holdingId);
+  Holding? get _holding =>
+      holdingId == null ? null : context.read<AppState>().holding(holdingId);
   String get ccy => _holding?.currency ?? baseCcy;
   String get ccyLabel => ccy == baseCcy ? baseSym : ccy;
 
   /// Operação num ativo que cota noutra moeda (USD…): o preço é nessa moeda e há câmbio.
   bool get foreignTrade => tradeLike && (_holding?.foreign ?? false);
-  double? get rate => parseNum(fxCtrl.text); // unidades da moeda do ativo por 1 unidade da moeda de base
-  double? get eurPerUnit => !foreignTrade ? 1 : (rate != null && rate! > 0 ? 1 / rate! : null);
+  double? get rate => parseNum(
+    fxCtrl.text,
+  ); // unidades da moeda do ativo por 1 unidade da moeda de base
+  double? get eurPerUnit =>
+      !foreignTrade ? 1 : (rate != null && rate! > 0 ? 1 / rate! : null);
 
   double? get qty {
     if (byQty) return parseNum(qtyCtrl.text);
@@ -640,8 +707,11 @@ class _OpFormScreenState extends State<OpFormScreen> {
   double? get total {
     if (!byQty) return totalIn;
     final fx = eurPerUnit;
-    return qty != null && price != null && fx != null ? qty! * price! * fx : null;
+    return qty != null && price != null && fx != null
+        ? qty! * price! * fx
+        : null;
   }
+
   int get fee => (parseCents(feeCtrl.text) ?? 0).abs();
 
   int? get amountCents {
@@ -679,12 +749,21 @@ class _OpFormScreenState extends State<OpFormScreen> {
     } else {
       _prefillFx(s.holding(holdingId));
       // preço inicial sugerido: o último preço conhecido do ativo
-      if (priceCtrl.text.isEmpty && holdingId != null && type != OpType.initial) {
+      if (priceCtrl.text.isEmpty &&
+          holdingId != null &&
+          type != OpType.initial) {
         final lp = s.holding(holdingId)?.priceOrig;
         if (lp != null) priceCtrl.text = _num(lp);
       }
     }
-    for (final c in [qtyCtrl, priceCtrl, totalCtrl, feeCtrl, amountCtrl, fxCtrl]) {
+    for (final c in [
+      qtyCtrl,
+      priceCtrl,
+      totalCtrl,
+      feeCtrl,
+      amountCtrl,
+      fxCtrl,
+    ]) {
       c.addListener(() => setState(() => error = null));
     }
   }
@@ -708,15 +787,24 @@ class _OpFormScreenState extends State<OpFormScreen> {
   /// Posição inicial já registada para o ativo (a mais recente), se existir.
   InvestOp? _existingInitial(AppState s, int? hid) {
     if (hid == null) return null;
-    final l = s.investOps.where((o) => o.type == OpType.initial && o.holdingId == hid).toList()
-      ..sort((a, b) => a.date.compareTo(b.date) != 0 ? a.date.compareTo(b.date) : a.id.compareTo(b.id));
+    final l =
+        s.investOps
+            .where((o) => o.type == OpType.initial && o.holdingId == hid)
+            .toList()
+          ..sort(
+            (a, b) => a.date.compareTo(b.date) != 0
+                ? a.date.compareTo(b.date)
+                : a.id.compareTo(b.id),
+          );
     return l.isEmpty ? null : l.last;
   }
 
   /// Câmbio sugerido: o do último preço conhecido do ativo.
   void _prefillFx(Holding? h) {
     final fx = h?.lastFx;
-    fxCtrl.text = h != null && h.foreign && fx != null && fx > 0 ? _num(1 / fx) : '';
+    fxCtrl.text = h != null && h.foreign && fx != null && fx > 0
+        ? _num(1 / fx)
+        : '';
   }
 
   /// Preenche o formulário com uma operação existente.
@@ -725,7 +813,9 @@ class _OpFormScreenState extends State<OpFormScreen> {
     date = o.date;
     qtyCtrl.text = o.quantity > 0 ? _num(o.quantity) : '';
     totalCtrl.text = '';
-    feeCtrl.text = o.fee > 0 ? (o.fee / 100).toStringAsFixed(2).replaceAll('.', ',') : '';
+    feeCtrl.text = o.fee > 0
+        ? (o.fee / 100).toStringAsFixed(2).replaceAll('.', ',')
+        : '';
     noteCtrl.text = o.note;
     var p = o.price;
     if (h != null && h.foreign && tradeLike) {
@@ -745,7 +835,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
 
   static String _num(double v, [int digits = 6]) {
     final t = double.parse(v.toStringAsFixed(digits));
-    return (t == t.roundToDouble() ? t.round().toString() : t.toString()).replaceAll('.', ',');
+    return (t == t.roundToDouble() ? t.round().toString() : t.toString())
+        .replaceAll('.', ',');
   }
 
   void _clearFields() {
@@ -760,7 +851,10 @@ class _OpFormScreenState extends State<OpFormScreen> {
       final fx = await s.prices.fxRate(ccy, baseCcy);
       if (mounted && fx > 0) setState(() => fxCtrl.text = _num(1 / fx));
     } on PriceException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Não consegui obter o câmbio: ${e.message}')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Não consegui obter o câmbio: ${e.message}')),
+        );
     }
   }
 
@@ -818,7 +912,15 @@ class _OpFormScreenState extends State<OpFormScreen> {
     }
     // só pode haver uma posição inicial por ativo: a nova substitui as anteriores
     if (type == OpType.initial) {
-      for (final o in s.investOps.where((o) => o.type == OpType.initial && o.holdingId == holdingId && o.id != keepId).toList()) {
+      for (final o
+          in s.investOps
+              .where(
+                (o) =>
+                    o.type == OpType.initial &&
+                    o.holdingId == holdingId &&
+                    o.id != keepId,
+              )
+              .toList()) {
         s.deleteOp(o.id);
       }
     }
@@ -828,8 +930,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
   /// Unidades que tens agora do ativo (sem contar com esta operação, se estiver a editar).
   double? _position(AppState s) {
     final p = s.portfolio.positions.where((p) => p.holding.id == holdingId);
-    if (p.isEmpty)
-      return _edit?.type == OpType.sell ? _edit!.quantity : 0;
+    if (p.isEmpty) return _edit?.type == OpType.sell ? _edit!.quantity : 0;
     return p.first.qty +
         (_edit?.type == OpType.sell && _edit!.holdingId == holdingId
             ? _edit!.quantity
@@ -951,12 +1052,17 @@ class _OpFormScreenState extends State<OpFormScreen> {
       });
     }
 
-    final priceLabel = type == OpType.initial ? 'Preço médio ($ccyLabel)' : 'Preço ($ccyLabel)';
-    _extrasOpen ??= feeCtrl.text.isNotEmpty || noteCtrl.text.isNotEmpty || !byQty;
+    final priceLabel = type == OpType.initial
+        ? 'Preço médio ($ccyLabel)'
+        : 'Preço ($ccyLabel)';
+    _extrasOpen ??=
+        feeCtrl.text.isNotEmpty || noteCtrl.text.isNotEmpty || !byQty;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.edit == null ? 'Nova operação' : 'Editar · ${type.label}'),
+        title: Text(
+          widget.edit == null ? 'Nova operação' : 'Editar · ${type.label}',
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
@@ -970,7 +1076,11 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   runSpacing: 4,
                   children: [
                     for (final e in typeLabels.entries)
-                      ChoiceChip(label: Text(e.value), selected: type == e.key, onSelected: (_) => switchType(e.key)),
+                      ChoiceChip(
+                        label: Text(e.value),
+                        selected: type == e.key,
+                        onSelected: (_) => switchType(e.key),
+                      ),
                   ],
                 ),
               if (s.investAccounts.length > 1 || accountId == null) ...[
@@ -984,7 +1094,10 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   ),
                   items: [
                     for (final a in s.investAccounts)
-                      DropdownMenuItem(value: a.id, child: Text('${a.emoji} ${a.name}'.trim())),
+                      DropdownMenuItem(
+                        value: a.id,
+                        child: Text('${a.emoji} ${a.name}'.trim()),
+                      ),
                   ],
                   onChanged: widget.edit != null
                       ? null
@@ -1008,13 +1121,22 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     for (final h in holdings)
                       DropdownMenuItem(
                         value: h.id,
-                        child: Text('${h.kind.emoji}  ${h.name}', overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          '${h.kind.emoji}  ${h.name}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    const DropdownMenuItem(value: -1, child: Text('➕  Novo ativo…')),
+                    const DropdownMenuItem(
+                      value: -1,
+                      child: Text('➕  Novo ativo…'),
+                    ),
                   ],
                   onChanged: (v) async {
                     if (v == -1) {
-                      final id = await showHoldingEditor(context, accountId: accountId);
+                      final id = await showHoldingEditor(
+                        context,
+                        accountId: accountId,
+                      );
                       if (id != null && mounted) {
                         setState(() {
                           holdingId = id;
@@ -1025,7 +1147,9 @@ class _OpFormScreenState extends State<OpFormScreen> {
                       setState(() {
                         holdingId = v;
                         final h = s.holding(v);
-                        final ex = widget.edit == null && type == OpType.initial ? _existingInitial(s, v) : null;
+                        final ex = widget.edit == null && type == OpType.initial
+                            ? _existingInitial(s, v)
+                            : null;
                         if (ex != null) {
                           _edit = ex;
                           _applyOp(ex, h);
@@ -1054,20 +1178,35 @@ class _OpFormScreenState extends State<OpFormScreen> {
                       child: byQty
                           ? TextField(
                               controller: qtyCtrl,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: const InputDecoration(labelText: 'Quantidade', hintText: '0'),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              decoration: const InputDecoration(
+                                labelText: 'Quantidade',
+                                hintText: '0',
+                              ),
                             )
                           : TextField(
                               controller: totalCtrl,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: InputDecoration(labelText: 'Valor ($baseSym)', prefixText: '$baseSym  ', hintText: '0,00'),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              decoration: InputDecoration(
+                                labelText: 'Valor ($baseSym)',
+                                prefixText: '$baseSym  ',
+                                hintText: '0,00',
+                              ),
                             ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: TextField(
                         controller: priceCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
                           labelText: priceLabel,
                           prefixText: ccy == baseCcy ? '$baseSym  ' : null,
@@ -1082,12 +1221,20 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   const SizedBox(height: 14),
                   TextField(
                     controller: fxCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
-                      labelText: type == OpType.initial ? 'Câmbio médio (1 $baseSym = ? $ccy)' : 'Câmbio (1 $baseSym = ? $ccy)',
+                      labelText: type == OpType.initial
+                          ? 'Câmbio médio (1 $baseSym = ? $ccy)'
+                          : 'Câmbio (1 $baseSym = ? $ccy)',
                       prefixIcon: const Icon(Icons.currency_exchange),
                       hintText: '1,0850',
-                      suffixIcon: IconButton(tooltip: 'Câmbio atual (internet)', icon: const Icon(Icons.sync), onPressed: () => _liveFx(s)),
+                      suffixIcon: IconButton(
+                        tooltip: 'Câmbio atual (internet)',
+                        icon: const Icon(Icons.sync),
+                        onPressed: () => _liveFx(s),
+                      ),
                     ),
                   ),
                 ],
@@ -1097,7 +1244,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     child: Text(
                       [
                         if (!byQty && qty != null) '= ${fmtQty(qty!)} unidades',
-                        if (byQty && total != null) '= ${fmtMoney((total! * 100).round())}',
+                        if (byQty && total != null)
+                          '= ${fmtMoney((total! * 100).round())}',
                       ].join(' '),
                       style: tt.bodySmall,
                     ),
@@ -1109,8 +1257,16 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   SegmentedButton<bool>(
                     showSelectedIcon: false,
                     segments: const [
-                      ButtonSegment(value: true, label: Text('Entrada'), icon: Icon(Icons.south_west)),
-                      ButtonSegment(value: false, label: Text('Saída'), icon: Icon(Icons.north_east)),
+                      ButtonSegment(
+                        value: true,
+                        label: Text('Entrada'),
+                        icon: Icon(Icons.south_west),
+                      ),
+                      ButtonSegment(
+                        value: false,
+                        label: Text('Saída'),
+                        icon: Icon(Icons.north_east),
+                      ),
                     ],
                     selected: {cashIn},
                     onSelectionChanged: (v) => setState(() => cashIn = v.first),
@@ -1119,9 +1275,13 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 const SizedBox(height: 14),
                 TextField(
                   controller: amountCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   decoration: InputDecoration(
-                    labelText: type == OpType.dividend ? 'Valor recebido ($baseSym)' : 'Valor ($baseSym)',
+                    labelText: type == OpType.dividend
+                        ? 'Valor recebido ($baseSym)'
+                        : 'Valor ($baseSym)',
                     prefixText: '$baseSym  ',
                     hintText: '0,00',
                   ),
@@ -1144,44 +1304,67 @@ class _OpFormScreenState extends State<OpFormScreen> {
               ),
               // o resto, escondido até ser preciso
               Material(
-                key: const ValueKey('extras'), // mantém o estado aberto/fechado quando a coluna muda
+                key: const ValueKey(
+                  'extras',
+                ), // mantém o estado aberto/fechado quando a coluna muda
                 type: MaterialType.transparency,
                 child: Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  data: Theme.of(context)
+                      .copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
                     key: const ValueKey('extras-tile'),
                     tilePadding: EdgeInsets.zero,
                     childrenPadding: EdgeInsets.zero,
                     initiallyExpanded: _extrasOpen!,
-                    title: Text(tradeLike ? 'Mais opções (comissão, nota…)' : 'Nota', style: tt.titleSmall),
+                    title: Text(
+                      tradeLike ? 'Mais opções (comissão, nota…)' : 'Nota',
+                      style: tt.titleSmall,
+                    ),
                     children: [
                       if (tradeLike && type != OpType.initial)
                         TextField(
                           controller: feeCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: InputDecoration(labelText: 'Comissão ($baseSym)', prefixText: '$baseSym  ', hintText: '0,00'),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Comissão ($baseSym)',
+                            prefixText: '$baseSym  ',
+                            hintText: '0,00',
+                          ),
                         ),
                       if (tradeLike) ...[
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('Indicar o valor total em vez da quantidade'),
+                          title: const Text(
+                            'Indicar o valor total em vez da quantidade',
+                          ),
                           value: !byQty,
                           onChanged: (v) => setState(() {
                             final q = qty, t = total;
                             byQty = !v;
                             if (byQty && q != null) qtyCtrl.text = _num(q);
-                            if (!byQty && t != null) totalCtrl.text = t.toStringAsFixed(2).replaceAll('.', ',');
+                            if (!byQty && t != null)
+                              totalCtrl.text = t
+                                  .toStringAsFixed(2)
+                                  .replaceAll('.', ',');
                           }),
                         ),
                         if (widget.edit == null && _holding != null)
                           Align(
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
-                              icon: const Icon(Icons.currency_exchange, size: 16),
-                              label: Text('Moeda do ativo: ${_holding!.currency} · alterar'),
+                              icon: const Icon(
+                                Icons.currency_exchange,
+                                size: 16,
+                              ),
+                              label: Text(
+                                'Moeda do ativo: ${_holding!.currency} · alterar',
+                              ),
                               onPressed: () async {
                                 await showCurrencyPicker(context, _holding!);
-                                if (mounted) setState(() => _prefillFx(_holding));
+                                if (mounted)
+                                  setState(() => _prefillFx(_holding));
                               },
                             ),
                           ),
@@ -1189,7 +1372,10 @@ class _OpFormScreenState extends State<OpFormScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: noteCtrl,
-                        decoration: const InputDecoration(labelText: 'Nota', prefixIcon: Icon(Icons.notes)),
+                        decoration: const InputDecoration(
+                          labelText: 'Nota',
+                          prefixIcon: Icon(Icons.notes),
+                        ),
                       ),
                       const SizedBox(height: 8),
                     ],
@@ -1197,12 +1383,15 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              if (widget.edit == null && _edit != null && type == OpType.initial) ...[
+              if (widget.edit == null &&
+                  _edit != null &&
+                  type == OpType.initial) ...[
                 Callout(
                   icon: Icons.history,
                   color: cs.primary,
                   title: 'Este ativo já tem uma posição inicial',
-                  body: 'Está carregada aqui. Ao guardar, substitui a anterior.',
+                  body:
+                      'Está carregada aqui. Ao guardar, substitui a anterior.',
                 ),
                 const SizedBox(height: 12),
               ],

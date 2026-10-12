@@ -33,13 +33,9 @@ Os APKs estão na secção **Releases** do GitHub.
 ## Licença
 MIT – ver `LICENSE`.
 
-## Cópia no OneDrive
+## Cópia de segurança
 
-Em **Mais › Cópia no OneDrive** podes ligar uma conta Microsoft (pessoal ou de trabalho) e guardar/restaurar uma cópia de todos os dados numa pasta privada da app no OneDrive (`approot`, invisível no resto do teu OneDrive). Não inclui as fotos dos recibos. A internet só é usada quando carregas nos botões.
-
-Configuração única: registar a app no Azure (portal.azure.com › Microsoft Entra ID › Registos de aplicações), com tipo de conta "qualquer diretório organizacional e contas pessoais", plataforma "Clientes públicos/nativos" com o URI de redirecionamento `pt.financas.financas:/oauth`, e as permissões delegadas Microsoft Graph `Files.ReadWrite.AppFolder`, `offline_access` e `User.Read`. Depois cola o "ID da aplicação (cliente)" no ecrã. Os passos estão também dentro da app.
-
-O login usa OAuth com PKCE (`flutter_appauth`); a app não guarda palavra-passe, só o token de renovação, na base de dados local. Código em `lib/cloud/`: `CloudProvider` é a interface, `MicrosoftAuth` faz o login e `OneDriveProvider` fala com o Graph.
+Em **Mais › Cópia de segurança**, a app guarda um ficheiro com todos os teus dados (sem as fotos dos recibos). Não há contas nem configuração: ao guardar, o Android mostra o seletor de ficheiros, onde escolhes o **Google Drive** (ou outra pasta). Para restaurar, escolhes o ficheiro, do telemóvel ou do Drive. Restaurar substitui todos os dados, depois de pedir confirmação.
 
 ## Navegação
 

@@ -9,12 +9,14 @@ Future<void> loadRoboto() async {
   if (root == null) return;
   final dir = Directory('$root/bin/cache/artifacts/material_fonts');
   if (!dir.existsSync()) return;
-  Future<ByteData> bytes(String name) async => ByteData.sublistView(await File('${dir.path}/$name').readAsBytes());
+  Future<ByteData> bytes(String name) async =>
+      ByteData.sublistView(await File('${dir.path}/$name').readAsBytes());
   final roboto = FontLoader('Roboto')
     ..addFont(bytes('Roboto-Regular.ttf'))
     ..addFont(bytes('Roboto-Medium.ttf'))
     ..addFont(bytes('Roboto-Bold.ttf'));
   await roboto.load();
-  final icons = FontLoader('MaterialIcons')..addFont(bytes('MaterialIcons-Regular.otf'));
+  final icons = FontLoader('MaterialIcons')
+    ..addFont(bytes('MaterialIcons-Regular.otf'));
   await icons.load();
 }

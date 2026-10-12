@@ -8,34 +8,63 @@ class InvestAccount {
   final String emoji;
   final String note;
   final bool archived;
-  const InvestAccount({required this.id, required this.name, this.emoji = '', this.note = '', this.archived = false});
+  const InvestAccount({
+    required this.id,
+    required this.name,
+    this.emoji = '',
+    this.note = '',
+    this.archived = false,
+  });
 
-  InvestAccount copyWith({String? name, String? emoji, String? note, bool? archived}) =>
-      InvestAccount(id: id, name: name ?? this.name, emoji: emoji ?? this.emoji, note: note ?? this.note, archived: archived ?? this.archived);
+  InvestAccount copyWith({
+    String? name,
+    String? emoji,
+    String? note,
+    bool? archived,
+  }) => InvestAccount(
+    id: id,
+    name: name ?? this.name,
+    emoji: emoji ?? this.emoji,
+    note: note ?? this.note,
+    archived: archived ?? this.archived,
+  );
 }
 
 /// Moedas disponíveis (para o ativo e para a moeda de base da app).
-const kCurrencies = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'SEK', 'NOK', 'DKK', 'PLN', 'BRL'];
+const kCurrencies = [
+  'EUR',
+  'USD',
+  'GBP',
+  'CHF',
+  'CAD',
+  'AUD',
+  'JPY',
+  'SEK',
+  'NOK',
+  'DKK',
+  'PLN',
+  'BRL',
+];
 
 enum HoldingKind { etf, stock, crypto, fund, bond, other }
 
 extension HoldingKindX on HoldingKind {
   String get label => switch (this) {
-        HoldingKind.etf => 'ETF',
-        HoldingKind.stock => 'Ação',
-        HoldingKind.crypto => 'Cripto',
-        HoldingKind.fund => 'Fundo',
-        HoldingKind.bond => 'Obrigação',
-        HoldingKind.other => 'Outro',
-      };
+    HoldingKind.etf => 'ETF',
+    HoldingKind.stock => 'Ação',
+    HoldingKind.crypto => 'Cripto',
+    HoldingKind.fund => 'Fundo',
+    HoldingKind.bond => 'Obrigação',
+    HoldingKind.other => 'Outro',
+  };
   String get emoji => switch (this) {
-        HoldingKind.etf => '📊',
-        HoldingKind.stock => '🏢',
-        HoldingKind.crypto => '🪙',
-        HoldingKind.fund => '🗂️',
-        HoldingKind.bond => '📜',
-        HoldingKind.other => '💼',
-      };
+    HoldingKind.etf => '📊',
+    HoldingKind.stock => '🏢',
+    HoldingKind.crypto => '🪙',
+    HoldingKind.fund => '🗂️',
+    HoldingKind.bond => '📜',
+    HoldingKind.other => '💼',
+  };
 }
 
 /// Fonte do preço: Yahoo Finance e CoinGecko (gratuitas, sem chave) ou manual.
@@ -43,10 +72,10 @@ enum PriceProvider { manual, yahoo, coingecko }
 
 extension PriceProviderX on PriceProvider {
   String get label => switch (this) {
-        PriceProvider.manual => 'Manual',
-        PriceProvider.yahoo => 'Yahoo Finance',
-        PriceProvider.coingecko => 'CoinGecko',
-      };
+    PriceProvider.manual => 'Manual',
+    PriceProvider.yahoo => 'Yahoo Finance',
+    PriceProvider.coingecko => 'CoinGecko',
+  };
 }
 
 /// Um ativo (ETF, ação, cripto…) numa plataforma. Os valores da carteira são convertidos para a moeda de base.
@@ -61,7 +90,8 @@ class Holding {
   final DateTime? lastPriceAt;
   final bool archived;
   final String currency; // moeda em que o ativo cota: EUR, USD, GBP…
-  final bool currencyManual; // true: escolhida pelo utilizador; false: detetada pelo preço
+  final bool
+  currencyManual; // true: escolhida pelo utilizador; false: detetada pelo preço
   final double? lastPriceOrig; // último preço na moeda do ativo
   final double? lastFx; // moeda de base por 1 unidade da moeda do ativo, no momento do último preço
   Holding({
@@ -85,26 +115,44 @@ class Holding {
   /// Último preço na moeda do ativo (em euros, se o ativo for em euros).
   double? get priceOrig => foreign ? lastPriceOrig : lastPrice;
 
-  bool get canAutoPrice => provider != PriceProvider.manual && symbol.trim().isNotEmpty;
+  bool get canAutoPrice =>
+      provider != PriceProvider.manual && symbol.trim().isNotEmpty;
 
   /// Tem algo a atualizar pela internet: o preço, ou só o câmbio (ativo com preço manual noutra moeda).
   bool get needsRefresh => canAutoPrice || (foreign && lastPriceOrig != null);
 
-  Holding copyWith({String? name, String? symbol, PriceProvider? provider, HoldingKind? kind, int? accountId, Object? lastPrice = _k, Object? lastPriceAt = _k, bool? archived, String? currency, bool? currencyManual, Object? lastPriceOrig = _k, Object? lastFx = _k}) => Holding(
-        id: id,
-        accountId: accountId ?? this.accountId,
-        name: name ?? this.name,
-        symbol: symbol ?? this.symbol,
-        provider: provider ?? this.provider,
-        kind: kind ?? this.kind,
-        lastPrice: identical(lastPrice, _k) ? this.lastPrice : lastPrice as double?,
-        lastPriceAt: identical(lastPriceAt, _k) ? this.lastPriceAt : lastPriceAt as DateTime?,
-        archived: archived ?? this.archived,
-        currency: currency ?? this.currency,
-        currencyManual: currencyManual ?? this.currencyManual,
-        lastPriceOrig: identical(lastPriceOrig, _k) ? this.lastPriceOrig : lastPriceOrig as double?,
-        lastFx: identical(lastFx, _k) ? this.lastFx : lastFx as double?,
-      );
+  Holding copyWith({
+    String? name,
+    String? symbol,
+    PriceProvider? provider,
+    HoldingKind? kind,
+    int? accountId,
+    Object? lastPrice = _k,
+    Object? lastPriceAt = _k,
+    bool? archived,
+    String? currency,
+    bool? currencyManual,
+    Object? lastPriceOrig = _k,
+    Object? lastFx = _k,
+  }) => Holding(
+    id: id,
+    accountId: accountId ?? this.accountId,
+    name: name ?? this.name,
+    symbol: symbol ?? this.symbol,
+    provider: provider ?? this.provider,
+    kind: kind ?? this.kind,
+    lastPrice: identical(lastPrice, _k) ? this.lastPrice : lastPrice as double?,
+    lastPriceAt: identical(lastPriceAt, _k)
+        ? this.lastPriceAt
+        : lastPriceAt as DateTime?,
+    archived: archived ?? this.archived,
+    currency: currency ?? this.currency,
+    currencyManual: currencyManual ?? this.currencyManual,
+    lastPriceOrig: identical(lastPriceOrig, _k)
+        ? this.lastPriceOrig
+        : lastPriceOrig as double?,
+    lastFx: identical(lastFx, _k) ? this.lastFx : lastFx as double?,
+  );
 }
 
 const Object _k = Object();
@@ -118,12 +166,12 @@ enum OpType { initial, buy, sell, dividend, cash }
 
 extension OpTypeX on OpType {
   String get label => switch (this) {
-        OpType.initial => 'Posição inicial',
-        OpType.buy => 'Compra',
-        OpType.sell => 'Venda',
-        OpType.dividend => 'Dividendo',
-        OpType.cash => 'Acerto de dinheiro',
-      };
+    OpType.initial => 'Posição inicial',
+    OpType.buy => 'Compra',
+    OpType.sell => 'Venda',
+    OpType.dividend => 'Dividendo',
+    OpType.cash => 'Acerto de dinheiro',
+  };
 }
 
 class InvestOp {
@@ -133,12 +181,14 @@ class InvestOp {
   final DateTime date;
   final OpType type;
   final double quantity;
-  final double price; // por unidade, na moeda do ativo (se [fx] for nulo, em euros)
+  final double
+  price; // por unidade, na moeda do ativo (se [fx] for nulo, em euros)
   final double? fx; // moeda de base por 1 unidade da moeda do ativo, no dia da operação (nulo = preço na moeda de base)
   final int amount; // cêntimos: pago (compra, com comissão), recebido (venda/dividendo), custo da posição (initial) ou ± (cash)
   final int fee; // cêntimos (já incluída em amount nas compras)
   final String note;
-  final int? txnId; // transferência do banco que financiou esta compra (opcional)
+  final int?
+  txnId; // transferência do banco que financiou esta compra (opcional)
   const InvestOp({
     required this.id,
     required this.accountId,
@@ -163,7 +213,14 @@ class Position {
   final int realizedCents; // ganho/perda já realizado nas vendas
   final int dividendsCents;
   final double costOrig; // custo na moeda do ativo (igual a costCents/100 nos ativos em euros)
-  const Position(this.holding, this.qty, this.costCents, this.realizedCents, this.dividendsCents, [double? costOrig]) : costOrig = costOrig ?? costCents / 100;
+  const Position(
+    this.holding,
+    this.qty,
+    this.costCents,
+    this.realizedCents,
+    this.dividendsCents, [
+    double? costOrig,
+  ]) : costOrig = costOrig ?? costCents / 100;
 
   bool get open => qty > 1e-9;
   double get avgCost => open ? costCents / 100 / qty : 0; // EUR
@@ -172,12 +229,16 @@ class Position {
   double? get priceOrig => holding.priceOrig; // moeda do ativo
 
   /// Ganho/perda só no preço, na moeda do ativo (sem o efeito do câmbio).
-  double? get plOrig => open && holding.foreign && priceOrig != null ? qty * priceOrig! - costOrig : null;
-  double? get plOrigPct => plOrig != null && costOrig > 0 ? plOrig! / costOrig : null;
+  double? get plOrig => open && holding.foreign && priceOrig != null
+      ? qty * priceOrig! - costOrig
+      : null;
+  double? get plOrigPct =>
+      plOrig != null && costOrig > 0 ? plOrig! / costOrig : null;
   bool get priced => price != null;
 
   /// Valor atual; sem preço, usa o custo (para não distorcer o total).
-  int get valueCents => !open ? 0 : (price == null ? costCents : (qty * price! * 100).round());
+  int get valueCents =>
+      !open ? 0 : (price == null ? costCents : (qty * price! * 100).round());
   int get plCents => valueCents - costCents;
   double? get plPct => costCents > 0 && priced ? plCents / costCents : null;
 }
@@ -188,7 +249,12 @@ class AccountSummary {
   final List<Position> positions;
   final int cashCents; // dinheiro por alocar (standby)
   final int depositedCents; // entregas líquidas vindas do banco (transferências associadas)
-  const AccountSummary(this.account, this.positions, this.cashCents, this.depositedCents);
+  const AccountSummary(
+    this.account,
+    this.positions,
+    this.cashCents,
+    this.depositedCents,
+  );
 
   int get investedValue => positions.fold(0, (a, p) => a + p.valueCents);
   int get costBasis => positions.fold(0, (a, p) => a + p.costCents);
@@ -211,7 +277,9 @@ class Portfolio {
   int get realized => accounts.fold(0, (a, e) => a + e.realized);
   int get dividends => accounts.fold(0, (a, e) => a + e.dividends);
   int get deposited => accounts.fold(0, (a, e) => a + e.depositedCents);
-  List<Position> get positions => [for (final a in accounts) ...a.positions.where((p) => p.open)];
+  List<Position> get positions => [
+    for (final a in accounts) ...a.positions.where((p) => p.open),
+  ];
   bool get isEmpty => accounts.isEmpty;
 
   /// Calcula tudo a partir dos dados guardados.
@@ -231,7 +299,9 @@ class Portfolio {
           return c != 0 ? c : a.id.compareTo(b.id);
         });
       // dinheiro que entrou/saiu da plataforma pelo banco (saída do banco = entrada na plataforma)
-      final deposited = txns.where((t) => t.investAccountId == acc.id).fold(0, (a, t) => a - t.amount);
+      final deposited = txns
+          .where((t) => t.investAccountId == acc.id)
+          .fold(0, (a, t) => a - t.amount);
       var cash = deposited;
       final positions = <Position>[];
       for (final h in hs) {
@@ -240,7 +310,8 @@ class Portfolio {
         // custo de uma compra na moeda do ativo (operações antigas, sem câmbio, usam o câmbio atual)
         double origOf(InvestOp o) {
           if (!h.foreign) return o.amount / 100;
-          if (o.fx != null && o.fx! > 0) return o.quantity * o.price + o.fee / 100 / o.fx!;
+          if (o.fx != null && o.fx! > 0)
+            return o.quantity * o.price + o.fee / 100 / o.fx!;
           return o.amount / 100 / ((h.lastFx ?? 0) > 0 ? h.lastFx! : 1);
         }
 

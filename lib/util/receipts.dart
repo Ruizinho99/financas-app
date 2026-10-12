@@ -19,14 +19,16 @@ class Receipts {
 
   /// Copia [source] para a pasta de recibos e devolve o nome do ficheiro guardado.
   static Future<String> save(File source) async {
-    final name = '${DateTime.now().microsecondsSinceEpoch}_${p.basename(source.path)}';
+    final name =
+        '${DateTime.now().microsecondsSinceEpoch}_${p.basename(source.path)}';
     await source.copy(p.join(_dir!.path, name));
     return name;
   }
 
   /// Guarda bytes (foto da câmara, ficheiro escolhido…) e devolve o nome.
   static Future<String> saveBytes(String originalName, Uint8List bytes) async {
-    final name = '${DateTime.now().microsecondsSinceEpoch}_${p.basename(originalName)}';
+    final name =
+        '${DateTime.now().microsecondsSinceEpoch}_${p.basename(originalName)}';
     await File(p.join(_dir!.path, name)).writeAsBytes(bytes);
     return name;
   }
@@ -43,7 +45,8 @@ class Receipts {
   }
 
   /// Nome apresentável (sem o prefixo numérico).
-  static String displayName(String name) => name.replaceFirst(RegExp(r'^\d+_'), '');
+  static String displayName(String name) =>
+      name.replaceFirst(RegExp(r'^\d+_'), '');
 
   static void delete(String? name) {
     final f = file(name);

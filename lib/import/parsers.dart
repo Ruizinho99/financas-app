@@ -11,11 +11,42 @@ import '../util/format.dart';
 // Chave normalizada de um movimento (agrupa "o mesmo nome")
 // ---------------------------------------------------------------------------
 const _accents = {
-  'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
-  'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I', 'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Õ': 'O', 'Ö': 'O',
-  'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U', 'Ç': 'C', 'Ñ': 'N',
+  'Á': 'A',
+  'À': 'A',
+  'Â': 'A',
+  'Ã': 'A',
+  'Ä': 'A',
+  'É': 'E',
+  'È': 'E',
+  'Ê': 'E',
+  'Ë': 'E',
+  'Í': 'I',
+  'Ì': 'I',
+  'Î': 'I',
+  'Ï': 'I',
+  'Ó': 'O',
+  'Ò': 'O',
+  'Ô': 'O',
+  'Õ': 'O',
+  'Ö': 'O',
+  'Ú': 'U',
+  'Ù': 'U',
+  'Û': 'U',
+  'Ü': 'U',
+  'Ç': 'C',
+  'Ñ': 'N',
 };
-const _stopPrefixes = {'COMPRA', 'COMPRAS', 'PAGAMENTO', 'PAG', 'PGTO', 'DEBITO', 'CREDITO', 'DD', 'POS'};
+const _stopPrefixes = {
+  'COMPRA',
+  'COMPRAS',
+  'PAGAMENTO',
+  'PAG',
+  'PGTO',
+  'DEBITO',
+  'CREDITO',
+  'DD',
+  'POS',
+};
 
 String merchantKey(String description) {
   var s = description.toUpperCase();
@@ -36,22 +67,43 @@ String merchantKey(String description) {
 // Datas
 // ---------------------------------------------------------------------------
 const _months = {
-  'JAN': 1, 'FEV': 2, 'FEB': 2, 'MAR': 3, 'ABR': 4, 'APR': 4, 'MAI': 5, 'MAY': 5, 'JUN': 6,
-  'JUL': 7, 'AGO': 8, 'AUG': 8, 'SET': 9, 'SEP': 9, 'OUT': 10, 'OCT': 10, 'NOV': 11, 'DEZ': 12, 'DEC': 12,
+  'JAN': 1,
+  'FEV': 2,
+  'FEB': 2,
+  'MAR': 3,
+  'ABR': 4,
+  'APR': 4,
+  'MAI': 5,
+  'MAY': 5,
+  'JUN': 6,
+  'JUL': 7,
+  'AGO': 8,
+  'AUG': 8,
+  'SET': 9,
+  'SEP': 9,
+  'OUT': 10,
+  'OCT': 10,
+  'NOV': 11,
+  'DEZ': 12,
+  'DEC': 12,
 };
 
 DateTime? parseDate(String input, {int? defaultYear}) {
   final s = input.trim();
   if (s.isEmpty) return null;
   var m = RegExp(r'^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})').firstMatch(s);
-  if (m != null) return _mk(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
+  if (m != null)
+    return _mk(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
   m = RegExp(r'^(\d{1,2})[-/.](\d{1,2})(?:[-/.](\d{2,4}))?').firstMatch(s);
   if (m != null) {
-    var y = m[3] != null ? int.parse(m[3]!) : (defaultYear ?? DateTime.now().year);
+    var y = m[3] != null
+        ? int.parse(m[3]!)
+        : (defaultYear ?? DateTime.now().year);
     if (y < 100) y += 2000;
     return _mk(y, int.parse(m[2]!), int.parse(m[1]!));
   }
-  m = RegExp(r'^(\d{1,2})[\s-]+([A-Za-zçÇ]{3})\w*\.?[\s-]+(\d{2,4})').firstMatch(s);
+  m = RegExp(r'^(\d{1,2})[\s-]+([A-Za-zçÇ]{3})\w*\.?[\s-]+(\d{2,4})')
+      .firstMatch(s);
   if (m != null) {
     final mo = _months[m[2]!.toUpperCase()];
     if (mo != null) {
@@ -72,24 +124,38 @@ DateTime? _mk(int y, int m, int d) {
 // PDF
 // ---------------------------------------------------------------------------
 const _date = r'\d{1,2}[-/.]\d{1,2}(?:[-/.]\d{2,4})?';
-const _amount = r'[-+]?\(?\d{1,3}(?:[. ]\d{3})*,\d{2}\)?(?:\s?[-+]|\s?[CD]R?)?|[-+]?\d+\.\d{2}';
-final _lineRe = RegExp('^($_date)(?:\\s+($_date))?\\s+(.*?)\\s*($_amount)(?:\\s+($_amount))?\\s*\$');
+const _amount =
+    r'[-+]?\(?\d{1,3}(?:[. ]\d{3})*,\d{2}\)?(?:\s?[-+]|\s?[CD]R?)?|[-+]?\d+\.\d{2}';
+final _lineRe = RegExp(
+  '^($_date)(?:\\s+($_date))?\\s+(.*?)\\s*($_amount)(?:\\s+($_amount))?\\s*\$',
+);
 final _onlyDateRe = RegExp('^($_date)(?:\\s+($_date))?\\s+(.+)\$');
 final _dateOnlyRe = RegExp('^($_date)(?:\\s+($_date))?\$');
 final _tailRe = RegExp('^(.*?)\\s*($_amount)(?:\\s+($_amount))?\\s*\$');
 final _loneAmountRe = RegExp('^($_amount)\\s*\$');
 final _loneAmountsRe = RegExp('^($_amount)(?:\\s+($_amount))?\\s*\$');
-final _anchorRe = RegExp('^(SALDO INICIAL|SALDO ANTERIOR|TRANSPORTE)\\b\\s*($_amount)?\\s*\$', caseSensitive: false);
-final _endAnchorRe = RegExp(r'^(A TRANSPORTAR|SALDO FINAL|SALDO DISPON[IÍ]VEL|SALDO CONTABIL[IÍ]STICO)\b', caseSensitive: false);
+final _anchorRe = RegExp(
+  '^(SALDO INICIAL|SALDO ANTERIOR|TRANSPORTE)\\b\\s*($_amount)?\\s*\$',
+  caseSensitive: false,
+);
+final _endAnchorRe = RegExp(
+  r'^(A TRANSPORTAR|SALDO FINAL|SALDO DISPON[IÍ]VEL|SALDO CONTABIL[IÍ]STICO)\b',
+  caseSensitive: false,
+);
 final _accountRe = RegExp(r'^CONTA(?: [A-ZÀ-Ú]+)+$');
 final _noiseRe = RegExp(
-    r'^(DATA|LANC\.?|VALOR|DESCRITIVO|D[ÉE]BITO|CR[ÉE]DITO|SALDO|P[ÁA]G\b|N\.|EXTRATO|MOEDA|BIC\b|EXT\.|MENSAGEM|RESUMO|IBAN|NIB)',
-    caseSensitive: false);
+  r'^(DATA|LANC\.?|VALOR|DESCRITIVO|D[ÉE]BITO|CR[ÉE]DITO|SALDO|P[ÁA]G\b|N\.|EXTRATO|MOEDA|BIC\b|EXT\.|MENSAGEM|RESUMO|IBAN|NIB)',
+  caseSensitive: false,
+);
 
 int? _amt(String? s) {
   if (s == null) return null;
   final t = s.trim();
-  final neg = t.startsWith('-') || t.endsWith('-') || t.startsWith('(') || RegExp(r'\bD(R)?$').hasMatch(t);
+  final neg =
+      t.startsWith('-') ||
+      t.endsWith('-') ||
+      t.startsWith('(') ||
+      RegExp(r'\bD(R)?$').hasMatch(t);
   final v = parseCents(t.replaceAll(RegExp(r'[-+()]|\s?[CD]R?$'), ''));
   return v == null ? null : (neg ? -v.abs() : v);
 }
@@ -102,7 +168,10 @@ String pdfText(Uint8List bytes) {
     final extractor = PdfTextExtractor(doc);
     final out = StringBuffer();
     for (var i = 0; i < doc.pages.count; i++) {
-      for (final line in extractor.extractTextLines(startPageIndex: i, endPageIndex: i)) {
+      for (final line in extractor.extractTextLines(
+        startPageIndex: i,
+        endPageIndex: i,
+      )) {
         final t = line.text.replaceAll(RegExp(r'\s+'), ' ').trim();
         if (t.isNotEmpty) out.writeln(t);
       }
@@ -119,7 +188,9 @@ typedef StatementPeriod = ({DateTime start, DateTime end});
 
 /// Período do extrato ("EXTRATO DE 2025/06/02 A 2025/06/30"), se existir.
 StatementPeriod? detectPeriod(String text) {
-  final m = RegExp(r'(\d{4})[/-](\d{2})[/-](\d{2})\s*(?:A|a|-|AT[ÉE]|até)\s*(\d{4})[/-](\d{2})[/-](\d{2})').firstMatch(text);
+  final m = RegExp(
+    r'(\d{4})[/-](\d{2})[/-](\d{2})\s*(?:A|a|-|AT[ÉE]|até)\s*(\d{4})[/-](\d{2})[/-](\d{2})',
+  ).firstMatch(text);
   if (m == null) return null;
   final a = _mk(int.parse(m[1]!), int.parse(m[2]!), int.parse(m[3]!));
   final b = _mk(int.parse(m[4]!), int.parse(m[5]!), int.parse(m[6]!));
@@ -130,9 +201,11 @@ StatementPeriod? detectPeriod(String text) {
 /// Datas sem ano ("6.02") interpretam-se como dia.mês ou mês.dia conforme caiam dentro do período.
 DateTime? _statementDate(String tok, StatementPeriod? per, int defaultYear) {
   final m2 = RegExp(r'^(\d{1,2})[-/.](\d{1,2})$').firstMatch(tok.trim());
-  if (m2 == null || per == null) return parseDate(tok, defaultYear: defaultYear);
+  if (m2 == null || per == null)
+    return parseDate(tok, defaultYear: defaultYear);
   final a = int.parse(m2[1]!), b = int.parse(m2[2]!);
-  final lo = per.start.subtract(const Duration(days: 5)), hi = per.end.add(const Duration(days: 5));
+  final lo = per.start.subtract(const Duration(days: 5)),
+      hi = per.end.add(const Duration(days: 5));
   DateTime? pick(int month, int day) {
     for (final y in {per.end.year, per.start.year}) {
       final d = _mk(y, month, day);
@@ -148,14 +221,19 @@ bool _isNoise(String line) {
   if (_noiseRe.hasMatch(line)) return true;
   // texto com letras espaçadas ("B a n c o  A c t i v o") – rodapés/cabeçalhos
   final toks = line.split(' ');
-  return toks.length >= 8 && toks.where((t) => t.length == 1).length >= toks.length * 0.6;
+  return toks.length >= 8 &&
+      toks.where((t) => t.length == 1).length >= toks.length * 0.6;
 }
 
-String _titleCase(String s) =>
-    s.toLowerCase().split(' ').map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1)).join(' ');
+String _titleCase(String s) => s
+    .toLowerCase()
+    .split(' ')
+    .map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1))
+    .join(' ');
 
 /// Interpreta o texto de um extrato PDF. [text] vem de [pdfText].
-List<ParsedRow> parseStatementText(String text, {int? defaultYear}) => parseStatementDetailed(text, defaultYear: defaultYear).rows;
+List<ParsedRow> parseStatementText(String text, {int? defaultYear}) =>
+    parseStatementDetailed(text, defaultYear: defaultYear).rows;
 
 /// Como [parseStatementText], mas devolve também as linhas que começam por uma data
 /// e que não foram reconhecidas como movimento (para avisar o utilizador).
@@ -163,13 +241,20 @@ List<ParsedRow> parseStatementText(String text, {int? defaultYear}) => parseStat
 /// Percebe extratos com várias contas (secções "CONTA …"), movimentos partidos em várias linhas,
 /// montantes sem sinal (deduz-o pela variação do saldo, a partir de "SALDO INICIAL"/"TRANSPORTE"),
 /// datas "mês.dia" e ignora cabeçalhos/rodapés de página.
-({List<ParsedRow> rows, List<String> skipped}) parseStatementDetailed(String text, {int? defaultYear}) {
+({List<ParsedRow> rows, List<String> skipped}) parseStatementDetailed(
+  String text, {
+  int? defaultYear,
+}) {
   final period = detectPeriod(text);
-  defaultYear ??= period?.end.year ??
-      (RegExp(r'\b(20\d{2})\b').firstMatch(text) != null ? int.parse(RegExp(r'\b(20\d{2})\b').firstMatch(text)!.group(1)!) : DateTime.now().year);
+  defaultYear ??=
+      period?.end.year ??
+      (RegExp(r'\b(20\d{2})\b').firstMatch(text) != null
+          ? int.parse(RegExp(r'\b(20\d{2})\b').firstMatch(text)!.group(1)!)
+          : DateTime.now().year);
   final lo = period?.start.subtract(const Duration(days: 5));
   final hi = period?.end.add(const Duration(days: 5));
-  bool inWindow(DateTime d) => period == null || (!d.isBefore(lo!) && !d.isAfter(hi!));
+  bool inWindow(DateTime d) =>
+      period == null || (!d.isBefore(lo!) && !d.isAfter(hi!));
 
   final rows = <ParsedRow>[];
   final skipped = <String>[];
@@ -241,7 +326,8 @@ List<ParsedRow> parseStatementText(String text, {int? defaultYear}) => parseStat
         finalize(ParsedRow(d, m[3]!.trim(), a, _amt(m[5])));
         continue;
       }
-      if (d != null && !inWindow(d)) continue; // rodapé/cabeçalho com uma data fora do extrato
+      if (d != null && !inWindow(d))
+        continue; // rodapé/cabeçalho com uma data fora do extrato
     }
 
     // linha só com valores ("3.60 53.44") a fechar um movimento pendente; parece duas datas, mas não cai no período
@@ -253,7 +339,14 @@ List<ParsedRow> parseStatementText(String text, {int? defaultYear}) => parseStat
       if ((d0 == null || !inWindow(d0)) && a != null) {
         pending = null;
         final desc = pendingDesc.join(' ').trim();
-        finalize(ParsedRow(pend.date, desc.isEmpty ? '(sem descrição)' : desc, a, _amt(lone[2])));
+        finalize(
+          ParsedRow(
+            pend.date,
+            desc.isEmpty ? '(sem descrição)' : desc,
+            a,
+            _amt(lone[2]),
+          ),
+        );
         continue;
       }
     }
@@ -292,7 +385,14 @@ List<ParsedRow> parseStatementText(String text, {int? defaultYear}) => parseStat
         if (a != null) {
           p.description = pendingDesc.join(' ');
           pending = null;
-          finalize(ParsedRow(p.date, p.description.isEmpty ? '(sem descrição)' : p.description, a, _amt(t[3])));
+          finalize(
+            ParsedRow(
+              p.date,
+              p.description.isEmpty ? '(sem descrição)' : p.description,
+              a,
+              _amt(t[3]),
+            ),
+          );
           continue;
         }
       }
@@ -324,7 +424,8 @@ int markTransfers(List<ParsedRow> rows) {
   for (final r in rows) {
     r.isTransfer = false;
   }
-  bool looksTransfer(ParsedRow r) => RegExp(r'\bTRF\b|TRANSFER', caseSensitive: false).hasMatch(r.description);
+  bool looksTransfer(ParsedRow r) =>
+      RegExp(r'\bTRF\b|TRANSFER', caseSensitive: false).hasMatch(r.description);
   var pairs = 0;
   for (var i = 0; i < rows.length; i++) {
     final a = rows[i];
@@ -333,7 +434,12 @@ int markTransfers(List<ParsedRow> rows) {
     var bestDiff = 99;
     for (var j = 0; j < rows.length; j++) {
       final b = rows[j];
-      if (j == i || b.isTransfer || b.account == null || b.account == a.account || b.amount != -a.amount) continue;
+      if (j == i ||
+          b.isTransfer ||
+          b.account == null ||
+          b.account == a.account ||
+          b.amount != -a.amount)
+        continue;
       if (!looksTransfer(a) && !looksTransfer(b)) continue;
       final diff = a.date.difference(b.date).inDays.abs();
       if (diff <= 3 && diff < bestDiff) {
@@ -355,9 +461,16 @@ int markTransfers(List<ParsedRow> rows) {
 // ---------------------------------------------------------------------------
 List<List<String>> parseCsv(String text) {
   if (text.startsWith('﻿')) text = text.substring(1);
-  final firstLine = text.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
-  final counts = {for (final d in [';', ',', '\t', '|']) d: d.allMatches(firstLine).length};
-  final delim = (counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).first.key;
+  final firstLine = text
+      .split('\n')
+      .firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+  final counts = {
+    for (final d in [';', ',', '\t', '|']) d: d.allMatches(firstLine).length,
+  };
+  final delim =
+      (counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
+          .first
+          .key;
   final rows = <List<String>>[];
   var row = <String>[];
   final cur = StringBuffer();
@@ -412,20 +525,23 @@ String _xlsxCell(Data? d) {
   if (v is DoubleCellValue) {
     final x = v.value;
     var t = x.toString();
-    if (t.contains('e') || t.contains('E')) t = x.toStringAsFixed(10).replaceFirst(RegExp(r'\.?0+$'), '');
+    if (t.contains('e') || t.contains('E'))
+      t = x.toStringAsFixed(10).replaceFirst(RegExp(r'\.?0+$'), '');
     return t;
   }
   if (v is DateCellValue) return '${v.year}-${two(v.month)}-${two(v.day)}';
   if (v is DateTimeCellValue) return '${v.year}-${two(v.month)}-${two(v.day)}';
   if (v is BoolCellValue) return v.value ? 'true' : 'false';
-  if (v is FormulaCellValue) return v.formula; // o Excel não guarda aqui o resultado
+  if (v is FormulaCellValue)
+    return v.formula; // o Excel não guarda aqui o resultado
   return v.toString();
 }
 
 List<List<String>> _sheetRows(Sheet s) => [
-      for (final r in s.rows)
-        if (r.any((c) => _xlsxCell(c).trim().isNotEmpty)) [for (final c in r) _xlsxCell(c)]
-    ];
+  for (final r in s.rows)
+    if (r.any((c) => _xlsxCell(c).trim().isNotEmpty))
+      [for (final c in r) _xlsxCell(c)],
+];
 
 /// Todas as folhas de um ficheiro Excel (nome -> linhas), sem as vazias.
 Map<String, List<List<String>>> parseXlsxSheets(Uint8List bytes) {
@@ -451,10 +567,19 @@ List<List<String>> parseXlsx(Uint8List bytes) {
 class ColumnMapping {
   int headerRow; // -1: sem cabeçalho
   int? date, description, amount, debit, credit, balance;
-  ColumnMapping({this.headerRow = 0, this.date, this.description, this.amount, this.debit, this.credit, this.balance});
+  ColumnMapping({
+    this.headerRow = 0,
+    this.date,
+    this.description,
+    this.amount,
+    this.debit,
+    this.credit,
+    this.balance,
+  });
 }
 
-String _norm(String s) => s.toUpperCase().split('').map((c) => _accents[c] ?? c).join();
+String _norm(String s) =>
+    s.toUpperCase().split('').map((c) => _accents[c] ?? c).join();
 
 ColumnMapping guessMapping(List<List<String>> table) {
   final m = ColumnMapping();
@@ -499,10 +624,19 @@ ColumnMapping guessMapping(List<List<String>> table) {
     final sample = table.take(20).toList();
     final cols = sample.fold(0, (a, r) => r.length > a ? r.length : a);
     for (var c = 0; c < cols; c++) {
-      final vals = sample.map((r) => c < r.length ? r[c] : '').where((v) => v.trim().isNotEmpty).toList();
+      final vals = sample
+          .map((r) => c < r.length ? r[c] : '')
+          .where((v) => v.trim().isNotEmpty)
+          .toList();
       if (vals.isEmpty) continue;
       final dates = vals.where((v) => parseDate(v) != null).length;
-      final nums = vals.where((v) => parseCents(v) != null && RegExp(r'^[-+\s\d.,()€]+$').hasMatch(v.trim())).length;
+      final nums = vals
+          .where(
+            (v) =>
+                parseCents(v) != null &&
+                RegExp(r'^[-+\s\d.,()€]+$').hasMatch(v.trim()),
+          )
+          .length;
       if (m.date == null && dates >= vals.length * 0.8) {
         m.date = c;
       } else if (nums >= vals.length * 0.8) {
@@ -523,18 +657,30 @@ String? _headerKind(String h) {
   final s = _norm(h.trim());
   if (s.isEmpty) return null;
   if (RegExp(r'DATA.*VALOR|VALUE DATE').hasMatch(s)) return null;
-  if (RegExp(r'^(DATA|DATE|DT|DATA MOV|DATA MOVIMENTO|DATA OPERACAO|DATA LANCAMENTO)').hasMatch(s)) return 'date';
-  if (RegExp(r'DESCR|DESIGNACAO|MOVIMENTO|DETALHE|NARRATIVE|PAYEE|BENEFICIARIO|REFERENCIA|MEMO|DETAILS').hasMatch(s)) return 'desc';
+  if (RegExp(
+    r'^(DATA|DATE|DT|DATA MOV|DATA MOVIMENTO|DATA OPERACAO|DATA LANCAMENTO)',
+  ).hasMatch(s))
+    return 'date';
+  if (RegExp(
+    r'DESCR|DESIGNACAO|MOVIMENTO|DETALHE|NARRATIVE|PAYEE|BENEFICIARIO|REFERENCIA|MEMO|DETAILS',
+  ).hasMatch(s))
+    return 'desc';
   if (RegExp(r'SALDO|BALANCE').hasMatch(s)) return 'balance';
   if (RegExp(r'DEBITO|DEBIT|SAIDA|DEBITOS').hasMatch(s)) return 'debit';
   if (RegExp(r'CREDITO|CREDIT|ENTRADA|CREDITOS').hasMatch(s)) return 'credit';
-  if (RegExp(r'MONTANTE|VALOR|IMPORTE|AMOUNT|QUANTIA').hasMatch(s)) return 'amount';
+  if (RegExp(r'MONTANTE|VALOR|IMPORTE|AMOUNT|QUANTIA').hasMatch(s))
+    return 'amount';
   return null;
 }
 
-List<ParsedRow> rowsFromTable(List<List<String>> table, ColumnMapping m, {int? defaultYear}) {
+List<ParsedRow> rowsFromTable(
+  List<List<String>> table,
+  ColumnMapping m, {
+  int? defaultYear,
+}) {
   final out = <ParsedRow>[];
-  String at(List<String> r, int? c) => (c == null || c >= r.length) ? '' : r[c].trim();
+  String at(List<String> r, int? c) =>
+      (c == null || c >= r.length) ? '' : r[c].trim();
   for (var i = m.headerRow + 1; i < table.length; i++) {
     final r = table[i];
     final d = parseDate(at(r, m.date), defaultYear: defaultYear);
@@ -543,12 +689,21 @@ List<ParsedRow> rowsFromTable(List<List<String>> table, ColumnMapping m, {int? d
     if (m.amount != null) {
       amount = _amt(at(r, m.amount));
     } else {
-      final deb = parseCents(at(r, m.debit)), cred = parseCents(at(r, m.credit));
-      if (deb != null || cred != null) amount = (cred ?? 0).abs() - (deb ?? 0).abs();
+      final deb = parseCents(at(r, m.debit)),
+          cred = parseCents(at(r, m.credit));
+      if (deb != null || cred != null)
+        amount = (cred ?? 0).abs() - (deb ?? 0).abs();
     }
     if (amount == null) continue;
     final desc = at(r, m.description);
-    out.add(ParsedRow(d, desc.isEmpty ? '(sem descrição)' : desc, amount, parseCents(at(r, m.balance))));
+    out.add(
+      ParsedRow(
+        d,
+        desc.isEmpty ? '(sem descrição)' : desc,
+        amount,
+        parseCents(at(r, m.balance)),
+      ),
+    );
   }
   return out;
 }

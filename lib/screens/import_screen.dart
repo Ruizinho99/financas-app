@@ -45,7 +45,10 @@ class _ImportScreenState extends State<ImportScreen> {
       error = null;
     });
     try {
-      final files = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: ['pdf', 'csv', 'xlsx', 'txt']);
+      final files = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'csv', 'xlsx', 'txt'],
+      );
       if (files.isEmpty) {
         setState(() => busy = false);
         return;
@@ -96,7 +99,9 @@ class _ImportScreenState extends State<ImportScreen> {
     final names = rows.map((r) => r.account).whereType<String>().toSet();
     accountMap.clear();
     for (final n in names) {
-      final ex = st.accounts.where((a) => a.name.toLowerCase() == n.toLowerCase());
+      final ex = st.accounts.where(
+        (a) => a.name.toLowerCase() == n.toLowerCase(),
+      );
       accountMap[n] = ex.isNotEmpty ? ex.first.id : 0;
     }
     _markTransfers();
@@ -115,98 +120,159 @@ class _ImportScreenState extends State<ImportScreen> {
   bool _outside(int i) {
     final d = rows[i].date;
     final day = DateTime(d.year, d.month, d.day);
-    return (from != null && day.isBefore(DateTime(from!.year, from!.month, from!.day))) || (to != null && day.isAfter(DateTime(to!.year, to!.month, to!.day)));
+    return (from != null &&
+            day.isBefore(DateTime(from!.year, from!.month, from!.day))) ||
+        (to != null && day.isAfter(DateTime(to!.year, to!.month, to!.day)));
   }
 
   List<ParsedRow> get finalRows => [
-        for (var i = 0; i < rows.length; i++)
-          if (!excluded.contains(i) && !_outside(i)) invert ? rows[i].copy(amount: -rows[i].amount) : rows[i]
-      ];
+    for (var i = 0; i < rows.length; i++)
+      if (!excluded.contains(i) && !_outside(i))
+        invert ? rows[i].copy(amount: -rows[i].amount) : rows[i],
+  ];
 
   @override
   Widget build(BuildContext context) {
     final fr = finalRows;
     final st0 = context.watch<AppState>();
-    final income = fr.where((r) => r.amount > 0).fold(0, (s, r) => s + r.amount);
-    final expense = fr.where((r) => r.amount < 0).fold(0, (s, r) => s + r.amount);
+    final income = fr
+        .where((r) => r.amount > 0)
+        .fold(0, (s, r) => s + r.amount);
+    final expense = fr
+        .where((r) => r.amount < 0)
+        .fold(0, (s, r) => s + r.amount);
     return Scaffold(
       appBar: AppBar(title: const Text('Importar extrato')),
-      body: ListView(padding: const EdgeInsets.all(16), children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Formatos suportados: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido apenas no telemóvel e nunca sai daqui.'),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: busy ? null : pick,
-                icon: const Icon(Icons.upload_file),
-                label: Text(filename == null ? 'Escolher ficheiro' : 'Escolher outro ficheiro'),
-              ),
-              if (filename != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('Ficheiro: $filename')),
-            ]),
-          ),
-        ),
-        if (busy) const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
-        if (error != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Card(color: Theme.of(context).colorScheme.errorContainer, child: Padding(padding: const EdgeInsets.all(12), child: Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)))),
-          ),
-        if (filename != null && rows.isNotEmpty && accountMap.isNotEmpty) _accountsCard(st0),
-        if (filename != null && rows.isNotEmpty && accountMap.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: TileField(
-              icon: Icons.account_balance_wallet_outlined,
-              title: 'Conta deste extrato',
-              text: st0.account(accountId) == null ? 'Seleciona uma conta (opcional)' : '${st0.account(accountId)!.emoji} ${st0.account(accountId)!.name}'.trim(),
-              isHint: st0.account(accountId) == null,
-              onTap: () async {
-                final id = await pickAccount(context, selected: accountId);
-                if (id != null) setState(() => accountId = id == -1 ? null : id);
-              },
-            ),
-          ),
-        if (skipped.isNotEmpty) _skippedCard(),
-        if (table != null) _mappingCard(),
-        if (filename != null && source == 'pdf' && rows.isNotEmpty) _pdfOptions(),
-        if (rows.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          DateRangeCard(
-            min: rows.map((r) => r.date).reduce((a, b) => a.isBefore(b) ? a : b),
-            max: rows.map((r) => r.date).reduce((a, b) => a.isAfter(b) ? a : b),
-            from: from,
-            to: to,
-            inRange: [for (var i = 0; i < rows.length; i++) if (!_outside(i)) i].length,
-            total: rows.length,
-            onChanged: (f, t) => setState(() {
-              from = f;
-              to = t;
-            }),
-          ),
-          const SizedBox(height: 8),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${fr.length} movimentos', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 4),
-                Text('Entradas ${fmtMoney(income)}   ·   Saídas ${fmtMoney(expense)}'),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Inverter sinais'),
-                  subtitle: const Text('Usa se as despesas aparecem como positivas'),
-                  value: invert,
-                  onChanged: (v) => setState(() => invert = v),
-                ),
-              ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Formatos suportados: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido apenas no telemóvel e nunca sai daqui.',
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: busy ? null : pick,
+                    icon: const Icon(Icons.upload_file),
+                    label: Text(
+                      filename == null
+                          ? 'Escolher ficheiro'
+                          : 'Escolher outro ficheiro',
+                    ),
+                  ),
+                  if (filename != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text('Ficheiro: $filename'),
+                    ),
+                ],
+              ),
             ),
           ),
-          ..._groupCards(context),
-          const SizedBox(height: 80),
+          if (busy)
+            const Padding(
+              padding: EdgeInsets.all(24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Card(
+                color: Theme.of(context).colorScheme.errorContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (filename != null && rows.isNotEmpty && accountMap.isNotEmpty)
+            _accountsCard(st0),
+          if (filename != null && rows.isNotEmpty && accountMap.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: TileField(
+                icon: Icons.account_balance_wallet_outlined,
+                title: 'Conta deste extrato',
+                text: st0.account(accountId) == null
+                    ? 'Seleciona uma conta (opcional)'
+                    : '${st0.account(accountId)!.emoji} ${st0.account(accountId)!.name}'
+                          .trim(),
+                isHint: st0.account(accountId) == null,
+                onTap: () async {
+                  final id = await pickAccount(context, selected: accountId);
+                  if (id != null)
+                    setState(() => accountId = id == -1 ? null : id);
+                },
+              ),
+            ),
+          if (skipped.isNotEmpty) _skippedCard(),
+          if (table != null) _mappingCard(),
+          if (filename != null && source == 'pdf' && rows.isNotEmpty)
+            _pdfOptions(),
+          if (rows.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            DateRangeCard(
+              min: rows
+                  .map((r) => r.date)
+                  .reduce((a, b) => a.isBefore(b) ? a : b),
+              max: rows
+                  .map((r) => r.date)
+                  .reduce((a, b) => a.isAfter(b) ? a : b),
+              from: from,
+              to: to,
+              inRange: [
+                for (var i = 0; i < rows.length; i++)
+                  if (!_outside(i)) i,
+              ].length,
+              total: rows.length,
+              onChanged: (f, t) => setState(() {
+                from = f;
+                to = t;
+              }),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${fr.length} movimentos',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Entradas ${fmtMoney(income)}   ·   Saídas ${fmtMoney(expense)}',
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Inverter sinais'),
+                      subtitle: const Text(
+                        'Usa se as despesas aparecem como positivas',
+                      ),
+                      value: invert,
+                      onChanged: (v) => setState(() => invert = v),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            ..._groupCards(context),
+            const SizedBox(height: 80),
+          ],
         ],
-      ]),
+      ),
       bottomNavigationBar: rows.isEmpty
           ? null
           : SafeArea(
@@ -224,14 +290,41 @@ class _ImportScreenState extends State<ImportScreen> {
                           final byName = <String, int>{};
                           for (final e in accountMap.entries) {
                             if (e.value == -1) continue;
-                            byName[e.key] = e.value == 0 ? st.addAccount(e.key) : e.value;
+                            byName[e.key] = e.value == 0
+                                ? st.addAccount(e.key)
+                                : e.value;
                           }
-                          final (added, dup) = st.importRows(filename!, source, fr,
-                              accountId: accountId, accountsByName: byName, categories: chosen, names: {for (final e in names.entries) if (!noRemember.contains(e.key)) e.key: e.value}, remember: chosen.keys.where((k) => chosen[k] != null && !noRemember.contains(k)).toSet());
-                          final unclassified = context.read<AppState>().unclassifiedGroups().length;
+                          final (added, dup) = st.importRows(
+                            filename!,
+                            source,
+                            fr,
+                            accountId: accountId,
+                            accountsByName: byName,
+                            categories: chosen,
+                            names: {
+                              for (final e in names.entries)
+                                if (!noRemember.contains(e.key)) e.key: e.value,
+                            },
+                            remember: chosen.keys
+                                .where(
+                                  (k) =>
+                                      chosen[k] != null &&
+                                      !noRemember.contains(k),
+                                )
+                                .toSet(),
+                          );
+                          final unclassified = context
+                              .read<AppState>()
+                              .unclassifiedGroups()
+                              .length;
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('$added importados, $dup duplicados ignorados. $unclassified grupos por classificar.')));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '$added importados, $dup duplicados ignorados. $unclassified grupos por classificar.',
+                              ),
+                            ),
+                          );
                         },
                 ),
               ),
@@ -243,168 +336,276 @@ class _ImportScreenState extends State<ImportScreen> {
     final st = context.watch<AppState>();
     final groups = <String, List<int>>{};
     for (var i = 0; i < rows.length; i++) {
-      if (rows[i].isTransfer || _outside(i)) continue; // transferências entre contas não se classificam
+      if (rows[i].isTransfer || _outside(i))
+        continue; // transferências entre contas não se classificam
       groups.putIfAbsent(merchantKey(rows[i].description), () => []).add(i);
     }
-    final keys = groups.keys.toList()..sort((a, b) => groups[b]!.length.compareTo(groups[a]!.length));
-    final classified = keys.where((k) => (cats[k] ?? st.ruleFor(k)?.categoryId) != null).length;
+    final keys = groups.keys.toList()
+      ..sort((a, b) => groups[b]!.length.compareTo(groups[a]!.length));
+    final classified = keys
+        .where((k) => (cats[k] ?? st.ruleFor(k)?.categoryId) != null)
+        .length;
     return [
-      if (rows.asMap().entries.any((e) => e.value.isTransfer && !_outside(e.key))) _transfersCard(),
+      if (rows.asMap().entries.any(
+        (e) => e.value.isTransfer && !_outside(e.key),
+      ))
+        _transfersCard(),
       Padding(
         padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
-        child: Text('Classificação: $classified de ${keys.length} grupos', style: Theme.of(context).textTheme.titleMedium),
+        child: Text(
+          'Classificação: $classified de ${keys.length} grupos',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
       ),
       const Padding(
         padding: EdgeInsets.fromLTRB(4, 0, 4, 4),
-        child: Text('Movimentos com o mesmo nome estão juntos. Escolhe a categoria e a subcategoria de cada grupo (ou deixa por classificar). As regras já memorizadas vêm preenchidas.'),
+        child: Text(
+          'Movimentos com o mesmo nome estão juntos. Escolhe a categoria e a subcategoria de cada grupo (ou deixa por classificar). As regras já memorizadas vêm preenchidas.',
+        ),
       ),
       for (final k in keys) _importGroup(context, st, k, groups[k]!),
     ];
   }
 
-  Widget _importGroup(BuildContext context, AppState st, String key, List<int> idx) {
+  Widget _importGroup(
+    BuildContext context,
+    AppState st,
+    String key,
+    List<int> idx,
+  ) {
     final rule = st.ruleFor(key);
     final value = cats.containsKey(key) ? cats[key] : rule?.categoryId;
     final active = idx.where((i) => !excluded.contains(i)).toList();
-    final total = active.fold(0, (a, i) => a + (invert ? -rows[i].amount : rows[i].amount));
-    final isNewRule = value != null && (rule == null || rule.categoryId != value);
-    final shownName = names.containsKey(key) ? names[key]! : (rule?.label ?? '');
+    final total = active.fold(
+      0,
+      (a, i) => a + (invert ? -rows[i].amount : rows[i].amount),
+    );
+    final isNewRule =
+        value != null && (rule == null || rule.categoryId != value);
+    final shownName = names.containsKey(key)
+        ? names[key]!
+        : (rule?.label ?? '');
     final byName = st.groupByName(shownName);
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [
-            Expanded(child: Text(shownName.isNotEmpty ? shownName : key, style: const TextStyle(fontWeight: FontWeight.w700))),
-            MoneyText(total),
-          ]),
-          Text('Original: ${rows[idx.first].description}', maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
-          Text('${active.length} de ${idx.length} movimentos${rule != null ? ' · regra memorizada' : ''}', style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 10),
-          Autocomplete<String>(
-            key: ValueKey('name-$key'),
-            initialValue: TextEditingValue(text: shownName),
-            optionsBuilder: (v) {
-              final q = v.text.trim().toLowerCase();
-              if (q.isEmpty) return const Iterable<String>.empty();
-              return st.groups.map((g) => g.name).where((n) => n.toLowerCase().contains(q) && n.toLowerCase() != q);
-            },
-            onSelected: (n) => setState(() {
-              names[key] = n;
-              final g = st.groupByName(n);
-              if (g?.categoryId != null) cats[key] = g!.categoryId;
-            }),
-            fieldViewBuilder: (ctx, controller, focus, _) => TextField(
-              controller: controller,
-              focusNode: focus,
-              decoration: InputDecoration(
-                labelText: 'Nome ou grupo (opcional)',
-                hintText: 'Ex.: Ginásio, Restaurante Arminda…',
-                prefixIcon: const Icon(Icons.label_outline),
-                isDense: true,
-                helperText: byName != null ? 'Junta-se ao grupo “${byName.name}” (${st.rulesOfGroup(byName.id).length} títulos)' : null,
-              ),
-              onChanged: (v) => setState(() {
-                names[key] = v;
-                final g = st.groupByName(v);
-                if (g?.categoryId != null && !cats.containsKey(key)) cats[key] = g!.categoryId;
-              }),
-            ),
-          ),
-          const SizedBox(height: 10),
-          CategorySelector(
-            value: value,
-            compact: true,
-            when: DateTimeRange(start: idx.map((i) => rows[i].date).reduce((a, b) => a.isBefore(b) ? a : b), end: idx.map((i) => rows[i].date).reduce((a, b) => a.isAfter(b) ? a : b)),
-            onChanged: (v) => setState(() => cats[key] = v),
-          ),
-          if (isNewRule || (names[key]?.trim().isNotEmpty ?? false))
-            CheckboxListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              title: const Text('Memorizar nome e categoria para o futuro'),
-              value: !noRemember.contains(key),
-              onChanged: (v) => setState(() => v! ? noRemember.remove(key) : noRemember.add(key)),
-            ),
-          ExpansionTile(
-            tilePadding: EdgeInsets.zero,
-            shape: const Border(),
-            collapsedShape: const Border(),
-            title: const Text('Ver movimentos'),
-            children: [
-              for (final i in idx)
-                CheckboxListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  value: !excluded.contains(i),
-                  onChanged: (v) => setState(() => v! ? excluded.remove(i) : excluded.add(i)),
-                  title: Text(rows[i].description, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(fmtDate(rows[i].date)),
-                  secondary: MoneyText(invert ? -rows[i].amount : rows[i].amount),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    shownName.isNotEmpty ? shownName : key,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
-            ],
-          ),
-        ]),
+                MoneyText(total),
+              ],
+            ),
+            Text(
+              'Original: ${rows[idx.first].description}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            Text(
+              '${active.length} de ${idx.length} movimentos${rule != null ? ' · regra memorizada' : ''}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 10),
+            Autocomplete<String>(
+              key: ValueKey('name-$key'),
+              initialValue: TextEditingValue(text: shownName),
+              optionsBuilder: (v) {
+                final q = v.text.trim().toLowerCase();
+                if (q.isEmpty) return const Iterable<String>.empty();
+                return st.groups
+                    .map((g) => g.name)
+                    .where(
+                      (n) =>
+                          n.toLowerCase().contains(q) && n.toLowerCase() != q,
+                    );
+              },
+              onSelected: (n) => setState(() {
+                names[key] = n;
+                final g = st.groupByName(n);
+                if (g?.categoryId != null) cats[key] = g!.categoryId;
+              }),
+              fieldViewBuilder: (ctx, controller, focus, _) => TextField(
+                controller: controller,
+                focusNode: focus,
+                decoration: InputDecoration(
+                  labelText: 'Nome ou grupo (opcional)',
+                  hintText: 'Ex.: Ginásio, Restaurante Arminda…',
+                  prefixIcon: const Icon(Icons.label_outline),
+                  isDense: true,
+                  helperText: byName != null
+                      ? 'Junta-se ao grupo “${byName.name}” (${st.rulesOfGroup(byName.id).length} títulos)'
+                      : null,
+                ),
+                onChanged: (v) => setState(() {
+                  names[key] = v;
+                  final g = st.groupByName(v);
+                  if (g?.categoryId != null && !cats.containsKey(key))
+                    cats[key] = g!.categoryId;
+                }),
+              ),
+            ),
+            const SizedBox(height: 10),
+            CategorySelector(
+              value: value,
+              compact: true,
+              when: DateTimeRange(
+                start: idx
+                    .map((i) => rows[i].date)
+                    .reduce((a, b) => a.isBefore(b) ? a : b),
+                end: idx
+                    .map((i) => rows[i].date)
+                    .reduce((a, b) => a.isAfter(b) ? a : b),
+              ),
+              onChanged: (v) => setState(() => cats[key] = v),
+            ),
+            if (isNewRule || (names[key]?.trim().isNotEmpty ?? false))
+              CheckboxListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: const Text('Memorizar nome e categoria para o futuro'),
+                value: !noRemember.contains(key),
+                onChanged: (v) => setState(
+                  () => v! ? noRemember.remove(key) : noRemember.add(key),
+                ),
+              ),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              shape: const Border(),
+              collapsedShape: const Border(),
+              title: const Text('Ver movimentos'),
+              children: [
+                for (final i in idx)
+                  CheckboxListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    value: !excluded.contains(i),
+                    onChanged: (v) => setState(
+                      () => v! ? excluded.remove(i) : excluded.add(i),
+                    ),
+                    title: Text(
+                      rows[i].description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(fmtDate(rows[i].date)),
+                    secondary: MoneyText(
+                      invert ? -rows[i].amount : rows[i].amount,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _accountsCard(AppState st) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('Contas neste extrato', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text('${accountMap.length} ${accountMap.length == 1 ? 'conta' : 'contas'} detetadas. Escolhe a que corresponde a cada uma na app.', style: Theme.of(context).textTheme.bodySmall),
-            for (final name in accountMap.keys) ...[
-              const SizedBox(height: 14),
-              Text('${name}  ·  ${rows.where((r) => r.account == name).length} movimentos', style: const TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<int>(
-                key: ValueKey('acc-$name-${accountMap[name]}-${st.accounts.length}'),
-                initialValue: accountMap[name],
-                isExpanded: true,
-                decoration: const InputDecoration(prefixIcon: Icon(Icons.account_balance_wallet_outlined)),
-                items: [
-                  DropdownMenuItem(value: 0, child: Text('➕  Criar conta “$name”')),
-                  for (final a in st.accounts) DropdownMenuItem(value: a.id, child: Text('${a.emoji} ${a.name}'.trim())),
-                  const DropdownMenuItem(value: -1, child: Text('Sem conta')),
-                ],
-                onChanged: (v) => setState(() => accountMap[name] = v ?? 0),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Contas neste extrato',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${accountMap.length} ${accountMap.length == 1 ? 'conta' : 'contas'} detetadas. Escolhe a que corresponde a cada uma na app.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          for (final name in accountMap.keys) ...[
+            const SizedBox(height: 14),
+            Text(
+              '${name}  ·  ${rows.where((r) => r.account == name).length} movimentos',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              key: ValueKey(
+                'acc-$name-${accountMap[name]}-${st.accounts.length}',
               ),
-            ],
-            if (accountMap.length >= 2)
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Detetar transferências entre estas contas'),
-                subtitle: const Text('Saída numa conta e entrada noutra, do mesmo valor, não contam como despesa nem receita.'),
-                value: detectTransfers,
-                onChanged: (v) => setState(() {
-                  detectTransfers = v;
-                  _markTransfers();
-                }),
+              initialValue: accountMap[name],
+              isExpanded: true,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.account_balance_wallet_outlined),
               ),
-          ]),
-        ),
-      );
+              items: [
+                DropdownMenuItem(
+                  value: 0,
+                  child: Text('➕  Criar conta “$name”'),
+                ),
+                for (final a in st.accounts)
+                  DropdownMenuItem(
+                    value: a.id,
+                    child: Text('${a.emoji} ${a.name}'.trim()),
+                  ),
+                const DropdownMenuItem(value: -1, child: Text('Sem conta')),
+              ],
+              onChanged: (v) => setState(() => accountMap[name] = v ?? 0),
+            ),
+          ],
+          if (accountMap.length >= 2)
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Detetar transferências entre estas contas'),
+              subtitle: const Text(
+                'Saída numa conta e entrada noutra, do mesmo valor, não contam como despesa nem receita.',
+              ),
+              value: detectTransfers,
+              onChanged: (v) => setState(() {
+                detectTransfers = v;
+                _markTransfers();
+              }),
+            ),
+        ],
+      ),
+    ),
+  );
 
   Widget _transfersCard() {
-    final list = [for (var i = 0; i < rows.length; i++) if (rows[i].isTransfer && !_outside(i)) i];
+    final list = [
+      for (var i = 0; i < rows.length; i++)
+        if (rows[i].isTransfer && !_outside(i)) i,
+    ];
     return Card(
       child: ExpansionTile(
         shape: const Border(),
         collapsedShape: const Border(),
         leading: const Icon(Icons.swap_horiz),
-        title: Text('${list.length} transferências entre contas', style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: const Text('Não precisam de categoria e ficam fora das despesas e receitas.'),
+        title: Text(
+          '${list.length} transferências entre contas',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: const Text(
+          'Não precisam de categoria e ficam fora das despesas e receitas.',
+        ),
         children: [
           for (final i in list)
             ListTile(
               dense: true,
-              title: Text(rows[i].description, maxLines: 2, overflow: TextOverflow.ellipsis),
-              subtitle: Text('${fmtDate(rows[i].date)} · ${rows[i].account ?? ''}'),
-              trailing: MoneyText(invert ? -rows[i].amount : rows[i].amount, colored: false),
+              title: Text(
+                rows[i].description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                '${fmtDate(rows[i].date)} · ${rows[i].account ?? ''}',
+              ),
+              trailing: MoneyText(
+                invert ? -rows[i].amount : rows[i].amount,
+                colored: false,
+              ),
             ),
         ],
       ),
@@ -412,80 +613,144 @@ class _ImportScreenState extends State<ImportScreen> {
   }
 
   Widget _skippedCard() => Card(
-        color: Theme.of(context).colorScheme.errorContainer,
-        child: ExpansionTile(
-          shape: const Border(),
-          collapsedShape: const Border(),
-          leading: Icon(Icons.warning_amber_rounded, color: Theme.of(context).colorScheme.onErrorContainer),
-          title: Text(
-            '${skipped.length} ${skipped.length == 1 ? 'linha parece' : 'linhas parecem'} movimentos mas não ${skipped.length == 1 ? 'foi reconhecida' : 'foram reconhecidas'}',
-            style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer, fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text('Lidos: ${rows.length}. Toca para ver as linhas ignoradas.', style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
-          children: [
-            for (final l in skipped.take(30)) ListTile(dense: true, title: Text(l, maxLines: 2, overflow: TextOverflow.ellipsis)),
-            if (skipped.length > 30) Padding(padding: const EdgeInsets.all(12), child: Text('… e mais ${skipped.length - 30}')),
-            const Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 12), child: Text('Se for um extrato do teu banco, exporta em CSV/Excel no homebanking ou envia-me um exemplo (com os dados tapados) para eu ajustar o leitor.')),
-          ],
+    color: Theme.of(context).colorScheme.errorContainer,
+    child: ExpansionTile(
+      shape: const Border(),
+      collapsedShape: const Border(),
+      leading: Icon(
+        Icons.warning_amber_rounded,
+        color: Theme.of(context).colorScheme.onErrorContainer,
+      ),
+      title: Text(
+        '${skipped.length} ${skipped.length == 1 ? 'linha parece' : 'linhas parecem'} movimentos mas não ${skipped.length == 1 ? 'foi reconhecida' : 'foram reconhecidas'}',
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onErrorContainer,
+          fontWeight: FontWeight.w600,
         ),
-      );
+      ),
+      subtitle: Text(
+        'Lidos: ${rows.length}. Toca para ver as linhas ignoradas.',
+        style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+      ),
+      children: [
+        for (final l in skipped.take(30))
+          ListTile(
+            dense: true,
+            title: Text(l, maxLines: 2, overflow: TextOverflow.ellipsis),
+          ),
+        if (skipped.length > 30)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text('… e mais ${skipped.length - 30}'),
+          ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Text(
+            'Se for um extrato do teu banco, exporta em CSV/Excel no homebanking ou envia-me um exemplo (com os dados tapados) para eu ajustar o leitor.',
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _pdfOptions() => Card(
-        child: ListTile(
-          title: const Text('Ano das datas sem ano'),
-          subtitle: const Text('Só afeta datas escritas como dd-mm'),
-          trailing: DropdownButton<int>(
-            value: year,
-            items: [for (var y = DateTime.now().year + 1; y >= 2015; y--) DropdownMenuItem(value: y, child: Text('$y'))],
-            onChanged: (v) => setState(() {
-              year = v!;
-              final det = parseStatementDetailed(pdfRaw!, defaultYear: year);
-              rows = det.rows;
-              skipped = det.skipped;
-              _afterParse();
-            }),
-          ),
-        ),
-      );
+    child: ListTile(
+      title: const Text('Ano das datas sem ano'),
+      subtitle: const Text('Só afeta datas escritas como dd-mm'),
+      trailing: DropdownButton<int>(
+        value: year,
+        items: [
+          for (var y = DateTime.now().year + 1; y >= 2015; y--)
+            DropdownMenuItem(value: y, child: Text('$y')),
+        ],
+        onChanged: (v) => setState(() {
+          year = v!;
+          final det = parseStatementDetailed(pdfRaw!, defaultYear: year);
+          rows = det.rows;
+          skipped = det.skipped;
+          _afterParse();
+        }),
+      ),
+    ),
+  );
 
   Widget _mappingCard() {
     final t = table!;
     final cols = t.fold(0, (a, r) => r.length > a ? r.length : a);
-    final header = mapping.headerRow >= 0 && mapping.headerRow < t.length ? t[mapping.headerRow] : <String>[];
-    String label(int c) => header.length > c && header[c].trim().isNotEmpty ? header[c].trim() : 'Coluna ${c + 1}';
-    Widget dd(String title, int? value, void Function(int?) set, {bool optional = true}) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: DropdownButtonFormField<int?>(
-            initialValue: value,
-            decoration: InputDecoration(labelText: title, isDense: true),
-            items: [
-              if (optional) const DropdownMenuItem(value: null, child: Text('— não usar —')),
-              for (var c = 0; c < cols; c++)
-                DropdownMenuItem(value: c, child: Text('${label(c)}  ·  ${t.length > mapping.headerRow + 1 && c < t[mapping.headerRow + 1 < t.length ? mapping.headerRow + 1 : 0].length ? t[mapping.headerRow + 1 < t.length ? mapping.headerRow + 1 : 0][c] : ''}', overflow: TextOverflow.ellipsis)),
-            ],
-            isExpanded: true,
-            onChanged: (v) => setState(() {
-              set(v);
-              _rebuild();
-            }),
-          ),
-        );
+    final header = mapping.headerRow >= 0 && mapping.headerRow < t.length
+        ? t[mapping.headerRow]
+        : <String>[];
+    String label(int c) => header.length > c && header[c].trim().isNotEmpty
+        ? header[c].trim()
+        : 'Coluna ${c + 1}';
+    Widget dd(
+      String title,
+      int? value,
+      void Function(int?) set, {
+      bool optional = true,
+    }) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: DropdownButtonFormField<int?>(
+        initialValue: value,
+        decoration: InputDecoration(labelText: title, isDense: true),
+        items: [
+          if (optional)
+            const DropdownMenuItem(value: null, child: Text('— não usar —')),
+          for (var c = 0; c < cols; c++)
+            DropdownMenuItem(
+              value: c,
+              child: Text(
+                '${label(c)}  ·  ${t.length > mapping.headerRow + 1 && c < t[mapping.headerRow + 1 < t.length ? mapping.headerRow + 1 : 0].length ? t[mapping.headerRow + 1 < t.length ? mapping.headerRow + 1 : 0][c] : ''}',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
+        isExpanded: true,
+        onChanged: (v) => setState(() {
+          set(v);
+          _rebuild();
+        }),
+      ),
+    );
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Colunas do ficheiro', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
-          dd('Linha de cabeçalho', mapping.headerRow, (v) => mapping.headerRow = v ?? -1, optional: false),
-          dd('Data', mapping.date, (v) => mapping.date = v),
-          dd('Descrição', mapping.description, (v) => mapping.description = v),
-          dd('Montante (com sinal)', mapping.amount, (v) => mapping.amount = v),
-          if (mapping.amount == null) ...[
-            dd('Débito (saídas)', mapping.debit, (v) => mapping.debit = v),
-            dd('Crédito (entradas)', mapping.credit, (v) => mapping.credit = v),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Colunas do ficheiro',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            dd(
+              'Linha de cabeçalho',
+              mapping.headerRow,
+              (v) => mapping.headerRow = v ?? -1,
+              optional: false,
+            ),
+            dd('Data', mapping.date, (v) => mapping.date = v),
+            dd(
+              'Descrição',
+              mapping.description,
+              (v) => mapping.description = v,
+            ),
+            dd(
+              'Montante (com sinal)',
+              mapping.amount,
+              (v) => mapping.amount = v,
+            ),
+            if (mapping.amount == null) ...[
+              dd('Débito (saídas)', mapping.debit, (v) => mapping.debit = v),
+              dd(
+                'Crédito (entradas)',
+                mapping.credit,
+                (v) => mapping.credit = v,
+              ),
+            ],
+            dd('Saldo (opcional)', mapping.balance, (v) => mapping.balance = v),
           ],
-          dd('Saldo (opcional)', mapping.balance, (v) => mapping.balance = v),
-        ]),
+        ),
       ),
     );
   }

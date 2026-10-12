@@ -8,7 +8,8 @@ class Categoria {
   final int? parentId;
   final bool isIncome;
   final bool both; // aceita despesas e receitas (ex.: vendas, reembolsos)
-  final bool isInvestment; // despesa que é dinheiro investido (não conta como gasto)
+  final bool
+  isInvestment; // despesa que é dinheiro investido (não conta como gasto)
   final String emoji; // ícone da categoria (um emoji); vazio = sem ícone
   final String description;
   final BudgetType budgetType;
@@ -41,7 +42,8 @@ class Categoria {
 
   /// A categoria (só pelas suas próprias datas) existe no mês [month] (AAAA-MM)?
   bool activeIn(String month) =>
-      (activeFrom == null || month.compareTo(activeFrom!) >= 0) && (activeTo == null || month.compareTo(activeTo!) <= 0);
+      (activeFrom == null || month.compareTo(activeFrom!) >= 0) &&
+      (activeTo == null || month.compareTo(activeTo!) <= 0);
 
   Categoria copyWith({
     String? name,
@@ -58,28 +60,32 @@ class Categoria {
     bool? archived,
     Object? activeFrom = _keep,
     Object? activeTo = _keep,
-  }) =>
-      Categoria(
-        id: id,
-        name: name ?? this.name,
-        parentId: parentId ?? this.parentId,
-        isIncome: isIncome ?? this.isIncome,
-        both: both ?? this.both,
-        isInvestment: isInvestment ?? this.isInvestment,
-        emoji: emoji ?? this.emoji,
-        description: description ?? this.description,
-        budgetType: budgetType ?? this.budgetType,
-        budgetPercent: budgetPercent ?? this.budgetPercent,
-        budgetValue: budgetValue ?? this.budgetValue,
-        hasBudget: hasBudget ?? this.hasBudget,
-        archived: archived ?? this.archived,
-        activeFrom: identical(activeFrom, _keep) ? this.activeFrom : activeFrom as String?,
-        activeTo: identical(activeTo, _keep) ? this.activeTo : activeTo as String?,
-      );
+  }) => Categoria(
+    id: id,
+    name: name ?? this.name,
+    parentId: parentId ?? this.parentId,
+    isIncome: isIncome ?? this.isIncome,
+    both: both ?? this.both,
+    isInvestment: isInvestment ?? this.isInvestment,
+    emoji: emoji ?? this.emoji,
+    description: description ?? this.description,
+    budgetType: budgetType ?? this.budgetType,
+    budgetPercent: budgetPercent ?? this.budgetPercent,
+    budgetValue: budgetValue ?? this.budgetValue,
+    hasBudget: hasBudget ?? this.hasBudget,
+    archived: archived ?? this.archived,
+    activeFrom: identical(activeFrom, _keep)
+        ? this.activeFrom
+        : activeFrom as String?,
+    activeTo: identical(activeTo, _keep) ? this.activeTo : activeTo as String?,
+  );
 
   /// Alocação mensal em cêntimos dado o salário líquido.
-  int monthlyTarget(int salaryCents) =>
-      !hasBudget ? 0 : (budgetPercent ? (salaryCents * budgetValue / 10000).round() : budgetValue);
+  int monthlyTarget(int salaryCents) => !hasBudget
+      ? 0
+      : (budgetPercent
+            ? (salaryCents * budgetValue / 10000).round()
+            : budgetValue);
 }
 
 class Txn {
@@ -94,8 +100,10 @@ class Txn {
   final String merchantKey;
   final int? importId;
   final int? accountId;
-  final bool isTransfer; // transferência entre contas: fora das despesas/receitas
-  final String? receiptPath; // nome do ficheiro do recibo (na pasta de recibos da app)
+  final bool
+  isTransfer; // transferência entre contas: fora das despesas/receitas
+  final String?
+  receiptPath; // nome do ficheiro do recibo (na pasta de recibos da app)
   final int? investAccountId; // entrega (ou levantamento) de/para uma plataforma de investimento
 
   const Txn({
@@ -131,7 +139,8 @@ class Rule {
   final int? categoryId; // pode ser nulo: regra só com nome amigável
   final String label; // nome amigável
   final String note;
-  final int? groupId; // se pertence a um grupo, categoryId/label/note vêm do grupo
+  final int?
+  groupId; // se pertence a um grupo, categoryId/label/note vêm do grupo
   const Rule({
     required this.id,
     required this.pattern,
@@ -150,7 +159,12 @@ class Grupo {
   final String name;
   final int? categoryId;
   final String note;
-  const Grupo({required this.id, required this.name, this.categoryId, this.note = ''});
+  const Grupo({
+    required this.id,
+    required this.name,
+    this.categoryId,
+    this.note = '',
+  });
 }
 
 /// Movimento lido de um ficheiro, antes de ser guardado.
@@ -159,19 +173,36 @@ class ParsedRow {
   String description;
   int amount;
   int? balance;
-  String? account; // nome da conta, quando o extrato tem várias (ex.: "Conta Simples")
+  String?
+  account; // nome da conta, quando o extrato tem várias (ex.: "Conta Simples")
   bool isTransfer; // transferência entre contas do próprio utilizador
-  ParsedRow(this.date, this.description, this.amount, [this.balance, this.account, this.isTransfer = false]);
+  ParsedRow(
+    this.date,
+    this.description,
+    this.amount, [
+    this.balance,
+    this.account,
+    this.isTransfer = false,
+  ]);
 
-  ParsedRow copy({int? amount}) => ParsedRow(date, description, amount ?? this.amount, balance, account, isTransfer);
+  ParsedRow copy({int? amount}) => ParsedRow(
+    date,
+    description,
+    amount ?? this.amount,
+    balance,
+    account,
+    isTransfer,
+  );
 }
 
 /// Grupo de movimentos com a mesma chave (cartão na aba Classificar).
 class TxnGroup {
-  final String key; // identificador do cartão (chave do título ou "g<id>" se for um grupo)
+  final String
+  key; // identificador do cartão (chave do título ou "g<id>" se for um grupo)
   final List<Txn> txns;
   final int? groupId;
   TxnGroup(this.key, this.txns, {this.groupId});
+
   /// Chave normalizada do primeiro título (para procurar a regra).
   String get rep => txns.first.merchantKey;
   Set<String> get keys => {for (final t in txns) t.merchantKey};
@@ -186,6 +217,13 @@ class MandatoryRange {
   final int categoryId;
   final String start;
   final String? end;
-  const MandatoryRange({required this.id, required this.categoryId, required this.start, this.end});
-  bool covers(String month) => month.compareTo(start) >= 0 && (end == null || month.compareTo(end!) <= 0);
+  const MandatoryRange({
+    required this.id,
+    required this.categoryId,
+    required this.start,
+    this.end,
+  });
+  bool covers(String month) =>
+      month.compareTo(start) >= 0 &&
+      (end == null || month.compareTo(end!) <= 0);
 }

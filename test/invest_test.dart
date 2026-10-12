@@ -11,31 +11,73 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-http.Response _json(Object o, [int code = 200]) => http.Response(jsonEncode(o), code, headers: {'content-type': 'application/json; charset=utf-8'});
+http.Response _json(Object o, [int code = 200]) => http.Response(
+  jsonEncode(o),
+  code,
+  headers: {'content-type': 'application/json; charset=utf-8'},
+);
 
 Map<String, dynamic> _chart(double price, String ccy) => {
-      'chart': {
-        'result': [
-          {'meta': {'regularMarketPrice': price, 'currency': ccy}}
-        ],
-        'error': null
-      }
-    };
+  'chart': {
+    'result': [
+      {
+        'meta': {'regularMarketPrice': price, 'currency': ccy},
+      },
+    ],
+    'error': null,
+  },
+};
 
 void main() {
   group('motor da carteira', () {
     test('preço médio, dinheiro por alocar e totais', () {
       final s = AppState(Db.memory());
       final xtb = s.addInvestAccount('XTB', emoji: '📈');
-      final vwce = s.addHolding(Holding(id: 0, accountId: xtb, name: 'VWCE', symbol: 'VWCE.DE', provider: PriceProvider.yahoo, lastPrice: 120));
+      final vwce = s.addHolding(
+        Holding(
+          id: 0,
+          accountId: xtb,
+          name: 'VWCE',
+          symbol: 'VWCE.DE',
+          provider: PriceProvider.yahoo,
+          lastPrice: 120,
+        ),
+      );
       // 600 € enviados do banco para a XTB
-      s.addManual(date: DateTime(2026, 1, 5), description: 'TRF P/ XTB S.A', amount: -60000);
+      s.addManual(
+        date: DateTime(2026, 1, 5),
+        description: 'TRF P/ XTB S.A',
+        amount: -60000,
+      );
       s.linkTransfers([s.transactions.first.id], xtb);
 
       // já tinha 10 unidades a 100 € antes de usar a app (não mexe no dinheiro)
-      s.addOp(InvestOp(id: 0, accountId: xtb, holdingId: vwce, date: DateTime(2025, 6, 1), type: OpType.initial, quantity: 10, price: 100, amount: 100000));
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: xtb,
+          holdingId: vwce,
+          date: DateTime(2025, 6, 1),
+          type: OpType.initial,
+          quantity: 10,
+          price: 100,
+          amount: 100000,
+        ),
+      );
       // compra 5 a 110 € com 1 € de comissão
-      s.addOp(InvestOp(id: 0, accountId: xtb, holdingId: vwce, date: DateTime(2026, 1, 6), type: OpType.buy, quantity: 5, price: 110, amount: 55100, fee: 100));
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: xtb,
+          holdingId: vwce,
+          date: DateTime(2026, 1, 6),
+          type: OpType.buy,
+          quantity: 5,
+          price: 110,
+          amount: 55100,
+          fee: 100,
+        ),
+      );
 
       var p = s.portfolio;
       expect(p.accounts.length, 1);
@@ -53,10 +95,38 @@ void main() {
       expect(p.costBasis, 155100);
 
       // venda de 3 a 130 € (390 € recebidos): realiza ganho e mantém o preço médio
-      s.addOp(InvestOp(id: 0, accountId: xtb, holdingId: vwce, date: DateTime(2026, 2, 1), type: OpType.sell, quantity: 3, price: 130, amount: 39000));
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: xtb,
+          holdingId: vwce,
+          date: DateTime(2026, 2, 1),
+          type: OpType.sell,
+          quantity: 3,
+          price: 130,
+          amount: 39000,
+        ),
+      );
       // dividendo e acerto manual de dinheiro que já lá estava
-      s.addOp(InvestOp(id: 0, accountId: xtb, holdingId: vwce, date: DateTime(2026, 2, 2), type: OpType.dividend, amount: 500));
-      s.addOp(InvestOp(id: 0, accountId: xtb, date: DateTime(2026, 2, 3), type: OpType.cash, amount: 20000));
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: xtb,
+          holdingId: vwce,
+          date: DateTime(2026, 2, 2),
+          type: OpType.dividend,
+          amount: 500,
+        ),
+      );
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: xtb,
+          date: DateTime(2026, 2, 3),
+          type: OpType.cash,
+          amount: 20000,
+        ),
+      );
       p = s.portfolio;
       a = p.accounts.first;
       final after = a.positions.first;
@@ -68,19 +138,53 @@ void main() {
       expect(a.cashCents, 4900 + 39000 + 500 + 20000);
 
       // levantamento para o banco (entrada no banco) baixa o dinheiro por alocar
-      s.addManual(date: DateTime(2026, 3, 1), description: 'TRF DE XTB S.A', amount: 10000);
-      s.linkTransfers([s.transactions.firstWhere((t) => t.amount == 10000).id], xtb);
-      expect(s.portfolio.accounts.first.cashCents, 4900 + 39000 + 500 + 20000 - 10000);
+      s.addManual(
+        date: DateTime(2026, 3, 1),
+        description: 'TRF DE XTB S.A',
+        amount: 10000,
+      );
+      s.linkTransfers([
+        s.transactions.firstWhere((t) => t.amount == 10000).id,
+      ], xtb);
+      expect(
+        s.portfolio.accounts.first.cashCents,
+        4900 + 39000 + 500 + 20000 - 10000,
+      );
     });
 
     test('sem preço usa o custo; vender mais do que tens não dá quantidade negativa', () {
       final s = AppState(Db.memory());
       final a = s.addInvestAccount('Corretora');
       final h = s.addHolding(Holding(id: 0, accountId: a, name: 'Fundo X'));
-      s.addOp(InvestOp(id: 0, accountId: a, holdingId: h, date: DateTime(2026, 1, 1), type: OpType.initial, quantity: 2, price: 50, amount: 10000));
-      expect(s.portfolio.accounts.first.positions.first.valueCents, 10000); // sem preço: custo
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: a,
+          holdingId: h,
+          date: DateTime(2026, 1, 1),
+          type: OpType.initial,
+          quantity: 2,
+          price: 50,
+          amount: 10000,
+        ),
+      );
+      expect(
+        s.portfolio.accounts.first.positions.first.valueCents,
+        10000,
+      ); // sem preço: custo
       expect(s.portfolio.accounts.first.positions.first.priced, isFalse);
-      s.addOp(InvestOp(id: 0, accountId: a, holdingId: h, date: DateTime(2026, 2, 1), type: OpType.sell, quantity: 5, price: 60, amount: 12000));
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: a,
+          holdingId: h,
+          date: DateTime(2026, 2, 1),
+          type: OpType.sell,
+          quantity: 5,
+          price: 60,
+          amount: 12000,
+        ),
+      );
       final pos = s.portfolio.accounts.first.positions.first;
       expect(pos.qty, 0);
       expect(pos.open, isFalse);
@@ -90,10 +194,34 @@ void main() {
     test('ordem das operações importa e a data decide', () {
       final s = AppState(Db.memory());
       final a = s.addInvestAccount('Corretora');
-      final h = s.addHolding(Holding(id: 0, accountId: a, name: 'ETF', lastPrice: 10));
+      final h = s.addHolding(
+        Holding(id: 0, accountId: a, name: 'ETF', lastPrice: 10),
+      );
       // introduzidas fora de ordem: a compra mais antiga entra primeiro no custo médio
-      s.addOp(InvestOp(id: 0, accountId: a, holdingId: h, date: DateTime(2026, 3, 1), type: OpType.buy, quantity: 10, price: 20, amount: 20000));
-      s.addOp(InvestOp(id: 0, accountId: a, holdingId: h, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 10, price: 10, amount: 10000));
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: a,
+          holdingId: h,
+          date: DateTime(2026, 3, 1),
+          type: OpType.buy,
+          quantity: 10,
+          price: 20,
+          amount: 20000,
+        ),
+      );
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: a,
+          holdingId: h,
+          date: DateTime(2026, 1, 1),
+          type: OpType.buy,
+          quantity: 10,
+          price: 10,
+          amount: 10000,
+        ),
+      );
       final pos = s.portfolio.accounts.first.positions.first;
       expect(pos.qty, 20);
       expect(pos.avgCost, closeTo(15, 0.0001)); // (100 + 200) / 20
@@ -102,112 +230,198 @@ void main() {
   });
 
   group('transferências para plataformas', () {
-    test('ficam fora das despesas e a memória aplica-se às próximas importações', () {
-      final s = AppState(Db.memory());
-      final xtb = s.addInvestAccount('XTB');
-      final food = s.addCategory(const Categoria(id: 0, name: 'Comida'));
-      s.addManual(date: DateTime(2026, 4, 3), description: 'COMPRA LIDL', amount: -2000, categoryId: food);
-      s.addManual(date: DateTime(2026, 4, 5), description: 'TRF P/ XTB S.A', amount: -10000);
-      final t = s.transactions.firstWhere((x) => x.description.contains('XTB'));
-      s.linkTransfers([t.id], xtb, rememberTitles: true);
-      final linked = s.transactions.firstWhere((x) => x.id == t.id);
-      expect(linked.isTransfer, isTrue);
-      expect(linked.investAccountId, xtb);
+    test(
+      'ficam fora das despesas e a memória aplica-se às próximas importações',
+      () {
+        final s = AppState(Db.memory());
+        final xtb = s.addInvestAccount('XTB');
+        final food = s.addCategory(const Categoria(id: 0, name: 'Comida'));
+        s.addManual(
+          date: DateTime(2026, 4, 3),
+          description: 'COMPRA LIDL',
+          amount: -2000,
+          categoryId: food,
+        );
+        s.addManual(
+          date: DateTime(2026, 4, 5),
+          description: 'TRF P/ XTB S.A',
+          amount: -10000,
+        );
+        final t = s.transactions.firstWhere(
+          (x) => x.description.contains('XTB'),
+        );
+        s.linkTransfers([t.id], xtb, rememberTitles: true);
+        final linked = s.transactions.firstWhere((x) => x.id == t.id);
+        expect(linked.isTransfer, isTrue);
+        expect(linked.investAccountId, xtb);
 
-      final p = Period.month(DateTime(2026, 4));
-      expect(Analytics(s, p, const AnalysisFilter()).spent, 2000); // a entrega não é despesa
-      expect(s.investedIn(p), 10000);
+        final p = Period.month(DateTime(2026, 4));
+        expect(
+          Analytics(s, p, const AnalysisFilter()).spent,
+          2000,
+        ); // a entrega não é despesa
+        expect(s.investedIn(p), 10000);
 
-      // próxima importação: o mesmo título é reconhecido sozinho
-      s.importRows('maio.csv', 'csv', [ParsedRow(DateTime(2026, 5, 6), 'TRF P/ XTB S.A', -15000), ParsedRow(DateTime(2026, 5, 7), 'COMPRA LIDL', -1500)]);
-      final may = s.transactions.firstWhere((x) => x.date == DateTime(2026, 5, 6));
-      expect(may.investAccountId, xtb);
-      expect(may.isTransfer, isTrue);
-      expect(may.categoryId, isNull);
-      expect(s.transactions.firstWhere((x) => x.date == DateTime(2026, 5, 7)).investAccountId, isNull);
-      expect(s.portfolio.accounts.first.depositedCents, 25000);
+        // próxima importação: o mesmo título é reconhecido sozinho
+        s.importRows('maio.csv', 'csv', [
+          ParsedRow(DateTime(2026, 5, 6), 'TRF P/ XTB S.A', -15000),
+          ParsedRow(DateTime(2026, 5, 7), 'COMPRA LIDL', -1500),
+        ]);
+        final may = s.transactions.firstWhere(
+          (x) => x.date == DateTime(2026, 5, 6),
+        );
+        expect(may.investAccountId, xtb);
+        expect(may.isTransfer, isTrue);
+        expect(may.categoryId, isNull);
+        expect(
+          s.transactions
+              .firstWhere((x) => x.date == DateTime(2026, 5, 7))
+              .investAccountId,
+          isNull,
+        );
+        expect(s.portfolio.accounts.first.depositedCents, 25000);
 
-      // desmarcar volta a ser um movimento normal
-      s.unlinkTransfers([may.id]);
-      expect(s.transactions.firstWhere((x) => x.id == may.id).isTransfer, isFalse);
-    });
+        // desmarcar volta a ser um movimento normal
+        s.unlinkTransfers([may.id]);
+        expect(
+          s.transactions.firstWhere((x) => x.id == may.id).isTransfer,
+          isFalse,
+        );
+      },
+    );
 
     test('aplicar títulos memorizados a movimentos já existentes', () {
       final s = AppState(Db.memory());
       final xtb = s.addInvestAccount('XTB');
-      s.addManual(date: DateTime(2026, 1, 1), description: 'TRF P/ XTB S.A', amount: -5000);
+      s.addManual(
+        date: DateTime(2026, 1, 1),
+        description: 'TRF P/ XTB S.A',
+        amount: -5000,
+      );
       s.linkTransfers([s.transactions.first.id], xtb, rememberTitles: true);
-      s.addManual(date: DateTime(2026, 2, 1), description: 'TRF P/ XTB S.A', amount: -7000); // manual, não passou pela importação
+      s.addManual(
+        date: DateTime(2026, 2, 1),
+        description: 'TRF P/ XTB S.A',
+        amount: -7000,
+      ); // manual, não passou pela importação
       expect(s.applyInvestPatterns(), 1);
       expect(s.portfolio.accounts.first.depositedCents, 12000);
     });
 
-    test('apagar a plataforma apaga ativos e operações, mas os movimentos ficam', () {
-      final s = AppState(Db.memory());
-      final x = s.addInvestAccount('XTB');
-      final h = s.addHolding(Holding(id: 0, accountId: x, name: 'ETF'));
-      s.addOp(InvestOp(id: 0, accountId: x, holdingId: h, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 1, price: 1, amount: 100));
-      s.addManual(date: DateTime(2026, 1, 1), description: 'TRF P/ XTB', amount: -100);
-      s.linkTransfers([s.transactions.first.id], x);
-      s.deleteInvestAccount(x);
-      expect(s.holdings, isEmpty);
-      expect(s.investOps, isEmpty);
-      expect(s.transactions.length, 1);
-      expect(s.transactions.first.investAccountId, isNull);
-    });
+    test(
+      'apagar a plataforma apaga ativos e operações, mas os movimentos ficam',
+      () {
+        final s = AppState(Db.memory());
+        final x = s.addInvestAccount('XTB');
+        final h = s.addHolding(Holding(id: 0, accountId: x, name: 'ETF'));
+        s.addOp(
+          InvestOp(
+            id: 0,
+            accountId: x,
+            holdingId: h,
+            date: DateTime(2026, 1, 1),
+            type: OpType.buy,
+            quantity: 1,
+            price: 1,
+            amount: 100,
+          ),
+        );
+        s.addManual(
+          date: DateTime(2026, 1, 1),
+          description: 'TRF P/ XTB',
+          amount: -100,
+        );
+        s.linkTransfers([s.transactions.first.id], x);
+        s.deleteInvestAccount(x);
+        expect(s.holdings, isEmpty);
+        expect(s.investOps, isEmpty);
+        expect(s.transactions.length, 1);
+        expect(s.transactions.first.investAccountId, isNull);
+      },
+    );
   });
 
   group('preços (APIs gratuitas)', () {
     test('Yahoo em euros', () async {
-      final svc = PriceService(client: MockClient((r) async => _json(_chart(171.14, 'EUR'))));
+      final svc = PriceService(
+        client: MockClient((r) async => _json(_chart(171.14, 'EUR'))),
+      );
       final q = await svc.quote(PriceProvider.yahoo, 'VWCE.DE');
       expect(q.eur, 171.14);
       expect(q.currency, 'EUR');
     });
 
-    test('Yahoo noutra moeda converte para euros (e usa a cotação em cache)', () async {
-      var calls = 0;
-      final svc = PriceService(client: MockClient((r) async {
-        calls++;
-        if (r.url.path.contains('USDEUR')) return _json(_chart(0.9, 'EUR'));
-        return _json(_chart(100, 'USD'));
-      }));
-      final a = await svc.quote(PriceProvider.yahoo, 'AAPL');
-      expect(a.eur, closeTo(90, 0.0001));
-      expect(a.currency, 'USD');
-      expect(a.original, 100);
-      await svc.quote(PriceProvider.yahoo, 'MSFT');
-      expect(calls, 3); // 2 cotações + 1 câmbio (o segundo câmbio veio da cache)
-    });
+    test(
+      'Yahoo noutra moeda converte para euros (e usa a cotação em cache)',
+      () async {
+        var calls = 0;
+        final svc = PriceService(
+          client: MockClient((r) async {
+            calls++;
+            if (r.url.path.contains('USDEUR')) return _json(_chart(0.9, 'EUR'));
+            return _json(_chart(100, 'USD'));
+          }),
+        );
+        final a = await svc.quote(PriceProvider.yahoo, 'AAPL');
+        expect(a.eur, closeTo(90, 0.0001));
+        expect(a.currency, 'USD');
+        expect(a.original, 100);
+        await svc.quote(PriceProvider.yahoo, 'MSFT');
+        expect(
+          calls,
+          3,
+        ); // 2 cotações + 1 câmbio (o segundo câmbio veio da cache)
+      },
+    );
 
     test('o endereço do Yahoo leva o símbolo codificado uma só vez (câmbios e índices)', () async {
       final paths = <String>[];
-      final svc = PriceService(client: MockClient((r) async {
-        paths.add(r.url.toString());
-        return _json(_chart(1, 'EUR'));
-      }));
+      final svc = PriceService(
+        client: MockClient((r) async {
+          paths.add(r.url.toString());
+          return _json(_chart(1, 'EUR'));
+        }),
+      );
       await svc.quote(PriceProvider.yahoo, 'USDEUR=X');
       await svc.quote(PriceProvider.yahoo, '^GSPC');
       await svc.quote(PriceProvider.yahoo, 'VWCE.DE');
-      expect(paths[0], 'https://query1.finance.yahoo.com/v8/finance/chart/USDEUR=X?range=1d&interval=1d');
-      expect(paths[1], 'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=1d&interval=1d');
-      expect(paths[2], 'https://query1.finance.yahoo.com/v8/finance/chart/VWCE.DE?range=1d&interval=1d');
+      expect(
+        paths[0],
+        'https://query1.finance.yahoo.com/v8/finance/chart/USDEUR=X?range=1d&interval=1d',
+      );
+      expect(
+        paths[1],
+        'https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=1d&interval=1d',
+      );
+      expect(
+        paths[2],
+        'https://query1.finance.yahoo.com/v8/finance/chart/VWCE.DE?range=1d&interval=1d',
+      );
       expect(paths.any((p) => p.contains('%25')), isFalse);
     });
 
     test('Yahoo em pence (GBp) passa por libras', () async {
-      final svc = PriceService(client: MockClient((r) async {
-        if (r.url.path.contains('GBPEUR')) return _json(_chart(1.2, 'EUR'));
-        return _json(_chart(5000, 'GBp'));
-      }));
-      expect((await svc.quote(PriceProvider.yahoo, 'VUSA.L')).eur, closeTo(60, 0.0001)); // 5000 p = 50 £
+      final svc = PriceService(
+        client: MockClient((r) async {
+          if (r.url.path.contains('GBPEUR')) return _json(_chart(1.2, 'EUR'));
+          return _json(_chart(5000, 'GBp'));
+        }),
+      );
+      expect(
+        (await svc.quote(PriceProvider.yahoo, 'VUSA.L')).eur,
+        closeTo(60, 0.0001),
+      ); // 5000 p = 50 £
     });
 
     test('CoinGecko', () async {
-      final svc = PriceService(client: MockClient((r) async {
-        expect(r.url.queryParameters['ids'], 'bitcoin');
-        return _json({'bitcoin': {'eur': 74638}});
-      }));
+      final svc = PriceService(
+        client: MockClient((r) async {
+          expect(r.url.queryParameters['ids'], 'bitcoin');
+          return _json({
+            'bitcoin': {'eur': 74638},
+          });
+        }),
+      );
       expect((await svc.quote(PriceProvider.coingecko, 'Bitcoin')).eur, 74638);
     });
 
@@ -222,31 +436,77 @@ void main() {
         return 'sem erro';
       }
 
-      expect(await msg(() => _json({}, 404), PriceProvider.yahoo), contains('não encontrado'));
-      expect(await msg(() => _json({}, 429), PriceProvider.yahoo), contains('Limite'));
-      expect(await msg(() => _json({}, 500), PriceProvider.yahoo), contains('500'));
-      expect(await msg(() => _json({'chart': {'result': null, 'error': {}}}), PriceProvider.yahoo), contains('não encontrado'));
-      expect(await msg(() => _json({}), PriceProvider.coingecko), contains('Id não encontrado'));
-      final offline = PriceService(client: MockClient((r) async => throw http.ClientException('offline')));
-      expect(() => offline.quote(PriceProvider.yahoo, 'X'), throwsA(isA<PriceException>().having((e) => e.message, 'msg', contains('Sem ligação'))));
-      expect(() => offline.quote(PriceProvider.manual, 'X'), throwsA(isA<PriceException>()));
+      expect(
+        await msg(() => _json({}, 404), PriceProvider.yahoo),
+        contains('não encontrado'),
+      );
+      expect(
+        await msg(() => _json({}, 429), PriceProvider.yahoo),
+        contains('Limite'),
+      );
+      expect(
+        await msg(() => _json({}, 500), PriceProvider.yahoo),
+        contains('500'),
+      );
+      expect(
+        await msg(
+          () => _json({
+            'chart': {'result': null, 'error': {}},
+          }),
+          PriceProvider.yahoo,
+        ),
+        contains('não encontrado'),
+      );
+      expect(
+        await msg(() => _json({}), PriceProvider.coingecko),
+        contains('Id não encontrado'),
+      );
+      final offline = PriceService(
+        client: MockClient((r) async => throw http.ClientException('offline')),
+      );
+      expect(
+        () => offline.quote(PriceProvider.yahoo, 'X'),
+        throwsA(
+          isA<PriceException>().having(
+            (e) => e.message,
+            'msg',
+            contains('Sem ligação'),
+          ),
+        ),
+      );
+      expect(
+        () => offline.quote(PriceProvider.manual, 'X'),
+        throwsA(isA<PriceException>()),
+      );
     });
 
     test('pesquisa de símbolos', () async {
-      final yahoo = PriceService(client: MockClient((r) async => _json({
+      final yahoo = PriceService(
+        client: MockClient(
+          (r) async => _json({
             'quotes': [
-              {'symbol': 'VWCE.DE', 'shortname': 'Vanguard FTSE All-World', 'exchDisp': 'XETRA'},
+              {
+                'symbol': 'VWCE.DE',
+                'shortname': 'Vanguard FTSE All-World',
+                'exchDisp': 'XETRA',
+              },
               {'shortname': 'sem símbolo'},
-            ]
-          })));
+            ],
+          }),
+        ),
+      );
       final hits = await yahoo.search(PriceProvider.yahoo, 'vwce');
       expect(hits.length, 1);
       expect((hits.first.symbol, hits.first.exchange), ('VWCE.DE', 'XETRA'));
-      final gecko = PriceService(client: MockClient((r) async => _json({
+      final gecko = PriceService(
+        client: MockClient(
+          (r) async => _json({
             'coins': [
-              {'id': 'bitcoin', 'name': 'Bitcoin', 'symbol': 'btc'}
-            ]
-          })));
+              {'id': 'bitcoin', 'name': 'Bitcoin', 'symbol': 'btc'},
+            ],
+          }),
+        ),
+      );
       final g = await gecko.search(PriceProvider.coingecko, 'bitcoin');
       expect((g.first.symbol, g.first.name), ('bitcoin', 'Bitcoin (BTC)'));
       expect(await yahoo.search(PriceProvider.manual, 'x'), isEmpty);
@@ -254,15 +514,35 @@ void main() {
     });
 
     test('atualizar preços: só os automáticos, e os que falham não bloqueiam os outros', () async {
-      final svc = PriceService(client: MockClient((r) async {
-        if (r.url.path.contains('BAD')) return _json({}, 404);
-        return _json(_chart(50, 'EUR'));
-      }));
+      final svc = PriceService(
+        client: MockClient((r) async {
+          if (r.url.path.contains('BAD')) return _json({}, 404);
+          return _json(_chart(50, 'EUR'));
+        }),
+      );
       final s = AppState(Db.memory(), prices: svc);
       final a = s.addInvestAccount('XTB');
-      final ok = s.addHolding(Holding(id: 0, accountId: a, name: 'Bom', symbol: 'GOOD', provider: PriceProvider.yahoo));
-      s.addHolding(Holding(id: 0, accountId: a, name: 'Mau', symbol: 'BAD', provider: PriceProvider.yahoo));
-      final manual = s.addHolding(Holding(id: 0, accountId: a, name: 'Manual', lastPrice: 7));
+      final ok = s.addHolding(
+        Holding(
+          id: 0,
+          accountId: a,
+          name: 'Bom',
+          symbol: 'GOOD',
+          provider: PriceProvider.yahoo,
+        ),
+      );
+      s.addHolding(
+        Holding(
+          id: 0,
+          accountId: a,
+          name: 'Mau',
+          symbol: 'BAD',
+          provider: PriceProvider.yahoo,
+        ),
+      );
+      final manual = s.addHolding(
+        Holding(id: 0, accountId: a, name: 'Manual', lastPrice: 7),
+      );
       final r = await s.refreshPrices();
       expect(r.updated, 1);
       expect(r.failed.keys, ['Mau']);
@@ -275,31 +555,90 @@ void main() {
   });
 
   group('ativos noutras moedas', () {
-    test('o preço do Yahoo em USD guarda a moeda, o preço original e o câmbio', () async {
-      final client = MockClient((r) async {
-        final sym = r.url.pathSegments.last;
-        final price = sym == 'USDEUR=X' ? 0.9 : 200.0;
-        return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': price, 'currency': sym == 'USDEUR=X' ? 'EUR' : 'USD'}}]}}), 200);
-      });
-      final s = AppState(Db.memory(), prices: PriceService(client: client));
-      final acc = s.addInvestAccount('XTB');
-      final id = s.addHolding(Holding(id: 0, accountId: acc, name: 'Apple', symbol: 'AAPL', provider: PriceProvider.yahoo, kind: HoldingKind.stock));
-      final r = await s.refreshPrices();
-      expect(r.updated, 1);
-      final h = s.holding(id)!;
-      expect(h.currency, 'USD');
-      expect(h.priceOrig, 200);
-      expect(h.lastFx, 0.9);
-      expect(h.lastPrice, closeTo(180, 1e-9));
-    });
+    test(
+      'o preço do Yahoo em USD guarda a moeda, o preço original e o câmbio',
+      () async {
+        final client = MockClient((r) async {
+          final sym = r.url.pathSegments.last;
+          final price = sym == 'USDEUR=X' ? 0.9 : 200.0;
+          return http.Response(
+            jsonEncode({
+              'chart': {
+                'result': [
+                  {
+                    'meta': {
+                      'regularMarketPrice': price,
+                      'currency': sym == 'USDEUR=X' ? 'EUR' : 'USD',
+                    },
+                  },
+                ],
+              },
+            }),
+            200,
+          );
+        });
+        final s = AppState(Db.memory(), prices: PriceService(client: client));
+        final acc = s.addInvestAccount('XTB');
+        final id = s.addHolding(
+          Holding(
+            id: 0,
+            accountId: acc,
+            name: 'Apple',
+            symbol: 'AAPL',
+            provider: PriceProvider.yahoo,
+            kind: HoldingKind.stock,
+          ),
+        );
+        final r = await s.refreshPrices();
+        expect(r.updated, 1);
+        final h = s.holding(id)!;
+        expect(h.currency, 'USD');
+        expect(h.priceOrig, 200);
+        expect(h.lastFx, 0.9);
+        expect(h.lastPrice, closeTo(180, 1e-9));
+      },
+    );
 
     test('custo médio em USD ignora o câmbio do dia; o valor em EUR usa o câmbio atual', () {
-      final h = Holding(id: 1, accountId: 1, name: 'X', currency: 'USD', lastPrice: 99, lastPriceOrig: 110, lastFx: 0.9);
+      final h = Holding(
+        id: 1,
+        accountId: 1,
+        name: 'X',
+        currency: 'USD',
+        lastPrice: 99,
+        lastPriceOrig: 110,
+        lastFx: 0.9,
+      );
       final acc = InvestAccount(id: 1, name: 'B');
-      final pf = Portfolio.compute(accounts: [acc], holdings: [h], txns: const [], ops: [
-        InvestOp(id: 1, accountId: 1, holdingId: 1, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 10, price: 100, fx: 0.8, amount: 80000),
-        InvestOp(id: 2, accountId: 1, holdingId: 1, date: DateTime(2026, 2, 1), type: OpType.buy, quantity: 10, price: 120, fx: 1 / 1.1, amount: 109091),
-      ]);
+      final pf = Portfolio.compute(
+        accounts: [acc],
+        holdings: [h],
+        txns: const [],
+        ops: [
+          InvestOp(
+            id: 1,
+            accountId: 1,
+            holdingId: 1,
+            date: DateTime(2026, 1, 1),
+            type: OpType.buy,
+            quantity: 10,
+            price: 100,
+            fx: 0.8,
+            amount: 80000,
+          ),
+          InvestOp(
+            id: 2,
+            accountId: 1,
+            holdingId: 1,
+            date: DateTime(2026, 2, 1),
+            type: OpType.buy,
+            quantity: 10,
+            price: 120,
+            fx: 1 / 1.1,
+            amount: 109091,
+          ),
+        ],
+      );
       final p = pf.accounts.first.positions.first;
       expect(p.avgCostOrig, closeTo(110, 1e-9));
       expect(p.costCents, 189091);
@@ -308,11 +647,44 @@ void main() {
     });
 
     test('vender parte da posição reduz o custo em USD proporcionalmente', () {
-      final h = Holding(id: 1, accountId: 1, name: 'X', currency: 'USD', lastPrice: 90, lastPriceOrig: 100, lastFx: 0.9);
-      final pf = Portfolio.compute(accounts: [InvestAccount(id: 1, name: 'B')], holdings: [h], txns: const [], ops: [
-        InvestOp(id: 1, accountId: 1, holdingId: 1, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 10, price: 100, fx: 0.9, amount: 90000),
-        InvestOp(id: 2, accountId: 1, holdingId: 1, date: DateTime(2026, 2, 1), type: OpType.sell, quantity: 4, price: 120, fx: 0.9, amount: 43200),
-      ]);
+      final h = Holding(
+        id: 1,
+        accountId: 1,
+        name: 'X',
+        currency: 'USD',
+        lastPrice: 90,
+        lastPriceOrig: 100,
+        lastFx: 0.9,
+      );
+      final pf = Portfolio.compute(
+        accounts: [InvestAccount(id: 1, name: 'B')],
+        holdings: [h],
+        txns: const [],
+        ops: [
+          InvestOp(
+            id: 1,
+            accountId: 1,
+            holdingId: 1,
+            date: DateTime(2026, 1, 1),
+            type: OpType.buy,
+            quantity: 10,
+            price: 100,
+            fx: 0.9,
+            amount: 90000,
+          ),
+          InvestOp(
+            id: 2,
+            accountId: 1,
+            holdingId: 1,
+            date: DateTime(2026, 2, 1),
+            type: OpType.sell,
+            quantity: 4,
+            price: 120,
+            fx: 0.9,
+            amount: 43200,
+          ),
+        ],
+      );
       final p = pf.accounts.first.positions.first;
       expect(p.qty, 6);
       expect(p.costOrig, closeTo(600, 1e-9));
@@ -321,10 +693,37 @@ void main() {
     });
 
     test('a base de dados guarda moeda, câmbio e preço original', () {
-      final s = AppState(Db.memory(), prices: PriceService(client: MockClient((_) async => http.Response('{}', 404))));
+      final s = AppState(
+        Db.memory(),
+        prices: PriceService(
+          client: MockClient((_) async => http.Response('{}', 404)),
+        ),
+      );
       final a = s.addInvestAccount('XTB');
-      final h = s.addHolding(Holding(id: 0, accountId: a, name: 'N', currency: 'GBP', lastPrice: 11, lastPriceOrig: 10, lastFx: 1.1));
-      s.addOp(InvestOp(id: 0, accountId: a, holdingId: h, date: DateTime(2026, 1, 1), type: OpType.buy, quantity: 1, price: 10, fx: 1.1, amount: 1100));
+      final h = s.addHolding(
+        Holding(
+          id: 0,
+          accountId: a,
+          name: 'N',
+          currency: 'GBP',
+          lastPrice: 11,
+          lastPriceOrig: 10,
+          lastFx: 1.1,
+        ),
+      );
+      s.addOp(
+        InvestOp(
+          id: 0,
+          accountId: a,
+          holdingId: h,
+          date: DateTime(2026, 1, 1),
+          type: OpType.buy,
+          quantity: 1,
+          price: 10,
+          fx: 1.1,
+          amount: 1100,
+        ),
+      );
       final r = s.holding(h)!;
       expect((r.currency, r.lastPriceOrig, r.lastFx), ('GBP', 10.0, 1.1));
       expect(s.investOps.single.fx, 1.1);
@@ -334,59 +733,143 @@ void main() {
   });
 
   group('moeda de base', () {
-    test('com base em USD: formatação, ativo em EUR convertido e persistência', () async {
-      final urls = <String>[];
-      final client = MockClient((r) async {
-        urls.add(r.url.pathSegments.isEmpty ? '' : r.url.pathSegments.last);
-        final sym = r.url.pathSegments.last;
-        final isFx = sym == 'EURUSD=X';
-        return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': isFx ? 1.25 : 100.0, 'currency': isFx ? 'USD' : 'EUR'}}]}}), 200);
-      });
-      final db = Db.memory();
-      final s = AppState(db, prices: PriceService(client: client));
-      s.setBaseCurrency('USD');
-      expect(fmtMoney(12345), contains(r'US$'));
-      final acc = s.addInvestAccount('XTB');
-      final id = s.addHolding(Holding(id: 0, accountId: acc, name: 'VWCE', symbol: 'VWCE.DE', provider: PriceProvider.yahoo));
-      expect(s.holding(id)!.currency, 'USD'); // novo ativo: moeda de base por omissão
-      await s.refreshPrices();
-      final h = s.holding(id)!;
-      expect(h.currency, 'EUR'); // detetada: agora é "estrangeira" face ao USD
-      expect(h.foreign, isTrue);
-      expect(h.lastFx, 1.25);
-      expect(h.lastPrice, closeTo(125, 1e-9));
-      expect(urls, contains('EURUSD=X'));
-      expect(db.setting('base_currency'), 'USD');
-      s.setBaseCurrency('EUR');
-      expect(fmtMoney(12345), contains('€'));
-    });
+    test(
+      'com base em USD: formatação, ativo em EUR convertido e persistência',
+      () async {
+        final urls = <String>[];
+        final client = MockClient((r) async {
+          urls.add(r.url.pathSegments.isEmpty ? '' : r.url.pathSegments.last);
+          final sym = r.url.pathSegments.last;
+          final isFx = sym == 'EURUSD=X';
+          return http.Response(
+            jsonEncode({
+              'chart': {
+                'result': [
+                  {
+                    'meta': {
+                      'regularMarketPrice': isFx ? 1.25 : 100.0,
+                      'currency': isFx ? 'USD' : 'EUR',
+                    },
+                  },
+                ],
+              },
+            }),
+            200,
+          );
+        });
+        final db = Db.memory();
+        final s = AppState(db, prices: PriceService(client: client));
+        s.setBaseCurrency('USD');
+        expect(fmtMoney(12345), contains(r'US$'));
+        final acc = s.addInvestAccount('XTB');
+        final id = s.addHolding(
+          Holding(
+            id: 0,
+            accountId: acc,
+            name: 'VWCE',
+            symbol: 'VWCE.DE',
+            provider: PriceProvider.yahoo,
+          ),
+        );
+        expect(
+          s.holding(id)!.currency,
+          'USD',
+        ); // novo ativo: moeda de base por omissão
+        await s.refreshPrices();
+        final h = s.holding(id)!;
+        expect(
+          h.currency,
+          'EUR',
+        ); // detetada: agora é "estrangeira" face ao USD
+        expect(h.foreign, isTrue);
+        expect(h.lastFx, 1.25);
+        expect(h.lastPrice, closeTo(125, 1e-9));
+        expect(urls, contains('EURUSD=X'));
+        expect(db.setting('base_currency'), 'USD');
+        s.setBaseCurrency('EUR');
+        expect(fmtMoney(12345), contains('€'));
+      },
+    );
   });
 
   group('moeda escolhida à mão e câmbio de mercado', () {
-    MockClient market(Map<String, ({double price, String ccy})> m) => MockClient((r) async {
+    MockClient market(Map<String, ({double price, String ccy})> m) =>
+        MockClient((r) async {
           final q = m[r.url.pathSegments.last];
           if (q == null) return http.Response('{}', 404);
-          return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': q.price, 'currency': q.ccy}}]}}), 200);
+          return http.Response(
+            jsonEncode({
+              'chart': {
+                'result': [
+                  {
+                    'meta': {'regularMarketPrice': q.price, 'currency': q.ccy},
+                  },
+                ],
+              },
+            }),
+            200,
+          );
         });
 
-    test('moeda escolhida à mão é respeitada: o preço é convertido para ela', () async {
-      // VWCE.DE cota a 100 EUR; o utilizador quer-o em USD (1 EUR = 1,25 USD; 1 USD = 0,80 EUR)
-      final s = AppState(Db.memory(), prices: PriceService(client: market({'VWCE.DE': (price: 100, ccy: 'EUR'), 'EURUSD=X': (price: 1.25, ccy: 'USD'), 'USDEUR=X': (price: 0.8, ccy: 'EUR')})));
-      final a = s.addInvestAccount('XTB');
-      final id = s.addHolding(Holding(id: 0, accountId: a, name: 'VWCE', symbol: 'VWCE.DE', provider: PriceProvider.yahoo, currency: 'USD', currencyManual: true));
-      await s.refreshPrices();
-      final h = s.holding(id)!;
-      expect(h.currency, 'USD');
-      expect(h.currencyManual, isTrue);
-      expect(h.priceOrig, closeTo(125, 1e-9));
-      expect(h.lastFx, 0.8);
-      expect(h.lastPrice, closeTo(100, 1e-9)); // em EUR, o valor de mercado real
-    });
+    test(
+      'moeda escolhida à mão é respeitada: o preço é convertido para ela',
+      () async {
+        // VWCE.DE cota a 100 EUR; o utilizador quer-o em USD (1 EUR = 1,25 USD; 1 USD = 0,80 EUR)
+        final s = AppState(
+          Db.memory(),
+          prices: PriceService(
+            client: market({
+              'VWCE.DE': (price: 100, ccy: 'EUR'),
+              'EURUSD=X': (price: 1.25, ccy: 'USD'),
+              'USDEUR=X': (price: 0.8, ccy: 'EUR'),
+            }),
+          ),
+        );
+        final a = s.addInvestAccount('XTB');
+        final id = s.addHolding(
+          Holding(
+            id: 0,
+            accountId: a,
+            name: 'VWCE',
+            symbol: 'VWCE.DE',
+            provider: PriceProvider.yahoo,
+            currency: 'USD',
+            currencyManual: true,
+          ),
+        );
+        await s.refreshPrices();
+        final h = s.holding(id)!;
+        expect(h.currency, 'USD');
+        expect(h.currencyManual, isTrue);
+        expect(h.priceOrig, closeTo(125, 1e-9));
+        expect(h.lastFx, 0.8);
+        expect(
+          h.lastPrice,
+          closeTo(100, 1e-9),
+        ); // em EUR, o valor de mercado real
+      },
+    );
 
     test('ativo com preço manual em USD: "Atualizar" põe o câmbio de mercado atual', () async {
-      final s = AppState(Db.memory(), prices: PriceService(client: market({'USDEUR=X': (price: 0.9, ccy: 'EUR')})));
+      final s = AppState(
+        Db.memory(),
+        prices: PriceService(
+          client: market({'USDEUR=X': (price: 0.9, ccy: 'EUR')}),
+        ),
+      );
       final a = s.addInvestAccount('XTB');
-      final id = s.addHolding(Holding(id: 0, accountId: a, name: 'Fundo', currency: 'USD', currencyManual: true, lastPriceOrig: 100, lastPrice: 80, lastFx: 0.8));
+      final id = s.addHolding(
+        Holding(
+          id: 0,
+          accountId: a,
+          name: 'Fundo',
+          currency: 'USD',
+          currencyManual: true,
+          lastPriceOrig: 100,
+          lastPrice: 80,
+          lastFx: 0.8,
+        ),
+      );
       expect(s.holding(id)!.needsRefresh, isTrue);
       final r = await s.refreshPrices();
       expect(r.updated, 1);
@@ -395,31 +878,78 @@ void main() {
       expect(s.holding(id)!.priceOrig, 100); // o preço manual não muda
     });
 
-    test('moeda automática segue a do preço; guarda-se a opção na base de dados', () async {
-      final db = Db.memory();
-      final s = AppState(db, prices: PriceService(client: market({'AAPL': (price: 200, ccy: 'USD'), 'USDEUR=X': (price: 0.9, ccy: 'EUR')})));
-      final a = s.addInvestAccount('XTB');
-      final id = s.addHolding(Holding(id: 0, accountId: a, name: 'Apple', symbol: 'AAPL', provider: PriceProvider.yahoo));
-      await s.refreshPrices();
-      expect(s.holding(id)!.currency, 'USD');
-      expect(s.holding(id)!.currencyManual, isFalse);
-      s.updateHolding(s.holding(id)!.copyWith(currencyManual: true));
-      expect(db.holdings().single.currencyManual, isTrue);
-    });
+    test(
+      'moeda automática segue a do preço; guarda-se a opção na base de dados',
+      () async {
+        final db = Db.memory();
+        final s = AppState(
+          db,
+          prices: PriceService(
+            client: market({
+              'AAPL': (price: 200, ccy: 'USD'),
+              'USDEUR=X': (price: 0.9, ccy: 'EUR'),
+            }),
+          ),
+        );
+        final a = s.addInvestAccount('XTB');
+        final id = s.addHolding(
+          Holding(
+            id: 0,
+            accountId: a,
+            name: 'Apple',
+            symbol: 'AAPL',
+            provider: PriceProvider.yahoo,
+          ),
+        );
+        await s.refreshPrices();
+        expect(s.holding(id)!.currency, 'USD');
+        expect(s.holding(id)!.currencyManual, isFalse);
+        s.updateHolding(s.holding(id)!.copyWith(currencyManual: true));
+        expect(db.holdings().single.currencyManual, isTrue);
+      },
+    );
   });
 
   test('símbolo de outra corretora que o Yahoo não conhece: encontra-o pelo nome, na mesma bolsa', () async {
     final client = MockClient((r) async {
       if (r.url.path.contains('/v1/finance/search')) {
-        return http.Response(jsonEncode({'quotes': [{'symbol': 'AMZN', 'shortname': 'Amazon.com, Inc.'}, {'symbol': 'AMZ.DE', 'shortname': 'AMAZON.COM INC.'}]}), 200);
+        return http.Response(
+          jsonEncode({
+            'quotes': [
+              {'symbol': 'AMZN', 'shortname': 'Amazon.com, Inc.'},
+              {'symbol': 'AMZ.DE', 'shortname': 'AMAZON.COM INC.'},
+            ],
+          }),
+          200,
+        );
       }
       final sym = r.url.pathSegments.last;
-      if (sym == 'AMZ.DE') return http.Response(jsonEncode({'chart': {'result': [{'meta': {'regularMarketPrice': 232.65, 'currency': 'EUR'}}]}}), 200);
+      if (sym == 'AMZ.DE')
+        return http.Response(
+          jsonEncode({
+            'chart': {
+              'result': [
+                {
+                  'meta': {'regularMarketPrice': 232.65, 'currency': 'EUR'},
+                },
+              ],
+            },
+          }),
+          200,
+        );
       return http.Response('{}', 404);
     });
     final s = AppState(Db.memory(), prices: PriceService(client: client));
     final a = s.addInvestAccount('XTB');
-    final id = s.addHolding(Holding(id: 0, accountId: a, name: 'Amazon', symbol: 'AMZN.DE', provider: PriceProvider.yahoo));
+    final id = s.addHolding(
+      Holding(
+        id: 0,
+        accountId: a,
+        name: 'Amazon',
+        symbol: 'AMZN.DE',
+        provider: PriceProvider.yahoo,
+      ),
+    );
     final r = await s.refreshPrices();
     expect(r.updated, 1);
     expect(s.holding(id)!.symbol, 'AMZ.DE');
