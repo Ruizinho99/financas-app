@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import '../goals/goals.dart';
+import '../invest/allocation_plan.dart';
 import '../planning/planning.dart';
 import '../invest/invest.dart';
 import '../models.dart';
@@ -341,6 +342,26 @@ class Db {
           mandatory INTEGER NOT NULL DEFAULT 0
         )''');
       _db.execute('PRAGMA user_version = 18');
+    }
+    if (v < 19) {
+      // v19: plano de distribuição das entregas por plataforma e entregas já vistas
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS invest_plan(
+          account_id INTEGER NOT NULL,
+          holding_id INTEGER NOT NULL,
+          bp INTEGER NOT NULL,
+          PRIMARY KEY(account_id, holding_id)
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS invest_plan_since(
+          account_id INTEGER PRIMARY KEY,
+          since TEXT NOT NULL
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS invest_alerts_done(
+          txn_id INTEGER PRIMARY KEY
+        )''');
+      _db.execute('PRAGMA user_version = 19');
     }
   }
 
@@ -681,6 +702,55 @@ class Db {
 
   void deletePlannedItem(int id) =>
       _db.execute('DELETE FROM planned_items WHERE id=?', [id]);
+
+  // ---------- Plano de distribuição das entregas ----------
+  Map<int, List<PlanLine>> investPlan() {
+    final out = <int, List<PlanLine>>{};
+    for (final r in _db.select(
+      'SELECT * FROM invest_plan ORDER BY account_id, bp DESC',
+    )) {
+      out
+          .putIfAbsent(r['account_id'] as int, () => [])
+          .add(PlanLine(r['holding_id'] as int, r['bp'] as int));
+    }
+    return out;
+  }
+
+  Map<int, DateTime> investPlanSince() => {
+    for (final r in _db.select('SELECT * FROM invest_plan_since'))
+      r['account_id'] as int: DateTime.parse(r['since'] as String),
+  };
+
+  /// Grava o plano de uma plataforma (substitui o anterior). A data de início fica a da primeira vez.
+  void saveInvestPlan(int accountId, List<PlanLine> lines) {
+    _db.execute('DELETE FROM invest_plan WHERE account_id=?', [accountId]);
+    for (final l in lines) {
+      _db.execute(
+        'INSERT INTO invest_plan(account_id,holding_id,bp) VALUES(?,?,?)',
+        [accountId, l.holdingId, l.bp],
+      );
+    }
+    if (lines.isEmpty) {
+      _db.execute('DELETE FROM invest_plan_since WHERE account_id=?', [
+        accountId,
+      ]);
+    } else {
+      _db.execute(
+        'INSERT OR IGNORE INTO invest_plan_since(account_id,since) VALUES(?,?)',
+        [accountId, isoDate(DateTime.now())],
+      );
+    }
+  }
+
+  Set<int> investAlertsDone() => {
+    for (final r in _db.select('SELECT txn_id FROM invest_alerts_done'))
+      r['txn_id'] as int,
+  };
+
+  void markInvestAlertDone(int txnId) => _db.execute(
+    'INSERT OR IGNORE INTO invest_alerts_done(txn_id) VALUES(?)',
+    [txnId],
+  );
 
   // ---------- Contas ----------
   List<Conta> accounts() => _db
@@ -1216,7 +1286,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 18;
+  static const _schemaVersion = 19;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

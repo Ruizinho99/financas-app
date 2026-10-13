@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
+import '../invest/plan_widgets.dart';
 import '../widgets/common.dart';
 
 class BudgetScreen extends StatefulWidget {
@@ -198,6 +199,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
             salary: salary,
             month: month,
           ),
+        const SizedBox(height: 16),
+        const InvestPlanCard(),
       ],
     );
   }

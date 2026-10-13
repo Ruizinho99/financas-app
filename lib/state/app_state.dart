@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../db/database.dart';
 import '../goals/goals.dart';
+import '../invest/allocation_plan.dart';
 import '../planning/planning.dart';
 import '../import/parsers.dart';
 import '../invest/invest.dart';
@@ -66,6 +67,21 @@ class Period {
   }
 }
 
+/// Uma entrega do banco para uma plataforma, com o valor de cada ativo segundo o plano.
+class PendingAllocation {
+  final Txn txn;
+  final InvestAccount account;
+  final List<AllocationPart> parts;
+  final int
+  undistributed; // cêntimos que o plano não cobre (plano abaixo de 100%)
+  const PendingAllocation({
+    required this.txn,
+    required this.account,
+    required this.parts,
+    required this.undistributed,
+  });
+}
+
 class CategoryStat {
   final Categoria category;
   final int
@@ -98,6 +114,9 @@ class AppState extends ChangeNotifier {
   List<Goal> goals = [];
   List<GoalAllocation> goalAllocations = [];
   List<PlannedItem> plannedItems = [];
+  Map<int, List<PlanLine>> investPlan = {};
+  Map<int, DateTime> investPlanSince = {};
+  Set<int> investAlertsDone = {};
   Map<String, int> salaries = {};
   int defaultSalary = 0;
 
@@ -115,6 +134,9 @@ class AppState extends ChangeNotifier {
     goals = db.goals();
     goalAllocations = db.goalAllocations();
     plannedItems = db.plannedItems();
+    investPlan = db.investPlan();
+    investPlanSince = db.investPlanSince();
+    investAlertsDone = db.investAlertsDone();
     salaries = db.salaries();
     baseCcy = db.setting('base_currency') ?? 'EUR';
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
@@ -977,6 +999,50 @@ class AppState extends ChangeNotifier {
       reversesId: reversesId,
       reversedCents: reversesId == null ? 0 : reversedCents,
     );
+    reload();
+  }
+
+  // ---------- Plano de distribuição das entregas ----------
+  /// Entregas do banco para uma plataforma (com plano) ainda não vistas. Só contam as entregas de
+  /// depois de o plano existir, para não aparecer o histórico todo de uma vez.
+  List<PendingAllocation> get pendingAllocations {
+    final out = <PendingAllocation>[];
+    for (final t in transactions) {
+      final accId = t.investAccountId;
+      if (accId == null || t.amount >= 0) continue;
+      final lines = investPlan[accId];
+      final since = investPlanSince[accId];
+      if (lines == null || lines.isEmpty || since == null) continue;
+      if (t.date.isBefore(DateTime(since.year, since.month, since.day)))
+        continue;
+      if (investAlertsDone.contains(t.id)) continue;
+      final acc = investAccount(accId);
+      if (acc == null) continue;
+      final parts = splitByPlan(-t.amount, lines);
+      final assigned = parts.fold<int>(0, (a, p) => a + p.cents);
+      out.add(
+        PendingAllocation(
+          txn: t,
+          account: acc,
+          parts: parts,
+          undistributed: -t.amount - assigned,
+        ),
+      );
+    }
+    return out;
+  }
+
+  /// Plano de uma plataforma: percentagem por ativo (em pontos base, 10000 = 100%).
+  void setInvestPlan(int accountId, Map<int, int> bp) {
+    db.saveInvestPlan(accountId, [
+      for (final e in bp.entries)
+        if (e.value > 0) PlanLine(e.key, e.value),
+    ]);
+    reload();
+  }
+
+  void dismissAllocation(int txnId) {
+    db.markInvestAlertDone(txnId);
     reload();
   }
 
