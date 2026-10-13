@@ -271,6 +271,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               s.account(t.accountId)!.name,
                             if (reversalLabel(s, t) != null)
                               reversalLabel(s, t)!,
+                            if (goalLabel(s, t) != null) goalLabel(s, t)!,
                             if (t.note.isNotEmpty) t.note,
                           ].join(' · '),
                           maxLines: 2,
@@ -334,6 +335,16 @@ String? reversalLabel(AppState s, Txn t) {
     return 'Anulado ${fmtMoney(done)} · fica ${fmtMoney(-s.effectiveAmount(t))}';
   }
   return null;
+}
+
+/// Divisão de um movimento pelos objetivos: "Objetivos: Férias 50,00 € · Alimentação 50,00 €".
+String? goalLabel(AppState s, Txn t) {
+  final parts = [
+    for (final a in s.goalAllocations)
+      if (a.txnId == t.id)
+        '${s.goals.where((g) => g.id == a.goalId).firstOrNull?.name ?? 'Objetivo'} ${fmtMoney(a.cents)}',
+  ];
+  return parts.isEmpty ? null : 'Objetivos: ${parts.join(' · ')}';
 }
 
 Future<bool> confirm(

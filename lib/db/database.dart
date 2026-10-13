@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+import '../goals/goals.dart';
 import '../invest/invest.dart';
 import '../models.dart';
 import '../util/format.dart';
@@ -300,6 +301,34 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 16');
     }
+    if (v < 17) {
+      // v17: objetivos de poupança, histórico do valor e movimentos associados
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS goals(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT NOT NULL DEFAULT '',
+          category_id INTEGER NOT NULL,
+          target_cents INTEGER NOT NULL,
+          end_date TEXT,
+          archived INTEGER NOT NULL DEFAULT 0
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS goal_targets(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          goal_id INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          cents INTEGER NOT NULL
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS goal_allocations(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          txn_id INTEGER NOT NULL,
+          goal_id INTEGER NOT NULL,
+          cents INTEGER NOT NULL
+        )''');
+      _db.execute('PRAGMA user_version = 17');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -503,6 +532,105 @@ class Db {
         r['receipt_path'] as String,
   ];
 
+  // ---------- Objetivos ----------
+  List<Goal> goals() => _db
+      .select('SELECT * FROM goals ORDER BY archived, name COLLATE NOCASE')
+      .map(
+        (r) => Goal(
+          id: r['id'] as int,
+          name: r['name'] as String,
+          description: r['description'] as String,
+          categoryId: r['category_id'] as int,
+          targetCents: r['target_cents'] as int,
+          endDate: r['end_date'] == null
+              ? null
+              : DateTime.parse(r['end_date'] as String),
+          archived: r['archived'] == 1,
+        ),
+      )
+      .toList();
+
+  int saveGoal({
+    int? id,
+    required String name,
+    required String description,
+    required int categoryId,
+    required int targetCents,
+    DateTime? endDate,
+    bool archived = false,
+  }) {
+    final vals = [
+      name,
+      description,
+      categoryId,
+      targetCents,
+      endDate == null ? null : isoDate(endDate),
+      archived ? 1 : 0,
+    ];
+    if (id == null) {
+      _db.execute(
+        'INSERT INTO goals(name,description,category_id,target_cents,end_date,archived) VALUES(?,?,?,?,?,?)',
+        vals,
+      );
+      return _db.lastInsertRowId;
+    }
+    _db.execute(
+      'UPDATE goals SET name=?,description=?,category_id=?,target_cents=?,end_date=?,archived=? WHERE id=?',
+      [...vals, id],
+    );
+    return id;
+  }
+
+  List<GoalTargetChange> goalTargets(int goalId) => _db
+      .select('SELECT * FROM goal_targets WHERE goal_id=? ORDER BY id', [
+        goalId,
+      ])
+      .map(
+        (r) => GoalTargetChange(
+          DateTime.parse(r['date'] as String),
+          r['cents'] as int,
+        ),
+      )
+      .toList();
+
+  void addGoalTarget(int goalId, DateTime date, int cents) => _db.execute(
+    'INSERT INTO goal_targets(goal_id,date,cents) VALUES(?,?,?)',
+    [goalId, isoDate(date), cents],
+  );
+
+  List<GoalAllocation> goalAllocations() => _db
+      .select('SELECT * FROM goal_allocations ORDER BY id')
+      .map(
+        (r) => GoalAllocation(
+          id: r['id'] as int,
+          txnId: r['txn_id'] as int,
+          goalId: r['goal_id'] as int,
+          cents: r['cents'] as int,
+        ),
+      )
+      .toList();
+
+  /// Associa [cents] do movimento [txnId] ao objetivo [goalId] (substitui a associação anterior).
+  void setGoalAllocation(int txnId, int goalId, int cents) {
+    _db.execute('DELETE FROM goal_allocations WHERE txn_id=? AND goal_id=?', [
+      txnId,
+      goalId,
+    ]);
+    _db.execute(
+      'INSERT INTO goal_allocations(txn_id,goal_id,cents) VALUES(?,?,?)',
+      [txnId, goalId, cents],
+    );
+  }
+
+  void deleteGoalAllocation(int id) =>
+      _db.execute('DELETE FROM goal_allocations WHERE id=?', [id]);
+
+  void deleteGoal(int id) {
+    _db.execute('DELETE FROM goal_allocations WHERE goal_id=?', [id]);
+    _db.execute('DELETE FROM goal_targets WHERE goal_id=?', [id]);
+    _db.execute('DELETE FROM goals WHERE id=?', [id]);
+  }
+
   // ---------- Contas ----------
   List<Conta> accounts() => _db
       .select('SELECT * FROM accounts ORDER BY name COLLATE NOCASE')
@@ -545,6 +673,7 @@ class Db {
 
   void deleteTransactions(List<int> ids) {
     for (final id in ids) {
+      _db.execute('DELETE FROM goal_allocations WHERE txn_id=?', [id]);
       // as receitas que anulavam esta despesa passam a ser receitas normais
       _db.execute(
         'UPDATE transactions SET reverses_id=NULL, reversed_cents=0 WHERE reverses_id=?',
@@ -1036,7 +1165,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 16;
+  static const _schemaVersion = 17;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

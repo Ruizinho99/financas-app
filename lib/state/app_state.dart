@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../db/database.dart';
+import '../goals/goals.dart';
 import '../import/parsers.dart';
 import '../invest/invest.dart';
 import '../invest/price_service.dart';
@@ -93,6 +94,8 @@ class AppState extends ChangeNotifier {
   List<InvestOp> investOps = [];
   List<({int id, String pattern, int accountId})> investPatterns = [];
   List<MandatoryRange> mandatoryRanges = [];
+  List<Goal> goals = [];
+  List<GoalAllocation> goalAllocations = [];
   Map<String, int> salaries = {};
   int defaultSalary = 0;
 
@@ -107,6 +110,8 @@ class AppState extends ChangeNotifier {
     investOps = db.investOps();
     investPatterns = db.investPatterns();
     mandatoryRanges = db.mandatoryRanges();
+    goals = db.goals();
+    goalAllocations = db.goalAllocations();
     salaries = db.salaries();
     baseCcy = db.setting('base_currency') ?? 'EUR';
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
@@ -971,6 +976,104 @@ class AppState extends ChangeNotifier {
     );
     reload();
   }
+
+  // ---------- Objetivos ----------
+  /// Cria o objetivo como subcategoria de [parentCategoryId] (se for uma subcategoria, usa a sua principal).
+  /// A subcategoria é de investimento: a poupança não conta como gasto na Análise.
+  int addGoal({
+    required String name,
+    String description = '',
+    required int parentCategoryId,
+    required int targetCents,
+    DateTime? endDate,
+  }) {
+    final p = cat(parentCategoryId);
+    final catId = db.saveCategory(
+      Categoria(
+        id: 0,
+        name: name.trim(),
+        parentId: p == null ? null : (p.parentId ?? p.id),
+        isInvestment: true,
+        emoji: '🎯',
+        description: 'Objetivo',
+      ),
+    );
+    final id = db.saveGoal(
+      name: name.trim(),
+      description: description.trim(),
+      categoryId: catId,
+      targetCents: targetCents,
+      endDate: endDate,
+    );
+    db.addGoalTarget(id, DateTime.now(), targetCents);
+    reload();
+    return id;
+  }
+
+  /// Altera o nome, a descrição ou o prazo. O valor do objetivo muda com [changeGoalTarget].
+  void updateGoal(Goal g) {
+    db.saveGoal(
+      id: g.id,
+      name: g.name.trim(),
+      description: g.description.trim(),
+      categoryId: g.categoryId,
+      targetCents: g.targetCents,
+      endDate: g.endDate,
+      archived: g.archived,
+    );
+    final c = cat(g.categoryId);
+    if (c != null && c.name != g.name.trim()) {
+      db.saveCategory(c.copyWith(name: g.name.trim()), id: c.id);
+    }
+    reload();
+  }
+
+  /// Muda o valor do objetivo. O valor anterior fica no histórico.
+  void changeGoalTarget(Goal g, int cents) {
+    db.saveGoal(
+      id: g.id,
+      name: g.name,
+      description: g.description,
+      categoryId: g.categoryId,
+      targetCents: cents,
+      endDate: g.endDate,
+      archived: g.archived,
+    );
+    db.addGoalTarget(g.id, DateTime.now(), cents);
+    reload();
+  }
+
+  /// Apaga o objetivo e as suas associações. A subcategoria fica arquivada, para os movimentos antigos.
+  void deleteGoal(Goal g) {
+    db.deleteGoal(g.id);
+    final c = cat(g.categoryId);
+    if (c != null) db.saveCategory(c.copyWith(archived: true), id: c.id);
+    reload();
+  }
+
+  void linkMovement(int txnId, int goalId, int cents) {
+    db.setGoalAllocation(txnId, goalId, cents);
+    reload();
+  }
+
+  void unlinkMovement(int allocationId) {
+    db.deleteGoalAllocation(allocationId);
+    reload();
+  }
+
+  /// Quanto de um movimento já está associado a objetivos (valor absoluto).
+  int allocatedOf(int txnId) => goalAllocations
+      .where((a) => a.txnId == txnId)
+      .fold(0, (s, a) => s + a.cents);
+
+  List<GoalTargetChange> goalHistory(int goalId) => db.goalTargets(goalId);
+
+  GoalProgress goalProgressOf(Goal g) => goalProgress(
+    g,
+    txns: transactions,
+    allocs: goalAllocations,
+    today: DateTime.now(),
+  );
 
   // ---------- Anulações de despesas ----------
   Map<int, int>? _reversedCache;
