@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../db/database.dart';
 import '../goals/goals.dart';
+import '../planning/planning.dart';
 import '../import/parsers.dart';
 import '../invest/invest.dart';
 import '../invest/price_service.dart';
@@ -96,6 +97,7 @@ class AppState extends ChangeNotifier {
   List<MandatoryRange> mandatoryRanges = [];
   List<Goal> goals = [];
   List<GoalAllocation> goalAllocations = [];
+  List<PlannedItem> plannedItems = [];
   Map<String, int> salaries = {};
   int defaultSalary = 0;
 
@@ -112,6 +114,7 @@ class AppState extends ChangeNotifier {
     mandatoryRanges = db.mandatoryRanges();
     goals = db.goals();
     goalAllocations = db.goalAllocations();
+    plannedItems = db.plannedItems();
     salaries = db.salaries();
     baseCcy = db.setting('base_currency') ?? 'EUR';
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
@@ -975,6 +978,70 @@ class AppState extends ChangeNotifier {
       reversedCents: reversesId == null ? 0 : reversedCents,
     );
     reload();
+  }
+
+  // ---------- Planeamento mensal ----------
+  List<PlannedItem> planFor(String month) =>
+      plannedItems.where((p) => p.month == month).toList();
+
+  /// Adiciona uma despesa planeada. Devolve falso se a categoria já estiver planeada neste mês.
+  bool addPlanned({
+    required String month,
+    required int categoryId,
+    required int cents,
+    required bool mandatory,
+  }) {
+    if (planFor(month).any((p) => p.categoryId == categoryId)) return false;
+    db.savePlannedItem(
+      month: month,
+      categoryId: categoryId,
+      cents: cents.abs(),
+      mandatory: mandatory,
+    );
+    reload();
+    return true;
+  }
+
+  void updatePlanned(PlannedItem p) {
+    db.savePlannedItem(
+      id: p.id,
+      month: p.month,
+      categoryId: p.categoryId,
+      cents: p.cents.abs(),
+      mandatory: p.mandatory,
+    );
+    reload();
+  }
+
+  void deletePlanned(int id) {
+    db.deletePlannedItem(id);
+    reload();
+  }
+
+  /// Copia o plano de um mês para outro (sem repetir categorias já planeadas). Devolve quantas copiou.
+  int copyPlan(String from, String to) {
+    final existing = {for (final p in planFor(to)) p.categoryId};
+    var n = 0;
+    for (final p in planFor(from)) {
+      if (existing.contains(p.categoryId)) continue;
+      db.savePlannedItem(
+        month: to,
+        categoryId: p.categoryId,
+        cents: p.cents,
+        mandatory: p.mandatory,
+      );
+      n++;
+    }
+    reload();
+    return n;
+  }
+
+  /// Gasto real de cada categoria planeada no mês (inclui as subcategorias da categoria).
+  int actualSpent(int categoryId, String month) {
+    final own = totalsByCategory(Period.month(DateTime.parse('$month-01')));
+    final c = cat(categoryId);
+    if (c == null) return 0;
+    return c.parentId == null ? rollup(c, own) : (own[c.id] ?? 0);
   }
 
   // ---------- Objetivos ----------

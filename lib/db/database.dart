@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import '../goals/goals.dart';
+import '../planning/planning.dart';
 import '../invest/invest.dart';
 import '../models.dart';
 import '../util/format.dart';
@@ -329,6 +330,18 @@ class Db {
         )''');
       _db.execute('PRAGMA user_version = 17');
     }
+    if (v < 18) {
+      // v18: despesas planeadas por mês (planeamento mensal)
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS planned_items(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          month TEXT NOT NULL,
+          category_id INTEGER NOT NULL,
+          cents INTEGER NOT NULL,
+          mandatory INTEGER NOT NULL DEFAULT 0
+        )''');
+      _db.execute('PRAGMA user_version = 18');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -630,6 +643,44 @@ class Db {
     _db.execute('DELETE FROM goal_targets WHERE goal_id=?', [id]);
     _db.execute('DELETE FROM goals WHERE id=?', [id]);
   }
+
+  // ---------- Planeamento mensal ----------
+  List<PlannedItem> plannedItems() => _db
+      .select('SELECT * FROM planned_items ORDER BY month, mandatory DESC, id')
+      .map(
+        (r) => PlannedItem(
+          id: r['id'] as int,
+          month: r['month'] as String,
+          categoryId: r['category_id'] as int,
+          cents: r['cents'] as int,
+          mandatory: r['mandatory'] == 1,
+        ),
+      )
+      .toList();
+
+  int savePlannedItem({
+    int? id,
+    required String month,
+    required int categoryId,
+    required int cents,
+    required bool mandatory,
+  }) {
+    if (id == null) {
+      _db.execute(
+        'INSERT INTO planned_items(month,category_id,cents,mandatory) VALUES(?,?,?,?)',
+        [month, categoryId, cents, mandatory ? 1 : 0],
+      );
+      return _db.lastInsertRowId;
+    }
+    _db.execute(
+      'UPDATE planned_items SET month=?,category_id=?,cents=?,mandatory=? WHERE id=?',
+      [month, categoryId, cents, mandatory ? 1 : 0, id],
+    );
+    return id;
+  }
+
+  void deletePlannedItem(int id) =>
+      _db.execute('DELETE FROM planned_items WHERE id=?', [id]);
 
   // ---------- Contas ----------
   List<Conta> accounts() => _db
@@ -1165,7 +1216,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 17;
+  static const _schemaVersion = 18;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();
