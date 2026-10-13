@@ -133,7 +133,14 @@ class Conta {
   final int id;
   final String name;
   final String emoji;
-  const Conta({required this.id, required this.name, this.emoji = ''});
+  final int
+  openingCents; // saldo inicial, antes do primeiro movimento registado
+  const Conta({
+    required this.id,
+    required this.name,
+    this.emoji = '',
+    this.openingCents = 0,
+  });
 }
 
 class Rule {

@@ -363,6 +363,15 @@ class Db {
         )''');
       _db.execute('PRAGMA user_version = 19');
     }
+    if (v < 20) {
+      // v20: saldo inicial de cada conta bancária
+      try {
+        _db.execute(
+          'ALTER TABLE accounts ADD COLUMN opening_cents INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 20');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -760,23 +769,28 @@ class Db {
           id: r['id'] as int,
           name: r['name'] as String,
           emoji: r['emoji'] as String,
+          openingCents: (r['opening_cents'] as int?) ?? 0,
         ),
       )
       .toList();
 
-  int saveAccount({int? id, required String name, String emoji = ''}) {
+  int saveAccount({
+    int? id,
+    required String name,
+    String emoji = '',
+    int openingCents = 0,
+  }) {
     if (id == null) {
-      _db.execute('INSERT INTO accounts(name,emoji) VALUES(?,?)', [
-        name,
-        emoji,
-      ]);
+      _db.execute(
+        'INSERT INTO accounts(name,emoji,opening_cents) VALUES(?,?,?)',
+        [name, emoji, openingCents],
+      );
       return _db.lastInsertRowId;
     }
-    _db.execute('UPDATE accounts SET name=?,emoji=? WHERE id=?', [
-      name,
-      emoji,
-      id,
-    ]);
+    _db.execute(
+      'UPDATE accounts SET name=?,emoji=?,opening_cents=? WHERE id=?',
+      [name, emoji, openingCents, id],
+    );
     return id;
   }
 
@@ -1286,7 +1300,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 19;
+  static const _schemaVersion = 20;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

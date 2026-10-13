@@ -1,59 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../analysis/analytics.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
-import 'transactions_screen.dart' show confirm;
+import 'goals_screen.dart' show GoalDetailScreen;
+import 'transactions_screen.dart' show TransactionsScreen, confirm;
 
-/// Cria ou edita uma conta. Devolve o id.
+/// Cria ou edita uma conta (nome, ícone e saldo inicial). Devolve o id.
 Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
   final s = context.read<AppState>();
   final name = TextEditingController(text: edit?.name ?? '');
+  final opening = TextEditingController(
+    text: edit == null || edit.openingCents == 0
+        ? ''
+        : (edit.openingCents / 100).toStringAsFixed(2).replaceAll('.', ','),
+  );
   var emoji = edit?.emoji ?? '';
   return showDialog<int>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
         title: Text(edit == null ? 'Nova conta' : 'Editar conta'),
-        content: Row(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () async {
-                final e = await pickEmoji(ctx, emoji);
-                if (e != null) set(() => emoji = e);
-              },
-              child: Container(
-                width: 56,
-                height: 56,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Theme.of(ctx).colorScheme.outlineVariant,
+            Row(
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () async {
+                    final e = await pickEmoji(ctx, emoji);
+                    if (e != null) set(() => emoji = e);
+                  },
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(ctx).colorScheme.outlineVariant,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      emoji.isEmpty ? '🏦' : emoji,
+                      style: TextStyle(
+                        fontSize: 28,
+                        color: emoji.isEmpty ? Colors.grey : null,
+                      ),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: Text(
-                  emoji.isEmpty ? '🏦' : emoji,
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: emoji.isEmpty ? Colors.grey : null,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: name,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome',
+                      hintText: 'Ex.: Conta à ordem',
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: name,
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Nome',
-                  hintText: 'Ex.: Conta à ordem',
-                ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: opening,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Saldo inicial ($baseSym)',
+                prefixText: '$baseSym  ',
+                helperText: 'Quanto tinhas na conta antes dos movimentos registados aqui.',
+                helperMaxLines: 2,
               ),
             ),
           ],
@@ -67,10 +92,21 @@ Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
             onPressed: () {
               final n = name.text.trim();
               if (n.isEmpty) return;
+              final cents = parseCents(opening.text) ?? 0;
               if (edit == null) {
-                Navigator.pop(ctx, s.addAccount(n, emoji: emoji));
+                Navigator.pop(
+                  ctx,
+                  s.addAccount(n, emoji: emoji, openingCents: cents),
+                );
               } else {
-                s.updateAccount(Conta(id: edit.id, name: n, emoji: emoji));
+                s.updateAccount(
+                  Conta(
+                    id: edit.id,
+                    name: n,
+                    emoji: emoji,
+                    openingCents: cents,
+                  ),
+                );
                 Navigator.pop(ctx, edit.id);
               }
             },
@@ -168,10 +204,9 @@ class AccountsScreen extends StatelessWidget {
                 for (final a in s.accounts)
                   Builder(
                     builder: (_) {
-                      final txns = s.transactions
+                      final count = s.transactions
                           .where((t) => t.accountId == a.id)
-                          .toList();
-                      final balance = txns.fold(0, (sum, t) => sum + t.amount);
+                          .length;
                       return ListTile(
                         leading: Text(
                           a.emoji.isEmpty ? '🏦' : a.emoji,
@@ -182,15 +217,22 @@ class AccountsScreen extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
-                          '${txns.length} movimentos · saldo dos movimentos ${fmtMoney(balance)}',
+                          '$count movimentos · saldo ${fmtMoney(s.accountBalance(a.id))}',
                         ),
-                        onTap: () => showAccountEditor(context, edit: a),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                AccountDetailScreen(accountId: a.id),
+                          ),
+                        ),
                         trailing: IconButton(
+                          tooltip: 'Apagar',
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () async {
                             if (await confirm(
                               context,
-                              'Apagar a conta “${a.name}”? Os ${txns.length} movimentos ficam sem conta.',
+                              'Apagar a conta “${a.name}”? Os $count movimentos ficam sem conta.',
                             ))
                               s.deleteAccount(a.id);
                           },
@@ -202,4 +244,180 @@ class AccountsScreen extends StatelessWidget {
             ),
     );
   }
+}
+
+/// Uma conta por dentro: saldo, resumo do mês, objetivos alimentados por esta conta e os seus movimentos.
+class AccountDetailScreen extends StatelessWidget {
+  final int accountId;
+  const AccountDetailScreen({super.key, required this.accountId});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final a = s.account(accountId);
+    if (a == null) {
+      return const Scaffold(body: Center(child: Text('Conta apagada.')));
+    }
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final now = DateTime.now();
+    final period = Period.month(now);
+    final an = Analytics(
+      s,
+      period,
+      AnalysisFilter(accountIds: {accountId}),
+      today: now,
+    );
+    final mine = s.transactions.where((t) => t.accountId == accountId).toList();
+    final contributions = s.goalContributionsFrom(accountId);
+    final recent = mine.take(30).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${a.emoji} ${a.name}'.trim()),
+        actions: [
+          IconButton(
+            tooltip: 'Editar',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => showAccountEditor(context, edit: a),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Saldo', style: tt.bodySmall),
+                  Text(
+                    fmtMoney(s.accountBalance(accountId)),
+                    style: tt.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Saldo inicial ${fmtMoney(a.openingCents)} · ${mine.length} movimentos',
+                    style: tt.bodySmall,
+                  ),
+                  const Divider(height: 24),
+                  Text('Este mês', style: tt.titleSmall),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _Stat('Gasto', fmtMoney(an.spent), cs.error),
+                      ),
+                      Expanded(
+                        child: _Stat(
+                          'Receita',
+                          fmtMoney(an.income),
+                          cs.primary,
+                        ),
+                      ),
+                      Expanded(
+                        child: _Stat(
+                          'Saldo do mês',
+                          fmtMoney(an.income - an.spent),
+                          null,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text('Objetivos alimentados por esta conta', style: tt.titleSmall),
+          const SizedBox(height: 4),
+          if (contributions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Nenhum objetivo recebe dinheiro desta conta ainda.',
+                style: tt.bodySmall,
+              ),
+            ),
+          for (final e in contributions.entries)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              leading: const Text('🎯', style: TextStyle(fontSize: 20)),
+              title: Text(
+                s.goals.where((g) => g.id == e.key).firstOrNull?.name ??
+                    'Objetivo',
+              ),
+              trailing: Text(fmtMoney(e.value), style: tt.titleSmall),
+              onTap: () {
+                final g = s.goals.where((g) => g.id == e.key).firstOrNull;
+                if (g == null) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GoalDetailScreen(goalId: g.id),
+                  ),
+                );
+              },
+            ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: Text('Movimentos', style: tt.titleSmall)),
+              TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TransactionsScreen(accountId: accountId),
+                  ),
+                ),
+                child: const Text('Ver todos'),
+              ),
+            ],
+          ),
+          if (recent.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text('Sem movimentos nesta conta.', style: tt.bodySmall),
+            ),
+          for (final t in recent)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                s.displayName(t),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text('${fmtDate(t.date)} · ${s.path(t.categoryId)}'),
+              trailing: MoneyText(t.amount, colored: !t.isTransfer),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? color;
+  const _Stat(this.label, this.value, this.color);
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+      const SizedBox(height: 2),
+      Text(
+        value,
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(fontWeight: FontWeight.w700, color: color),
+      ),
+    ],
+  );
 }

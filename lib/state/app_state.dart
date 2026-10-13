@@ -351,14 +351,46 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
-  int addAccount(String name, {String emoji = ''}) {
-    final id = db.saveAccount(name: name.trim(), emoji: emoji);
+  /// Saldo da conta: saldo inicial mais todos os movimentos ligados a ela.
+  int accountBalance(int accountId) {
+    final opening = account(accountId)?.openingCents ?? 0;
+    var sum = opening;
+    for (final t in transactions) {
+      if (t.accountId == accountId) sum += t.amount;
+    }
+    return sum;
+  }
+
+  /// Quanto de cada objetivo veio desta conta (poupança e pagamentos associados), id do objetivo → cêntimos.
+  Map<int, int> goalContributionsFrom(int accountId) {
+    final out = <int, int>{};
+    for (final g in goals) {
+      if (g.archived) continue;
+      final from = goalProgressOf(g).entries
+          .where((e) => e.txn.accountId == accountId);
+      final sum = from.fold(0, (a, e) => a + e.cents);
+      if (sum > 0) out[g.id] = sum;
+    }
+    return out;
+  }
+
+  int addAccount(String name, {String emoji = '', int openingCents = 0}) {
+    final id = db.saveAccount(
+      name: name.trim(),
+      emoji: emoji,
+      openingCents: openingCents,
+    );
     reload();
     return id;
   }
 
   void updateAccount(Conta a) {
-    db.saveAccount(id: a.id, name: a.name.trim(), emoji: a.emoji);
+    db.saveAccount(
+      id: a.id,
+      name: a.name.trim(),
+      emoji: a.emoji,
+      openingCents: a.openingCents,
+    );
     reload();
   }
 

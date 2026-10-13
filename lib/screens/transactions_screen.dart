@@ -10,7 +10,8 @@ import 'import_screen.dart';
 enum _Filter { all, uncategorized, income, expense, transfers }
 
 class TransactionsScreen extends StatefulWidget {
-  const TransactionsScreen({super.key});
+  final int? accountId; // começa filtrado nesta conta
+  const TransactionsScreen({super.key, this.accountId});
   @override
   State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
@@ -22,6 +23,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   int? accountFilter; // null = todas as contas
   final selected = <int>{};
   bool searching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    accountFilter = widget.accountId;
+  }
 
   @override
   Widget build(BuildContext context) {
