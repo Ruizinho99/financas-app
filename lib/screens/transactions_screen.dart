@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -268,6 +269,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               s.path(t.categoryId),
                             if (s.account(t.accountId) != null)
                               s.account(t.accountId)!.name,
+                            if (reversalLabel(s, t) != null)
+                              reversalLabel(s, t)!,
                             if (t.note.isNotEmpty) t.note,
                           ].join(' · '),
                           maxLines: 2,
@@ -315,6 +318,22 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       ),
     );
   }
+}
+
+/// Texto para os movimentos ligados a uma anulação: a receita diz que despesa anula;
+/// a despesa diz quanto já foi anulado.
+String? reversalLabel(AppState s, Txn t) {
+  if (t.reversesId != null && t.reversedCents > 0) {
+    final exp = s.transactions.where((x) => x.id == t.reversesId).firstOrNull;
+    if (exp == null)
+      return 'Anula uma despesa já apagada (${fmtMoney(t.reversedCents)})';
+    return 'Anula ${s.displayName(exp)} (${fmtMoney(t.reversedCents)})';
+  }
+  final done = t.amount < 0 ? (s.reversedByExpense[t.id] ?? 0) : 0;
+  if (done > 0) {
+    return 'Anulado ${fmtMoney(done)} · fica ${fmtMoney(-s.effectiveAmount(t))}';
+  }
+  return null;
 }
 
 Future<bool> confirm(
