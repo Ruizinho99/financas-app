@@ -226,14 +226,15 @@ class AppState extends ChangeNotifier {
     var unclassified = 0;
     for (final t in txnsIn(p)) {
       if (t.amount >= 0 || t.isTransfer) continue;
+      final spent = -effectiveAmount(t);
       final c = cat(t.categoryId);
       if (c == null) {
-        unclassified += -t.amount;
+        unclassified += spent;
         continue;
       }
       if (c.isIncome || c.isInvestment) continue;
       final target = isMandatory(c, monthKey(t.date)) ? mand : opt;
-      target[c.id] = (target[c.id] ?? 0) - t.amount;
+      target[c.id] = (target[c.id] ?? 0) + spent;
     }
     return (mandatory: mand, optional: opt, unclassified: unclassified);
   }
@@ -378,7 +379,8 @@ class AppState extends ChangeNotifier {
       if (c == null) continue;
       if (c.both && t.amount > 0)
         continue; // a parte das receitas não abate ao gasto
-      own[id] = (own[id] ?? 0) + (c.isIncome ? t.amount : -t.amount);
+      final v = effectiveAmount(t);
+      own[id] = (own[id] ?? 0) + (c.isIncome ? v : -v);
     }
     return own;
   }
@@ -946,6 +948,8 @@ class AppState extends ChangeNotifier {
     bool isTransfer = false,
     String? receiptPath,
     int? investAccountId,
+    int? reversesId,
+    int reversedCents = 0,
   }) {
     final key = merchantKey(description);
     var cid = isTransfer ? null : categoryId;
@@ -962,8 +966,49 @@ class AppState extends ChangeNotifier {
       isTransfer: isTransfer,
       receiptPath: receiptPath,
       investAccountId: investAccountId,
+      reversesId: reversesId,
+      reversedCents: reversesId == null ? 0 : reversedCents,
     );
     reload();
+  }
+
+  // ---------- Anulações de despesas ----------
+  Map<int, int>? _reversedCache;
+  List<Txn>? _reversedFor;
+
+  /// Quanto de cada despesa já foi anulado por receitas (id da despesa → cêntimos).
+  Map<int, int> get reversedByExpense {
+    if (_reversedCache == null || !identical(_reversedFor, transactions)) {
+      final m = <int, int>{};
+      for (final t in transactions) {
+        final id = t.reversesId;
+        if (id != null && t.reversedCents > 0)
+          m[id] = (m[id] ?? 0) + t.reversedCents;
+      }
+      _reversedCache = m;
+      _reversedFor = transactions;
+    }
+    return _reversedCache!;
+  }
+
+  /// Valor do movimento depois das anulações. Despesa: negativo, com a parte anulada tirada.
+  /// Receita que anula: a parte anulada deixa de ser receita. Os saldos e o extrato não mudam.
+  int effectiveAmount(Txn t) {
+    if (t.amount < 0) return t.amount + (reversedByExpense[t.id] ?? 0);
+    if (t.amount > 0) return t.amount - t.reversedCents;
+    return t.amount;
+  }
+
+  /// Quanto ainda pode ser anulado numa despesa ([exceptTxnId]: a receita que se está a editar).
+  int reversibleLeft(Txn expense, {int? exceptTxnId}) {
+    var done = reversedByExpense[expense.id] ?? 0;
+    if (exceptTxnId != null) {
+      for (final t in transactions) {
+        if (t.id == exceptTxnId && t.reversesId == expense.id)
+          done -= t.reversedCents;
+      }
+    }
+    return -expense.amount - done;
   }
 
   /// Transferência entre contas: saída na origem e, se houver destino, entrada no destino.

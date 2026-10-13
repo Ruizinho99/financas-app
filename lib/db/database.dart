@@ -288,6 +288,18 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 15');
     }
+    if (v < 16) {
+      // v16: anulação de despesas (reembolsos e devoluções ligados à despesa original)
+      try {
+        _db.execute('ALTER TABLE transactions ADD COLUMN reverses_id INTEGER');
+      } catch (_) {}
+      try {
+        _db.execute(
+          'ALTER TABLE transactions ADD COLUMN reversed_cents INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 16');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -402,6 +414,8 @@ class Db {
     isTransfer: r['is_transfer'] == 1,
     receiptPath: r['receipt_path'] as String?,
     investAccountId: r['invest_account_id'] as int?,
+    reversesId: r['reverses_id'] as int?,
+    reversedCents: (r['reversed_cents'] as int?) ?? 0,
   );
 
   List<Txn> transactions() => _db
@@ -426,9 +440,11 @@ class Db {
     bool isTransfer = false,
     String? receiptPath,
     int? investAccountId,
+    int? reversesId,
+    int reversedCents = 0,
   }) {
     _db.execute(
-      'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash,account_id,is_transfer,receipt_path,invest_account_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash,account_id,is_transfer,receipt_path,invest_account_id,reverses_id,reversed_cents) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [
         isoDate(date),
         description,
@@ -444,6 +460,8 @@ class Db {
         isTransfer ? 1 : 0,
         receiptPath,
         investAccountId,
+        reversesId,
+        reversedCents,
       ],
     );
     return _db.lastInsertRowId;
@@ -455,7 +473,7 @@ class Db {
   ).isNotEmpty;
 
   void updateTransaction(Txn t, {required String merchantKey}) => _db.execute(
-    'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=?,invest_account_id=? WHERE id=?',
+    'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=?,invest_account_id=?,reverses_id=?,reversed_cents=? WHERE id=?',
     [
       isoDate(t.date),
       t.description,
@@ -469,6 +487,8 @@ class Db {
       t.isTransfer ? 1 : 0,
       t.receiptPath,
       t.investAccountId,
+      t.reversesId,
+      t.reversedCents,
       t.id,
     ],
   );
@@ -525,6 +545,11 @@ class Db {
 
   void deleteTransactions(List<int> ids) {
     for (final id in ids) {
+      // as receitas que anulavam esta despesa passam a ser receitas normais
+      _db.execute(
+        'UPDATE transactions SET reverses_id=NULL, reversed_cents=0 WHERE reverses_id=?',
+        [id],
+      );
       _db.execute('DELETE FROM transactions WHERE id=?', [id]);
     }
   }
@@ -1011,7 +1036,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 15;
+  static const _schemaVersion = 16;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();
