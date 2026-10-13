@@ -42,6 +42,13 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   late int? investId = widget
       .edit
       ?.investAccountId; // transferência para/de uma plataforma de investimento
+  // receita que anula (total ou parcialmente) uma despesa
+  late int? reversesId = widget.edit?.reversesId;
+  late final reversedCtrl = TextEditingController(
+    text: (widget.edit?.reversedCents ?? 0) > 0
+        ? _centsText(widget.edit!.reversedCents)
+        : '',
+  );
   late String? receipt = widget.edit?.receiptPath;
   late bool transferIn =
       (widget.edit?.amount ?? -1) > 0; // só ao editar uma transferência
@@ -64,11 +71,25 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   @override
   void dispose() {
     if (!saved && newReceipt) Receipts.delete(receipt);
+    reversedCtrl.dispose();
     super.dispose();
+  }
+
+  static String _centsText(int cents) =>
+      (cents.abs() / 100).toStringAsFixed(2).replaceAll('.', ',');
+
+  /// Despesa pelo id (nulo se já não existir).
+  Txn? _expenseById(AppState s, int? id) {
+    if (id == null) return null;
+    for (final t in s.transactions) {
+      if (t.id == id) return t;
+    }
+    return null;
   }
 
   void _setType(_Type t, AppState s) => setState(() {
     type = t;
+    if (t != _Type.income) reversesId = null;
     if (t == _Type.transfer) categoryId = null;
     final c = s.cat(categoryId);
     if (c != null && !c.both && c.isIncome != (t == _Type.income))
@@ -245,6 +266,34 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
         _ => c?.name ?? (type == _Type.income ? 'Receita' : 'Despesa'),
       };
     }
+    // anulação de uma despesa (só numa receita)
+    int? revId;
+    var revCents = 0;
+    if (type == _Type.income && reversesId != null) {
+      final exp = _expenseById(s, reversesId);
+      revCents = (parseCents(reversedCtrl.text) ?? 0).abs();
+      if (exp == null) {
+        setState(() => error = 'A despesa anulada já não existe.');
+        return;
+      }
+      if (revCents <= 0) {
+        setState(() => error = 'Indica quanto da despesa é anulado.');
+        return;
+      }
+      if (revCents > cents) {
+        setState(() => error = 'A anulação não pode ser maior que a receita.');
+        return;
+      }
+      final left = s.reversibleLeft(exp, exceptTxnId: widget.edit?.id);
+      if (revCents > left) {
+        setState(
+          () =>
+              error = 'Só faltam ${fmtMoney(left)} para anular nesta despesa.',
+        );
+        return;
+      }
+      revId = exp.id;
+    }
     final e = widget.edit;
     saved = true;
     if (e == null) {
@@ -276,6 +325,8 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           categoryId: categoryId,
           accountId: accountId,
           receiptPath: receipt,
+          reversesId: revId,
+          reversedCents: revCents,
         );
       }
     } else {
@@ -298,6 +349,8 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           isTransfer: type == _Type.transfer,
           receiptPath: receipt,
           investAccountId: type == _Type.transfer ? investId : null,
+          reversesId: revId,
+          reversedCents: revCents,
         ),
       );
       if (e.receiptPath != null && e.receiptPath != receipt)
@@ -323,6 +376,13 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     ];
   }
 
+  String? _reversalHelp(AppState s) {
+    final exp = _expenseById(s, reversesId);
+    if (exp == null) return null;
+    final left = s.reversibleLeft(exp, exceptTxnId: widget.edit?.id);
+    return 'Ainda se pode anular ${fmtMoney(left)} desta despesa. A parte anulada não conta como gasto nem como receita na Análise.';
+  }
+
   bool _sameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
@@ -345,6 +405,109 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     );
     if (id == null) return;
     setState(() => categoryId = id == -1 ? null : id);
+  }
+
+  /// Escolhe a despesa que esta receita anula. Mostra as despesas recentes que ainda têm valor por anular.
+  Future<void> _pickExpense(AppState s) async {
+    final id = await showModalBottomSheet<int>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) {
+        var q = '';
+        return StatefulBuilder(
+          builder: (ctx, set) {
+            final query = q.trim().toLowerCase();
+            final list =
+                [
+                      for (final t in s.transactions)
+                        if (t.amount < 0 &&
+                            !t.isTransfer &&
+                            t.id != widget.edit?.id &&
+                            (t.id == reversesId ||
+                                s.reversibleLeft(
+                                      t,
+                                      exceptTxnId: widget.edit?.id,
+                                    ) >
+                                    0))
+                          t,
+                    ]
+                    .where(
+                      (t) =>
+                          query.isEmpty ||
+                          '${s.displayName(t)} ${t.description}'
+                              .toLowerCase()
+                              .contains(query),
+                    )
+                    .take(200)
+                    .toList();
+            return SizedBox(
+              height: MediaQuery.of(ctx).size.height * 0.75,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Procurar despesa',
+                        prefixIcon: Icon(Icons.search),
+                        isDense: true,
+                      ),
+                      onChanged: (v) => set(() => q = v),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.close),
+                          title: const Text('Não anula nenhuma despesa'),
+                          onTap: () => Navigator.pop(ctx, -1),
+                        ),
+                        for (final t in list)
+                          ListTile(
+                            selected: t.id == reversesId,
+                            title: Text(
+                              s.displayName(t),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              '${fmtDate(t.date)} · ${fmtMoney(-t.amount)}'
+                              ' · por anular ${fmtMoney(s.reversibleLeft(t, exceptTxnId: widget.edit?.id))}',
+                            ),
+                            onTap: () => Navigator.pop(ctx, t.id),
+                          ),
+                        if (list.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(
+                              child: Text('Nenhuma despesa para anular.'),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (id == null) return;
+    setState(() {
+      reversesId = id == -1 ? null : id;
+      error = null;
+      final exp = _expenseById(s, reversesId);
+      if (exp != null && reversedCtrl.text.trim().isEmpty) {
+        final left = s.reversibleLeft(exp, exceptTxnId: widget.edit?.id);
+        final inc = _cents() ?? 0;
+        final v = left < inc ? left : inc;
+        if (v > 0) reversedCtrl.text = _centsText(v);
+      }
+    });
   }
 
   Future<void> _pickInvest(AppState s) async {
@@ -528,6 +691,36 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                   ],
                 ),
               ),
+            if (type == _Type.income) ...[
+              const SizedBox(height: 12),
+              TileField(
+                icon: Icons.undo,
+                title: 'Anula uma despesa (reembolso, devolução)',
+                text: () {
+                  if (reversesId == null) return 'Nenhuma';
+                  final x = _expenseById(s, reversesId);
+                  return x == null ? 'Despesa já não existe' : s.displayName(x);
+                }(),
+                isHint: reversesId == null,
+                onTap: () => _pickExpense(s),
+              ),
+              if (reversesId != null) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  controller: reversedCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  onChanged: (_) => setState(() => error = null),
+                  decoration: InputDecoration(
+                    labelText: 'Valor anulado ($baseSym)',
+                    prefixText: '$baseSym  ',
+                    helperMaxLines: 3,
+                    helperText: _reversalHelp(s),
+                  ),
+                ),
+              ],
+            ],
             const SizedBox(height: 14),
           ],
           TextField(

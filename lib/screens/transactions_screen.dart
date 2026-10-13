@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -9,7 +10,8 @@ import 'import_screen.dart';
 enum _Filter { all, uncategorized, income, expense, transfers }
 
 class TransactionsScreen extends StatefulWidget {
-  const TransactionsScreen({super.key});
+  final int? accountId; // começa filtrado nesta conta
+  const TransactionsScreen({super.key, this.accountId});
   @override
   State<TransactionsScreen> createState() => _TransactionsScreenState();
 }
@@ -21,6 +23,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   int? accountFilter; // null = todas as contas
   final selected = <int>{};
   bool searching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    accountFilter = widget.accountId;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -268,6 +276,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               s.path(t.categoryId),
                             if (s.account(t.accountId) != null)
                               s.account(t.accountId)!.name,
+                            if (reversalLabel(s, t) != null)
+                              reversalLabel(s, t)!,
+                            if (goalLabel(s, t) != null) goalLabel(s, t)!,
                             if (t.note.isNotEmpty) t.note,
                           ].join(' · '),
                           maxLines: 2,
@@ -315,6 +326,32 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       ),
     );
   }
+}
+
+/// Texto para os movimentos ligados a uma anulação: a receita diz que despesa anula;
+/// a despesa diz quanto já foi anulado.
+String? reversalLabel(AppState s, Txn t) {
+  if (t.reversesId != null && t.reversedCents > 0) {
+    final exp = s.transactions.where((x) => x.id == t.reversesId).firstOrNull;
+    if (exp == null)
+      return 'Anula uma despesa já apagada (${fmtMoney(t.reversedCents)})';
+    return 'Anula ${s.displayName(exp)} (${fmtMoney(t.reversedCents)})';
+  }
+  final done = t.amount < 0 ? (s.reversedByExpense[t.id] ?? 0) : 0;
+  if (done > 0) {
+    return 'Anulado ${fmtMoney(done)} · fica ${fmtMoney(-s.effectiveAmount(t))}';
+  }
+  return null;
+}
+
+/// Divisão de um movimento pelos objetivos: "Objetivos: Férias 50,00 € · Alimentação 50,00 €".
+String? goalLabel(AppState s, Txn t) {
+  final parts = [
+    for (final a in s.goalAllocations)
+      if (a.txnId == t.id)
+        '${s.goals.where((g) => g.id == a.goalId).firstOrNull?.name ?? 'Objetivo'} ${fmtMoney(a.cents)}',
+  ];
+  return parts.isEmpty ? null : 'Objetivos: ${parts.join(' · ')}';
 }
 
 Future<bool> confirm(

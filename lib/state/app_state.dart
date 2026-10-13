@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../db/database.dart';
+import '../goals/goals.dart';
+import '../invest/allocation_plan.dart';
+import '../planning/planning.dart';
 import '../import/parsers.dart';
 import '../invest/invest.dart';
 import '../invest/price_service.dart';
@@ -64,6 +67,21 @@ class Period {
   }
 }
 
+/// Uma entrega do banco para uma plataforma, com o valor de cada ativo segundo o plano.
+class PendingAllocation {
+  final Txn txn;
+  final InvestAccount account;
+  final List<AllocationPart> parts;
+  final int
+  undistributed; // cêntimos que o plano não cobre (plano abaixo de 100%)
+  const PendingAllocation({
+    required this.txn,
+    required this.account,
+    required this.parts,
+    required this.undistributed,
+  });
+}
+
 class CategoryStat {
   final Categoria category;
   final int
@@ -93,6 +111,12 @@ class AppState extends ChangeNotifier {
   List<InvestOp> investOps = [];
   List<({int id, String pattern, int accountId})> investPatterns = [];
   List<MandatoryRange> mandatoryRanges = [];
+  List<Goal> goals = [];
+  List<GoalAllocation> goalAllocations = [];
+  List<PlannedItem> plannedItems = [];
+  Map<int, List<PlanLine>> investPlan = {};
+  Map<int, DateTime> investPlanSince = {};
+  Set<int> investAlertsDone = {};
   Map<String, int> salaries = {};
   int defaultSalary = 0;
 
@@ -107,6 +131,12 @@ class AppState extends ChangeNotifier {
     investOps = db.investOps();
     investPatterns = db.investPatterns();
     mandatoryRanges = db.mandatoryRanges();
+    goals = db.goals();
+    goalAllocations = db.goalAllocations();
+    plannedItems = db.plannedItems();
+    investPlan = db.investPlan();
+    investPlanSince = db.investPlanSince();
+    investAlertsDone = db.investAlertsDone();
     salaries = db.salaries();
     baseCcy = db.setting('base_currency') ?? 'EUR';
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
@@ -226,14 +256,15 @@ class AppState extends ChangeNotifier {
     var unclassified = 0;
     for (final t in txnsIn(p)) {
       if (t.amount >= 0 || t.isTransfer) continue;
+      final spent = -effectiveAmount(t);
       final c = cat(t.categoryId);
       if (c == null) {
-        unclassified += -t.amount;
+        unclassified += spent;
         continue;
       }
       if (c.isIncome || c.isInvestment) continue;
       final target = isMandatory(c, monthKey(t.date)) ? mand : opt;
-      target[c.id] = (target[c.id] ?? 0) - t.amount;
+      target[c.id] = (target[c.id] ?? 0) + spent;
     }
     return (mandatory: mand, optional: opt, unclassified: unclassified);
   }
@@ -320,14 +351,46 @@ class AppState extends ChangeNotifier {
     return null;
   }
 
-  int addAccount(String name, {String emoji = ''}) {
-    final id = db.saveAccount(name: name.trim(), emoji: emoji);
+  /// Saldo da conta: saldo inicial mais todos os movimentos ligados a ela.
+  int accountBalance(int accountId) {
+    final opening = account(accountId)?.openingCents ?? 0;
+    var sum = opening;
+    for (final t in transactions) {
+      if (t.accountId == accountId) sum += t.amount;
+    }
+    return sum;
+  }
+
+  /// Quanto de cada objetivo veio desta conta (poupança e pagamentos associados), id do objetivo → cêntimos.
+  Map<int, int> goalContributionsFrom(int accountId) {
+    final out = <int, int>{};
+    for (final g in goals) {
+      if (g.archived) continue;
+      final from = goalProgressOf(g).entries
+          .where((e) => e.txn.accountId == accountId);
+      final sum = from.fold(0, (a, e) => a + e.cents);
+      if (sum > 0) out[g.id] = sum;
+    }
+    return out;
+  }
+
+  int addAccount(String name, {String emoji = '', int openingCents = 0}) {
+    final id = db.saveAccount(
+      name: name.trim(),
+      emoji: emoji,
+      openingCents: openingCents,
+    );
     reload();
     return id;
   }
 
   void updateAccount(Conta a) {
-    db.saveAccount(id: a.id, name: a.name.trim(), emoji: a.emoji);
+    db.saveAccount(
+      id: a.id,
+      name: a.name.trim(),
+      emoji: a.emoji,
+      openingCents: a.openingCents,
+    );
     reload();
   }
 
@@ -378,7 +441,8 @@ class AppState extends ChangeNotifier {
       if (c == null) continue;
       if (c.both && t.amount > 0)
         continue; // a parte das receitas não abate ao gasto
-      own[id] = (own[id] ?? 0) + (c.isIncome ? t.amount : -t.amount);
+      final v = effectiveAmount(t);
+      own[id] = (own[id] ?? 0) + (c.isIncome ? v : -v);
     }
     return own;
   }
@@ -946,6 +1010,8 @@ class AppState extends ChangeNotifier {
     bool isTransfer = false,
     String? receiptPath,
     int? investAccountId,
+    int? reversesId,
+    int reversedCents = 0,
   }) {
     final key = merchantKey(description);
     var cid = isTransfer ? null : categoryId;
@@ -962,8 +1028,255 @@ class AppState extends ChangeNotifier {
       isTransfer: isTransfer,
       receiptPath: receiptPath,
       investAccountId: investAccountId,
+      reversesId: reversesId,
+      reversedCents: reversesId == null ? 0 : reversedCents,
     );
     reload();
+  }
+
+  // ---------- Plano de distribuição das entregas ----------
+  /// Entregas do banco para uma plataforma (com plano) ainda não vistas. Só contam as entregas de
+  /// depois de o plano existir, para não aparecer o histórico todo de uma vez.
+  List<PendingAllocation> get pendingAllocations {
+    final out = <PendingAllocation>[];
+    for (final t in transactions) {
+      final accId = t.investAccountId;
+      if (accId == null || t.amount >= 0) continue;
+      final lines = investPlan[accId];
+      final since = investPlanSince[accId];
+      if (lines == null || lines.isEmpty || since == null) continue;
+      if (t.date.isBefore(DateTime(since.year, since.month, since.day)))
+        continue;
+      if (investAlertsDone.contains(t.id)) continue;
+      final acc = investAccount(accId);
+      if (acc == null) continue;
+      final parts = splitByPlan(-t.amount, lines);
+      final assigned = parts.fold<int>(0, (a, p) => a + p.cents);
+      out.add(
+        PendingAllocation(
+          txn: t,
+          account: acc,
+          parts: parts,
+          undistributed: -t.amount - assigned,
+        ),
+      );
+    }
+    return out;
+  }
+
+  /// Plano de uma plataforma: percentagem por ativo (em pontos base, 10000 = 100%).
+  void setInvestPlan(int accountId, Map<int, int> bp) {
+    db.saveInvestPlan(accountId, [
+      for (final e in bp.entries)
+        if (e.value > 0) PlanLine(e.key, e.value),
+    ]);
+    reload();
+  }
+
+  void dismissAllocation(int txnId) {
+    db.markInvestAlertDone(txnId);
+    reload();
+  }
+
+  // ---------- Planeamento mensal ----------
+  List<PlannedItem> planFor(String month) =>
+      plannedItems.where((p) => p.month == month).toList();
+
+  /// Adiciona uma despesa planeada. Devolve falso se a categoria já estiver planeada neste mês.
+  bool addPlanned({
+    required String month,
+    required int categoryId,
+    required int cents,
+    required bool mandatory,
+  }) {
+    if (planFor(month).any((p) => p.categoryId == categoryId)) return false;
+    db.savePlannedItem(
+      month: month,
+      categoryId: categoryId,
+      cents: cents.abs(),
+      mandatory: mandatory,
+    );
+    reload();
+    return true;
+  }
+
+  void updatePlanned(PlannedItem p) {
+    db.savePlannedItem(
+      id: p.id,
+      month: p.month,
+      categoryId: p.categoryId,
+      cents: p.cents.abs(),
+      mandatory: p.mandatory,
+    );
+    reload();
+  }
+
+  void deletePlanned(int id) {
+    db.deletePlannedItem(id);
+    reload();
+  }
+
+  /// Copia o plano de um mês para outro (sem repetir categorias já planeadas). Devolve quantas copiou.
+  int copyPlan(String from, String to) {
+    final existing = {for (final p in planFor(to)) p.categoryId};
+    var n = 0;
+    for (final p in planFor(from)) {
+      if (existing.contains(p.categoryId)) continue;
+      db.savePlannedItem(
+        month: to,
+        categoryId: p.categoryId,
+        cents: p.cents,
+        mandatory: p.mandatory,
+      );
+      n++;
+    }
+    reload();
+    return n;
+  }
+
+  /// Gasto real de cada categoria planeada no mês (inclui as subcategorias da categoria).
+  int actualSpent(int categoryId, String month) {
+    final own = totalsByCategory(Period.month(DateTime.parse('$month-01')));
+    final c = cat(categoryId);
+    if (c == null) return 0;
+    return c.parentId == null ? rollup(c, own) : (own[c.id] ?? 0);
+  }
+
+  // ---------- Objetivos ----------
+  /// Cria o objetivo como subcategoria de [parentCategoryId] (se for uma subcategoria, usa a sua principal).
+  /// A subcategoria é de investimento: a poupança não conta como gasto na Análise.
+  int addGoal({
+    required String name,
+    String description = '',
+    required int parentCategoryId,
+    required int targetCents,
+    DateTime? endDate,
+  }) {
+    final p = cat(parentCategoryId);
+    final catId = db.saveCategory(
+      Categoria(
+        id: 0,
+        name: name.trim(),
+        parentId: p == null ? null : (p.parentId ?? p.id),
+        isInvestment: true,
+        emoji: '🎯',
+        description: 'Objetivo',
+      ),
+    );
+    final id = db.saveGoal(
+      name: name.trim(),
+      description: description.trim(),
+      categoryId: catId,
+      targetCents: targetCents,
+      endDate: endDate,
+    );
+    db.addGoalTarget(id, DateTime.now(), targetCents);
+    reload();
+    return id;
+  }
+
+  /// Altera o nome, a descrição ou o prazo. O valor do objetivo muda com [changeGoalTarget].
+  void updateGoal(Goal g) {
+    db.saveGoal(
+      id: g.id,
+      name: g.name.trim(),
+      description: g.description.trim(),
+      categoryId: g.categoryId,
+      targetCents: g.targetCents,
+      endDate: g.endDate,
+      archived: g.archived,
+    );
+    final c = cat(g.categoryId);
+    if (c != null && c.name != g.name.trim()) {
+      db.saveCategory(c.copyWith(name: g.name.trim()), id: c.id);
+    }
+    reload();
+  }
+
+  /// Muda o valor do objetivo. O valor anterior fica no histórico.
+  void changeGoalTarget(Goal g, int cents) {
+    db.saveGoal(
+      id: g.id,
+      name: g.name,
+      description: g.description,
+      categoryId: g.categoryId,
+      targetCents: cents,
+      endDate: g.endDate,
+      archived: g.archived,
+    );
+    db.addGoalTarget(g.id, DateTime.now(), cents);
+    reload();
+  }
+
+  /// Apaga o objetivo e as suas associações. A subcategoria fica arquivada, para os movimentos antigos.
+  void deleteGoal(Goal g) {
+    db.deleteGoal(g.id);
+    final c = cat(g.categoryId);
+    if (c != null) db.saveCategory(c.copyWith(archived: true), id: c.id);
+    reload();
+  }
+
+  void linkMovement(int txnId, int goalId, int cents) {
+    db.setGoalAllocation(txnId, goalId, cents);
+    reload();
+  }
+
+  void unlinkMovement(int allocationId) {
+    db.deleteGoalAllocation(allocationId);
+    reload();
+  }
+
+  /// Quanto de um movimento já está associado a objetivos (valor absoluto).
+  int allocatedOf(int txnId) => goalAllocations
+      .where((a) => a.txnId == txnId)
+      .fold(0, (s, a) => s + a.cents);
+
+  List<GoalTargetChange> goalHistory(int goalId) => db.goalTargets(goalId);
+
+  GoalProgress goalProgressOf(Goal g) => goalProgress(
+    g,
+    txns: transactions,
+    allocs: goalAllocations,
+    today: DateTime.now(),
+  );
+
+  // ---------- Anulações de despesas ----------
+  Map<int, int>? _reversedCache;
+  List<Txn>? _reversedFor;
+
+  /// Quanto de cada despesa já foi anulado por receitas (id da despesa → cêntimos).
+  Map<int, int> get reversedByExpense {
+    if (_reversedCache == null || !identical(_reversedFor, transactions)) {
+      final m = <int, int>{};
+      for (final t in transactions) {
+        final id = t.reversesId;
+        if (id != null && t.reversedCents > 0)
+          m[id] = (m[id] ?? 0) + t.reversedCents;
+      }
+      _reversedCache = m;
+      _reversedFor = transactions;
+    }
+    return _reversedCache!;
+  }
+
+  /// Valor do movimento depois das anulações. Despesa: negativo, com a parte anulada tirada.
+  /// Receita que anula: a parte anulada deixa de ser receita. Os saldos e o extrato não mudam.
+  int effectiveAmount(Txn t) {
+    if (t.amount < 0) return t.amount + (reversedByExpense[t.id] ?? 0);
+    if (t.amount > 0) return t.amount - t.reversedCents;
+    return t.amount;
+  }
+
+  /// Quanto ainda pode ser anulado numa despesa ([exceptTxnId]: a receita que se está a editar).
+  int reversibleLeft(Txn expense, {int? exceptTxnId}) {
+    var done = reversedByExpense[expense.id] ?? 0;
+    if (exceptTxnId != null) {
+      for (final t in transactions) {
+        if (t.id == exceptTxnId && t.reversesId == expense.id)
+          done -= t.reversedCents;
+      }
+    }
+    return -expense.amount - done;
   }
 
   /// Transferência entre contas: saída na origem e, se houver destino, entrada no destino.

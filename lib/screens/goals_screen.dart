@@ -1,0 +1,606 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../goals/goals.dart';
+import '../models.dart';
+import '../state/app_state.dart';
+import '../util/format.dart';
+import '../widgets/category_picker.dart';
+import '../widgets/form_kit.dart';
+import 'transactions_screen.dart' show confirm;
+
+/// Lista dos objetivos de poupança, com o progresso de cada um.
+class GoalsScreen extends StatelessWidget {
+  const GoalsScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final list = s.goals.where((g) => !g.archived).toList();
+    return Scaffold(
+      appBar: AppBar(title: const Text('Objetivos')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const GoalFormScreen()),
+        ),
+        icon: const Icon(Icons.add),
+        label: const Text('Objetivo'),
+      ),
+      body: list.isEmpty
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Text(
+                  'Ainda não tens objetivos.\nCria um (ex.: férias) e as transferências para a sua subcategoria contam para ele.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 90),
+              children: [
+                for (final g in list)
+                  Card(
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+                      title: Text(
+                        '🎯 ${g.name}',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      subtitle: _GoalSummary(g),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GoalDetailScreen(goalId: g.id),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+class _GoalSummary extends StatelessWidget {
+  final Goal g;
+  const _GoalSummary(this.g);
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final p = s.goalProgressOf(g);
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            p.done
+                ? 'Atingido · ${fmtMoney(p.saved)}'
+                : '${fmtMoney(p.saved)} de ${fmtMoney(p.target)} · faltam ${fmtMoney(p.remaining)}',
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: p.fraction,
+            minHeight: 6,
+            borderRadius: BorderRadius.circular(3),
+            color: p.done ? cs.tertiary : cs.primary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Criar ou editar um objetivo. Ao criar, escolhe-se a categoria onde fica a subcategoria do objetivo.
+class GoalFormScreen extends StatefulWidget {
+  final Goal? edit;
+  const GoalFormScreen({super.key, this.edit});
+  @override
+  State<GoalFormScreen> createState() => _GoalFormScreenState();
+}
+
+class _GoalFormScreenState extends State<GoalFormScreen> {
+  late final name = TextEditingController(text: widget.edit?.name ?? '');
+  late final desc = TextEditingController(text: widget.edit?.description ?? '');
+  late final target = TextEditingController(
+    text: widget.edit == null
+        ? ''
+        : (widget.edit!.targetCents / 100)
+              .toStringAsFixed(2)
+              .replaceAll('.', ','),
+  );
+  late DateTime? endDate = widget.edit?.endDate;
+  int? parentId;
+  String? error;
+
+  @override
+  void dispose() {
+    name.dispose();
+    desc.dispose();
+    target.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickParent(AppState s) async {
+    final id = await chooseCategory(context, selected: parentId);
+    if (id == null || id == -1) return;
+    setState(() => parentId = id);
+  }
+
+  Future<void> _pickEnd() async {
+    final d = await showDatePicker(
+      context: context,
+      initialDate: endDate ?? DateTime.now().add(const Duration(days: 180)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (d != null) setState(() => endDate = d);
+  }
+
+  void _save(AppState s) {
+    final n = name.text.trim();
+    final cents = (parseCents(target.text) ?? 0).abs();
+    if (n.isEmpty) {
+      setState(() => error = 'Indica um nome.');
+      return;
+    }
+    if (cents <= 0) {
+      setState(() => error = 'Indica o valor do objetivo.');
+      return;
+    }
+    final e = widget.edit;
+    if (e == null) {
+      if (parentId == null) {
+        setState(() => error = 'Escolhe a categoria onde fica o objetivo.');
+        return;
+      }
+      s.addGoal(
+        name: n,
+        description: desc.text,
+        parentCategoryId: parentId!,
+        targetCents: cents,
+        endDate: endDate,
+      );
+    } else {
+      final updated = e.copyWith(
+        name: n,
+        description: desc.text,
+        endDate: endDate,
+      );
+      s.updateGoal(updated);
+      if (cents != e.targetCents) s.changeGoalTarget(updated, cents);
+    }
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final parent = s.cat(parentId);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.edit == null ? 'Novo objetivo' : 'Editar objetivo'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        children: [
+          TextField(
+            controller: name,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              labelText: 'Nome',
+              hintText: 'Ex.: Férias de verão',
+              errorText: error,
+            ),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: target,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: 'Valor do objetivo ($baseSym)',
+              prefixText: '$baseSym  ',
+              helperText: widget.edit == null
+                  ? null
+                  : 'Se o alterares, o valor anterior fica no histórico.',
+            ),
+          ),
+          const SizedBox(height: 14),
+          TileField(
+            icon: Icons.event_outlined,
+            title: 'Prazo (opcional)',
+            text: endDate == null ? 'Sem prazo' : fmtDate(endDate!),
+            isHint: endDate == null,
+            onTap: _pickEnd,
+          ),
+          if (endDate != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: () => setState(() => endDate = null),
+                child: const Text('Remover prazo'),
+              ),
+            ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: desc,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              labelText: 'Descrição (opcional)',
+            ),
+          ),
+          if (widget.edit == null) ...[
+            const SizedBox(height: 14),
+            TileField(
+              icon: Icons.sell_outlined,
+              title: 'Categoria onde fica',
+              text: parent == null
+                  ? 'Escolher categoria'
+                  : '${parent.emoji.isEmpty ? '' : '${parent.emoji} '}${s.path(parent.id)}',
+              isHint: parent == null,
+              onTap: () => _pickParent(s),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                'O objetivo vira uma subcategoria desta categoria. Os movimentos nessa subcategoria contam como poupança.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+          const SizedBox(height: 22),
+          FilledButton(onPressed: () => _save(s), child: const Text('Guardar')),
+        ],
+      ),
+    );
+  }
+}
+
+/// Detalhe de um objetivo: progresso, previsão, movimentos associados e histórico do valor.
+class GoalDetailScreen extends StatelessWidget {
+  final int goalId;
+  const GoalDetailScreen({super.key, required this.goalId});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    Goal? g;
+    for (final x in s.goals) {
+      if (x.id == goalId) g = x;
+    }
+    if (g == null) {
+      return const Scaffold(body: Center(child: Text('Objetivo apagado.')));
+    }
+    final goal = g;
+    final p = s.goalProgressOf(goal);
+    final history = s.goalHistory(goal.id);
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(goal.name),
+        actions: [
+          IconButton(
+            tooltip: 'Editar',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => GoalFormScreen(edit: goal)),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Apagar',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () async {
+              if (await confirm(
+                    context,
+                    'Apagar o objetivo “${goal.name}”? Os movimentos ficam, mas deixam de estar associados a ele.',
+                  ) &&
+                  context.mounted) {
+                s.deleteGoal(goal);
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (goal.description.isNotEmpty) ...[
+                    Text(goal.description, style: tt.bodyMedium),
+                    const SizedBox(height: 10),
+                  ],
+                  Row(
+                    children: [
+                      Expanded(child: _Stat('Objetivo', fmtMoney(p.target))),
+                      Expanded(child: _Stat('Já tens', fmtMoney(p.saved))),
+                      Expanded(
+                        child: _Stat(
+                          p.done ? 'Excedido' : 'Faltam',
+                          fmtMoney(p.done ? -p.remaining : p.remaining),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  LinearProgressIndicator(
+                    value: p.fraction,
+                    minHeight: 10,
+                    borderRadius: BorderRadius.circular(5),
+                    color: p.done ? cs.tertiary : cs.primary,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${(p.fraction * 100).round()}% · ${goal.endDate == null ? 'sem prazo' : 'prazo ${fmtDate(goal.endDate!)}'}',
+                    style: tt.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(_statusText(p, goal), style: tt.bodyMedium),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.link),
+                label: const Text('Associar movimento'),
+                onPressed: () => _pickMovement(context, s, goal, p),
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.flag_outlined),
+                label: const Text('Alterar valor'),
+                onPressed: () => _changeTarget(context, s, goal),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text('Movimentos', style: tt.titleSmall),
+          const SizedBox(height: 4),
+          if (p.entries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                'Ainda nada. Transferências na subcategoria do objetivo entram sozinhas; pagamentos feitos com outra categoria associas com “Associar movimento”.',
+                style: tt.bodySmall,
+              ),
+            ),
+          for (final e in p.entries)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                s.displayName(e.txn),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                '${fmtDate(e.txn.date)} · ${e.manual ? 'associado' : 'pela categoria'}',
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(fmtMoney(e.cents), style: tt.titleSmall),
+                  if (e.manual)
+                    IconButton(
+                      tooltip: 'Desassociar',
+                      icon: const Icon(Icons.link_off),
+                      onPressed: () => s.unlinkMovement(e.allocationId!),
+                    ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 18),
+          Text('Histórico do valor', style: tt.titleSmall),
+          const SizedBox(height: 4),
+          for (final h in history.reversed)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(fmtMoney(h.cents)),
+              subtitle: Text(fmtDate(h.date)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _statusText(GoalProgress p, Goal g) {
+    if (p.done) return 'Objetivo atingido.';
+    final needed = p.neededPerMonth;
+    if (needed != null) {
+      final monthly = fmtMoney(p.monthly);
+      return p.onTrack!
+          ? 'No ritmo atual chegas a tempo: fazes $monthly/mês e precisas de ${fmtMoney(needed)}/mês.'
+          : 'Para chegar a tempo precisas de ${fmtMoney(needed)}/mês; estás a fazer $monthly/mês.';
+    }
+    if (p.eta != null) {
+      return 'No ritmo atual (${fmtMoney(p.monthly)}/mês) chegas a ${fmtDate(p.eta!)}.';
+    }
+    return 'Sem movimentos recentes. Faltam ${fmtMoney(p.remaining)}.';
+  }
+
+  Future<void> _changeTarget(BuildContext context, AppState s, Goal g) async {
+    final ctrl = TextEditingController(
+      text: (g.targetCents / 100).toStringAsFixed(2).replaceAll('.', ','),
+    );
+    final cents = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Alterar valor do objetivo'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: 'Novo valor ($baseSym)',
+            helperText: 'O valor anterior fica no histórico. Os movimentos já associados mantêm-se.',
+            helperMaxLines: 3,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final v = (parseCents(ctrl.text) ?? 0).abs();
+              if (v > 0) Navigator.pop(ctx, v);
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+    ctrl.dispose();
+    if (cents != null && cents != g.targetCents) s.changeGoalTarget(g, cents);
+  }
+
+  Future<void> _pickMovement(
+    BuildContext context,
+    AppState s,
+    Goal g,
+    GoalProgress p,
+  ) async {
+    final txn = await showModalBottomSheet<Txn>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (ctx) {
+        var q = '';
+        return StatefulBuilder(
+          builder: (ctx, set) {
+            final query = q.trim().toLowerCase();
+            final list = [
+              for (final t in s.transactions)
+                if (!t.isTransfer &&
+                    t.amount != 0 &&
+                    (t.amount.abs() - s.allocatedOf(t.id)) > 0 &&
+                    (query.isEmpty ||
+                        s.displayName(t).toLowerCase().contains(query)))
+                  t,
+            ].take(200).toList();
+            return SizedBox(
+              height: MediaQuery.of(ctx).size.height * 0.75,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Procurar movimento',
+                        prefixIcon: Icon(Icons.search),
+                        isDense: true,
+                      ),
+                      onChanged: (v) => set(() => q = v),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        for (final t in list)
+                          ListTile(
+                            title: Text(
+                              s.displayName(t),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              '${fmtDate(t.date)} · ${fmtMoney(t.amount.abs())}'
+                              ' · por associar ${fmtMoney(t.amount.abs() - s.allocatedOf(t.id))}',
+                            ),
+                            onTap: () => Navigator.pop(ctx, t),
+                          ),
+                        if (list.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(
+                              child: Text('Nenhum movimento para associar.'),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (txn == null || !context.mounted) return;
+    final left = txn.amount.abs() - s.allocatedOf(txn.id);
+    final suggested = left < p.remaining ? left : p.remaining;
+    final ctrl = TextEditingController(
+      text: suggested > 0
+          ? (suggested / 100).toStringAsFixed(2).replaceAll('.', ',')
+          : '',
+    );
+    final cents = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.displayName(txn)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: 'Valor para “${g.name}” ($baseSym)',
+            helperText:
+                'Por associar: ${fmtMoney(left)}. Podes dividir o movimento por vários objetivos.',
+            helperMaxLines: 3,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final v = (parseCents(ctrl.text) ?? 0).abs();
+              if (v > 0 && v <= left) Navigator.pop(ctx, v);
+            },
+            child: const Text('Associar'),
+          ),
+        ],
+      ),
+    );
+    ctrl.dispose();
+    if (cents != null) s.linkMovement(txn.id, g.id, cents);
+  }
+}
+
+class _Stat extends StatelessWidget {
+  final String label;
+  final String value;
+  const _Stat(this.label, this.value);
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+      const SizedBox(height: 2),
+      Text(
+        value,
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(fontWeight: FontWeight.w700),
+      ),
+    ],
+  );
+}

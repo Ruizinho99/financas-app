@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
+import '../invest/plan_widgets.dart';
 import '../widgets/common.dart';
 
 class BudgetScreen extends StatefulWidget {
@@ -49,7 +50,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           IconButton(
             tooltip: 'Copiar salário para todos os meses',
             icon: const Icon(Icons.payments_outlined),
-            onPressed: () => _editSalary(context, s, key),
+            onPressed: () => showSalaryEditor(context, s, key),
           ),
         ],
       ),
@@ -92,7 +93,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () => _editSalary(context, s, key),
+                        onPressed: () => showSalaryEditor(context, s, key),
                         icon: const Icon(Icons.edit, size: 18),
                         label: Text(salary == 0 ? 'Definir' : fmtMoney(salary)),
                       ),
@@ -198,77 +199,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
             salary: salary,
             month: month,
           ),
+        const SizedBox(height: 16),
+        const InvestPlanCard(),
       ],
-    );
-  }
-
-  Future<void> _editSalary(BuildContext context, AppState s, String key) async {
-    final ctrl = TextEditingController(
-      text: s.salaryFor(key) == 0
-          ? ''
-          : (s.salaryFor(key) / 100).toStringAsFixed(2).replaceAll('.', ','),
-    );
-    var onlyThisMonth = false;
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, set) => AlertDialog(
-          title: const Text('Salário líquido mensal'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: ctrl,
-                autofocus: true,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Valor ($baseSym)',
-                  suffixText: baseSym,
-                ),
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Só para este mês'),
-                subtitle: const Text(
-                  'Desligado: passa a ser o valor por omissão de todos os meses',
-                ),
-                value: onlyThisMonth,
-                onChanged: (v) => set(() => onlyThisMonth = v),
-              ),
-            ],
-          ),
-          actions: [
-            if (s.salaries.containsKey(key))
-              TextButton(
-                onPressed: () {
-                  s.setSalary(key, null);
-                  Navigator.pop(ctx);
-                },
-                child: const Text('Usar valor base'),
-              ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final v = parseCents(ctrl.text);
-                if (v == null) return;
-                if (onlyThisMonth) {
-                  s.setSalary(key, v);
-                } else {
-                  s.setSalary(key, null);
-                  s.setDefaultSalary(v);
-                }
-                Navigator.pop(ctx);
-              },
-              child: const Text('Guardar'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -526,6 +459,81 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
                   hasBudget: has && v > 0,
                 ),
               );
+              Navigator.pop(ctx);
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Edita o salário de um mês (ou o valor por omissão de todos os meses).
+Future<void> showSalaryEditor(
+  BuildContext context,
+  AppState s,
+  String key,
+) async {
+  final ctrl = TextEditingController(
+    text: s.salaryFor(key) == 0
+        ? ''
+        : (s.salaryFor(key) / 100).toStringAsFixed(2).replaceAll('.', ','),
+  );
+  var onlyThisMonth = false;
+  await showDialog(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, set) => AlertDialog(
+        title: const Text('Salário líquido mensal'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Valor ($baseSym)',
+                suffixText: baseSym,
+              ),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Só para este mês'),
+              subtitle: const Text(
+                'Desligado: passa a ser o valor por omissão de todos os meses',
+              ),
+              value: onlyThisMonth,
+              onChanged: (v) => set(() => onlyThisMonth = v),
+            ),
+          ],
+        ),
+        actions: [
+          if (s.salaries.containsKey(key))
+            TextButton(
+              onPressed: () {
+                s.setSalary(key, null);
+                Navigator.pop(ctx);
+              },
+              child: const Text('Usar valor base'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final v = parseCents(ctrl.text);
+              if (v == null) return;
+              if (onlyThisMonth) {
+                s.setSalary(key, v);
+              } else {
+                s.setSalary(key, null);
+                s.setDefaultSalary(v);
+              }
               Navigator.pop(ctx);
             },
             child: const Text('Guardar'),

@@ -5,6 +5,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+import '../goals/goals.dart';
+import '../invest/allocation_plan.dart';
+import '../planning/planning.dart';
 import '../invest/invest.dart';
 import '../models.dart';
 import '../util/format.dart';
@@ -288,6 +291,87 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 15');
     }
+    if (v < 16) {
+      // v16: anulação de despesas (reembolsos e devoluções ligados à despesa original)
+      try {
+        _db.execute('ALTER TABLE transactions ADD COLUMN reverses_id INTEGER');
+      } catch (_) {}
+      try {
+        _db.execute(
+          'ALTER TABLE transactions ADD COLUMN reversed_cents INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 16');
+    }
+    if (v < 17) {
+      // v17: objetivos de poupança, histórico do valor e movimentos associados
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS goals(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT NOT NULL DEFAULT '',
+          category_id INTEGER NOT NULL,
+          target_cents INTEGER NOT NULL,
+          end_date TEXT,
+          archived INTEGER NOT NULL DEFAULT 0
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS goal_targets(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          goal_id INTEGER NOT NULL,
+          date TEXT NOT NULL,
+          cents INTEGER NOT NULL
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS goal_allocations(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          txn_id INTEGER NOT NULL,
+          goal_id INTEGER NOT NULL,
+          cents INTEGER NOT NULL
+        )''');
+      _db.execute('PRAGMA user_version = 17');
+    }
+    if (v < 18) {
+      // v18: despesas planeadas por mês (planeamento mensal)
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS planned_items(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          month TEXT NOT NULL,
+          category_id INTEGER NOT NULL,
+          cents INTEGER NOT NULL,
+          mandatory INTEGER NOT NULL DEFAULT 0
+        )''');
+      _db.execute('PRAGMA user_version = 18');
+    }
+    if (v < 19) {
+      // v19: plano de distribuição das entregas por plataforma e entregas já vistas
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS invest_plan(
+          account_id INTEGER NOT NULL,
+          holding_id INTEGER NOT NULL,
+          bp INTEGER NOT NULL,
+          PRIMARY KEY(account_id, holding_id)
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS invest_plan_since(
+          account_id INTEGER PRIMARY KEY,
+          since TEXT NOT NULL
+        )''');
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS invest_alerts_done(
+          txn_id INTEGER PRIMARY KEY
+        )''');
+      _db.execute('PRAGMA user_version = 19');
+    }
+    if (v < 20) {
+      // v20: saldo inicial de cada conta bancária
+      try {
+        _db.execute(
+          'ALTER TABLE accounts ADD COLUMN opening_cents INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 20');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -402,6 +486,8 @@ class Db {
     isTransfer: r['is_transfer'] == 1,
     receiptPath: r['receipt_path'] as String?,
     investAccountId: r['invest_account_id'] as int?,
+    reversesId: r['reverses_id'] as int?,
+    reversedCents: (r['reversed_cents'] as int?) ?? 0,
   );
 
   List<Txn> transactions() => _db
@@ -426,9 +512,11 @@ class Db {
     bool isTransfer = false,
     String? receiptPath,
     int? investAccountId,
+    int? reversesId,
+    int reversedCents = 0,
   }) {
     _db.execute(
-      'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash,account_id,is_transfer,receipt_path,invest_account_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+      'INSERT INTO transactions(date,description,amount,balance,category_id,note,source,merchant_key,import_id,hash,account_id,is_transfer,receipt_path,invest_account_id,reverses_id,reversed_cents) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [
         isoDate(date),
         description,
@@ -444,6 +532,8 @@ class Db {
         isTransfer ? 1 : 0,
         receiptPath,
         investAccountId,
+        reversesId,
+        reversedCents,
       ],
     );
     return _db.lastInsertRowId;
@@ -455,7 +545,7 @@ class Db {
   ).isNotEmpty;
 
   void updateTransaction(Txn t, {required String merchantKey}) => _db.execute(
-    'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=?,invest_account_id=? WHERE id=?',
+    'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=?,invest_account_id=?,reverses_id=?,reversed_cents=? WHERE id=?',
     [
       isoDate(t.date),
       t.description,
@@ -469,6 +559,8 @@ class Db {
       t.isTransfer ? 1 : 0,
       t.receiptPath,
       t.investAccountId,
+      t.reversesId,
+      t.reversedCents,
       t.id,
     ],
   );
@@ -483,6 +575,192 @@ class Db {
         r['receipt_path'] as String,
   ];
 
+  // ---------- Objetivos ----------
+  List<Goal> goals() => _db
+      .select('SELECT * FROM goals ORDER BY archived, name COLLATE NOCASE')
+      .map(
+        (r) => Goal(
+          id: r['id'] as int,
+          name: r['name'] as String,
+          description: r['description'] as String,
+          categoryId: r['category_id'] as int,
+          targetCents: r['target_cents'] as int,
+          endDate: r['end_date'] == null
+              ? null
+              : DateTime.parse(r['end_date'] as String),
+          archived: r['archived'] == 1,
+        ),
+      )
+      .toList();
+
+  int saveGoal({
+    int? id,
+    required String name,
+    required String description,
+    required int categoryId,
+    required int targetCents,
+    DateTime? endDate,
+    bool archived = false,
+  }) {
+    final vals = [
+      name,
+      description,
+      categoryId,
+      targetCents,
+      endDate == null ? null : isoDate(endDate),
+      archived ? 1 : 0,
+    ];
+    if (id == null) {
+      _db.execute(
+        'INSERT INTO goals(name,description,category_id,target_cents,end_date,archived) VALUES(?,?,?,?,?,?)',
+        vals,
+      );
+      return _db.lastInsertRowId;
+    }
+    _db.execute(
+      'UPDATE goals SET name=?,description=?,category_id=?,target_cents=?,end_date=?,archived=? WHERE id=?',
+      [...vals, id],
+    );
+    return id;
+  }
+
+  List<GoalTargetChange> goalTargets(int goalId) => _db
+      .select('SELECT * FROM goal_targets WHERE goal_id=? ORDER BY id', [
+        goalId,
+      ])
+      .map(
+        (r) => GoalTargetChange(
+          DateTime.parse(r['date'] as String),
+          r['cents'] as int,
+        ),
+      )
+      .toList();
+
+  void addGoalTarget(int goalId, DateTime date, int cents) => _db.execute(
+    'INSERT INTO goal_targets(goal_id,date,cents) VALUES(?,?,?)',
+    [goalId, isoDate(date), cents],
+  );
+
+  List<GoalAllocation> goalAllocations() => _db
+      .select('SELECT * FROM goal_allocations ORDER BY id')
+      .map(
+        (r) => GoalAllocation(
+          id: r['id'] as int,
+          txnId: r['txn_id'] as int,
+          goalId: r['goal_id'] as int,
+          cents: r['cents'] as int,
+        ),
+      )
+      .toList();
+
+  /// Associa [cents] do movimento [txnId] ao objetivo [goalId] (substitui a associação anterior).
+  void setGoalAllocation(int txnId, int goalId, int cents) {
+    _db.execute('DELETE FROM goal_allocations WHERE txn_id=? AND goal_id=?', [
+      txnId,
+      goalId,
+    ]);
+    _db.execute(
+      'INSERT INTO goal_allocations(txn_id,goal_id,cents) VALUES(?,?,?)',
+      [txnId, goalId, cents],
+    );
+  }
+
+  void deleteGoalAllocation(int id) =>
+      _db.execute('DELETE FROM goal_allocations WHERE id=?', [id]);
+
+  void deleteGoal(int id) {
+    _db.execute('DELETE FROM goal_allocations WHERE goal_id=?', [id]);
+    _db.execute('DELETE FROM goal_targets WHERE goal_id=?', [id]);
+    _db.execute('DELETE FROM goals WHERE id=?', [id]);
+  }
+
+  // ---------- Planeamento mensal ----------
+  List<PlannedItem> plannedItems() => _db
+      .select('SELECT * FROM planned_items ORDER BY month, mandatory DESC, id')
+      .map(
+        (r) => PlannedItem(
+          id: r['id'] as int,
+          month: r['month'] as String,
+          categoryId: r['category_id'] as int,
+          cents: r['cents'] as int,
+          mandatory: r['mandatory'] == 1,
+        ),
+      )
+      .toList();
+
+  int savePlannedItem({
+    int? id,
+    required String month,
+    required int categoryId,
+    required int cents,
+    required bool mandatory,
+  }) {
+    if (id == null) {
+      _db.execute(
+        'INSERT INTO planned_items(month,category_id,cents,mandatory) VALUES(?,?,?,?)',
+        [month, categoryId, cents, mandatory ? 1 : 0],
+      );
+      return _db.lastInsertRowId;
+    }
+    _db.execute(
+      'UPDATE planned_items SET month=?,category_id=?,cents=?,mandatory=? WHERE id=?',
+      [month, categoryId, cents, mandatory ? 1 : 0, id],
+    );
+    return id;
+  }
+
+  void deletePlannedItem(int id) =>
+      _db.execute('DELETE FROM planned_items WHERE id=?', [id]);
+
+  // ---------- Plano de distribuição das entregas ----------
+  Map<int, List<PlanLine>> investPlan() {
+    final out = <int, List<PlanLine>>{};
+    for (final r in _db.select(
+      'SELECT * FROM invest_plan ORDER BY account_id, bp DESC',
+    )) {
+      out
+          .putIfAbsent(r['account_id'] as int, () => [])
+          .add(PlanLine(r['holding_id'] as int, r['bp'] as int));
+    }
+    return out;
+  }
+
+  Map<int, DateTime> investPlanSince() => {
+    for (final r in _db.select('SELECT * FROM invest_plan_since'))
+      r['account_id'] as int: DateTime.parse(r['since'] as String),
+  };
+
+  /// Grava o plano de uma plataforma (substitui o anterior). A data de início fica a da primeira vez.
+  void saveInvestPlan(int accountId, List<PlanLine> lines) {
+    _db.execute('DELETE FROM invest_plan WHERE account_id=?', [accountId]);
+    for (final l in lines) {
+      _db.execute(
+        'INSERT INTO invest_plan(account_id,holding_id,bp) VALUES(?,?,?)',
+        [accountId, l.holdingId, l.bp],
+      );
+    }
+    if (lines.isEmpty) {
+      _db.execute('DELETE FROM invest_plan_since WHERE account_id=?', [
+        accountId,
+      ]);
+    } else {
+      _db.execute(
+        'INSERT OR IGNORE INTO invest_plan_since(account_id,since) VALUES(?,?)',
+        [accountId, isoDate(DateTime.now())],
+      );
+    }
+  }
+
+  Set<int> investAlertsDone() => {
+    for (final r in _db.select('SELECT txn_id FROM invest_alerts_done'))
+      r['txn_id'] as int,
+  };
+
+  void markInvestAlertDone(int txnId) => _db.execute(
+    'INSERT OR IGNORE INTO invest_alerts_done(txn_id) VALUES(?)',
+    [txnId],
+  );
+
   // ---------- Contas ----------
   List<Conta> accounts() => _db
       .select('SELECT * FROM accounts ORDER BY name COLLATE NOCASE')
@@ -491,23 +769,28 @@ class Db {
           id: r['id'] as int,
           name: r['name'] as String,
           emoji: r['emoji'] as String,
+          openingCents: (r['opening_cents'] as int?) ?? 0,
         ),
       )
       .toList();
 
-  int saveAccount({int? id, required String name, String emoji = ''}) {
+  int saveAccount({
+    int? id,
+    required String name,
+    String emoji = '',
+    int openingCents = 0,
+  }) {
     if (id == null) {
-      _db.execute('INSERT INTO accounts(name,emoji) VALUES(?,?)', [
-        name,
-        emoji,
-      ]);
+      _db.execute(
+        'INSERT INTO accounts(name,emoji,opening_cents) VALUES(?,?,?)',
+        [name, emoji, openingCents],
+      );
       return _db.lastInsertRowId;
     }
-    _db.execute('UPDATE accounts SET name=?,emoji=? WHERE id=?', [
-      name,
-      emoji,
-      id,
-    ]);
+    _db.execute(
+      'UPDATE accounts SET name=?,emoji=?,opening_cents=? WHERE id=?',
+      [name, emoji, openingCents, id],
+    );
     return id;
   }
 
@@ -525,6 +808,12 @@ class Db {
 
   void deleteTransactions(List<int> ids) {
     for (final id in ids) {
+      _db.execute('DELETE FROM goal_allocations WHERE txn_id=?', [id]);
+      // as receitas que anulavam esta despesa passam a ser receitas normais
+      _db.execute(
+        'UPDATE transactions SET reverses_id=NULL, reversed_cents=0 WHERE reverses_id=?',
+        [id],
+      );
       _db.execute('DELETE FROM transactions WHERE id=?', [id]);
     }
   }
@@ -1011,7 +1300,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 15;
+  static const _schemaVersion = 20;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

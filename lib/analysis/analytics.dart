@@ -55,8 +55,9 @@ class Spend {
   final Txn t;
   final Categoria? cat;
   final bool mandatory;
-  const Spend(this.t, this.cat, this.mandatory);
-  int get amount => -t.amount;
+  final int amount; // cêntimos gastos, depois das anulações
+  Spend(this.t, this.cat, this.mandatory, [int? cents])
+    : amount = cents ?? -t.amount;
   String get month => monthKey(t.date);
 }
 
@@ -219,8 +220,10 @@ class Analytics {
       final c = s.cat(t.categoryId);
       if (c != null && (c.isIncome || c.isInvestment))
         continue; // investir não é gastar
+      final spent = -s.effectiveAmount(t);
+      if (spent <= 0) continue; // despesa anulada por completo
       final mand = c != null && s.isMandatory(c, monthKey(t.date));
-      if (_matches(t, c, mand)) out.add(Spend(t, c, mand));
+      if (_matches(t, c, mand)) out.add(Spend(t, c, mand, spent));
     }
     return out;
   }
@@ -334,7 +337,9 @@ class Analytics {
       if (filter.accountIds.isNotEmpty &&
           (t.accountId == null || !filter.accountIds.contains(t.accountId)))
         continue;
-      total += t.amount;
+      total += s.effectiveAmount(
+        t,
+      ); // a parte que anula uma despesa não é receita
     }
     return total;
   }

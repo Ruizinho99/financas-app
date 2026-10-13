@@ -105,6 +105,8 @@ class Txn {
   final String?
   receiptPath; // nome do ficheiro do recibo (na pasta de recibos da app)
   final int? investAccountId; // entrega (ou levantamento) de/para uma plataforma de investimento
+  final int? reversesId; // receita que anula uma despesa: id da despesa (nulo = não anula nada)
+  final int reversedCents; // parte desta receita que anula a despesa, em cêntimos (o resto é receita normal)
 
   const Txn({
     required this.id,
@@ -121,6 +123,8 @@ class Txn {
     this.isTransfer = false,
     this.receiptPath,
     this.investAccountId,
+    this.reversesId,
+    this.reversedCents = 0,
   });
 }
 
@@ -129,7 +133,14 @@ class Conta {
   final int id;
   final String name;
   final String emoji;
-  const Conta({required this.id, required this.name, this.emoji = ''});
+  final int
+  openingCents; // saldo inicial, antes do primeiro movimento registado
+  const Conta({
+    required this.id,
+    required this.name,
+    this.emoji = '',
+    this.openingCents = 0,
+  });
 }
 
 class Rule {

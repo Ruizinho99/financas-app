@@ -15,7 +15,9 @@ import 'appearance_screen.dart';
 import 'analysis_screen.dart';
 import 'budget_screen.dart' show BudgetScreen, showBudgetEditor;
 import 'classify_screen.dart';
+import 'planning_screen.dart';
 import 'backup_screen.dart';
+import 'goals_screen.dart';
 import 'groups_screen.dart';
 import 'import_screen.dart';
 import 'transactions_screen.dart' show confirm;
@@ -37,6 +39,24 @@ class MoreScreen extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BudgetScreen()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.event_note_outlined),
+            title: const Text('Planeamento'),
+            subtitle: const Text('Salário e despesas planeadas por mês'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PlanningScreen()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.flag_outlined),
+            title: const Text('Objetivos'),
+            subtitle: const Text('Poupar para férias, um carro…'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const GoalsScreen()),
             ),
           ),
           ListTile(

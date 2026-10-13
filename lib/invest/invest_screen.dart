@@ -9,6 +9,7 @@ import 'forms.dart';
 import 'transfers_screen.dart';
 import 'import_trades_screen.dart';
 import 'holding_screen.dart';
+import 'plan_widgets.dart';
 import 'invest.dart';
 import 'widgets.dart';
 
@@ -199,6 +200,8 @@ class _InvestScreenState extends State<InvestScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
               children: [
+                // ----- entregas por distribuir (plano de cada plataforma) -----
+                const PendingAllocationsCard(),
                 // ----- resumo -----
                 SectionCard(
                   title: 'A minha carteira',
