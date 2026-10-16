@@ -620,7 +620,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     );
   }
 
-  /// Secção "Objetivos" do movimento: só em despesas e receitas, e só se houver objetivos ativos.
+  /// Secção "Objetivos" do movimento (despesas, receitas e transferências), se houver objetivos ativos.
   Widget _objetivosSecao(AppState s, Txn? e, TextTheme tt, ColorScheme cs) {
     if (e == null) {
       return Padding(
@@ -1009,7 +1009,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               ),
             ),
           ),
-          if (!isTransfer && s.goals.any((g) => !g.archived))
+          if (s.goals.any((g) => !g.archived))
             _objetivosSecao(s, widget.edit, tt, cs),
           const SizedBox(height: 12),
           FilledButton(onPressed: () => _save(s), child: const Text('Guardar')),

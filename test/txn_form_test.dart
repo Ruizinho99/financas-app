@@ -400,6 +400,43 @@ void main() {
     },
   );
 
+  testWidgets('uma transferência de 100 € dividida 50/50 por dois objetivos', (
+    tester,
+  ) async {
+    final d = buildAnalysisData();
+    final ferias = d.s.addGoal(
+      name: 'Férias',
+      parentCategoryId: d.lazer,
+      targetCents: 100000,
+    );
+    final emerg = d.s.addGoal(
+      name: 'Emergência',
+      parentCategoryId: d.lazer,
+      targetCents: 50000,
+    );
+    d.s.addManual(
+      date: DateTime.now(),
+      description: 'Poupança mensal',
+      amount: -10000,
+      isTransfer: true,
+    );
+    final t = d.s.transactions.firstWhere(
+      (x) => x.description == 'Poupança mensal',
+    );
+    await _pump(tester, d.s, edit: t);
+    expect(find.text('Objetivos'), findsOneWidget);
+    await dividir(tester, 'Férias', '50');
+    await dividir(tester, 'Emergência', '50');
+    expect(
+      {
+        for (final a in d.s.goalAllocations.where((a) => a.txnId == t.id))
+          (a.goalId, a.cents),
+      },
+      {(ferias, 5000), (emerg, 5000)},
+    );
+    expect(d.s.allocatedOf(t.id), 10000);
+  });
+
   testWidgets(
     'movimento novo mostra só a dica para o guardar antes de dividir',
     (tester) async {
