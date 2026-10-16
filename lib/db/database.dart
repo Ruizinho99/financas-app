@@ -1292,7 +1292,7 @@ class Db {
           );
         await src.backup(_db).drain<void>();
       } finally {
-        src.dispose();
+        src.close();
       }
       _migrate(); // cópias antigas sobem para o esquema atual
     } finally {

@@ -573,7 +573,7 @@ Future<void> showCurrencyPicker(BuildContext context, Holding h) async {
             ),
             const SizedBox(height: 10),
             Text(
-              'O valor é convertido para ${baseCcy} ao câmbio de mercado, atualizado em "Atualizar preços". As operações já registadas mantêm os valores que lá estão.',
+              'O valor é convertido para $baseCcy ao câmbio de mercado, atualizado em "Atualizar preços". As operações já registadas mantêm os valores que lá estão.',
               style: Theme.of(ctx).textTheme.bodySmall,
             ),
           ],
@@ -1453,11 +1453,6 @@ class _OpFormScreenState extends State<OpFormScreen> {
       ),
     );
   }
-}
-
-extension on FieldLabel {
-  Widget withTop0() =>
-      Transform.translate(offset: const Offset(0, -6), child: this);
 }
 
 Future<bool?> showOpForm(

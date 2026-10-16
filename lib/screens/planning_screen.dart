@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models.dart';
 import '../planning/planning.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';

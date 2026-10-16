@@ -1,4 +1,3 @@
-import 'package:financas/db/database.dart';
 import 'package:financas/models.dart';
 import 'package:financas/screens/txn_form_screen.dart';
 import 'package:financas/state/app_state.dart';

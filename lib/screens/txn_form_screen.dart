@@ -9,7 +9,6 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import '../util/receipts.dart';
 import '../widgets/category_picker.dart';
-import '../widgets/common.dart';
 import '../widgets/form_kit.dart';
 import 'accounts_screen.dart';
 import 'import_screen.dart';
@@ -866,8 +865,3 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 }
 
-extension on FieldLabel {
-  /// O primeiro rótulo do cartão não precisa do espaço extra de cima.
-  Widget withTopZero() =>
-      Transform.translate(offset: const Offset(0, -6), child: this);
-}
