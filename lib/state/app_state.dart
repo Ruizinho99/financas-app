@@ -7,6 +7,7 @@ import '../goals/goals.dart';
 import '../invest/allocation_plan.dart';
 import '../planning/planning.dart';
 import '../import/parsers.dart';
+import '../recurring/recurring.dart';
 import '../invest/invest.dart';
 import '../invest/price_service.dart';
 import '../models.dart';
@@ -119,6 +120,7 @@ class AppState extends ChangeNotifier {
   Set<int> investAlertsDone = {};
   Map<String, int> salaries = {};
   int defaultSalary = 0;
+  List<RecurringRule> recurringRules = [];
 
   void reload() {
     categories = db.categories();
@@ -138,6 +140,7 @@ class AppState extends ChangeNotifier {
     investPlanSince = db.investPlanSince();
     investAlertsDone = db.investAlertsDone();
     salaries = db.salaries();
+    recurringRules = db.recurringRules();
     baseCcy = db.setting('base_currency') ?? 'EUR';
     defaultSalary = int.tryParse(db.setting('default_salary') ?? '') ?? 0;
     themeMode = ThemeMode.values.firstWhere(
@@ -1031,6 +1034,63 @@ class AppState extends ChangeNotifier {
       reversesId: reversesId,
       reversedCents: reversesId == null ? 0 : reversedCents,
     );
+    reload();
+  }
+
+  // ---------- Movimentos recorrentes ----------
+  /// Cria os movimentos recorrentes em falta até [today] (inclusive). Devolve quantos criou.
+  /// Corrido duas vezes no mesmo dia não cria nada a mais: a última data gerada fica gravada na regra.
+  int generateRecurring({DateTime? today}) {
+    final hoje = dateOnly(today ?? DateTime.now());
+    var criados = 0;
+    db.inTransaction(() {
+      for (final r in db.recurringRules()) {
+        if (!r.active) continue;
+        final due = dueOccurrences(r, hoje);
+        if (due.isEmpty) continue;
+        final key = merchantKey(r.description);
+        final cid = r.categoryId ?? ruleFor(key)?.categoryId;
+        for (final d in due) {
+          db.insertTransaction(
+            date: d,
+            description: r.description,
+            amount: r.amount,
+            categoryId: cid,
+            source: 'recurring',
+            merchantKey: key,
+            accountId: r.accountId,
+          );
+          criados++;
+        }
+        db.setRecurringLast(r.id!, due.last);
+      }
+    });
+    if (criados > 0) reload();
+    return criados;
+  }
+
+  /// Guarda uma regra (nova se não tiver id). Ao reativar uma regra parada, não recria os meses em que esteve parada.
+  void saveRecurring(RecurringRule r, {DateTime? today}) {
+    final id = r.id;
+    if (id == null) {
+      db.insertRecurring(r);
+    } else {
+      final old = recurringRules.where((x) => x.id == id).firstOrNull;
+      var rule = r.withLastGenerated(old?.lastGenerated);
+      if (old != null && !old.active && r.active) {
+        final hoje = dateOnly(today ?? DateTime.now());
+        rule = r.withLastGenerated(
+          DateTime(hoje.year, hoje.month, hoje.day - 1),
+        );
+      }
+      db.updateRecurring(rule);
+    }
+    reload();
+  }
+
+  /// Apaga a regra. Os movimentos já criados ficam.
+  void deleteRecurring(int id) {
+    db.deleteRecurring(id);
     reload();
   }
 
