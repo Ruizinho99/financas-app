@@ -5,13 +5,18 @@ import 'package:provider/provider.dart';
 
 import '../analysis/analytics.dart';
 import '../analysis/widgets.dart';
+import '../goals/goals.dart';
+import '../invest/plan_widgets.dart';
+import '../planning/planning.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart' show showTxnEditor;
 import 'analysis_screen.dart';
 import 'budget_screen.dart';
 import 'classify_screen.dart';
+import 'goals_screen.dart';
 import 'import_screen.dart';
+import 'planning_screen.dart';
 
 /// Ecrã principal: o mês em foco — quanto gastaste, quanto entrou, quanto sobrou e onde foi o dinheiro.
 class MonthScreen extends StatefulWidget {
@@ -333,6 +338,7 @@ class _MonthScreenState extends State<MonthScreen> {
                 ],
               ),
             ),
+          _CartoesMes(month: month, spent: an.spent),
           if (hasData && !_isCurrent)
             Align(
               alignment: Alignment.center,
@@ -350,6 +356,225 @@ class _MonthScreenState extends State<MonthScreen> {
       ),
     );
   }
+}
+
+/// Cartões compactos do mês: objetivos, planeamento do mês mostrado e entregas por distribuir.
+/// Cada um só aparece se tiver dados.
+class _CartoesMes extends StatelessWidget {
+  final DateTime month;
+  final int spent; // gasto real do mês mostrado
+  const _CartoesMes({required this.month, required this.spent});
+
+  void _abrir(BuildContext context, Widget w) =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => w));
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final key = monthKey(month);
+
+    // objetivos ativos, o de prazo mais próximo primeiro (sem prazo, no fim)
+    final far = DateTime(9999);
+    final objetivos = s.goals.where((g) => !g.archived).toList()
+      ..sort((a, b) => (a.endDate ?? far).compareTo(b.endDate ?? far));
+    final planeadas = s.planFor(key);
+    final entregas = s.pendingAllocations;
+    final entregasTotal = entregas.fold<int>(0, (a, p) => a - p.txn.amount);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (objetivos.isNotEmpty)
+          SectionCard(
+            title: 'Objetivos',
+            trailing: TextButton(
+              onPressed: () => _abrir(context, const GoalsScreen()),
+              child: const Text('Ver todos'),
+            ),
+            child: Column(
+              children: [
+                for (final g in objetivos.take(3))
+                  _LinhaObjetivo(
+                    nome: g.name,
+                    progresso: s.goalProgressOf(g),
+                    prazo: g.endDate,
+                    onTap: () =>
+                        _abrir(context, GoalDetailScreen(goalId: g.id)),
+                  ),
+              ],
+            ),
+          ),
+        if (planeadas.isNotEmpty) _cartaoPlaneamento(context, s, key),
+        if (entregas.isNotEmpty)
+          SectionCard(
+            title: 'Entregas para distribuir',
+            subtitle:
+                '${entregas.length} ${entregas.length == 1 ? 'entrega' : 'entregas'} · ${fmtMoney(entregasTotal)}',
+            trailing: TextButton(
+              onPressed: () => _abrir(context, const _EntregasScreen()),
+              child: const Text('Distribuir'),
+            ),
+            child: Text(
+              'Entregas do banco que ainda não repartiste pelos ativos.',
+              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _cartaoPlaneamento(BuildContext context, AppState s, String key) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final t = planTotals(s.salaryFor(key), s.planFor(key));
+    final excede = spent > t.planned;
+    final ratio = t.planned <= 0
+        ? 0.0
+        : (spent / t.planned).clamp(0.0, 1.0).toDouble();
+    final sobra = t.left;
+    return SectionCard(
+      title: 'Planeamento',
+      trailing: TextButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PlanningScreen(initialMonth: month),
+          ),
+        ),
+        child: const Text('Ver plano'),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _Stat(
+                  label: 'Planeado',
+                  value: fmtMoney(t.planned),
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _Stat(
+                  label: 'Gasto real',
+                  value: fmtMoney(spent),
+                  color: excede ? Color(s.expenseColor) : cs.onSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 6,
+              color: excede ? Color(s.expenseColor) : null,
+              backgroundColor: cs.outlineVariant.withValues(alpha: 0.4),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            t.salary <= 0
+                ? 'Define o salário no Orçamento para ver o que sobra.'
+                : (sobra < 0
+                      ? 'O plano excede o salário em ${fmtMoney(-sobra)}'
+                      : 'Sobra do salário, depois do plano: ${fmtMoney(sobra)}'),
+            style: tt.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: sobra < 0 ? Color(s.expenseColor) : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Uma linha de objetivo: nome, barra de progresso e quanto falta.
+class _LinhaObjetivo extends StatelessWidget {
+  final String nome;
+  final GoalProgress progresso;
+  final DateTime? prazo;
+  final VoidCallback onTap;
+  const _LinhaObjetivo({
+    required this.nome,
+    required this.progresso,
+    required this.prazo,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final s = context.read<AppState>();
+    final p = progresso;
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '🎯 $nome',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  p.done ? 'Atingido' : 'Faltam ${fmtMoney(p.remaining)}',
+                  style: tt.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: p.done ? Color(s.incomeColor) : null,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: p.fraction,
+                minHeight: 6,
+                backgroundColor: cs.outlineVariant.withValues(alpha: 0.4),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${fmtMoney(p.saved)} de ${fmtMoney(p.target)}'
+              '${prazo == null ? '' : ' · até ${fmtDate(prazo!)}'}',
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Entregas para distribuir, num ecrã próprio a partir do cartão do mês.
+class _EntregasScreen extends StatelessWidget {
+  const _EntregasScreen();
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Entregas para distribuir')),
+    body: ListView(
+      padding: const EdgeInsets.all(16),
+      children: const [PendingAllocationsCard()],
+    ),
+  );
 }
 
 class _Stat extends StatelessWidget {
