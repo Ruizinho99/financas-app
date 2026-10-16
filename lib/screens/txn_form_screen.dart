@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
 
+import '../goals/goals.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -252,6 +253,18 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     if (cents == null || cents == 0) {
       setState(() => error = 'Indica um montante válido.');
       return;
+    }
+    // não se pode reduzir o movimento abaixo do que já está associado a objetivos
+    final original = widget.edit;
+    if (original != null) {
+      final alocado = s.allocatedOf(original.id);
+      if (cents < alocado) {
+        setState(
+          () => error =
+              'Já tens ${fmtMoney(alocado)} associado a objetivos. Reduz as associações primeiro.',
+        );
+        return;
+      }
     }
     final c = s.cat(categoryId);
     var d = desc.text.trim();
@@ -549,6 +562,144 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       ),
     );
     if (id != null) setState(() => investId = id == -1 ? null : id);
+  }
+
+  /// Valor absoluto guardado do movimento (o do formulário só conta depois de guardar).
+  int _valorGuardado(AppState s, Txn e) {
+    for (final t in s.transactions) {
+      if (t.id == e.id) return t.amount.abs();
+    }
+    return e.amount.abs();
+  }
+
+  String _nomeObjetivo(AppState s, int goalId) {
+    for (final g in s.goals) {
+      if (g.id == goalId) return g.name;
+    }
+    return 'Objetivo';
+  }
+
+  /// Objetivos ativos a que este movimento ainda não está associado.
+  List<Goal> _objetivosDisponiveis(AppState s, int txnId) {
+    final usados = {
+      for (final a in s.goalAllocations)
+        if (a.txnId == txnId) a.goalId,
+    };
+    return [
+      for (final g in s.goals)
+        if (!g.archived && !usados.contains(g.id)) g,
+    ];
+  }
+
+  /// Diálogo para associar um valor a um objetivo, ou para alterar o valor de uma associação
+  /// existente ([existente]). Devolve (objetivo, valor) ou nulo se cancelado.
+  Future<(int, int)?> _associar(
+    AppState s,
+    Txn e, {
+    GoalAllocation? existente,
+    required int disponivel,
+  }) {
+    final opcoes = existente == null
+        ? _objetivosDisponiveis(s, e.id)
+        : <Goal>[];
+    return showDialog<(int, int)>(
+      context: context,
+      builder: (ctx) => _AssociarDialog(
+        titulo: existente == null
+            ? 'Dividir por objetivo'
+            : _nomeObjetivo(s, existente.goalId),
+        opcoes: opcoes,
+        goalId:
+            existente?.goalId ?? (opcoes.length == 1 ? opcoes.first.id : null),
+        disponivel: disponivel,
+        inicial: existente?.cents ?? disponivel,
+        confirmar: existente == null ? 'Associar' : 'Guardar',
+        escolherObjetivo: existente == null,
+      ),
+    );
+  }
+
+  /// Secção "Objetivos" do movimento (despesas, receitas e transferências), se houver objetivos ativos.
+  Widget _objetivosSecao(AppState s, Txn? e, TextTheme tt, ColorScheme cs) {
+    if (e == null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Text(
+          'Guarda o movimento para o dividir por objetivos.',
+          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+        ),
+      );
+    }
+    final total = _valorGuardado(s, e);
+    final alocado = s.allocatedOf(e.id);
+    final porAssociar = total > alocado ? total - alocado : 0;
+    final associacoes = [
+      for (final a in s.goalAllocations)
+        if (a.txnId == e.id) a,
+    ];
+    final podeDividir =
+        porAssociar > 0 && _objetivosDisponiveis(s, e.id).isNotEmpty;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Objetivos', style: tt.titleSmall),
+          const SizedBox(height: 4),
+          for (final a in associacoes)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                _nomeObjetivo(s, a.goalId),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(fmtMoney(a.cents)),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'Alterar valor',
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () async {
+                      final r = await _associar(
+                        s,
+                        e,
+                        existente: a,
+                        disponivel: porAssociar + a.cents,
+                      );
+                      if (r != null) s.linkMovement(e.id, r.$1, r.$2);
+                    },
+                  ),
+                  IconButton(
+                    tooltip: 'Desassociar',
+                    icon: const Icon(Icons.link_off),
+                    onPressed: () => s.unlinkMovement(a.id),
+                  ),
+                ],
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Text(
+              'Por associar: ${fmtMoney(porAssociar)}',
+              style: tt.bodyMedium,
+            ),
+          ),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.call_split),
+            label: const Text('Dividir por objetivos'),
+            onPressed: podeDividir
+                ? () async {
+                    final r = await _associar(s, e, disponivel: porAssociar);
+                    if (r != null) s.linkMovement(e.id, r.$1, r.$2);
+                  }
+                : null,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -857,6 +1008,8 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               ),
             ),
           ),
+          if (s.goals.any((g) => !g.archived))
+            _objetivosSecao(s, widget.edit, tt, cs),
           const SizedBox(height: 12),
           FilledButton(onPressed: () => _save(s), child: const Text('Guardar')),
         ],
@@ -865,3 +1018,94 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 }
 
+/// Valor de uma associação entre um movimento e um objetivo (diálogo com o seu próprio controlador).
+class _AssociarDialog extends StatefulWidget {
+  final String titulo;
+  final List<Goal> opcoes;
+  final int? goalId;
+  final int disponivel;
+  final int inicial;
+  final String confirmar;
+  final bool escolherObjetivo;
+  const _AssociarDialog({
+    required this.titulo,
+    required this.opcoes,
+    required this.goalId,
+    required this.disponivel,
+    required this.inicial,
+    required this.confirmar,
+    required this.escolherObjetivo,
+  });
+  @override
+  State<_AssociarDialog> createState() => _AssociarDialogState();
+}
+
+class _AssociarDialogState extends State<_AssociarDialog> {
+  late int? goalId = widget.goalId;
+  late final ctrl = TextEditingController(
+    text: _TxnFormScreenState._centsText(widget.inicial),
+  );
+
+  @override
+  void dispose() {
+    ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final v = (parseCents(ctrl.text) ?? 0).abs();
+    final excede = v > widget.disponivel;
+    final gid = goalId;
+    final ok = gid != null && v > 0 && !excede;
+    return AlertDialog(
+      title: Text(widget.titulo),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.escolherObjetivo) ...[
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                for (final g in widget.opcoes)
+                  ChoiceChip(
+                    selected: g.id == goalId,
+                    showCheckmark: false,
+                    label: Text(g.name),
+                    onSelected: (_) => setState(() => goalId = g.id),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
+          TextField(
+            controller: ctrl,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: 'Valor ($baseSym)',
+              prefixText: '$baseSym  ',
+              helperText: 'Por associar: ${fmtMoney(widget.disponivel)}',
+              errorText: excede
+                  ? 'Só faltam ${fmtMoney(widget.disponivel)} para associar.'
+                  : null,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: ok ? () => Navigator.pop(context, (gid, v)) : null,
+          child: Text(widget.confirmar),
+        ),
+      ],
+    );
+  }
+}
