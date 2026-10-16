@@ -9,6 +9,7 @@ import '../goals/goals.dart';
 import '../invest/allocation_plan.dart';
 import '../planning/planning.dart';
 import '../invest/invest.dart';
+import '../recurring/recurring.dart';
 import '../models.dart';
 import '../util/format.dart';
 
@@ -371,6 +372,24 @@ class Db {
         );
       } catch (_) {}
       _db.execute('PRAGMA user_version = 20');
+    }
+    if (v < 21) {
+      // v21: movimentos recorrentes (salário, renda, subscrições)
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS recurring_rules(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          description TEXT NOT NULL,
+          amount INTEGER NOT NULL,
+          category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+          account_id INTEGER REFERENCES accounts(id) ON DELETE SET NULL,
+          freq TEXT NOT NULL,
+          day INTEGER NOT NULL,
+          start_date TEXT NOT NULL,
+          end_date TEXT,
+          last_date TEXT,
+          active INTEGER NOT NULL DEFAULT 1
+        )''');
+      _db.execute('PRAGMA user_version = 21');
     }
   }
 
@@ -1232,7 +1251,7 @@ class Db {
 
   void wipeAll() {
     _db.execute(
-      'DELETE FROM transactions; DELETE FROM rules; DELETE FROM rule_groups; DELETE FROM imports; DELETE FROM salaries;',
+      'DELETE FROM transactions; DELETE FROM rules; DELETE FROM rule_groups; DELETE FROM imports; DELETE FROM salaries; DELETE FROM recurring_rules;',
     );
   }
 
@@ -1242,6 +1261,66 @@ class Db {
 
   void deleteSetting(String key) =>
       _db.execute('DELETE FROM settings WHERE key=?', [key]);
+
+  // ---------- Movimentos recorrentes ----------
+  RecurringRule _rec(Row r) => RecurringRule(
+    id: r['id'] as int,
+    description: r['description'] as String,
+    amount: r['amount'] as int,
+    categoryId: r['category_id'] as int?,
+    accountId: r['account_id'] as int?,
+    freq: RecurrenceFreq.values.byName(r['freq'] as String),
+    day: r['day'] as int,
+    start: DateTime.parse(r['start_date'] as String),
+    end: r['end_date'] == null ? null : DateTime.parse(r['end_date'] as String),
+    lastGenerated: r['last_date'] == null
+        ? null
+        : DateTime.parse(r['last_date'] as String),
+    active: r['active'] == 1,
+  );
+
+  List<RecurringRule> recurringRules() => _db
+      .select(
+        'SELECT * FROM recurring_rules ORDER BY description COLLATE NOCASE, id',
+      )
+      .map(_rec)
+      .toList();
+
+  int insertRecurring(RecurringRule r) {
+    _db.execute(
+      'INSERT INTO recurring_rules(description,amount,category_id,account_id,freq,day,start_date,end_date,last_date,active) VALUES(?,?,?,?,?,?,?,?,?,?)',
+      _recValues(r),
+    );
+    return _db.lastInsertRowId;
+  }
+
+  /// Grava todos os campos da regra (inclui a última data gerada).
+  void updateRecurring(RecurringRule r) => _db.execute(
+    'UPDATE recurring_rules SET description=?,amount=?,category_id=?,account_id=?,freq=?,day=?,start_date=?,end_date=?,last_date=?,active=? WHERE id=?',
+    [..._recValues(r), r.id],
+  );
+
+  void setRecurringLast(int id, DateTime d) => _db.execute(
+    'UPDATE recurring_rules SET last_date=? WHERE id=?',
+    [isoDate(d), id],
+  );
+
+  /// Apagar a regra não apaga os movimentos que já criou.
+  void deleteRecurring(int id) =>
+      _db.execute('DELETE FROM recurring_rules WHERE id=?', [id]);
+
+  List<Object?> _recValues(RecurringRule r) => [
+    r.description,
+    r.amount,
+    r.categoryId,
+    r.accountId,
+    r.freq.name,
+    r.day,
+    isoDate(r.start),
+    r.end == null ? null : isoDate(r.end!),
+    r.lastGenerated == null ? null : isoDate(r.lastGenerated!),
+    r.active ? 1 : 0,
+  ];
 
   void close() => _db.close();
 
@@ -1300,7 +1379,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 20;
+  static const _schemaVersion = 21;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();
