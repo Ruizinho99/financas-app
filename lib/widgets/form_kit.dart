@@ -201,7 +201,7 @@ class BoxField extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: ValueListenableBuilder<TextEditingValue>(
                 valueListenable: controller,
-                builder: (_, v, __) => Text(
+                builder: (_, v, _) => Text(
                   '${v.text.length}/$maxLength',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
