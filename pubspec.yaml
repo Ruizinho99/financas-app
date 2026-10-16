@@ -70,8 +70,10 @@ flutter_launcher_icons:
   ios: false
   image_path: "assets/icon/icon.png"
   adaptive_icon_background: "#0A181A"
-  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
-  adaptive_icon_foreground_inset: 7
+  adaptive_icon_foreground: "assets/icon/icon.png"
+  # 20%: o quadrado arredondado (~79% da largura) fica inteiro dentro do círculo de 66 dp
+  # (raio 132 px num canvas de 432 px). Com 19% os cantos tocam o círculo.
+  adaptive_icon_foreground_inset: 20
 
 flutter:
 
