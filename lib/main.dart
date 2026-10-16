@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'db/database.dart';
 import 'invest/invest_screen.dart';
 import 'notify/notifications.dart';
+import 'onboarding/onboarding_screen.dart';
 import 'screens/month_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
@@ -177,7 +178,7 @@ class FinancasApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: const HomeShell(),
+      home: const OnboardingGate(child: HomeShell()),
     );
   }
 }

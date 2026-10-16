@@ -9,13 +9,17 @@ import 'budget_screen.dart' show showSalaryEditor;
 
 /// Planeamento de um mês: salário, despesas obrigatórias e opcionais planeadas, e o que sobra.
 class PlanningScreen extends StatefulWidget {
-  const PlanningScreen({super.key});
+  /// Mês a abrir (por omissão, o atual).
+  final DateTime? initialMonth;
+  const PlanningScreen({super.key, this.initialMonth});
   @override
   State<PlanningScreen> createState() => _PlanningScreenState();
 }
 
 class _PlanningScreenState extends State<PlanningScreen> {
-  DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
+  late DateTime month = widget.initialMonth != null
+      ? DateTime(widget.initialMonth!.year, widget.initialMonth!.month)
+      : DateTime(DateTime.now().year, DateTime.now().month);
 
   void _shift(int delta) =>
       setState(() => month = DateTime(month.year, month.month + delta));
