@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../db/database.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -16,6 +15,7 @@ import 'analysis_screen.dart';
 import 'budget_screen.dart' show BudgetScreen, showBudgetEditor;
 import 'classify_screen.dart';
 import 'planning_screen.dart';
+import 'recurring_screen.dart';
 import 'backup_screen.dart';
 import 'goals_screen.dart';
 import 'groups_screen.dart';
@@ -103,6 +103,17 @@ class MoreScreen extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AccountsScreen()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.autorenew),
+            title: const Text('Movimentos recorrentes'),
+            subtitle: Text(
+              '${s.recurringRules.length} recorrentes · salário, renda, subscrições',
+            ),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RecurringScreen()),
             ),
           ),
           ListTile(

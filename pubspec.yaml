@@ -62,6 +62,19 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+flutter_launcher_icons:
+  # Só Android: o ícone adaptativo usa fundo sólido + primeiro plano (logótipo
+  # sem fundo). O fundo #0A181A é a cor exterior da imagem completa.
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#0A181A"
+  adaptive_icon_foreground: "assets/icon/icon.png"
+  # 20%: o quadrado arredondado (~79% da largura) fica inteiro dentro do círculo de 66 dp
+  # (raio 132 px num canvas de 432 px). Com 19% os cantos tocam o círculo.
+  adaptive_icon_foreground_inset: 20
+
 flutter:
 
   # The following line ensures that the Material Icons font is

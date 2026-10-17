@@ -2,7 +2,6 @@ import 'package:financas/analysis/analytics.dart';
 import 'package:financas/db/database.dart';
 import 'package:financas/models.dart';
 import 'package:financas/state/app_state.dart';
-import 'package:financas/util/format.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

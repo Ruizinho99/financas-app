@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analisar-e-testar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.6
+          channel: stable
+          cache: true
+
+      - name: Dependências
+        run: flutter pub get
+
+      # Falha com warnings ou errors; os infos (ex.: chavetas em estruturas de controlo) não bloqueiam.
+      - name: Analisador
+        run: flutter analyze --no-fatal-infos
+
+      - name: Testes
+        run: flutter test

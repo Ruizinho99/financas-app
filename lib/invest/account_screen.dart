@@ -79,10 +79,11 @@ class _AccountScreenState extends State<AccountScreen> {
                     icon: const Icon(Icons.sync),
                     onPressed: () async {
                       setState(() => refreshing = true);
+                      final messenger = ScaffoldMessenger.of(context);
                       final r = await s.refreshPrices(accountId: acc.id);
                       if (!mounted) return;
                       setState(() => refreshing = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             '${r.updated} preços atualizados.${r.failed.isEmpty ? '' : ' Falhou: ${r.failed.keys.join(', ')}'}',

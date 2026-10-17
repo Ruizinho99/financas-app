@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 
 import 'db/database.dart';
 import 'invest/invest_screen.dart';
+import 'notify/notifications.dart';
+import 'onboarding/onboarding_screen.dart';
 import 'screens/month_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
@@ -30,6 +32,19 @@ Future<void> _checkUpdates(Db db) async {
   }
 }
 
+/// Ao abrir: cria os movimentos recorrentes em falta e avisa do que entrou. Nunca bloqueia nem falha a app.
+Future<void> _arranque(AppState s) async {
+  var criados = 0;
+  try {
+    criados = s.generateRecurring();
+  } catch (_) {}
+  try {
+    await notifyStartup(s, recurringCreated: criados);
+  } catch (_) {
+    // sem permissão de notificações: a app abre normalmente
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT');
@@ -37,11 +52,10 @@ Future<void> main() async {
   final db = await Db.open();
   // ao abrir: verifica se há versão nova (no máximo uma vez por dia) e avisa com uma notificação
   unawaited(_checkUpdates(db));
+  final state = AppState(db);
+  unawaited(_arranque(state));
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppState(db),
-      child: const FinancasApp(),
-    ),
+    ChangeNotifierProvider(create: (_) => state, child: const FinancasApp()),
   );
 }
 
@@ -164,7 +178,7 @@ class FinancasApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: const HomeShell(),
+      home: const OnboardingGate(child: HomeShell()),
     );
   }
 }

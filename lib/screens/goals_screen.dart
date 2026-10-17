@@ -488,8 +488,7 @@ class GoalDetailScreen extends StatelessWidget {
             final query = q.trim().toLowerCase();
             final list = [
               for (final t in s.transactions)
-                if (!t.isTransfer &&
-                    t.amount != 0 &&
+                if (t.amount != 0 &&
                     (t.amount.abs() - s.allocatedOf(t.id)) > 0 &&
                     (query.isEmpty ||
                         s.displayName(t).toLowerCase().contains(query)))

@@ -527,7 +527,7 @@ class _ImportScreenState extends State<ImportScreen> {
           for (final name in accountMap.keys) ...[
             const SizedBox(height: 14),
             Text(
-              '${name}  ·  ${rows.where((r) => r.account == name).length} movimentos',
+              '$name  ·  ${rows.where((r) => r.account == name).length} movimentos',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
