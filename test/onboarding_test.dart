@@ -36,7 +36,7 @@ void main() {
   });
 
   testWidgets(
-    'concluir cria a conta, o salário e as categorias e grava a flag',
+    'concluir cria a conta e o salário, sem categorias, e grava a flag',
     (tester) async {
       final s = AppState(Db.memory());
       await _pump(tester, s);
@@ -59,9 +59,6 @@ void main() {
       );
       await tester.tap(find.text('Seguinte'));
       await tester.pumpAndSettle();
-      // passo das categorias (a base está vazia): tudo marcado por omissão
-      await tester.tap(find.text('Seguinte'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Concluir'));
       await tester.pumpAndSettle();
 
@@ -69,11 +66,8 @@ void main() {
       expect(s.accounts.map((a) => a.name), ['Conta teste']);
       expect(s.accounts.single.openingCents, 10000);
       expect(s.defaultSalary, 150000);
-      expect(
-        s.roots.map((c) => c.name).toList(),
-        kCategoriasBase.map((g) => g.nome).toList(),
-      );
-      expect(s.roots.last.isIncome, isTrue);
+      // a app não cria categorias por omissão: o utilizador cria as suas
+      expect(s.categories, isEmpty);
       expect(s.db.setting(kOnboardingKey), '1');
     },
   );

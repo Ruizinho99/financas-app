@@ -8,49 +8,6 @@ import '../util/format.dart';
 /// Definição que marca a primeira utilização como concluída (ou saltada).
 const kOnboardingKey = 'onboarding_done';
 
-/// Conjunto base de categorias, oferecido só quando ainda não existe nenhuma.
-/// Não há outro conjunto por omissão no código: esta lista é a única fonte.
-const kCategoriasBase =
-    <({String nome, String emoji, bool receita, List<String> subs})>[
-      (
-        nome: 'Alimentação',
-        emoji: '🛒',
-        receita: false,
-        subs: ['Supermercado', 'Restaurantes e cafés'],
-      ),
-      (
-        nome: 'Casa',
-        emoji: '🏠',
-        receita: false,
-        subs: ['Renda ou prestação', 'Água, luz e gás', 'Internet e telemóvel'],
-      ),
-      (
-        nome: 'Transportes',
-        emoji: '🚗',
-        receita: false,
-        subs: ['Combustível', 'Transportes públicos', 'Carro'],
-      ),
-      (
-        nome: 'Saúde',
-        emoji: '💊',
-        receita: false,
-        subs: ['Farmácia', 'Consultas'],
-      ),
-      (nome: 'Lazer', emoji: '🎉', receita: false, subs: ['Saídas', 'Viagens']),
-      (
-        nome: 'Compras',
-        emoji: '🛍️',
-        receita: false,
-        subs: ['Roupa', 'Outras compras'],
-      ),
-      (
-        nome: 'Rendimentos',
-        emoji: '💰',
-        receita: true,
-        subs: ['Salário', 'Outros rendimentos'],
-      ),
-    ];
-
 /// Decide, ao abrir a app, se mostra a primeira utilização: só numa instalação nova (sem contas,
 /// sem movimentos e sem [kOnboardingKey]). Quem já tem dados marca-a como feita sem a mostrar,
 /// para que nunca apareça depois de um apagamento.
@@ -88,7 +45,7 @@ class _OnboardingGateState extends State<OnboardingGate> {
   }
 }
 
-/// Passos: boas-vindas, primeira conta, salário (opcional), categorias base (se não houver) e fim.
+/// Passos: boas-vindas, primeira conta, salário (opcional) e fim.
 /// "Saltar" está sempre disponível e não cria nada.
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onDone;
@@ -103,15 +60,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _saldo = TextEditingController();
   final _salario = TextEditingController();
   int _passo = 0;
-  late final bool _pedirCategorias;
-  late final List<bool> _escolhidas;
   String? _erroSaldo, _erroSalario;
 
   @override
   void initState() {
     super.initState();
-    _pedirCategorias = context.read<AppState>().categories.isEmpty;
-    _escolhidas = List.filled(kCategoriasBase.length, true);
   }
 
   @override
@@ -128,7 +81,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     'Bem-vindo',
     'Primeira conta',
     'Salário',
-    if (_pedirCategorias) 'Categorias',
     'Pronto',
   ];
 
@@ -170,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  /// Cria a conta, o salário e as categorias escolhidas; depois marca a utilização como feita.
+  /// Cria a conta e o salário, se preenchidos; depois marca a utilização como feita.
   void _concluir() {
     final s = context.read<AppState>();
     final nome = _nomeConta.text.trim();
@@ -179,16 +131,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     final salario = parseCents(_salario.text.trim()) ?? 0;
     if (salario > 0) s.setDefaultSalary(salario);
-    if (_pedirCategorias) {
-      for (var i = 0; i < kCategoriasBase.length; i++) {
-        if (!_escolhidas[i]) continue;
-        final g = kCategoriasBase[i];
-        s.saveCategoryWithSubs(
-          Categoria(id: 0, name: g.nome, emoji: g.emoji, isIncome: g.receita),
-          [for (final sub in g.subs) (id: null, name: sub, emoji: '')],
-        );
-      }
-    }
     _terminar();
   }
 
@@ -256,24 +198,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ],
       ),
-      if (_pedirCategorias)
-        _Pagina(
-          icone: Icons.category_outlined,
-          titulo: 'Começar com categorias base?',
-          texto: 'Podes escolher as que quiseres e editá-las depois. Não se perde nada.',
-          filhos: [
-            for (var i = 0; i < kCategoriasBase.length; i++)
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _escolhidas[i],
-                onChanged: (v) => setState(() => _escolhidas[i] = v ?? false),
-                title: Text(
-                  '${kCategoriasBase[i].emoji} ${kCategoriasBase[i].nome}',
-                ),
-                subtitle: Text(kCategoriasBase[i].subs.join(' · ')),
-              ),
-          ],
-        ),
       _Pagina(
         icone: Icons.check_circle_outline,
         titulo: 'Está pronto',
