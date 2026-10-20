@@ -152,6 +152,7 @@ class AppState extends ChangeNotifier {
     incomeColor = int.tryParse(db.setting('income_color') ?? '') ?? 0xFF43A047;
     expenseColor =
         int.tryParse(db.setting('expense_color') ?? '') ?? 0xFFE53935;
+    _appLanguage = db.setting('app_language') ?? 'system';
     notifyListeners();
   }
 
@@ -174,6 +175,16 @@ class AppState extends ChangeNotifier {
 
   int incomeColor = 0xFF43A047;
   int expenseColor = 0xFFE53935;
+
+  /// Idioma da interface: 'system' (o do telemóvel), 'pt' ou 'en'.
+  String get appLanguage => _appLanguage;
+  String _appLanguage = 'system';
+
+  void setAppLanguage(String code) {
+    _appLanguage = code;
+    db.putSetting('app_language', code);
+    notifyListeners();
+  }
 
   void setAppearance({
     ThemeMode? mode,

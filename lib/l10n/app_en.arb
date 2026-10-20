@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+  "appName": "Finances",
+  "appearanceTitle": "Appearance",
+  "languageTitle": "Language",
+  "languageSystem": "Automatic",
+  "languagePortuguese": "Português",
+  "languageEnglish": "English",
+  "onboardingStart": "Get started",
+  "onboardingSkip": "Skip"
+}

@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'db/database.dart';
+import 'l10n/app_localizations.dart';
 import 'invest/invest_screen.dart';
 import 'notify/notifications.dart';
 import 'onboarding/onboarding_screen.dart';
@@ -171,9 +172,15 @@ class FinancasApp extends StatelessWidget {
       theme: theme(Brightness.light),
       darkTheme: theme(Brightness.dark),
       themeMode: st.themeMode,
-      locale: const Locale('pt', 'PT'),
-      supportedLocales: const [Locale('pt', 'PT')],
+      // 'system' segue o telemóvel; se não for português nem inglês, usa português
+      locale: switch (st.appLanguage) {
+        'pt' => const Locale('pt', 'PT'),
+        'en' => const Locale('en'),
+        _ => null,
+      },
+      supportedLocales: const [Locale('pt', 'PT'), Locale('en')],
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

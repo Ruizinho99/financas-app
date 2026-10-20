@@ -76,6 +76,7 @@ flutter_launcher_icons:
   adaptive_icon_foreground_inset: 20
 
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

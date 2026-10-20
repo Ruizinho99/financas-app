@@ -33,6 +33,18 @@ class AppearanceScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Text('Idioma', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'system', label: Text('Automático')),
+              ButtonSegment(value: 'pt', label: Text('Português')),
+              ButtonSegment(value: 'en', label: Text('English')),
+            ],
+            selected: {s.appLanguage},
+            onSelectionChanged: (v) => s.setAppLanguage(v.first),
+          ),
+          const SizedBox(height: 24),
           Text('Tema', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           SegmentedButton<ThemeMode>(
