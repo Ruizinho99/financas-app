@@ -7,5 +7,130 @@
   "languagePortuguese": "Português",
   "languageEnglish": "English",
   "onboardingStart": "Get started",
-  "onboardingSkip": "Skip"
+  "onboardingSkip": "Skip",
+  "monthPrevious": "Previous month",
+  "monthNext": "Next month",
+  "pickDayOfMonth": "Pick a day of the month",
+  "transaction": "Transaction",
+  "transactions": "Transactions",
+  "startHere": "Start here",
+  "monthAppearsHint": "The month appears as soon as you have transactions",
+  "importStatement": "Import a statement",
+  "addTransaction": "Add a transaction",
+  "spent": "Spent",
+  "canStillSpend": "You can still spend {amount}",
+  "@canStillSpend": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyAverage": "Average {amount} per day",
+  "@dailyAverage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "income": "Income",
+  "saved": "Saved",
+  "sentToInvest": "Sent to invest",
+  "whereSpendMost": "Where you spend the most",
+  "seeAnalysis": "See analysis",
+  "classifyHint": "One card per name; remembered for next time",
+  "budget": "Budget",
+  "analysis": "Analysis",
+  "backToThisMonth": "Back to this month",
+  "goals": "Goals",
+  "seeAll": "See all",
+  "deliveriesToDistribute": "Deliveries to distribute",
+  "distribute": "Distribute",
+  "deliveriesHint": "Bank transfers you have not split across assets yet.",
+  "planning": "Planning",
+  "seePlan": "See plan",
+  "planned": "Planned",
+  "actualSpent": "Actual spending",
+  "leftAfterPlan": "Left from salary after the plan: {amount}",
+  "@leftAfterPlan": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reached": "Reached",
+  "missingAmount": "{amount} to go",
+  "@missingAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "categorize": "Categorize",
+  "delete": "Delete",
+  "deleteTransactionsQuestion": "Delete {count} transactions?",
+  "@deleteTransactionsQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search": "Search…",
+  "noCategory": "No category",
+  "allAccounts": "All accounts",
+  "accountFallback": "Account",
+  "allMonths": "All months",
+  "noTransactionsHint": "No transactions.\nImport a statement (icon at the top) or add one by hand.",
+  "reversalDeleted": "Cancels an expense that was deleted ({amount})",
+  "@reversalDeleted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reversalOf": "Cancels {name} ({amount})",
+  "@reversalOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reversedLeft": "Cancelled {done} · left {left}",
+  "@reversedLeft": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "goalFallback": "Goal",
+  "goalsSplit": "Goals: {parts}",
+  "@goalsSplit": {
+    "placeholders": {
+      "parts": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel"
 }

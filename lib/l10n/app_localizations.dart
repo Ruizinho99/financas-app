@@ -145,6 +145,300 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Saltar'**
   String get onboardingSkip;
+
+  /// No description provided for @monthPrevious.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mês anterior'**
+  String get monthPrevious;
+
+  /// No description provided for @monthNext.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mês seguinte'**
+  String get monthNext;
+
+  /// No description provided for @pickDayOfMonth.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolhe um dia do mês'**
+  String get pickDayOfMonth;
+
+  /// No description provided for @transaction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Movimento'**
+  String get transaction;
+
+  /// No description provided for @transactions.
+  ///
+  /// In pt, this message translates to:
+  /// **'Movimentos'**
+  String get transactions;
+
+  /// No description provided for @startHere.
+  ///
+  /// In pt, this message translates to:
+  /// **'Começa por aqui'**
+  String get startHere;
+
+  /// No description provided for @monthAppearsHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'O mês aparece assim que tiveres movimentos'**
+  String get monthAppearsHint;
+
+  /// No description provided for @importStatement.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importar um extrato'**
+  String get importStatement;
+
+  /// No description provided for @addTransaction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar um movimento'**
+  String get addTransaction;
+
+  /// No description provided for @spent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gasto'**
+  String get spent;
+
+  /// No description provided for @canStillSpend.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ainda podes gastar {amount}'**
+  String canStillSpend(String amount);
+
+  /// No description provided for @dailyAverage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Média de {amount} por dia'**
+  String dailyAverage(String amount);
+
+  /// No description provided for @income.
+  ///
+  /// In pt, this message translates to:
+  /// **'Receitas'**
+  String get income;
+
+  /// No description provided for @saved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Poupado'**
+  String get saved;
+
+  /// No description provided for @sentToInvest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviado para investir'**
+  String get sentToInvest;
+
+  /// No description provided for @whereSpendMost.
+  ///
+  /// In pt, this message translates to:
+  /// **'Onde gastas mais'**
+  String get whereSpendMost;
+
+  /// No description provided for @seeAnalysis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver análise'**
+  String get seeAnalysis;
+
+  /// No description provided for @classifyHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Um cartão por nome; memoriza para as próximas vezes'**
+  String get classifyHint;
+
+  /// No description provided for @budget.
+  ///
+  /// In pt, this message translates to:
+  /// **'Orçamento'**
+  String get budget;
+
+  /// No description provided for @analysis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Análise'**
+  String get analysis;
+
+  /// No description provided for @backToThisMonth.
+  ///
+  /// In pt, this message translates to:
+  /// **'Voltar a este mês'**
+  String get backToThisMonth;
+
+  /// No description provided for @goals.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivos'**
+  String get goals;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver todos'**
+  String get seeAll;
+
+  /// No description provided for @deliveriesToDistribute.
+  ///
+  /// In pt, this message translates to:
+  /// **'Entregas para distribuir'**
+  String get deliveriesToDistribute;
+
+  /// No description provided for @distribute.
+  ///
+  /// In pt, this message translates to:
+  /// **'Distribuir'**
+  String get distribute;
+
+  /// No description provided for @deliveriesHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Entregas do banco que ainda não repartiste pelos ativos.'**
+  String get deliveriesHint;
+
+  /// No description provided for @planning.
+  ///
+  /// In pt, this message translates to:
+  /// **'Planeamento'**
+  String get planning;
+
+  /// No description provided for @seePlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver plano'**
+  String get seePlan;
+
+  /// No description provided for @planned.
+  ///
+  /// In pt, this message translates to:
+  /// **'Planeado'**
+  String get planned;
+
+  /// No description provided for @actualSpent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gasto real'**
+  String get actualSpent;
+
+  /// No description provided for @leftAfterPlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sobra do salário, depois do plano: {amount}'**
+  String leftAfterPlan(String amount);
+
+  /// No description provided for @reached.
+  ///
+  /// In pt, this message translates to:
+  /// **'Atingido'**
+  String get reached;
+
+  /// No description provided for @missingAmount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faltam {amount}'**
+  String missingAmount(String amount);
+
+  /// No description provided for @categorize.
+  ///
+  /// In pt, this message translates to:
+  /// **'Categorizar'**
+  String get categorize;
+
+  /// No description provided for @delete.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar'**
+  String get delete;
+
+  /// No description provided for @deleteTransactionsQuestion.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar {count} movimentos?'**
+  String deleteTransactionsQuestion(int count);
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} selecionados'**
+  String selectedCount(int count);
+
+  /// No description provided for @search.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pesquisar…'**
+  String get search;
+
+  /// No description provided for @noCategory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem categoria'**
+  String get noCategory;
+
+  /// No description provided for @allAccounts.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todas as contas'**
+  String get allAccounts;
+
+  /// No description provided for @accountFallback.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conta'**
+  String get accountFallback;
+
+  /// No description provided for @allMonths.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todos os meses'**
+  String get allMonths;
+
+  /// No description provided for @noTransactionsHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem movimentos.\nImporta um extrato (ícone no topo) ou adiciona manualmente.'**
+  String get noTransactionsHint;
+
+  /// No description provided for @reversalDeleted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anula uma despesa já apagada ({amount})'**
+  String reversalDeleted(String amount);
+
+  /// No description provided for @reversalOf.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anula {name} ({amount})'**
+  String reversalOf(String name, String amount);
+
+  /// No description provided for @reversedLeft.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anulado {done} · fica {left}'**
+  String reversedLeft(String done, String left);
+
+  /// No description provided for @goalFallback.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivo'**
+  String get goalFallback;
+
+  /// No description provided for @goalsSplit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivos: {parts}'**
+  String goalsSplit(String parts);
+
+  /// No description provided for @cancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar'**
+  String get cancel;
 }
 
 class _AppLocalizationsDelegate

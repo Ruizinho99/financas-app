@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:financas/db/database.dart';
 import 'package:financas/screens/backup_screen.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +40,12 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<AppState>.value(
         value: AppState(Db.memory()),
-        child: MaterialApp(home: const BackupScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('pt', 'PT'),
+          home: const BackupScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

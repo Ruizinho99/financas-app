@@ -3,6 +3,7 @@ import 'package:financas/invest/invest.dart';
 import 'package:financas/models.dart';
 import 'package:financas/screens/month_screen.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -17,7 +18,12 @@ Future<void> _pump(WidgetTester tester, AppState s) async {
   await tester.pumpWidget(
     ChangeNotifierProvider<AppState>.value(
       value: s,
-      child: const MaterialApp(home: MonthScreen()),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('pt', 'PT'),
+        home: MonthScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();

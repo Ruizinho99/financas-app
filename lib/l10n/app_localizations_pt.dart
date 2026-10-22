@@ -32,4 +32,174 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get onboardingSkip => 'Saltar';
+
+  @override
+  String get monthPrevious => 'Mês anterior';
+
+  @override
+  String get monthNext => 'Mês seguinte';
+
+  @override
+  String get pickDayOfMonth => 'Escolhe um dia do mês';
+
+  @override
+  String get transaction => 'Movimento';
+
+  @override
+  String get transactions => 'Movimentos';
+
+  @override
+  String get startHere => 'Começa por aqui';
+
+  @override
+  String get monthAppearsHint => 'O mês aparece assim que tiveres movimentos';
+
+  @override
+  String get importStatement => 'Importar um extrato';
+
+  @override
+  String get addTransaction => 'Adicionar um movimento';
+
+  @override
+  String get spent => 'Gasto';
+
+  @override
+  String canStillSpend(String amount) {
+    return 'Ainda podes gastar $amount';
+  }
+
+  @override
+  String dailyAverage(String amount) {
+    return 'Média de $amount por dia';
+  }
+
+  @override
+  String get income => 'Receitas';
+
+  @override
+  String get saved => 'Poupado';
+
+  @override
+  String get sentToInvest => 'Enviado para investir';
+
+  @override
+  String get whereSpendMost => 'Onde gastas mais';
+
+  @override
+  String get seeAnalysis => 'Ver análise';
+
+  @override
+  String get classifyHint =>
+      'Um cartão por nome; memoriza para as próximas vezes';
+
+  @override
+  String get budget => 'Orçamento';
+
+  @override
+  String get analysis => 'Análise';
+
+  @override
+  String get backToThisMonth => 'Voltar a este mês';
+
+  @override
+  String get goals => 'Objetivos';
+
+  @override
+  String get seeAll => 'Ver todos';
+
+  @override
+  String get deliveriesToDistribute => 'Entregas para distribuir';
+
+  @override
+  String get distribute => 'Distribuir';
+
+  @override
+  String get deliveriesHint =>
+      'Entregas do banco que ainda não repartiste pelos ativos.';
+
+  @override
+  String get planning => 'Planeamento';
+
+  @override
+  String get seePlan => 'Ver plano';
+
+  @override
+  String get planned => 'Planeado';
+
+  @override
+  String get actualSpent => 'Gasto real';
+
+  @override
+  String leftAfterPlan(String amount) {
+    return 'Sobra do salário, depois do plano: $amount';
+  }
+
+  @override
+  String get reached => 'Atingido';
+
+  @override
+  String missingAmount(String amount) {
+    return 'Faltam $amount';
+  }
+
+  @override
+  String get categorize => 'Categorizar';
+
+  @override
+  String get delete => 'Apagar';
+
+  @override
+  String deleteTransactionsQuestion(int count) {
+    return 'Apagar $count movimentos?';
+  }
+
+  @override
+  String selectedCount(int count) {
+    return '$count selecionados';
+  }
+
+  @override
+  String get search => 'Pesquisar…';
+
+  @override
+  String get noCategory => 'Sem categoria';
+
+  @override
+  String get allAccounts => 'Todas as contas';
+
+  @override
+  String get accountFallback => 'Conta';
+
+  @override
+  String get allMonths => 'Todos os meses';
+
+  @override
+  String get noTransactionsHint =>
+      'Sem movimentos.\nImporta um extrato (ícone no topo) ou adiciona manualmente.';
+
+  @override
+  String reversalDeleted(String amount) {
+    return 'Anula uma despesa já apagada ($amount)';
+  }
+
+  @override
+  String reversalOf(String name, String amount) {
+    return 'Anula $name ($amount)';
+  }
+
+  @override
+  String reversedLeft(String done, String left) {
+    return 'Anulado $done · fica $left';
+  }
+
+  @override
+  String get goalFallback => 'Objetivo';
+
+  @override
+  String goalsSplit(String parts) {
+    return 'Objetivos: $parts';
+  }
+
+  @override
+  String get cancel => 'Cancelar';
 }

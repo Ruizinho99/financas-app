@@ -9,6 +9,7 @@ import 'package:financas/invest/trade_import.dart';
 import 'package:financas/invest/transfers_screen.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:excel/excel.dart' as xl;
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -201,6 +202,9 @@ Total geral 1.000,00
         ChangeNotifierProvider<AppState>.value(
           value: s,
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('pt', 'PT'),
             theme: ThemeData(useMaterial3: true),
             home: Builder(
               builder: (c) => Scaffold(
@@ -307,6 +311,9 @@ Total geral 1.000,00
         ChangeNotifierProvider<AppState>.value(
           value: s,
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('pt', 'PT'),
             theme: ThemeData(useMaterial3: true),
             home: Builder(
               builder: (c) => Scaffold(
@@ -363,6 +370,9 @@ Total geral 1.000,00
           ChangeNotifierProvider<AppState>.value(
             value: d.s,
             child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('pt', 'PT'),
               theme: ThemeData(useMaterial3: true),
               home: TransferAllocScreen(txnId: t.id),
             ),
@@ -503,6 +513,9 @@ Total geral 1.000,00
         ChangeNotifierProvider<AppState>.value(
           value: s,
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('pt', 'PT'),
             theme: ThemeData(useMaterial3: true),
             home: Builder(
               builder: (c) => Scaffold(
@@ -705,6 +718,9 @@ Total geral 1.000,00
           ChangeNotifierProvider<AppState>.value(
             value: s,
             child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('pt', 'PT'),
               theme: ThemeData(useMaterial3: true),
               home: Builder(
                 builder: (c) => Scaffold(
