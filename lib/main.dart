@@ -13,6 +13,7 @@ import 'onboarding/onboarding_screen.dart';
 import 'screens/month_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
+import 'util/format.dart';
 import 'state/app_state.dart';
 import 'update/update_checker.dart';
 import 'update/update_notifications.dart';
@@ -49,6 +50,7 @@ Future<void> _arranque(AppState s) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT');
+  await initializeDateFormatting('en');
   await Receipts.init();
   final db = await Db.open();
   // ao abrir: verifica se há versão nova (no máximo uma vez por dia) e avisa com uma notificação
@@ -179,6 +181,11 @@ class FinancasApp extends StatelessWidget {
         _ => null,
       },
       supportedLocales: const [Locale('pt', 'PT'), Locale('en')],
+      // os formatos de datas e valores seguem o idioma escolhido
+      builder: (context, child) {
+        setFormatLocale(Localizations.localeOf(context).languageCode);
+        return child!;
+      },
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

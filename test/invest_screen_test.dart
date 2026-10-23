@@ -334,6 +334,8 @@ void main() {
     'barra com 4 separadores: etiquetas numa só linha em 360 dp e todas visíveis',
     (tester) async {
       final d = buildInvestData();
+      // a app real segue o idioma do sistema: fixa o português para não mudar os formatos dos outros testes
+      d.s.setAppLanguage('pt');
       tester.view.physicalSize = const Size(360, 640) * 3;
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);

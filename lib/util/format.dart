@@ -20,35 +20,43 @@ const _ccySymbols = {
 String ccySymbol(String c) => _ccySymbols[c] ?? c;
 String get baseSym => ccySymbol(baseCcy);
 
+/// Idioma dos formatos de datas e valores (acompanha o idioma da interface).
+String formatLocale = 'pt_PT';
+
+/// Atualiza o formato a partir do código do idioma da interface ('pt', 'en').
+void setFormatLocale(String languageCode) {
+  formatLocale = languageCode == 'en' ? 'en' : 'pt_PT';
+}
+
 NumberFormat? _moneyF, _moneyShortF;
 String _fmtKey = '';
 NumberFormat get _money {
-  if (_fmtKey != baseCcy) _resetFmt();
+  if (_fmtKey != '$baseCcy|$formatLocale') _resetFmt();
   return _moneyF!;
 }
 
 NumberFormat get _moneyShort {
-  if (_fmtKey != baseCcy) _resetFmt();
+  if (_fmtKey != '$baseCcy|$formatLocale') _resetFmt();
   return _moneyShortF!;
 }
 
 void _resetFmt() {
-  _fmtKey = baseCcy;
+  _fmtKey = '$baseCcy|$formatLocale';
   _moneyF = NumberFormat.currency(
-    locale: 'pt_PT',
+    locale: formatLocale,
     symbol: baseSym,
     decimalDigits: 2,
   );
   _moneyShortF = NumberFormat.currency(
-    locale: 'pt_PT',
+    locale: formatLocale,
     symbol: baseSym,
     decimalDigits: 0,
   );
 }
 
 final _dateFmt = DateFormat('dd/MM/yyyy');
-final _monthFmt = DateFormat('MMMM yyyy', 'pt_PT');
-final _monthShort = DateFormat('MMM yy', 'pt_PT');
+DateFormat get _monthFmt => DateFormat('MMMM yyyy', formatLocale);
+DateFormat get _monthShort => DateFormat('MMM yy', formatLocale);
 
 /// Valores monetários são guardados em cêntimos (int).
 String fmtMoney(int cents, {bool short = false}) =>
@@ -63,7 +71,7 @@ String fmtMonthShort(DateTime d) => _monthShort.format(d);
 
 /// Dia e mês curto, ex.: "25 ago".
 String fmtDayMonth(DateTime d) =>
-    '${d.day} ${_monthShort.format(d).replaceAll('.', '')}';
+    DateFormat('d MMM', formatLocale).format(d).replaceAll('.', '');
 String isoDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 String monthKey(DateTime d) =>
@@ -103,28 +111,28 @@ int? parseCents(String input) {
   return neg ? -c : c;
 }
 
-final _qtyFmt = NumberFormat('#,##0.######', 'pt_PT');
+NumberFormat get _qtyFmt => NumberFormat('#,##0.######', formatLocale);
 
 /// Quantidade de um ativo (até 6 casas decimais, sem zeros à direita).
 String fmtQty(double q) => _qtyFmt.format(q);
 
 /// Preço unitário: 2 casas, ou 4 se for menor que 1 €.
 String fmtPrice(double p) => NumberFormat.currency(
-  locale: 'pt_PT',
+  locale: formatLocale,
   symbol: baseSym,
   decimalDigits: p.abs() < 1 ? 4 : 2,
 ).format(p);
 
 /// Número com [digits] casas, no formato português ("1,0850").
 String fmtNum(double v, int digits) => NumberFormat.decimalPatternDigits(
-  locale: 'pt_PT',
+  locale: formatLocale,
   decimalDigits: digits,
 ).format(v);
 
 /// Preço na moeda do ativo: euros com €, outras moedas como "123,45 USD".
 String fmtPriceIn(double p, String ccy) {
   if (ccy == baseCcy) return fmtPrice(p);
-  return '${NumberFormat.decimalPatternDigits(locale: 'pt_PT', decimalDigits: p.abs() < 1 ? 4 : 2).format(p)} $ccy';
+  return '${NumberFormat.decimalPatternDigits(locale: formatLocale, decimalDigits: p.abs() < 1 ? 4 : 2).format(p)} $ccy';
 }
 
 /// "+12,3%" / "−4,0%"
