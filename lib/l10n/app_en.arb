@@ -2182,7 +2182,7 @@
   "invNewAccountHint": "XTB, Trade Republic, exchange…",
   "invTitle": "Investments",
   "invImportTrades": "Import buys and sells",
-  "invRefreshPrices": "Refresh prices",
+  "invRefreshPrices": "Update prices",
   "invImportCardHint": "Pick a PDF, CSV or Excel file from your broker",
   "invMyPortfolio": "My portfolio",
   "invTotalValue": "Total value",

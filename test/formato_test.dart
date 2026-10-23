@@ -29,4 +29,23 @@ void main() {
     final b = fmtDayMonth(DateTime(2026, 9, 24));
     expect('$a – $b', '25 ago – 24 set');
   });
+
+  test('há quanto tempo, nos dois idiomas', () {
+    final agora = DateTime(2026, 10, 24, 12);
+    setFormatLocale('pt');
+    expect(
+      fmtAgo(agora.subtract(const Duration(minutes: 5)), agora),
+      'há 5 min',
+    );
+    expect(fmtAgo(agora.subtract(const Duration(days: 2)), agora), 'há 2 dias');
+    expect(noCategoryText, 'Sem categoria');
+    setFormatLocale('en');
+    expect(
+      fmtAgo(agora.subtract(const Duration(minutes: 5)), agora),
+      '5 min ago',
+    );
+    expect(fmtAgo(agora.subtract(const Duration(days: 1)), agora), '1 day ago');
+    expect(fmtAgo(agora, agora), 'just now');
+    expect(noCategoryText, 'No category');
+  });
 }

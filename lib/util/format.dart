@@ -147,11 +147,20 @@ String fmtSignedMoney(int cents) =>
 double? parseNum(String s) =>
     double.tryParse(s.trim().replaceAll(' ', '').replaceAll(',', '.'));
 
-/// "há 5 min", "há 3 h", "há 2 dias"
+/// "há 5 min", "há 3 h", "há 2 dias" (em inglês: "5 min ago", "3 h ago", "2 days ago")
 String fmtAgo(DateTime at, [DateTime? now]) {
   final d = (now ?? DateTime.now()).difference(at);
-  if (d.inMinutes < 1) return 'agora mesmo';
-  if (d.inMinutes < 60) return 'há ${d.inMinutes} min';
-  if (d.inHours < 24) return 'há ${d.inHours} h';
-  return 'há ${d.inDays} ${d.inDays == 1 ? 'dia' : 'dias'}';
+  final en = formatLocale == 'en';
+  if (d.inMinutes < 1) return en ? 'just now' : 'agora mesmo';
+  if (d.inMinutes < 60) {
+    return en ? '${d.inMinutes} min ago' : 'há ${d.inMinutes} min';
+  }
+  if (d.inHours < 24) return en ? '${d.inHours} h ago' : 'há ${d.inHours} h';
+  final days = d.inDays;
+  if (en) return '$days ${days == 1 ? 'day' : 'days'} ago';
+  return 'há $days ${days == 1 ? 'dia' : 'dias'}';
 }
+
+/// Texto de "sem categoria", no idioma da interface.
+String get noCategoryText =>
+    formatLocale == 'en' ? 'No category' : 'Sem categoria';

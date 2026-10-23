@@ -2928,7 +2928,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invImportTrades => 'Import buys and sells';
 
   @override
-  String get invRefreshPrices => 'Refresh prices';
+  String get invRefreshPrices => 'Update prices';
 
   @override
   String get invImportCardHint =>

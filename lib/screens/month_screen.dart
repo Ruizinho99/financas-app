@@ -62,10 +62,11 @@ class _MonthScreenState extends State<MonthScreen> {
     final hasData = s.transactions.isNotEmpty;
     final ceiling = an.income;
     final over = ceiling > 0 && an.spent > ceiling;
-    final top = (an.byCategory()..sort((a, b) => b.amount.compareTo(a.amount)))
-        .where((e) => e.amount > 0)
-        .take(5)
-        .toList();
+    final top =
+        (an.byCategoryL(l)..sort((a, b) => b.amount.compareTo(a.amount)))
+            .where((e) => e.amount > 0)
+            .take(5)
+            .toList();
     final maxTop = top.isEmpty ? 1 : top.first.amount;
     final expenseColor = Color(s.expenseColor),
         incomeColor = Color(s.incomeColor);

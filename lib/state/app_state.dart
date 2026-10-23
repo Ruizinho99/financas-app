@@ -403,7 +403,7 @@ class AppState extends ChangeNotifier {
   /// "Pai › Filha" – permite distinguir categorias com o mesmo nome.
   String path(int? id) {
     final c = cat(id);
-    if (c == null) return 'Sem categoria';
+    if (c == null) return noCategoryText;
     final p = cat(c.parentId);
     return p == null ? c.name : '${p.name} › ${c.name}';
   }
