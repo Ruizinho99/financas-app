@@ -544,7 +544,7 @@ class _InvestScreenState extends State<InvestScreen> {
       if (cash > 0) DonutItem(l.invUnallocated, cash, cs.outline),
     ];
     return SectionCard(
-      title: 'Onde está o dinheiro',
+      title: l.invWhereMoneyIs,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
