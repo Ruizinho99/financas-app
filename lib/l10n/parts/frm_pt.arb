@@ -1,0 +1,512 @@
+{
+  "@@locale": "pt",
+  "frmReceipt": "Recibo",
+  "frmViewReceipt": "Ver recibo",
+  "frmTakePhoto": "Tirar foto",
+  "frmChooseFromGallery": "Escolher da galeria",
+  "frmChooseFile": "Escolher ficheiro (PDF ou imagem)",
+  "frmRemoveReceipt": "Remover recibo",
+  "frmReceiptAttachError": "Não foi possível anexar o recibo: {error}",
+  "@frmReceiptAttachError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReceiptFileNotFound": "Ficheiro do recibo não encontrado.",
+  "frmEnterValidAmount": "Indica um montante válido.",
+  "frmAllocatedToGoals": "Já tens {amount} associado a objetivos. Reduz as associações primeiro.",
+  "@frmAllocatedToGoals": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransferTo": "Transferência para {name}",
+  "@frmTransferTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransfer": "Transferência",
+  "frmExpense": "Despesa",
+  "frmIncome": "Receita",
+  "frmReversedGone": "A despesa anulada já não existe.",
+  "frmEnterReversedAmount": "Indica quanto da despesa é anulado.",
+  "frmReversalTooBig": "A anulação não pode ser maior que a receita.",
+  "frmOnlyLeftToReverse": "Só faltam {amount} para anular nesta despesa.",
+  "@frmOnlyLeftToReverse": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReversalHelp": "Ainda se pode anular {amount} desta despesa. A parte anulada não conta como gasto nem como receita na Análise.",
+  "@frmReversalHelp": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSearchExpense": "Procurar despesa",
+  "frmNoReversal": "Não anula nenhuma despesa",
+  "frmToReverseSubtitle": "{date} · {amount} · por anular {left}",
+  "@frmToReverseSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoExpenseToReverse": "Nenhuma despesa para anular.",
+  "frmInvestPlatform": "Plataforma de investimento",
+  "frmNone": "Nenhuma",
+  "frmExpenseGone": "Despesa já não existe",
+  "frmSaveToSplit": "Guarda o movimento para o dividir por objetivos.",
+  "frmChangeAmount": "Alterar valor",
+  "frmUnlink": "Desassociar",
+  "frmToAllocate": "Por associar: {amount}",
+  "@frmToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSplitByGoals": "Dividir por objetivos",
+  "frmSplitByGoal": "Dividir por objetivo",
+  "frmAllocate": "Associar",
+  "frmSave": "Guardar",
+  "frmAccount": "Conta",
+  "frmFromAccount": "Da conta",
+  "frmDestinationAccount": "Conta de destino",
+  "frmSelectAccount": "Seleciona uma conta",
+  "frmSelectDestinationAccount": "Seleciona a conta de destino",
+  "frmToAccount": "Para a conta",
+  "frmTakePhotoOrChoose": "Tira uma foto ou escolhe um ficheiro",
+  "frmEditTransaction": "Editar movimento",
+  "frmNewTransaction": "Novo movimento",
+  "frmImportStatementTip": "Importar extrato",
+  "frmDeleteThisTransaction": "Apagar este movimento?",
+  "frmCalculator": "Calculadora",
+  "frmCategory": "Categoria",
+  "frmChooseCategory": "Escolher categoria",
+  "frmReversesExpense": "Anula uma despesa (reembolso, devolução)",
+  "frmReversedAmount": "Valor anulado ({currency})",
+  "@frmReversedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDescriptionOptional": "Descrição (opcional)",
+  "frmToday": "Hoje",
+  "frmYesterday": "Ontem",
+  "frmOtherDate": "Outra data",
+  "frmToInvestOptional": "Para investir (opcional)",
+  "frmOutgoing": "Saída",
+  "frmIncoming": "Entrada",
+  "frmNotCountedNote": "Não conta como despesa nem receita na Análise.",
+  "frmMoreOptions": "Mais opções (conta, recibo)",
+  "frmAmountCurrency": "Valor ({currency})",
+  "@frmAmountCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOnlyLeftToAllocate": "Só faltam {amount} para associar.",
+  "@frmOnlyLeftToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOptional": " (opcional)",
+  "frmCalcHint": "Ex.: 12,50+3*2",
+  "frmUse": "Usar",
+  "frmWholeFile": "Todo o ficheiro",
+  "frmPeriodToImport": "Período a importar",
+  "frmFileDataRange": "O ficheiro tem dados de {from} a {to}. Escolhe só o intervalo que queres importar.",
+  "@frmFileDataRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "frmFrom": "De",
+  "frmUntil": "Até",
+  "frmInRangeOfTotal": "{inRange} de {total} no período",
+  "@frmInRangeOfTotal": {
+    "placeholders": {
+      "inRange": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmTotalInFile": "{total} no ficheiro",
+  "@frmTotalInFile": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmSelectCategory": "Seleciona uma categoria",
+  "frmNewCategory": "➕  Nova categoria…",
+  "frmNoCategoryItem": "✖️  Sem categoria",
+  "frmHideEndedFuture": "🙈  Esconder terminadas e futuras",
+  "frmShowEndedFuture": "👁  Mostrar terminadas e futuras",
+  "frmEnded": "  · terminada",
+  "frmUpcoming": "  · futura",
+  "frmSelectSubcategory": "Seleciona uma subcategoria",
+  "frmSubcategory": "Subcategoria",
+  "frmNewSubcategory": "➕  Nova subcategoria…",
+  "frmNoSubcategory": "— Sem subcategoria —",
+  "frmChoose": "Escolher",
+  "frmChooseEmoji": "Escolher emoji",
+  "frmOrUseKeyboardEmoji": "Ou usa outro emoji do teclado",
+  "frmRemove": "Remover",
+  "frmChooseColor": "Escolher cor",
+  "frmHue": "Matiz",
+  "frmSaturation": "Saturação",
+  "frmBrightness": "Brilho",
+  "frmHex": "Hexadecimal",
+  "frmMandatoryTitle": "Obrigatória · {name}",
+  "@frmMandatoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMandatoryExplain": "Os meses abaixo contam como despesa obrigatória nesta categoria. Nos restantes meses é opcional.",
+  "frmNoPeriodDefined": "Nenhum período definido.",
+  "frmFromMonth": "A partir de {month}",
+  "@frmFromMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmClose": "Fechar",
+  "frmAddPeriod": "Adicionar período",
+  "frmAdd": "Adicionar",
+  "frmPickAnyDayOfMonth": "Escolhe qualquer dia do mês",
+  "frmNewPeriod": "Novo período",
+  "frmSinceMonth": "Desde {month}",
+  "@frmSinceMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoEndDate": "Sem data de fim",
+  "frmUntilMonth": "Até {month}",
+  "@frmUntilMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMainCategories": "Principais",
+  "frmOnlyName": "Só {name}",
+  "@frmOnlyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoSubcategories": "Esta categoria não tem subcategorias.",
+  "frmSearchCategory": "Procurar categoria",
+  "frmNoCategoriesYet": "Ainda não tens categorias. Cria a primeira.",
+  "frmNoCategoryFound": "Nenhuma categoria encontrada.",
+  "frmNewCategoryTitle": "Nova categoria",
+  "frmChooseMonth": "Escolher mês",
+  "frmEnterName": "Indica um nome",
+  "frmMainCategoryExists": "Já existe uma categoria principal com este nome",
+  "frmSubcategoryExists": "Já existe esta subcategoria em {parent}",
+  "@frmSubcategoryExists": {
+    "placeholders": {
+      "parent": {
+        "type": "String"
+      }
+    }
+  },
+  "frmThisCategory": "esta categoria",
+  "frmRepeatedName": "Nome repetido",
+  "frmRemoveSubQuestion": "Remover “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria (só depois de guardares).",
+  "@frmRemoveSubQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmEditCategory": "Editar categoria",
+  "frmEditSubcategory": "Editar subcategoria",
+  "frmNewSubcategoryTitle": "Nova subcategoria",
+  "frmEditCategoryHint": "Altera os dados e as subcategorias",
+  "frmEditSubcategoryHint": "Altera os dados desta subcategoria",
+  "frmCreateSubsIn": "Cria subcategorias dentro de {name}",
+  "@frmCreateSubsIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmCreateCategoryHint": "Cria uma categoria e as suas subcategorias",
+  "frmSubcategoryName": "Nome da subcategoria",
+  "frmName": "Nome",
+  "frmParentCategory": "Categoria-mãe",
+  "frmNoneMainCategory": "Nenhuma (categoria principal)",
+  "frmHasSubsLock": "Tem subcategorias, por isso não pode ser uma subcategoria.",
+  "frmSubcategoryOf": "Subcategoria de ",
+  "frmCreatingSubcategoryOf": "A criar subcategoria de ",
+  "frmMoreSubsOf": "Mais subcategorias de {name}",
+  "@frmMoreSubsOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSubcategories": "Subcategorias",
+  "frmRemoveSubcategory": "Remover subcategoria",
+  "frmAddSubcategory": "Adicionar subcategoria",
+  "frmOptions": "Opções",
+  "frmType": "Tipo",
+  "frmOnlyInPeriod": "Só existe num período",
+  "frmOnlyInPeriodHint": "Ex.: “Férias 2027”. Fora do período deixa de aparecer nas escolhas.",
+  "frmSince": "Desde",
+  "frmSetEnd": "Definir fim",
+  "frmMandatoryIn": "Obrigatória em…",
+  "frmOptionalAllMonths": "Opcional em todos os meses",
+  "frmPeriodsDefined": "{count} período(s) definido(s)",
+  "@frmPeriodsDefined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmKindOptional": "Despesa opcional",
+  "frmKindMandatory": "Despesa obrigatória",
+  "frmKindIncome": "Rendimento",
+  "frmKindInvestment": "Investimento",
+  "frmKindBoth": "Despesas e receitas",
+  "frmKindOptionalHelp": "Gasto que podes cortar (lazer, restaurantes…).",
+  "frmKindMandatoryHelp": "Gasto fixo do mês (renda, seguros…). Depois podes escolher só alguns meses.",
+  "frmKindIncomeHelp": "Entradas de dinheiro (ex.: salário). Não conta como despesa.",
+  "frmKindInvestmentHelp": "Dinheiro que pões a render. Não conta como gasto; aparece como investido.",
+  "frmKindBothHelp": "Aceita gastos e entradas (ex.: vendas, reembolsos). Os gastos contam como despesa e as entradas como receita.",
+  "frmAccounts": "Contas",
+  "frmNewAccount": "Nova conta",
+  "frmEditAccount": "Editar conta",
+  "frmAccountNameHint": "Ex.: Conta à ordem",
+  "frmOpeningBalanceCurrency": "Saldo inicial ({currency})",
+  "@frmOpeningBalanceCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOpeningBalanceHelp": "Quanto tinhas na conta antes dos movimentos registados aqui.",
+  "frmNewAccountItem": "Nova conta…",
+  "frmNoAccount": "Sem conta",
+  "frmNoAccountsYet": "Ainda não tens contas.\nCria uma para saberes de onde vem cada movimento e para registar transferências entre contas.",
+  "frmAccountSubtitle": "{count, plural, =1{1 movimento} other{{count} movimentos}} · saldo {balance}",
+  "@frmAccountSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDeleteAccountQuestion": "Apagar a conta “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem conta.",
+  "@frmDeleteAccountQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmAccountDeleted": "Conta apagada.",
+  "frmEdit": "Editar",
+  "frmBalance": "Saldo",
+  "frmOpeningBalanceLine": "Saldo inicial {amount} · {count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@frmOpeningBalanceLine": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmThisMonth": "Este mês",
+  "frmMonthBalance": "Saldo do mês",
+  "frmGoalsFedByAccount": "Objetivos alimentados por esta conta",
+  "frmNoGoalFunded": "Nenhum objetivo recebe dinheiro desta conta ainda.",
+  "frmNoTransactionsInAccount": "Sem movimentos nesta conta.",
+  "frmObWelcome": "Bem-vindo",
+  "frmObFirstAccount": "Primeira conta",
+  "frmObSalary": "Salário",
+  "frmObDone": "Pronto",
+  "frmObEnterAmount1250": "Escreve um valor, por exemplo 1250,00",
+  "frmObEnterAmount1500": "Escreve um valor, por exemplo 1500,00",
+  "frmObWelcomeTitle": "Bem-vindo às Finanças",
+  "frmObWelcomeText": "Regista o dinheiro que entra e sai e vê para onde ele vai. Os teus dados ficam guardados só neste telemóvel, sem contas nem partilha.",
+  "frmObAccountTitle": "Qual é a tua conta principal?",
+  "frmObAccountText": "Podes adicionar mais contas depois. Se não quiseres agora, deixa em branco.",
+  "frmObAccountName": "Nome da conta",
+  "frmObSalaryTitle": "Quanto recebes por mês?",
+  "frmObSalaryText": "Salário líquido. Serve para o planeamento e para ver quanto ainda podes gastar. Podes mudar ou deixar em branco.",
+  "frmObSalaryField": "Salário líquido mensal ({currency})",
+  "@frmObSalaryField": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmObReadyTitle": "Está pronto",
+  "frmObReadyText": "Adiciona movimentos à mão ou importa um extrato. Podes mudar tudo depois nos ecrãs próprios.",
+  "frmBack": "Voltar",
+  "frmFinish": "Concluir",
+  "frmNext": "Seguinte",
+  "frmAll": "Todos",
+  "frmExpenses": "Despesas",
+  "frmTransfers": "Transferências",
+  "frmTransactionsCount": "{count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@frmTransactionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmInvestmentOf": "Investimento · {name}",
+  "@frmInvestmentOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOfAmount": "de {amount}",
+  "@frmOfAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoIncomeDefined": "sem rendimento definido",
+  "frmSetSalaryToSpend": "Define o salário no Orçamento para ver quanto ainda podes gastar.",
+  "frmOverPlanned": "Passaste {amount} do previsto",
+  "@frmOverPlanned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmIncomeExpected": "Receitas (previstas)",
+  "frmPercentOfIncome": "{percent}% do rendimento",
+  "@frmPercentOfIncome": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "frmToClassify": "{count} por classificar",
+  "@frmToClassify": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmDeliveriesCount": "{count, plural, =1{1 entrega} other{{count} entregas}} · {total}",
+  "@frmDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSetSalaryLeft": "Define o salário no Orçamento para ver o que sobra.",
+  "frmPlanExceeds": "O plano excede o salário em {amount}",
+  "@frmPlanExceeds": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSavedOfTarget": "{saved} de {target}{deadline}",
+  "@frmSavedOfTarget": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "frmUntilDate": " · até {date}",
+  "@frmUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}

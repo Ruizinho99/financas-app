@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import 'category_editor.dart';
@@ -44,6 +45,7 @@ class _CategorySheetState extends State<_CategorySheet> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final from = widget.when?.start ?? DateTime.now();
@@ -158,10 +160,10 @@ class _CategorySheetState extends State<_CategorySheet> {
             children: [
               ActionChip(
                 avatar: const Icon(Icons.arrow_back, size: 18),
-                label: const Text('Principais'),
+                label: Text(l.frmMainCategories),
                 onPressed: () => setState(() => openRoot = null),
               ),
-              chip(r, label: 'Só ${r.name}', root: true),
+              chip(r, label: l.frmOnlyName(r.name), root: true),
             ],
           ),
         ),
@@ -183,7 +185,7 @@ class _CategorySheetState extends State<_CategorySheet> {
             for (final k in subs) chip(k),
             if (subs.isEmpty)
               Text(
-                'Esta categoria não tem subcategorias.',
+                l.frmNoSubcategories,
                 style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               ),
           ],
@@ -201,8 +203,8 @@ class _CategorySheetState extends State<_CategorySheet> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
             child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Procurar categoria',
+              decoration: InputDecoration(
+                hintText: l.frmSearchCategory,
                 prefixIcon: Icon(Icons.search),
                 isDense: true,
               ),
@@ -221,8 +223,8 @@ class _CategorySheetState extends State<_CategorySheet> {
                     child: Center(
                       child: Text(
                         s.roots.isEmpty
-                            ? 'Ainda não tens categorias. Cria a primeira.'
-                            : 'Nenhuma categoria encontrada.',
+                            ? l.frmNoCategoriesYet
+                            : l.frmNoCategoryFound,
                         style: tt.bodyMedium?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
@@ -233,7 +235,7 @@ class _CategorySheetState extends State<_CategorySheet> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.add),
-                  title: const Text('Nova categoria'),
+                  title: Text(l.frmNewCategoryTitle),
                   onTap: () async {
                     final id = await showCategoryEditor(context);
                     if (id != null && context.mounted)
@@ -244,16 +246,14 @@ class _CategorySheetState extends State<_CategorySheet> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.close),
-                    title: const Text('Sem categoria'),
+                    title: Text(l.noCategory),
                     onTap: () => Navigator.pop(context, -1),
                   ),
                 if (hiddenExist || showAll)
                   TextButton(
                     onPressed: () => setState(() => showAll = !showAll),
                     child: Text(
-                      showAll
-                          ? 'Esconder terminadas e futuras'
-                          : 'Mostrar terminadas e futuras',
+                      showAll ? l.frmHideEndedFuture : l.frmShowEndedFuture,
                     ),
                   ),
               ],

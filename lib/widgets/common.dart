@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../screens/txn_form_screen.dart';
@@ -156,6 +157,7 @@ class _CategorySelectorState extends State<CategorySelector> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final chosen = s.cat(value);
     final rootId = chosen == null ? null : (chosen.parentId ?? chosen.id);
     final subId = chosen?.parentId == null ? null : chosen!.id;
@@ -176,8 +178,8 @@ class _CategorySelectorState extends State<CategorySelector> {
                               monthKey(DateTime.now()),
                             ) <
                             0
-                    ? '  · terminada'
-                    : '  · futura'));
+                    ? l.frmEnded
+                    : l.frmUpcoming));
 
     final allRoots = s.roots
         .where((r) => income == null || r.both || r.isIncome == income)
@@ -209,11 +211,11 @@ class _CategorySelectorState extends State<CategorySelector> {
       initialValue: rootId,
       isExpanded: true,
       decoration: form
-          ? const InputDecoration(
-              hintText: 'Seleciona uma categoria',
+          ? InputDecoration(
+              hintText: l.frmSelectCategory,
               prefixIcon: Icon(Icons.sell_outlined),
             )
-          : InputDecoration(labelText: 'Categoria', isDense: compact),
+          : InputDecoration(labelText: l.frmCategory, isDense: compact),
       items: [
         for (final r in roots)
           DropdownMenuItem(
@@ -223,24 +225,14 @@ class _CategorySelectorState extends State<CategorySelector> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-        const DropdownMenuItem(
-          value: _newItem,
-          child: Text('➕  Nova categoria…'),
-        ),
+        DropdownMenuItem(value: _newItem, child: Text(l.frmNewCategory)),
         if (hiddenExist || _showAll)
           DropdownMenuItem(
             value: _toggleAll,
-            child: Text(
-              _showAll
-                  ? '🙈  Esconder terminadas e futuras'
-                  : '👁  Mostrar terminadas e futuras',
-            ),
+            child: Text(_showAll ? l.frmHideEndedFuture : l.frmShowEndedFuture),
           ),
         if (rootId != null)
-          const DropdownMenuItem(
-            value: _none,
-            child: Text('✖️  Sem categoria'),
-          ),
+          DropdownMenuItem(value: _none, child: Text(l.frmNoCategoryItem)),
       ],
       onChanged: (v) {
         if (v == _newItem) {
@@ -264,12 +256,12 @@ class _CategorySelectorState extends State<CategorySelector> {
       isExpanded: true,
       decoration: form
           ? InputDecoration(
-              hintText: 'Seleciona uma subcategoria',
+              hintText: l.frmSelectSubcategory,
               prefixIcon: const Icon(Icons.format_list_bulleted),
               enabled: rootId != null,
             )
           : InputDecoration(
-              labelText: 'Subcategoria',
+              labelText: l.frmSubcategory,
               isDense: compact,
               enabled: rootId != null,
             ),
@@ -284,15 +276,12 @@ class _CategorySelectorState extends State<CategorySelector> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              const DropdownMenuItem(
+              DropdownMenuItem(
                 value: _newItem,
-                child: Text('➕  Nova subcategoria…'),
+                child: Text(l.frmNewSubcategory),
               ),
               if (subId != null)
-                const DropdownMenuItem(
-                  value: _none,
-                  child: Text('— Sem subcategoria —'),
-                ),
+                DropdownMenuItem(value: _none, child: Text(l.frmNoSubcategory)),
             ],
       onChanged: rootId == null
           ? null
@@ -311,9 +300,9 @@ class _CategorySelectorState extends State<CategorySelector> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FieldLabel('Categoria'),
+          FieldLabel(l.frmCategory),
           catDrop,
-          const FieldLabel('Subcategoria', optional: true),
+          FieldLabel(l.frmSubcategory, optional: true),
           subDrop,
         ],
       );
@@ -341,12 +330,13 @@ Future<int?> pickCategory(
   bool? income,
   bool allowClear = true,
 }) {
+  final l = AppLocalizations.of(context)!;
   int? v = selected;
   return showDialog<int>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: const Text('Escolher categoria'),
+        title: Text(l.frmChooseCategory),
         content: SingleChildScrollView(
           child: CategorySelector(
             value: v,
@@ -358,15 +348,15 @@ Future<int?> pickCategory(
           if (allowClear)
             TextButton(
               onPressed: () => Navigator.pop(ctx, -1),
-              child: const Text('Sem categoria'),
+              child: Text(l.noCategory),
             ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: v == null ? null : () => Navigator.pop(ctx, v),
-            child: const Text('Escolher'),
+            child: Text(l.frmChoose),
           ),
         ],
       ),
@@ -451,11 +441,12 @@ const _emojis = <String>[
 ];
 
 Future<String?> pickEmoji(BuildContext context, String current) {
+  final l = AppLocalizations.of(context)!;
   final ctrl = TextEditingController(text: current);
   return showDialog<String>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Escolher emoji'),
+      title: Text(l.frmChooseEmoji),
       content: SizedBox(
         width: 340,
         child: SingleChildScrollView(
@@ -488,9 +479,7 @@ Future<String?> pickEmoji(BuildContext context, String current) {
               const SizedBox(height: 12),
               TextField(
                 controller: ctrl,
-                decoration: const InputDecoration(
-                  labelText: 'Ou usa outro emoji do teclado',
-                ),
+                decoration: InputDecoration(labelText: l.frmOrUseKeyboardEmoji),
                 onSubmitted: (v) => Navigator.pop(
                   ctx,
                   v.trim().isEmpty ? '' : v.characters.first,
@@ -504,12 +493,9 @@ Future<String?> pickEmoji(BuildContext context, String current) {
         if (current.isNotEmpty)
           TextButton(
             onPressed: () => Navigator.pop(ctx, ''),
-            child: const Text('Remover'),
+            child: Text(l.frmRemove),
           ),
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancelar'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
         FilledButton(
           onPressed: () => Navigator.pop(
             ctx,
@@ -610,6 +596,7 @@ class ColorChoice extends StatelessWidget {
 
 /// Seletor de cor livre (matiz, saturação, brilho ou código hexadecimal).
 Future<int?> pickCustomColor(BuildContext context, int initial) {
+  final l = AppLocalizations.of(context)!;
   return showDialog<int>(
     context: context,
     builder: (_) {
@@ -617,7 +604,7 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
       final hex = TextEditingController(text: _hex(hsv.toColor()));
       return StatefulBuilder(
         builder: (ctx, set) => AlertDialog(
-          title: const Text('Escolher cor'),
+          title: Text(l.frmChooseColor),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -631,7 +618,7 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
                 ),
                 const SizedBox(height: 8),
                 _slider(
-                  'Matiz',
+                  l.frmHue,
                   hsv.hue,
                   360,
                   (v) => set(() {
@@ -640,7 +627,7 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
                   }),
                 ),
                 _slider(
-                  'Saturação',
+                  l.frmSaturation,
                   hsv.saturation,
                   1,
                   (v) => set(() {
@@ -649,7 +636,7 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
                   }),
                 ),
                 _slider(
-                  'Brilho',
+                  l.frmBrightness,
                   hsv.value,
                   1,
                   (v) => set(() {
@@ -659,8 +646,8 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
                 ),
                 TextField(
                   controller: hex,
-                  decoration: const InputDecoration(
-                    labelText: 'Hexadecimal',
+                  decoration: InputDecoration(
+                    labelText: l.frmHex,
                     prefixText: '#',
                   ),
                   onChanged: (v) {
@@ -677,11 +664,11 @@ Future<int?> pickCustomColor(BuildContext context, int initial) {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, hsv.toColor().toARGB32()),
-              child: const Text('Usar'),
+              child: Text(l.frmUse),
             ),
           ],
         ),
@@ -720,26 +707,25 @@ class _MandatoryDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final ranges = s.rangesOf(category.id);
     String m(String k) => fmtMonth(
       DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))),
     );
     return AlertDialog(
-      title: Text('Obrigatória · ${category.name}'),
+      title: Text(l.frmMandatoryTitle(category.name)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Os meses abaixo contam como despesa obrigatória nesta categoria. Nos restantes meses é opcional.',
-            ),
+            Text(l.frmMandatoryExplain),
             const SizedBox(height: 8),
             if (ranges.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  'Nenhum período definido.',
+                  l.frmNoPeriodDefined,
                   style: TextStyle(fontStyle: FontStyle.italic),
                 ),
               ),
@@ -749,7 +735,7 @@ class _MandatoryDialog extends StatelessWidget {
                 dense: true,
                 title: Text(
                   r.end == null
-                      ? 'A partir de ${m(r.start)}'
+                      ? l.frmFromMonth(m(r.start))
                       : (r.start == r.end
                             ? m(r.start)
                             : '${m(r.start)} → ${m(r.end!)}'),
@@ -765,11 +751,11 @@ class _MandatoryDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Fechar'),
+          child: Text(l.frmClose),
         ),
         FilledButton.icon(
           icon: const Icon(Icons.add),
-          label: const Text('Adicionar período'),
+          label: Text(l.frmAddPeriod),
           onPressed: () async {
             final r = await showDialog<(String, String?)>(
               context: context,
@@ -795,20 +781,22 @@ class _RangePickerState extends State<_RangePicker> {
   bool open = false;
 
   Future<DateTime?> _pick(DateTime initial) async {
+    final l = AppLocalizations.of(context)!;
     final d = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      helpText: 'Escolhe qualquer dia do mês',
+      helpText: l.frmPickAnyDayOfMonth,
     );
     return d == null ? null : DateTime(d.year, d.month);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Novo período'),
+      title: Text(l.frmNewPeriod),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -817,11 +805,11 @@ class _RangePickerState extends State<_RangePicker> {
               final d = await _pick(from);
               if (d != null) setState(() => from = d);
             },
-            child: Text('Desde ${fmtMonth(from)}'),
+            child: Text(l.frmSinceMonth(fmtMonth(from))),
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Sem data de fim'),
+            title: Text(l.frmNoEndDate),
             value: open,
             onChanged: (v) => setState(() => open = v),
           ),
@@ -831,14 +819,14 @@ class _RangePickerState extends State<_RangePicker> {
                 final d = await _pick(to ?? from);
                 if (d != null) setState(() => to = d);
               },
-              child: Text('Até ${fmtMonth(to ?? from)}'),
+              child: Text(l.frmUntilMonth(fmtMonth(to ?? from))),
             ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: () {
@@ -849,7 +837,7 @@ class _RangePickerState extends State<_RangePicker> {
               b == null ? null : monthKey(b),
             ));
           },
-          child: const Text('Adicionar'),
+          child: Text(l.frmAdd),
         ),
       ],
     );

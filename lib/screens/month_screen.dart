@@ -180,8 +180,8 @@ class _MonthScreenState extends State<MonthScreen> {
                         ),
                         Text(
                           ceiling > 0
-                              ? 'de ${fmtMoney(ceiling, short: true)}'
-                              : 'sem rendimento definido',
+                              ? l.frmOfAmount(fmtMoney(ceiling, short: true))
+                              : l.frmNoIncomeDefined,
                           style: tt.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -196,9 +196,9 @@ class _MonthScreenState extends State<MonthScreen> {
             Center(
               child: Text(
                 ceiling <= 0
-                    ? 'Define o salário no Orçamento para ver quanto ainda podes gastar.'
+                    ? l.frmSetSalaryToSpend
                     : (over
-                          ? 'Passaste ${fmtMoney(an.spent - ceiling)} do previsto'
+                          ? l.frmOverPlanned(fmtMoney(an.spent - ceiling))
                           : l.canStillSpend(fmtMoney(ceiling - an.spent))),
                 style: tt.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
@@ -225,7 +225,7 @@ class _MonthScreenState extends State<MonthScreen> {
                   child: _Stat(
                     label:
                         an.incomeFromSalary || (an.ongoing && s.salaryIn(p) > 0)
-                        ? 'Receitas (previstas)'
+                        ? l.frmIncomeExpected
                         : l.income,
                     value: fmtMoney(an.income),
                     color: incomeColor,
@@ -240,7 +240,7 @@ class _MonthScreenState extends State<MonthScreen> {
                     color: an.balance >= 0 ? incomeColor : expenseColor,
                     note: an.savingsRate == null
                         ? null
-                        : '${(an.savingsRate! * 100).round()}% do rendimento',
+                        : l.frmPercentOfIncome((an.savingsRate! * 100).round()),
                   ),
                 ),
               ],
@@ -325,7 +325,7 @@ class _MonthScreenState extends State<MonthScreen> {
                   child: Icon(Icons.style, color: cs.onPrimary, size: 20),
                 ),
                 title: Text(
-                  '$pending por classificar',
+                  l.frmToClassify(pending),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 subtitle: Text(l.classifyHint),
@@ -426,8 +426,10 @@ class _CartoesMes extends StatelessWidget {
         if (entregas.isNotEmpty)
           SectionCard(
             title: l.deliveriesToDistribute,
-            subtitle:
-                '${entregas.length} ${entregas.length == 1 ? 'entrega' : 'entregas'} · ${fmtMoney(entregasTotal)}',
+            subtitle: l.frmDeliveriesCount(
+              entregas.length,
+              fmtMoney(entregasTotal),
+            ),
             trailing: TextButton(
               onPressed: () => _abrir(context, const _EntregasScreen()),
               child: Text(l.distribute),
@@ -497,9 +499,9 @@ class _CartoesMes extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             t.salary <= 0
-                ? 'Define o salário no Orçamento para ver o que sobra.'
+                ? l.frmSetSalaryLeft
                 : (sobra < 0
-                      ? 'O plano excede o salário em ${fmtMoney(-sobra)}'
+                      ? l.frmPlanExceeds(fmtMoney(-sobra))
                       : l.leftAfterPlan(fmtMoney(sobra))),
             style: tt.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
@@ -571,8 +573,11 @@ class _LinhaObjetivo extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${fmtMoney(p.saved)} de ${fmtMoney(p.target)}'
-              '${prazo == null ? '' : ' · até ${fmtDate(prazo!)}'}',
+              l.frmSavedOfTarget(
+                fmtMoney(p.saved),
+                fmtMoney(p.target),
+                prazo == null ? '' : l.frmUntilDate(fmtDate(prazo!)),
+              ),
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ],

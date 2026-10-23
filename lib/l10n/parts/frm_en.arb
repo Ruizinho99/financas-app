@@ -1,0 +1,512 @@
+{
+  "@@locale": "en",
+  "frmReceipt": "Receipt",
+  "frmViewReceipt": "View receipt",
+  "frmTakePhoto": "Take photo",
+  "frmChooseFromGallery": "Choose from gallery",
+  "frmChooseFile": "Choose file (PDF or image)",
+  "frmRemoveReceipt": "Remove receipt",
+  "frmReceiptAttachError": "Couldn't attach the receipt: {error}",
+  "@frmReceiptAttachError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReceiptFileNotFound": "Receipt file not found.",
+  "frmEnterValidAmount": "Enter a valid amount.",
+  "frmAllocatedToGoals": "You already have {amount} allocated to goals. Reduce the allocations first.",
+  "@frmAllocatedToGoals": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransferTo": "Transfer to {name}",
+  "@frmTransferTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransfer": "Transfer",
+  "frmExpense": "Expense",
+  "frmIncome": "Income",
+  "frmReversedGone": "The reversed expense no longer exists.",
+  "frmEnterReversedAmount": "Enter how much of the expense is reversed.",
+  "frmReversalTooBig": "A reversal can't be larger than the income.",
+  "frmOnlyLeftToReverse": "Only {amount} is left to reverse on this expense.",
+  "@frmOnlyLeftToReverse": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReversalHelp": "You can still reverse {amount} of this expense. The reversed part doesn't count as spending or income in Analysis.",
+  "@frmReversalHelp": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSearchExpense": "Search expense",
+  "frmNoReversal": "Doesn't reverse any expense",
+  "frmToReverseSubtitle": "{date} · {amount} · {left} left to reverse",
+  "@frmToReverseSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoExpenseToReverse": "No expense to reverse.",
+  "frmInvestPlatform": "Investment platform",
+  "frmNone": "None",
+  "frmExpenseGone": "Expense no longer exists",
+  "frmSaveToSplit": "Save the transaction to split it across goals.",
+  "frmChangeAmount": "Change amount",
+  "frmUnlink": "Unlink",
+  "frmToAllocate": "To allocate: {amount}",
+  "@frmToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSplitByGoals": "Split by goals",
+  "frmSplitByGoal": "Split by goal",
+  "frmAllocate": "Allocate",
+  "frmSave": "Save",
+  "frmAccount": "Account",
+  "frmFromAccount": "From account",
+  "frmDestinationAccount": "Destination account",
+  "frmSelectAccount": "Select an account",
+  "frmSelectDestinationAccount": "Select the destination account",
+  "frmToAccount": "To account",
+  "frmTakePhotoOrChoose": "Take a photo or choose a file",
+  "frmEditTransaction": "Edit transaction",
+  "frmNewTransaction": "New transaction",
+  "frmImportStatementTip": "Import statement",
+  "frmDeleteThisTransaction": "Delete this transaction?",
+  "frmCalculator": "Calculator",
+  "frmCategory": "Category",
+  "frmChooseCategory": "Choose category",
+  "frmReversesExpense": "Reverses an expense (refund, return)",
+  "frmReversedAmount": "Reversed amount ({currency})",
+  "@frmReversedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDescriptionOptional": "Description (optional)",
+  "frmToday": "Today",
+  "frmYesterday": "Yesterday",
+  "frmOtherDate": "Other date",
+  "frmToInvestOptional": "To invest (optional)",
+  "frmOutgoing": "Outgoing",
+  "frmIncoming": "Incoming",
+  "frmNotCountedNote": "Doesn't count as expense or income in Analysis.",
+  "frmMoreOptions": "More options (account, receipt)",
+  "frmAmountCurrency": "Amount ({currency})",
+  "@frmAmountCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOnlyLeftToAllocate": "Only {amount} is left to allocate.",
+  "@frmOnlyLeftToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOptional": " (optional)",
+  "frmCalcHint": "E.g.: 12.50+3*2",
+  "frmUse": "Use",
+  "frmWholeFile": "Whole file",
+  "frmPeriodToImport": "Period to import",
+  "frmFileDataRange": "The file has data from {from} to {to}. Choose only the range you want to import.",
+  "@frmFileDataRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "frmFrom": "From",
+  "frmUntil": "Until",
+  "frmInRangeOfTotal": "{inRange} of {total} in the period",
+  "@frmInRangeOfTotal": {
+    "placeholders": {
+      "inRange": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmTotalInFile": "{total} in the file",
+  "@frmTotalInFile": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmSelectCategory": "Select a category",
+  "frmNewCategory": "➕  New category…",
+  "frmNoCategoryItem": "✖️  No category",
+  "frmHideEndedFuture": "🙈  Hide ended and upcoming",
+  "frmShowEndedFuture": "👁  Show ended and upcoming",
+  "frmEnded": "  · ended",
+  "frmUpcoming": "  · upcoming",
+  "frmSelectSubcategory": "Select a subcategory",
+  "frmSubcategory": "Subcategory",
+  "frmNewSubcategory": "➕  New subcategory…",
+  "frmNoSubcategory": "— No subcategory —",
+  "frmChoose": "Choose",
+  "frmChooseEmoji": "Choose emoji",
+  "frmOrUseKeyboardEmoji": "Or use another emoji from the keyboard",
+  "frmRemove": "Remove",
+  "frmChooseColor": "Choose color",
+  "frmHue": "Hue",
+  "frmSaturation": "Saturation",
+  "frmBrightness": "Brightness",
+  "frmHex": "Hex",
+  "frmMandatoryTitle": "Mandatory · {name}",
+  "@frmMandatoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMandatoryExplain": "The months below count as mandatory spending in this category. In other months it's optional.",
+  "frmNoPeriodDefined": "No period defined.",
+  "frmFromMonth": "From {month}",
+  "@frmFromMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmClose": "Close",
+  "frmAddPeriod": "Add period",
+  "frmAdd": "Add",
+  "frmPickAnyDayOfMonth": "Pick any day of the month",
+  "frmNewPeriod": "New period",
+  "frmSinceMonth": "Since {month}",
+  "@frmSinceMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoEndDate": "No end date",
+  "frmUntilMonth": "Until {month}",
+  "@frmUntilMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMainCategories": "Main",
+  "frmOnlyName": "Only {name}",
+  "@frmOnlyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoSubcategories": "This category has no subcategories.",
+  "frmSearchCategory": "Search category",
+  "frmNoCategoriesYet": "You don't have any categories yet. Create the first one.",
+  "frmNoCategoryFound": "No category found.",
+  "frmNewCategoryTitle": "New category",
+  "frmChooseMonth": "Choose month",
+  "frmEnterName": "Enter a name",
+  "frmMainCategoryExists": "A main category with this name already exists",
+  "frmSubcategoryExists": "This subcategory already exists in {parent}",
+  "@frmSubcategoryExists": {
+    "placeholders": {
+      "parent": {
+        "type": "String"
+      }
+    }
+  },
+  "frmThisCategory": "this category",
+  "frmRepeatedName": "Repeated name",
+  "frmRemoveSubQuestion": "Remove “{name}”? {count, plural, =1{The transaction will} other{The {count} transactions will}} be left without a category (only after you save).",
+  "@frmRemoveSubQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmEditCategory": "Edit category",
+  "frmEditSubcategory": "Edit subcategory",
+  "frmNewSubcategoryTitle": "New subcategory",
+  "frmEditCategoryHint": "Edit the details and subcategories",
+  "frmEditSubcategoryHint": "Edit the details of this subcategory",
+  "frmCreateSubsIn": "Create subcategories inside {name}",
+  "@frmCreateSubsIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmCreateCategoryHint": "Create a category and its subcategories",
+  "frmSubcategoryName": "Subcategory name",
+  "frmName": "Name",
+  "frmParentCategory": "Parent category",
+  "frmNoneMainCategory": "None (main category)",
+  "frmHasSubsLock": "It has subcategories, so it can't be a subcategory.",
+  "frmSubcategoryOf": "Subcategory of ",
+  "frmCreatingSubcategoryOf": "Creating a subcategory of ",
+  "frmMoreSubsOf": "More subcategories of {name}",
+  "@frmMoreSubsOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSubcategories": "Subcategories",
+  "frmRemoveSubcategory": "Remove subcategory",
+  "frmAddSubcategory": "Add subcategory",
+  "frmOptions": "Options",
+  "frmType": "Type",
+  "frmOnlyInPeriod": "Only exists for a period",
+  "frmOnlyInPeriodHint": "E.g.: “Holidays 2027”. Outside the period it stops showing in the choices.",
+  "frmSince": "Since",
+  "frmSetEnd": "Set end",
+  "frmMandatoryIn": "Mandatory in…",
+  "frmOptionalAllMonths": "Optional in all months",
+  "frmPeriodsDefined": "{count, plural, =1{1 period set} other{{count} periods set}}",
+  "@frmPeriodsDefined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmKindOptional": "Optional expense",
+  "frmKindMandatory": "Mandatory expense",
+  "frmKindIncome": "Income",
+  "frmKindInvestment": "Investment",
+  "frmKindBoth": "Expenses and income",
+  "frmKindOptionalHelp": "Spending you can cut (leisure, restaurants…).",
+  "frmKindMandatoryHelp": "Fixed monthly spending (rent, insurance…). You can then pick only some months.",
+  "frmKindIncomeHelp": "Money coming in (e.g. salary). Doesn't count as an expense.",
+  "frmKindInvestmentHelp": "Money you put to work. Doesn't count as spending; it shows as invested.",
+  "frmKindBothHelp": "Accepts spending and income (e.g. sales, refunds). Spending counts as an expense and income as income.",
+  "frmAccounts": "Accounts",
+  "frmNewAccount": "New account",
+  "frmEditAccount": "Edit account",
+  "frmAccountNameHint": "E.g.: Current account",
+  "frmOpeningBalanceCurrency": "Opening balance ({currency})",
+  "@frmOpeningBalanceCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOpeningBalanceHelp": "How much you had in the account before the transactions recorded here.",
+  "frmNewAccountItem": "New account…",
+  "frmNoAccount": "No account",
+  "frmNoAccountsYet": "You don't have any accounts yet.\nCreate one to see where each transaction comes from and to record transfers between accounts.",
+  "frmAccountSubtitle": "{count, plural, =1{1 transaction} other{{count} transactions}} · balance {balance}",
+  "@frmAccountSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDeleteAccountQuestion": "Delete the account “{name}”? {count, plural, =1{The transaction will} other{The {count} transactions will}} be left without an account.",
+  "@frmDeleteAccountQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmAccountDeleted": "Account deleted.",
+  "frmEdit": "Edit",
+  "frmBalance": "Balance",
+  "frmOpeningBalanceLine": "Opening balance {amount} · {count, plural, =1{1 transaction} other{{count} transactions}}",
+  "@frmOpeningBalanceLine": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmThisMonth": "This month",
+  "frmMonthBalance": "Month balance",
+  "frmGoalsFedByAccount": "Goals fed by this account",
+  "frmNoGoalFunded": "No goal receives money from this account yet.",
+  "frmNoTransactionsInAccount": "No transactions in this account.",
+  "frmObWelcome": "Welcome",
+  "frmObFirstAccount": "First account",
+  "frmObSalary": "Salary",
+  "frmObDone": "Done",
+  "frmObEnterAmount1250": "Enter an amount, for example 1250.00",
+  "frmObEnterAmount1500": "Enter an amount, for example 1500.00",
+  "frmObWelcomeTitle": "Welcome to Finances",
+  "frmObWelcomeText": "Record the money that comes in and goes out, and see where it goes. Your data stays only on this phone, with no accounts or sharing.",
+  "frmObAccountTitle": "What's your main account?",
+  "frmObAccountText": "You can add more accounts later. If you don't want to now, leave it blank.",
+  "frmObAccountName": "Account name",
+  "frmObSalaryTitle": "How much do you get per month?",
+  "frmObSalaryText": "Net salary. It's used for planning and to see how much you can still spend. You can change it or leave it blank.",
+  "frmObSalaryField": "Monthly net salary ({currency})",
+  "@frmObSalaryField": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmObReadyTitle": "You're all set",
+  "frmObReadyText": "Add transactions by hand or import a statement. You can change everything later on the dedicated screens.",
+  "frmBack": "Back",
+  "frmFinish": "Finish",
+  "frmNext": "Next",
+  "frmAll": "All",
+  "frmExpenses": "Expenses",
+  "frmTransfers": "Transfers",
+  "frmTransactionsCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
+  "@frmTransactionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmInvestmentOf": "Investment · {name}",
+  "@frmInvestmentOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOfAmount": "of {amount}",
+  "@frmOfAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoIncomeDefined": "no income set",
+  "frmSetSalaryToSpend": "Set your salary in Budget to see how much you can still spend.",
+  "frmOverPlanned": "You're {amount} over plan",
+  "@frmOverPlanned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmIncomeExpected": "Income (expected)",
+  "frmPercentOfIncome": "{percent}% of income",
+  "@frmPercentOfIncome": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "frmToClassify": "{count} to classify",
+  "@frmToClassify": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmDeliveriesCount": "{count, plural, =1{1 delivery} other{{count} deliveries}} · {total}",
+  "@frmDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSetSalaryLeft": "Set your salary in Budget to see what's left.",
+  "frmPlanExceeds": "The plan exceeds the salary by {amount}",
+  "@frmPlanExceeds": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSavedOfTarget": "{saved} of {target}{deadline}",
+  "@frmSavedOfTarget": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "frmUntilDate": " · until {date}",
+  "@frmUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}
