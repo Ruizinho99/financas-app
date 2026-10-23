@@ -132,5 +132,41 @@
       }
     }
   },
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "monthStartTitle": "Start of the month",
+  "monthStartSubtitle": "Fixed day or payday",
+  "monthModeCalendar": "Calendar",
+  "monthModeFixed": "Fixed day",
+  "monthModeSalary": "Salary",
+  "monthStartDayLabel": "Day the month starts",
+  "monthNamedByEnd": "A month is named after the month it ends in: 25 Aug – 24 Sep is September.",
+  "monthCalendarHint": "The month runs from the 1st to the last day, like the calendar.",
+  "salaryCategoryLabel": "Salary category",
+  "salaryCategoryChoose": "Choose category",
+  "salaryCategoryHint": "The month starts on the day a positive transaction arrives in this category.",
+  "salaryDatesFound": "Paydays found: {count}",
+  "@salaryDatesFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "salaryNoneFound": "No salaries in this category yet. Until then, the month is the calendar month.",
+  "thisMonthIs": "This month: {range}",
+  "@thisMonthIs": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "dayOfMonthItem": "Day {day}",
+  "@dayOfMonthItem": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  }
 }

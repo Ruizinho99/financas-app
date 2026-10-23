@@ -28,15 +28,17 @@ class MonthScreen extends StatefulWidget {
 }
 
 class _MonthScreenState extends State<MonthScreen> {
-  late DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
+  // o mês da app em foco (ano e mês do nome, ex.: 25 ago–24 set é setembro)
+  late DateTime month = _keyToMonth(context.read<AppState>().currentMonthKey);
+
+  static DateTime _keyToMonth(String k) =>
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
 
   void _shift(int d) =>
       setState(() => month = DateTime(month.year, month.month + d));
 
-  bool get _isCurrent {
-    final n = DateTime.now();
-    return month.year == n.year && month.month == n.month;
-  }
+  bool get _isCurrent =>
+      monthKey(month) == context.read<AppState>().currentMonthKey;
 
   void _open(Widget w) =>
       Navigator.push(context, MaterialPageRoute(builder: (_) => w));
@@ -47,12 +49,12 @@ class _MonthScreenState extends State<MonthScreen> {
     final s = context.watch<AppState>();
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    final p = Period.month(month);
+    final p = s.periodOfMonth(monthKey(month));
     final an = Analytics(
       s,
       p,
       const AnalysisFilter(),
-      previous: previousPeriod(p),
+      previous: s.previousMonthOf(p) ?? previousPeriod(p),
     );
     final pending = s.transactions
         .where((t) => t.categoryId == null && !t.isTransfer)
@@ -85,9 +87,25 @@ class _MonthScreenState extends State<MonthScreen> {
               lastDate: DateTime(2100),
               helpText: l.pickDayOfMonth,
             );
-            if (d != null) setState(() => month = DateTime(d.year, d.month));
+            if (d != null) {
+              setState(
+                () =>
+                    month = _keyToMonth(context.read<AppState>().monthKeyOf(d)),
+              );
+            }
           },
-          child: Text(fmtMonth(month), style: tt.titleLarge),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(fmtMonth(month), style: tt.titleLarge),
+              // com um início de mês diferente do dia 1, mostra as datas do mês
+              if (s.customMonth)
+                Text(
+                  '${fmtDayMonth(p.start)} – ${fmtDayMonth(p.end.subtract(const Duration(days: 1)))}',
+                  style: tt.bodySmall,
+                ),
+            ],
+          ),
         ),
         actions: [
           IconButton(
@@ -344,12 +362,8 @@ class _MonthScreenState extends State<MonthScreen> {
             Align(
               alignment: Alignment.center,
               child: TextButton(
-                onPressed: () => setState(
-                  () => month = DateTime(
-                    DateTime.now().year,
-                    DateTime.now().month,
-                  ),
-                ),
+                onPressed: () =>
+                    setState(() => month = _keyToMonth(s.currentMonthKey)),
                 child: Text(l.backToThisMonth),
               ),
             ),

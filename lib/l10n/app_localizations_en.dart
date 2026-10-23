@@ -202,4 +202,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get monthStartTitle => 'Start of the month';
+
+  @override
+  String get monthStartSubtitle => 'Fixed day or payday';
+
+  @override
+  String get monthModeCalendar => 'Calendar';
+
+  @override
+  String get monthModeFixed => 'Fixed day';
+
+  @override
+  String get monthModeSalary => 'Salary';
+
+  @override
+  String get monthStartDayLabel => 'Day the month starts';
+
+  @override
+  String get monthNamedByEnd =>
+      'A month is named after the month it ends in: 25 Aug – 24 Sep is September.';
+
+  @override
+  String get monthCalendarHint =>
+      'The month runs from the 1st to the last day, like the calendar.';
+
+  @override
+  String get salaryCategoryLabel => 'Salary category';
+
+  @override
+  String get salaryCategoryChoose => 'Choose category';
+
+  @override
+  String get salaryCategoryHint =>
+      'The month starts on the day a positive transaction arrives in this category.';
+
+  @override
+  String salaryDatesFound(int count) {
+    return 'Paydays found: $count';
+  }
+
+  @override
+  String get salaryNoneFound =>
+      'No salaries in this category yet. Until then, the month is the calendar month.';
+
+  @override
+  String thisMonthIs(String range) {
+    return 'This month: $range';
+  }
+
+  @override
+  String dayOfMonthItem(int day) {
+    return 'Day $day';
+  }
 }

@@ -25,10 +25,12 @@ class _AnalysisScreenState extends State<AnalysisScreen>
     with SingleTickerProviderStateMixin {
   late final TabController tabs = TabController(length: 4, vsync: this);
   _Mode mode = _Mode.month;
-  late DateTime month = DateTime(
-    (widget.initialMonth ?? DateTime.now()).year,
-    (widget.initialMonth ?? DateTime.now()).month,
-  );
+  late DateTime month = widget.initialMonth != null
+      ? DateTime(widget.initialMonth!.year, widget.initialMonth!.month)
+      : _keyToMonth(context.read<AppState>().currentMonthKey);
+
+  static DateTime _keyToMonth(String k) =>
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
   late int year = month.year;
   late DateTime customFrom = month;
   late DateTime customTo = DateTime(month.year, month.month + 1, 0);
@@ -42,7 +44,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
   }
 
   Period get period => switch (mode) {
-    _Mode.month => Period.month(month),
+    _Mode.month => context.read<AppState>().periodOfMonth(monthKey(month)),
     _Mode.year => Period.year(year),
     _Mode.ytd => Period.ytd(),
     _Mode.custom => Period.custom(customFrom, customTo),
@@ -71,7 +73,9 @@ class _AnalysisScreenState extends State<AnalysisScreen>
       s,
       p,
       filter,
-      previous: compare ? previousPeriod(p, today: DateTime.now()) : null,
+      previous: compare
+          ? (s.previousMonthOf(p) ?? previousPeriod(p, today: DateTime.now()))
+          : null,
     );
     final cs = Theme.of(context).colorScheme;
 

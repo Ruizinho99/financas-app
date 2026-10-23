@@ -202,4 +202,59 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cancel => 'Cancelar';
+
+  @override
+  String get monthStartTitle => 'Início do mês';
+
+  @override
+  String get monthStartSubtitle => 'Dia fixo ou o dia do salário';
+
+  @override
+  String get monthModeCalendar => 'Calendário';
+
+  @override
+  String get monthModeFixed => 'Dia fixo';
+
+  @override
+  String get monthModeSalary => 'Salário';
+
+  @override
+  String get monthStartDayLabel => 'Dia em que o mês começa';
+
+  @override
+  String get monthNamedByEnd =>
+      'O mês tem o nome do mês em que termina: 25 ago – 24 set é setembro.';
+
+  @override
+  String get monthCalendarHint =>
+      'O mês vai do dia 1 ao último dia, como no calendário.';
+
+  @override
+  String get salaryCategoryLabel => 'Categoria do salário';
+
+  @override
+  String get salaryCategoryChoose => 'Escolher categoria';
+
+  @override
+  String get salaryCategoryHint =>
+      'O mês começa no dia em que entra um movimento positivo nesta categoria.';
+
+  @override
+  String salaryDatesFound(int count) {
+    return 'Salários encontrados: $count';
+  }
+
+  @override
+  String get salaryNoneFound =>
+      'Ainda sem salários nesta categoria. Até lá, o mês é o do calendário.';
+
+  @override
+  String thisMonthIs(String range) {
+    return 'Este mês: $range';
+  }
+
+  @override
+  String dayOfMonthItem(int day) {
+    return 'Dia $day';
+  }
 }

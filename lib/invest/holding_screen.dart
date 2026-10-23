@@ -182,9 +182,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                             ? null
                             : () async {
                                 setState(() => refreshing = true);
-                                final messenger = ScaffoldMessenger.of(
-                                  context,
-                                );
+                                final messenger = ScaffoldMessenger.of(context);
                                 final r = await s.refreshPrices(
                                   holdingId: h.id,
                                 );

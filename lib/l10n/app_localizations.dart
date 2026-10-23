@@ -439,6 +439,96 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Cancelar'**
   String get cancel;
+
+  /// No description provided for @monthStartTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Início do mês'**
+  String get monthStartTitle;
+
+  /// No description provided for @monthStartSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dia fixo ou o dia do salário'**
+  String get monthStartSubtitle;
+
+  /// No description provided for @monthModeCalendar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Calendário'**
+  String get monthModeCalendar;
+
+  /// No description provided for @monthModeFixed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dia fixo'**
+  String get monthModeFixed;
+
+  /// No description provided for @monthModeSalary.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salário'**
+  String get monthModeSalary;
+
+  /// No description provided for @monthStartDayLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dia em que o mês começa'**
+  String get monthStartDayLabel;
+
+  /// No description provided for @monthNamedByEnd.
+  ///
+  /// In pt, this message translates to:
+  /// **'O mês tem o nome do mês em que termina: 25 ago – 24 set é setembro.'**
+  String get monthNamedByEnd;
+
+  /// No description provided for @monthCalendarHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'O mês vai do dia 1 ao último dia, como no calendário.'**
+  String get monthCalendarHint;
+
+  /// No description provided for @salaryCategoryLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Categoria do salário'**
+  String get salaryCategoryLabel;
+
+  /// No description provided for @salaryCategoryChoose.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher categoria'**
+  String get salaryCategoryChoose;
+
+  /// No description provided for @salaryCategoryHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'O mês começa no dia em que entra um movimento positivo nesta categoria.'**
+  String get salaryCategoryHint;
+
+  /// No description provided for @salaryDatesFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salários encontrados: {count}'**
+  String salaryDatesFound(int count);
+
+  /// No description provided for @salaryNoneFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ainda sem salários nesta categoria. Até lá, o mês é o do calendário.'**
+  String get salaryNoneFound;
+
+  /// No description provided for @thisMonthIs.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este mês: {range}'**
+  String thisMonthIs(String range);
+
+  /// No description provided for @dayOfMonthItem.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dia {day}'**
+  String dayOfMonthItem(int day);
 }
 
 class _AppLocalizationsDelegate

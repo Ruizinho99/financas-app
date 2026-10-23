@@ -60,6 +60,10 @@ String fmtMonth(DateTime d) {
 }
 
 String fmtMonthShort(DateTime d) => _monthShort.format(d);
+
+/// Dia e mês curto, ex.: "25 ago".
+String fmtDayMonth(DateTime d) =>
+    '${d.day} ${_monthShort.format(d).replaceAll('.', '')}';
 String isoDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 String monthKey(DateTime d) =>

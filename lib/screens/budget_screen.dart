@@ -14,13 +14,17 @@ class BudgetScreen extends StatefulWidget {
 }
 
 class _BudgetScreenState extends State<BudgetScreen> {
-  DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
+  // o mês da app em foco (nomeado pelo mês em que termina)
+  late DateTime month = _keyToMonth(context.read<AppState>().currentMonthKey);
+
+  static DateTime _keyToMonth(String k) =>
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
 
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
-    final period = Period.month(month);
     final key = monthKey(month);
+    final period = s.periodOfMonth(key);
     final salary = s.salaryFor(key);
     final own = s.totalsByCategory(period);
     final allocated = s.totalAllocated(salary, key);

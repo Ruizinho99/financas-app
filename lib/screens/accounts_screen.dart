@@ -261,7 +261,7 @@ class AccountDetailScreen extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final now = DateTime.now();
-    final period = Period.month(now);
+    final period = s.periodOfMonth(s.currentMonthKey);
     final an = Analytics(
       s,
       period,

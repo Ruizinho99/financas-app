@@ -56,9 +56,10 @@ class Spend {
   final Categoria? cat;
   final bool mandatory;
   final int amount; // cêntimos gastos, depois das anulações
-  Spend(this.t, this.cat, this.mandatory, [int? cents])
-    : amount = cents ?? -t.amount;
-  String get month => monthKey(t.date);
+  final String month; // mês da app a que pertence (AAAA-MM)
+  Spend(this.t, this.cat, this.mandatory, [int? cents, String? month])
+    : amount = cents ?? -t.amount,
+      month = month ?? monthKey(t.date);
 }
 
 /// Uma fatia de gastos (categoria, subcategoria, comerciante ou conta).
@@ -222,8 +223,9 @@ class Analytics {
         continue; // investir não é gastar
       final spent = -s.effectiveAmount(t);
       if (spent <= 0) continue; // despesa anulada por completo
-      final mand = c != null && s.isMandatory(c, monthKey(t.date));
-      if (_matches(t, c, mand)) out.add(Spend(t, c, mand, spent));
+      final mk = s.monthKeyOf(t.date);
+      final mand = c != null && s.isMandatory(c, mk);
+      if (_matches(t, c, mand)) out.add(Spend(t, c, mand, spent, mk));
     }
     return out;
   }
@@ -359,7 +361,8 @@ class Analytics {
   /// Período anterior completo (sem o corte dos "mesmos dias"), para o salário esperado.
   late final Period? _previousFull = previous == null
       ? null
-      : previousPeriod(period, today: DateTime(1900));
+      : (s.previousMonthOf(period, today: DateTime(1900)) ??
+            previousPeriod(period, today: DateTime(1900)));
 
   late final int incomeReceived = _income(period);
   late final bool incomeFromSalary =
@@ -482,24 +485,26 @@ class Analytics {
   // ---------- evolução ----------
   /// Pontos mensais dos últimos [n] meses até ao fim do período, com os mesmos filtros.
   List<MonthPoint> monthly(int n) {
-    final last = DateTime(
+    final lastDay = DateTime(
       period.end.year,
       period.end.month,
       period.end.day - 1,
     );
-    final first = DateTime(last.year, last.month - (n - 1));
-    final all = _spends(
-      Period(
-        DateTime(first.year, first.month),
-        DateTime(last.year, last.month + 1),
-      ),
-    );
+    final lastKey = period.cycleKey ?? s.monthKeyOf(lastDay);
+    final ly = int.parse(lastKey.substring(0, 4)),
+        lm = int.parse(lastKey.substring(5, 7));
+    final first = DateTime(ly, lm - (n - 1));
+    final spans = [
+      for (var i = 0; i < n; i++)
+        s.periodOfMonth(monthKey(DateTime(first.year, first.month + i))),
+    ];
+    final all = _spends(Period(spans.first.start, spans.last.end));
     final out = <MonthPoint>[];
     for (var i = 0; i < n; i++) {
       final m = DateTime(first.year, first.month + i);
       final mk = monthKey(m);
       final l = all.where((e) => e.month == mk);
-      final inc = _income(Period.month(m));
+      final inc = _income(spans[i]);
       out.add(
         MonthPoint(
           m,
@@ -697,17 +702,25 @@ class Analytics {
   /// Projeção até ao fim do mês corrente (só faz sentido quando o período é o mês atual).
   Projection? projection() {
     final start = period.start, end = period.end;
-    final isMonth = start.day == 1 && end.day == 1 && period.monthCount == 1;
+    final isMonth =
+        period.cycleKey != null ||
+        (start.day == 1 && end.day == 1 && period.monthCount == 1);
     if (!isMonth || !period.contains(today)) return null;
     final totalDays = DateTime.utc(
       end.year,
       end.month,
       end.day,
     ).difference(DateTime.utc(start.year, start.month, start.day)).inDays;
-    final elapsed = math.min(totalDays, math.max(1, today.day));
+    final sinceStart = DateTime.utc(
+      today.year,
+      today.month,
+      today.day,
+    ).difference(DateTime.utc(start.year, start.month, start.day)).inDays;
+    final elapsed = math.min(totalDays, math.max(1, sinceStart + 1));
     final projected = (spent / elapsed * totalDays).round();
-    final salary = s.salaryFor(monthKey(start));
-    final budget = s.totalAllocated(salary, monthKey(start));
+    final mk = period.cycleKey ?? monthKey(start);
+    final salary = s.salaryFor(mk);
+    final budget = s.totalAllocated(salary, mk);
     return Projection(
       elapsed,
       totalDays,

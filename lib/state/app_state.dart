@@ -12,18 +12,22 @@ import '../invest/invest.dart';
 import '../invest/price_service.dart';
 import '../models.dart';
 import '../util/format.dart';
+import '../util/month_cycle.dart';
 import '../util/receipts.dart';
 
 /// Período de análise: um mês, um ano, o ano até hoje (YTD) ou um intervalo de datas.
 class Period {
   final DateTime start; // inclusivo
   final DateTime end; // exclusivo
-  const Period(this.start, this.end);
+  /// Mês da app (AAAA-MM) que este período representa, se for um (pode não ser o mês do calendário).
+  final String? cycleKey;
+  const Period(this.start, this.end, [this.cycleKey]);
 
   static DateTime _u(DateTime d) => DateTime.utc(d.year, d.month, d.day);
 
   /// Número de meses que o período toca (um mês parcial conta como um).
   int get monthCount {
+    if (cycleKey != null) return 1;
     final last = _u(end).subtract(const Duration(days: 1));
     return (last.year - start.year) * 12 + last.month - start.month + 1;
   }
@@ -31,6 +35,15 @@ class Period {
   /// Cada mês tocado com o peso (fração dos dias do mês que estão dentro do período).
   /// Meses completos pesam 1; num intervalo/YTD o último mês pesa só os dias decorridos.
   List<(DateTime, double)> get monthWeights {
+    final k = cycleKey;
+    if (k != null) {
+      return [
+        (
+          DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))),
+          1.0,
+        ),
+      ];
+    }
     final out = <(DateTime, double)>[];
     for (var i = 0; i < monthCount; i++) {
       final m = DateTime(start.year, start.month + i);
@@ -115,6 +128,9 @@ class AppState extends ChangeNotifier {
   List<Goal> goals = [];
   List<GoalAllocation> goalAllocations = [];
   List<PlannedItem> plannedItems = [];
+  CycleMode monthMode = CycleMode.calendar;
+  int monthStartDay = 1;
+  int? salaryCategoryId;
   Map<int, List<PlanLine>> investPlan = {};
   Map<int, DateTime> investPlanSince = {};
   Set<int> investAlertsDone = {};
@@ -153,7 +169,93 @@ class AppState extends ChangeNotifier {
     expenseColor =
         int.tryParse(db.setting('expense_color') ?? '') ?? 0xFFE53935;
     _appLanguage = db.setting('app_language') ?? 'system';
+    monthMode = switch (db.setting('month_mode')) {
+      'fixed' => CycleMode.fixedDay,
+      'salary' => CycleMode.salary,
+      _ => CycleMode.calendar,
+    };
+    monthStartDay = (int.tryParse(db.setting('month_start_day') ?? '') ?? 1)
+        .clamp(1, 31);
+    salaryCategoryId = int.tryParse(db.setting('salary_category_id') ?? '');
+    _cycle = null;
     notifyListeners();
+  }
+
+  // ---------- Início do mês ----------
+  MonthCycle? _cycle;
+
+  /// Como se define o mês: calendário, dia fixo ou os dias em que se recebe o salário.
+  MonthCycle get cycle => _cycle ??= switch (monthMode) {
+    CycleMode.calendar => MonthCycle.calendar(),
+    CycleMode.fixedDay => MonthCycle.fixed(monthStartDay),
+    CycleMode.salary => MonthCycle.salary(salaryDates),
+  };
+
+  /// Dias de recebimento do salário (movimentos positivos na categoria do salário, uma data por mês).
+  List<DateTime> get salaryDates {
+    final id = salaryCategoryId;
+    if (id == null) return const [];
+    final ids = {
+      id,
+      ...categories.where((c) => c.parentId == id).map((c) => c.id),
+    };
+    return salaryBoundaries([
+      for (final t in transactions)
+        if (t.amount > 0 && !t.isTransfer && ids.contains(t.categoryId)) t.date,
+    ]);
+  }
+
+  /// O mês não é o do calendário (tem início noutro dia ou segue o salário).
+  bool get customMonth =>
+      monthMode == CycleMode.salary ||
+      (monthMode == CycleMode.fixedDay && monthStartDay > 1);
+
+  /// O mês (AAAA-MM) a que [d] pertence, pelo início do mês escolhido.
+  String monthKeyOf(DateTime d) => cycle.keyOf(d);
+
+  String get currentMonthKey => monthKeyOf(DateTime.now());
+
+  /// O mês [key] (AAAA-MM) como período de datas.
+  Period periodOfMonth(String key) {
+    final sp = cycle.span(key);
+    return Period(sp.start, sp.end, key);
+  }
+
+  /// O mês que antecede [p] (um período de um mês), cortado nos mesmos dias se o atual ainda decorre.
+  Period? previousMonthOf(Period p, {DateTime? today}) {
+    final k = p.cycleKey;
+    if (k == null) return null;
+    final y = int.parse(k.substring(0, 4)), m = int.parse(k.substring(5, 7));
+    final prev = periodOfMonth(monthKey(DateTime(y, m - 1)));
+    final t = today ?? DateTime.now();
+    if (p.contains(t) && DateTime(t.year, t.month, t.day + 1).isBefore(p.end)) {
+      final elapsed =
+          DateTime.utc(t.year, t.month, t.day)
+              .difference(
+                DateTime.utc(p.start.year, p.start.month, p.start.day),
+              )
+              .inDays +
+          1;
+      final cut = DateTime(
+        prev.start.year,
+        prev.start.month,
+        prev.start.day + elapsed,
+      );
+      if (cut.isBefore(prev.end)) return Period(prev.start, cut, prev.cycleKey);
+    }
+    return prev;
+  }
+
+  void setMonthCycle({required CycleMode mode, int? day, int? salaryCategory}) {
+    db.putSetting('month_mode', switch (mode) {
+      CycleMode.calendar => 'calendar',
+      CycleMode.fixedDay => 'fixed',
+      CycleMode.salary => 'salary',
+    });
+    if (day != null) db.putSetting('month_start_day', '$day');
+    if (salaryCategory != null)
+      db.putSetting('salary_category_id', '$salaryCategory');
+    reload();
   }
 
   // ---------- Aparência ----------
@@ -277,7 +379,7 @@ class AppState extends ChangeNotifier {
         continue;
       }
       if (c.isIncome || c.isInvestment) continue;
-      final target = isMandatory(c, monthKey(t.date)) ? mand : opt;
+      final target = isMandatory(c, monthKeyOf(t.date)) ? mand : opt;
       target[c.id] = (target[c.id] ?? 0) + spent;
     }
     return (mandatory: mand, optional: opt, unclassified: unclassified);
@@ -478,13 +580,19 @@ class AppState extends ChangeNotifier {
     return p == null || p.activeIn(month);
   }
 
-  bool isCategoryActiveNow(Categoria c) =>
-      isCategoryActive(c, monthKey(DateTime.now()));
+  bool isCategoryActiveNow(Categoria c) => isCategoryActive(c, currentMonthKey);
 
   /// Existe em algum mês entre [from] e [to]? (para escolher a categoria de movimentos antigos)
   bool isCategoryActiveDuring(Categoria c, DateTime from, DateTime to) {
-    var m = DateTime(from.year, from.month);
-    final end = DateTime(to.year, to.month);
+    final a = monthKeyOf(from), b = monthKeyOf(to);
+    var m = DateTime(
+      int.parse(a.substring(0, 4)),
+      int.parse(a.substring(5, 7)),
+    );
+    final end = DateTime(
+      int.parse(b.substring(0, 4)),
+      int.parse(b.substring(5, 7)),
+    );
     for (var i = 0; i < 600 && !m.isAfter(end); i++) {
       if (isCategoryActive(c, monthKey(m))) return true;
       m = DateTime(m.year, m.month + 1);
@@ -1207,7 +1315,7 @@ class AppState extends ChangeNotifier {
 
   /// Gasto real de cada categoria planeada no mês (inclui as subcategorias da categoria).
   int actualSpent(int categoryId, String month) {
-    final own = totalsByCategory(Period.month(DateTime.parse('$month-01')));
+    final own = totalsByCategory(periodOfMonth(month));
     final c = cat(categoryId);
     if (c == null) return 0;
     return c.parentId == null ? rollup(c, own) : (own[c.id] ?? 0);

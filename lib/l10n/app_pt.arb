@@ -132,5 +132,41 @@
       }
     }
   },
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  "monthStartTitle": "Início do mês",
+  "monthStartSubtitle": "Dia fixo ou o dia do salário",
+  "monthModeCalendar": "Calendário",
+  "monthModeFixed": "Dia fixo",
+  "monthModeSalary": "Salário",
+  "monthStartDayLabel": "Dia em que o mês começa",
+  "monthNamedByEnd": "O mês tem o nome do mês em que termina: 25 ago – 24 set é setembro.",
+  "monthCalendarHint": "O mês vai do dia 1 ao último dia, como no calendário.",
+  "salaryCategoryLabel": "Categoria do salário",
+  "salaryCategoryChoose": "Escolher categoria",
+  "salaryCategoryHint": "O mês começa no dia em que entra um movimento positivo nesta categoria.",
+  "salaryDatesFound": "Salários encontrados: {count}",
+  "@salaryDatesFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "salaryNoneFound": "Ainda sem salários nesta categoria. Até lá, o mês é o do calendário.",
+  "thisMonthIs": "Este mês: {range}",
+  "@thisMonthIs": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "dayOfMonthItem": "Dia {day}",
+  "@dayOfMonthItem": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  }
 }

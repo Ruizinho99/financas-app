@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
+
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -14,6 +16,7 @@ import 'appearance_screen.dart';
 import 'analysis_screen.dart';
 import 'budget_screen.dart' show BudgetScreen, showBudgetEditor;
 import 'classify_screen.dart';
+import 'month_cycle_screen.dart';
 import 'planning_screen.dart';
 import 'recurring_screen.dart';
 import 'backup_screen.dart';
@@ -39,6 +42,15 @@ class MoreScreen extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BudgetScreen()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.calendar_month_outlined),
+            title: Text(AppLocalizations.of(context)!.monthStartTitle),
+            subtitle: Text(AppLocalizations.of(context)!.monthStartSubtitle),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MonthCycleScreen()),
             ),
           ),
           ListTile(
@@ -300,7 +312,7 @@ class CategoriesScreen extends StatelessWidget {
 
   Widget _tile(BuildContext context, AppState s, Categoria c, int depth) {
     final count = s.transactions.where((t) => t.categoryId == c.id).length;
-    final now = monthKey(DateTime.now());
+    final now = s.currentMonthKey;
     final ended = c.activeTo != null && now.compareTo(c.activeTo!) > 0;
     final future = c.activeFrom != null && now.compareTo(c.activeFrom!) < 0;
     String m(String k) => '${k.substring(5, 7)}/${k.substring(0, 4)}';

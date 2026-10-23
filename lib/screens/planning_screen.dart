@@ -19,7 +19,10 @@ class PlanningScreen extends StatefulWidget {
 class _PlanningScreenState extends State<PlanningScreen> {
   late DateTime month = widget.initialMonth != null
       ? DateTime(widget.initialMonth!.year, widget.initialMonth!.month)
-      : DateTime(DateTime.now().year, DateTime.now().month);
+      : _keyToMonth(context.read<AppState>().currentMonthKey);
+
+  static DateTime _keyToMonth(String k) =>
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
 
   void _shift(int delta) =>
       setState(() => month = DateTime(month.year, month.month + delta));
