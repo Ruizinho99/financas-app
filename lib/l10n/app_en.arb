@@ -256,7 +256,7 @@
   "anDayFri": "on Fridays",
   "anDaySat": "on Saturdays",
   "anDaySun": "on Sundays",
-  "anSpendMostOn": "You spend the most {day}: {amount} in {count, plural, =1{1 transaction} other{{count} transactions}}",
+  "anSpendMostOn": "You spend the most {day}: {amount} in {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@anSpendMostOn": {
     "placeholders": {
       "day": {
@@ -274,7 +274,7 @@
   "anLargestSpends": "Largest expenses",
   "anLargestSub": "The ones that weighed most in this period",
   "anMonthByMonth": "Month by month",
-  "anTxCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
+  "anTxCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@anTxCount": {
     "placeholders": {
       "count": {
@@ -445,7 +445,7 @@
   "anCancelAdvice": "Cancelling what you no longer use is the easiest way to save.",
   "anFrequentSmall": "Frequent small purchases",
   "anSmallSub": "Low-value purchases that repeat often",
-  "anPurchasesAvg": "{count, plural, =1{1 purchase} other{{count} purchases}} · average {avg}",
+  "anPurchasesAvg": "{count, plural, =0{{count} purchases} =1{1 purchase} other{{count} purchases}} · average {avg}",
   "@anPurchasesAvg": {
     "placeholders": {
       "count": {
@@ -575,7 +575,7 @@
       }
     }
   },
-  "anSmallDetail": "{count, plural, =1{1 purchase} other{{count} purchases}} at {places, plural, =1{1 place} other{{places} places}} add up to {total} ({examples}). Cutting a third would save {saving} a month.",
+  "anSmallDetail": "{count, plural, =0{{count} purchases} =1{1 purchase} other{{count} purchases}} at {places, plural, =0{{places} places} =1{1 place} other{{places} places}} add up to {total} ({examples}). Cutting a third would save {saving} a month.",
   "@anSmallDetail": {
     "placeholders": {
       "count": {
@@ -595,7 +595,7 @@
       }
     }
   },
-  "anRecurringTitle": "{count, plural, =1{1 optional recurring payment} other{{count} optional recurring payments}}",
+  "anRecurringTitle": "{count, plural, =0{{count} optional recurring payments} =1{1 optional recurring payment} other{{count} optional recurring payments}}",
   "@anRecurringTitle": {
     "placeholders": {
       "count": {
@@ -766,7 +766,7 @@
   "bpSalaryDefaultHint": "Off: becomes the default amount for every month",
   "bpUseBaseSalary": "Use base amount",
   "bpCopyPreviousPlan": "Copy plan from previous month",
-  "bpCopiedPlanItems": "{count, plural, =1{Copied 1 expense from {month}.} other{Copied {count} expenses from {month}.}}",
+  "bpCopiedPlanItems": "{count, plural, =0{Copied {count} expenses from {month}.} =1{Copied 1 expense from {month}.} other{Copied {count} expenses from {month}.}}",
   "@bpCopiedPlanItems": {
     "placeholders": {
       "count": {
@@ -1521,7 +1521,7 @@
   },
   "frmThisCategory": "this category",
   "frmRepeatedName": "Repeated name",
-  "frmRemoveSubQuestion": "Remove “{name}”? {count, plural, =1{The transaction will} other{The {count} transactions will}} be left without a category (only after you save).",
+  "frmRemoveSubQuestion": "Remove “{name}”? {count, plural, =0{The {count} transactions will} =1{The transaction will} other{The {count} transactions will}} be left without a category (only after you save).",
   "@frmRemoveSubQuestion": {
     "placeholders": {
       "name": {
@@ -1572,7 +1572,7 @@
   "frmSetEnd": "Set end",
   "frmMandatoryIn": "Mandatory in…",
   "frmOptionalAllMonths": "Optional in all months",
-  "frmPeriodsDefined": "{count, plural, =1{1 period set} other{{count} periods set}}",
+  "frmPeriodsDefined": "{count, plural, =0{{count} periods set} =1{1 period set} other{{count} periods set}}",
   "@frmPeriodsDefined": {
     "placeholders": {
       "count": {
@@ -1606,7 +1606,7 @@
   "frmNewAccountItem": "New account…",
   "frmNoAccount": "No account",
   "frmNoAccountsYet": "You don't have any accounts yet.\nCreate one to see where each transaction comes from and to record transfers between accounts.",
-  "frmAccountSubtitle": "{count, plural, =1{1 transaction} other{{count} transactions}} · balance {balance}",
+  "frmAccountSubtitle": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}} · balance {balance}",
   "@frmAccountSubtitle": {
     "placeholders": {
       "count": {
@@ -1617,7 +1617,7 @@
       }
     }
   },
-  "frmDeleteAccountQuestion": "Delete the account “{name}”? {count, plural, =1{The transaction will} other{The {count} transactions will}} be left without an account.",
+  "frmDeleteAccountQuestion": "Delete the account “{name}”? {count, plural, =0{The {count} transactions will} =1{The transaction will} other{The {count} transactions will}} be left without an account.",
   "@frmDeleteAccountQuestion": {
     "placeholders": {
       "name": {
@@ -1631,7 +1631,7 @@
   "frmAccountDeleted": "Account deleted.",
   "frmEdit": "Edit",
   "frmBalance": "Balance",
-  "frmOpeningBalanceLine": "Opening balance {amount} · {count, plural, =1{1 transaction} other{{count} transactions}}",
+  "frmOpeningBalanceLine": "Opening balance {amount} · {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@frmOpeningBalanceLine": {
     "placeholders": {
       "amount": {
@@ -1676,7 +1676,7 @@
   "frmAll": "All",
   "frmExpenses": "Expenses",
   "frmTransfers": "Transfers",
-  "frmTransactionsCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
+  "frmTransactionsCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@frmTransactionsCount": {
     "placeholders": {
       "count": {
@@ -1727,7 +1727,7 @@
       }
     }
   },
-  "frmDeliveriesCount": "{count, plural, =1{1 delivery} other{{count} deliveries}} · {total}",
+  "frmDeliveriesCount": "{count, plural, =0{{count} deliveries} =1{1 delivery} other{{count} deliveries}} · {total}",
   "@frmDeliveriesCount": {
     "placeholders": {
       "count": {
@@ -1793,7 +1793,7 @@
   },
   "impStatementAccount": "Account for this statement",
   "impPickAccountOptional": "Select an account (optional)",
-  "impTxnCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
+  "impTxnCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@impTxnCount": {
     "placeholders": {
       "count": {
@@ -1814,7 +1814,7 @@
   },
   "impInvertSigns": "Invert signs",
   "impInvertSignsHint": "Use this if expenses show as positive",
-  "impImportButton": "{count, plural, =1{Import 1 transaction} other{Import {count} transactions}}",
+  "impImportButton": "{count, plural, =0{Import {count} transactions} =1{Import 1 transaction} other{Import {count} transactions}}",
   "@impImportButton": {
     "placeholders": {
       "count": {
@@ -1822,7 +1822,7 @@
       }
     }
   },
-  "impImportDone": "{added, plural, =1{1 imported} other{{added} imported}}, {duplicates, plural, =1{1 duplicate skipped} other{{duplicates} duplicates skipped}}. {unclassified, plural, =1{1 group to classify.} other{{unclassified} groups to classify.}}",
+  "impImportDone": "{added, plural, =0{{added} imported} =1{1 imported} other{{added} imported}}, {duplicates, plural, =0{{duplicates} duplicates skipped} =1{1 duplicate skipped} other{{duplicates} duplicates skipped}}. {unclassified, plural, =0{{unclassified} groups to classify.} =1{1 group to classify.} other{{unclassified} groups to classify.}}",
   "@impImportDone": {
     "placeholders": {
       "added": {
@@ -1836,7 +1836,7 @@
       }
     }
   },
-  "impClassifiedOf": "Classified: {classified} of {total, plural, =1{1 group} other{{total} groups}}",
+  "impClassifiedOf": "Classified: {classified} of {total, plural, =0{{total} groups} =1{1 group} other{{total} groups}}",
   "@impClassifiedOf": {
     "placeholders": {
       "classified": {
@@ -1848,7 +1848,7 @@
     }
   },
   "impGroupsExplain": "Transactions with the same name are grouped together. Choose the category and subcategory for each group (or leave it unclassified). Rules you already saved are filled in.",
-  "impTransfersCount": "{count, plural, =1{1 transfer between accounts} other{{count} transfers between accounts}}",
+  "impTransfersCount": "{count, plural, =0{{count} transfers between accounts} =1{1 transfer between accounts} other{{count} transfers between accounts}}",
   "@impTransfersCount": {
     "placeholders": {
       "count": {
@@ -1865,7 +1865,7 @@
       }
     }
   },
-  "impActiveOfTotal": "{active} of {total, plural, =1{1 transaction} other{{total} transactions}}",
+  "impActiveOfTotal": "{active} of {total, plural, =0{{total} transactions} =1{1 transaction} other{{total} transactions}}",
   "@impActiveOfTotal": {
     "placeholders": {
       "active": {
@@ -1879,7 +1879,7 @@
   "impRememberedRule": " · remembered rule",
   "impNameOrGroup": "Name or group (optional)",
   "impNameHint": "E.g.: Gym, Arminda Restaurant…",
-  "impJoinsGroup": "Joins the group “{name}” ({count, plural, =1{1 title} other{{count} titles}})",
+  "impJoinsGroup": "Joins the group “{name}” ({count, plural, =0{{count} titles} =1{1 title} other{{count} titles}})",
   "@impJoinsGroup": {
     "placeholders": {
       "name": {
@@ -1893,7 +1893,7 @@
   "impRememberNameCategory": "Remember name and category for the future",
   "impViewTransactions": "View transactions",
   "impAccountsInStatement": "Accounts in this statement",
-  "impAccountsDetected": "{count, plural, =1{1 account detected} other{{count} accounts detected}}. Choose the one that matches each in the app.",
+  "impAccountsDetected": "{count, plural, =0{{count} accounts detected} =1{1 account detected} other{{count} accounts detected}}. Choose the one that matches each in the app.",
   "@impAccountsDetected": {
     "placeholders": {
       "count": {
@@ -1901,7 +1901,7 @@
       }
     }
   },
-  "impAccountTxns": "{name}  ·  {count, plural, =1{1 transaction} other{{count} transactions}}",
+  "impAccountTxns": "{name}  ·  {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@impAccountTxns": {
     "placeholders": {
       "name": {
@@ -1923,7 +1923,7 @@
   "impNoAccount": "No account",
   "impDetectTransfers": "Detect transfers between these accounts",
   "impDetectTransfersHint": "An outflow from one account and an inflow to another of the same amount don't count as expense or income.",
-  "impSkippedTitle": "{count, plural, =1{1 line looks like transactions but was not recognized} other{{count} lines look like transactions but were not recognized}}",
+  "impSkippedTitle": "{count, plural, =0{{count} lines look like transactions but were not recognized} =1{1 line looks like transactions but was not recognized} other{{count} lines look like transactions but were not recognized}}",
   "@impSkippedTitle": {
     "placeholders": {
       "count": {
@@ -1987,7 +1987,7 @@
   },
   "impAll": "All",
   "impApplyRules": "Apply rules",
-  "impClassifiedByRules": "{count, plural, =1{1 transaction classified by the rules.} other{{count} transactions classified by the rules.}}",
+  "impClassifiedByRules": "{count, plural, =0{{count} transactions classified by the rules.} =1{1 transaction classified by the rules.} other{{count} transactions classified by the rules.}}",
   "@impClassifiedByRules": {
     "placeholders": {
       "count": {
@@ -1997,7 +1997,7 @@
   },
   "impAllClassified": "All classified! 🎉",
   "impNoTransactionsYet": "No transactions yet.",
-  "impClassifiedCount": "{count, plural, =1{1 transaction classified.} other{{count} transactions classified.}}",
+  "impClassifiedCount": "{count, plural, =0{{count} transactions classified.} =1{1 transaction classified.} other{{count} transactions classified.}}",
   "@impClassifiedCount": {
     "placeholders": {
       "count": {
@@ -2006,7 +2006,7 @@
     }
   },
   "impSelectAll": "Select all",
-  "impApplyTo": "Apply to {count, plural, =1{1 transaction} other{{count} transactions}}",
+  "impApplyTo": "Apply to {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@impApplyTo": {
     "placeholders": {
       "count": {
@@ -2014,7 +2014,7 @@
       }
     }
   },
-  "impTxnCountDate": "{count, plural, =1{1 transaction} other{{count} transactions}} · {date}",
+  "impTxnCountDate": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}} · {date}",
   "@impTxnCountDate": {
     "placeholders": {
       "count": {
@@ -2025,7 +2025,7 @@
       }
     }
   },
-  "impGroupChip": "Group · {count, plural, =1{1 title} other{{count} titles}}",
+  "impGroupChip": "Group · {count, plural, =0{{count} titles} =1{1 title} other{{count} titles}}",
   "@impGroupChip": {
     "placeholders": {
       "count": {
@@ -2034,7 +2034,7 @@
     }
   },
   "impRemembered": "Remembered",
-  "impSelectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "impSelectedCount": "{count, plural, =0{{count} selected} =1{1 selected} other{{count} selected}}",
   "@impSelectedCount": {
     "placeholders": {
       "count": {
@@ -2163,7 +2163,7 @@
       }
     }
   },
-  "impTitleCount": "{count, plural, =1{1 title} other{{count} titles}}",
+  "impTitleCount": "{count, plural, =0{{count} titles} =1{1 title} other{{count} titles}}",
   "@impTitleCount": {
     "placeholders": {
       "count": {
@@ -2193,7 +2193,7 @@
   "invUnallocatedStandby": "Unallocated (standby)",
   "invRealizedGain": "Realized gain",
   "invDividends": "Dividends",
-  "invPricesUpdated": "{count, plural, =1{1 price updated.} other{{count} prices updated.}}",
+  "invPricesUpdated": "{count, plural, =0{{count} prices updated.} =1{1 price updated.} other{{count} prices updated.}}",
   "@invPricesUpdated": {
     "placeholders": {
       "count": {
@@ -2232,7 +2232,7 @@
   "invAllocate": "Allocate",
   "invAdjust": "Adjust",
   "invPlatforms": "Platforms",
-  "invAssetsCount": "{count, plural, =1{1 asset} other{{count} assets}}",
+  "invAssetsCount": "{count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
   "@invAssetsCount": {
     "placeholders": {
       "count": {
@@ -2240,7 +2240,7 @@
       }
     }
   },
-  "invAccountLine": "Unallocated {cash} · {count, plural, =1{1 asset} other{{count} assets}}",
+  "invAccountLine": "Unallocated {cash} · {count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
   "@invAccountLine": {
     "placeholders": {
       "cash": {
@@ -2323,7 +2323,7 @@
       }
     }
   },
-  "invLinkedCount": "{count, plural, =1{1 linked · not counted as an expense} other{{count} linked · not counted as expenses}}",
+  "invLinkedCount": "{count, plural, =0{{count} linked · not counted as expenses} =1{1 linked · not counted as an expense} other{{count} linked · not counted as expenses}}",
   "@invLinkedCount": {
     "placeholders": {
       "count": {
@@ -2332,7 +2332,7 @@
     }
   },
   "invLinkBankTransfers": "Link bank transfers",
-  "invSuggestedMatches": "{count, plural, =1{1 transaction looks like it belongs to this platform} other{{count} transactions look like they belong to this platform}}",
+  "invSuggestedMatches": "{count, plural, =0{{count} transactions look like they belong to this platform} =1{1 transaction looks like it belongs to this platform} other{{count} transactions look like they belong to this platform}}",
   "@invSuggestedMatches": {
     "placeholders": {
       "count": {
@@ -2632,6 +2632,711 @@
   "invAvgShort": "avg",
   "invNoPriceShort": "no price",
   "invClosedPosition": "Closed position",
+  "invfAccountNewTitle": "New platform",
+  "invfAccountEditTitle": "Edit platform",
+  "invfName": "Name",
+  "invfAccountNameHint": "e.g. XTB, Trade Republic",
+  "invfNoteOptional": "Note (optional)",
+  "invfNote": "Note",
+  "invfSave": "Save",
+  "invfSaveChanges": "Save changes",
+  "invfEnterName": "Enter a name",
+  "invfAccountNameTaken": "A platform with this name already exists",
+  "invfSearchIn": "Search in {provider}",
+  "@invfSearchIn": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCryptoSearchHint": "e.g. bitcoin",
+  "invfSymbolSearchHint": "e.g. VWCE, Apple, S&P 500",
+  "invfSearchFailed": "Couldn’t search.",
+  "invfNothingFound": "Nothing found.",
+  "invfClose": "Close",
+  "invfHoldingNewTitle": "New asset",
+  "invfHoldingEditTitle": "Edit asset",
+  "invfHoldingNameHint": "e.g. Vanguard FTSE All-World",
+  "invfPlatform": "Platform",
+  "invfType": "Type",
+  "invfAssetCurrency": "Asset currency",
+  "invfAutoCurrency": "Automatic (from the price)",
+  "invfBaseCurrencyOption": "{ccy} · base currency",
+  "@invfBaseCurrencyOption": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCurrencyAutoHint": "Uses the currency the asset is quoted in ({ccy}). You can pick another one manually.",
+  "@invfCurrencyAutoHint": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfDetectedOnPrice": "detected when fetching the price",
+  "invfUsdHint": "For stocks or ETFs in dollars, choose USD: purchase prices stay in the asset’s currency, with the exchange rate of each purchase.",
+  "invfForeignCcyHint": "Purchases and average price stay in {ccy}; the portfolio value and gain are converted to the base currency at the market rate (updated in “Update prices”).",
+  "@invfForeignCcyHint": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPriceWithCcy": "Price ({ccy})",
+  "@invfPriceWithCcy": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAvgPriceWithCcy": "Average price ({ccy})",
+  "@invfAvgPriceWithCcy": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfYahooHint": "Free, no key needed. ETFs, stocks and exchange rates (e.g. VWCE.DE, AAPL, BTC-EUR). Converts to euros.",
+  "invfCoingeckoHint": "Free, no key needed. Cryptocurrencies, by id (e.g. bitcoin, ethereum).",
+  "invfManualHint": "You set the price whenever you like. Nothing is sent to the internet.",
+  "invfCoingeckoId": "CoinGecko id",
+  "invfNewPlatformItem": "➕  New platform…",
+  "invfSymbol": "Symbol",
+  "invfPrice": "Price",
+  "invfSearchTooltip": "Search",
+  "invfCurrentPriceOptional": "Current price ({ccy}, optional)",
+  "@invfCurrentPriceOptional": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFxLabel": "Exchange rate: 1 {base} = ? {ccy}",
+  "@invfFxLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFxRateLabel": "Exchange rate (1 {base} = ? {ccy})",
+  "@invfFxRateLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAvgFxLabel": "Average exchange rate (1 {base} = ? {ccy})",
+  "@invfAvgFxLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLiveFxTooltip": "Current market exchange rate (internet)",
+  "invfFxFetchFailed": "Couldn’t get the exchange rate: {message}",
+  "@invfFxFetchFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPriceFetchFailed": "Couldn’t get the price: {message}",
+  "@invfPriceFetchFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "invfSymbolRequired": "Enter the symbol (or use search)",
+  "invfFxOrSyncRequired": "Enter the exchange rate, or use the sync button for the market rate.",
+  "invfCurrencyPickerHint": "The value is converted to {base} at the market rate, updated in “Update prices”. Transactions already recorded keep the values they have.",
+  "@invfCurrencyPickerHint": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfOpNewTitle": "New transaction",
+  "invfOpEditTitle": "Edit · {type}",
+  "@invfOpEditTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "invfOpInitial": "Opening position",
+  "invfOpBuy": "Buy",
+  "invfOpSell": "Sell",
+  "invfOpDividend": "Dividend",
+  "invfOpCash": "Cash adjustment",
+  "invfOpAlreadyHeld": "Already held",
+  "invfOpCashChip": "Cash",
+  "invfPlatformLower": "platform",
+  "invfTotalToPay": "Total to pay: {amount}",
+  "@invfTotalToPay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfTotalToPayFee": "Total to pay: {amount} (incl. {fee} fee)",
+  "@invfTotalToPayFee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "invfNoAllocationHint": "No allocation: nothing is deducted from unallocated cash. You can record the bank transfer whenever you like.",
+  "invfNotEnoughUnallocated": "You don’t have {amount} unallocated on this platform yet (you have {cash}). Record the bank transfer later, or turn off “Deduct from unallocated cash” in More options.",
+  "@invfNotEnoughUnallocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "invfUnallocatedChange": "Unallocated cash: {before} → {after}.",
+  "@invfUnallocatedChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfUnallocatedChangeTitle": "Unallocated cash: {before} → {after}",
+  "@invfUnallocatedChangeTitle": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfBalanceChange": "{before} → {after}.",
+  "@invfBalanceChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfYouReceive": "You receive {amount}",
+  "@invfYouReceive": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfRealizedGain": "Realized gain: {gain} (average price {avg}).",
+  "@invfRealizedGain": {
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPositionCost": "Position cost: {amount}",
+  "@invfPositionCost": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfInitialHint": "Position you already held before using the app. Sets the average purchase price and doesn’t touch unallocated cash.",
+  "invfDividendIn": "{amount} added to unallocated cash",
+  "@invfDividendIn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCashHint": "Use this for cash that was already on the platform before you started using the app.",
+  "invfValueWithCcy": "Amount ({base})",
+  "@invfValueWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfReceivedWithCcy": "Amount received ({base})",
+  "@invfReceivedWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFeeWithCcy": "Fee ({base})",
+  "@invfFeeWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfQuantity": "Quantity",
+  "invfUnitsEquals": "= {qty} units",
+  "@invfUnitsEquals": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCashIn": "Money in",
+  "invfCashOut": "Money out",
+  "invfDate": "Date",
+  "invfHolding": "Asset",
+  "invfNewAssetItem": "➕  New asset…",
+  "invfChoosePlatformHint": "Choose platform",
+  "invfChoosePlatformShort": "Choose the platform",
+  "invfChoosePlatform": "Choose the platform.",
+  "invfChooseAsset": "Choose the asset (or create one).",
+  "invfEnterValidAmounts": "Enter valid amounts.",
+  "invfFxRequired": "Enter the exchange rate (1 {base} = ? {ccy}).",
+  "@invfFxRequired": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfEnterQtyPrice": "Enter the quantity and price.",
+  "invfOnlyHaveUnits": "You only have {qty} units to sell.",
+  "@invfOnlyHaveUnits": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invfMoreOptionsTrade": "More options (fee, note…)",
+  "invfDeductUnallocated": "Deduct from unallocated cash",
+  "invfDeductHint": "Turn off if you haven’t recorded the bank transfer to the platform yet, or if this transaction is already counted elsewhere.",
+  "invfUseTotalInstead": "Enter the total amount instead of the quantity",
+  "invfAssetCurrencyChange": "Asset currency: {ccy} · change",
+  "@invfAssetCurrencyChange": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfHasInitialTitle": "This asset already has an opening position",
+  "invfHasInitialBody": "It’s loaded here. Saving replaces the previous one.",
+  "invfDeleteOp": "Delete transaction",
+  "invfLinkTitle": "Link to {name}",
+  "@invfLinkTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLinkButton": "Link",
+  "invfLinkCount": "Link {count} ({amount} to the platform)",
+  "@invfLinkCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLinkHint": "Choose the bank transactions that were money sent to (or received from) this platform. They stop counting as expenses.",
+  "invfSearchTransactions": "Search transactions",
+  "invfNoTransactionsToLink": "No transactions to link.",
+  "invfLooksLikeThis": " · looks like this platform",
+  "invfRememberTitles": "Remember these titles",
+  "invfRememberHint": "In future imports, transactions with the same title are linked automatically.",
+  "invfImportTitle": "Import buys and sells",
+  "invfImportIntro": "Formats: PDF (with text), CSV and Excel (.xlsx). The file is read on your phone and never leaves it. Recognizes buys, sells and dividends; everything else (deposits, taxes…) is ignored.",
+  "invfChooseFile": "Choose file",
+  "invfChooseOtherFile": "Choose another file",
+  "invfFileName": "File: {name}",
+  "@invfFileName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfReadError": "Error reading the file: {error}",
+  "@invfReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "invfExcelNoData": "The Excel file has no data.",
+  "invfPdfNotFound": "I couldn’t find any buys or sells in this PDF. It may be scanned (an image) or use a different format. If your broker allows it, export it as CSV or Excel.",
+  "invfNotFoundTrades": "I couldn’t find any buys or sells. Indicate below which column is which.",
+  "invfNotFoundWithColumns": "I couldn’t find any buys or sells with these columns.",
+  "invfCurrencyAndRate": "Currency and exchange rate",
+  "invfCurrencyIntro": "Rows without a currency use the currency below. For currencies other than {base}, enter the average exchange rate; you can adjust each transaction later.",
+  "@invfCurrencyIntro": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfTransactionCurrency": "Transaction currency",
+  "invfAllInBase": "All transactions are in {base}.",
+  "@invfAllInBase": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAssetsFound": "Assets found",
+  "invfAssetsHint": "Link each one to one of your assets, create a new one, or ignore it.",
+  "invfTradeCountLabel": "{name}  ·  {count, plural, =0{{count} transactions} =1{{count} transaction} other{{count} transactions}}",
+  "@invfTradeCountLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfCreateNewAsset": "➕  Create new asset",
+  "invfIgnore": "Ignore",
+  "invfOperations": "Transactions",
+  "invfBuysCount": "{count, plural, =0{{count} buys} =1{{count} buy} other{{count} buys}}",
+  "@invfBuysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfSellsCount": "{count, plural, =0{{count} sales} =1{{count} sale} other{{count} sales}}",
+  "@invfSellsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfDividendsCount": "{count, plural, =0{{count} dividends} =1{{count} dividend} other{{count} dividends}}",
+  "@invfDividendsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfDuplicatesIgnored": "{count} already existing (skipped)",
+  "@invfDuplicatesIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfMissingRate": "Exchange rate missing",
+  "invfMissingRateBody": "Enter the exchange rate for {currencies} to import these transactions.",
+  "@invfMissingRateBody": {
+    "placeholders": {
+      "currencies": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAllCurrencies": "all currencies",
+  "invfMissingQtyTitle": "{count, plural, =0{{count} transactions without quantity} =1{1 transaction without quantity} other{{count} transactions without quantity}}",
+  "@invfMissingQtyTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfMissingQtyBody": "The file only has the amount paid. Choose the column that has the quantity and price (e.g. the comment) under “File columns”.",
+  "invfShowingFirst": "Showing the first 300 of {total}.",
+  "@invfShowingFirst": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfAlreadyExists": " · already exists",
+  "invfTradeQtyPart": " · {qty} units × {price} {ccy}",
+  "@invfTradeQtyPart": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfImportCount": "Import {count, plural, =0{0 transactions} =1{1 transaction} other{{count} transactions}}",
+  "@invfImportCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfFileColumns": "File columns",
+  "invfAutoRecognized": "Recognized automatically. Tap to adjust.",
+  "invfIndicateColumns": "Indicate which column is which.",
+  "invfExcelSheet": "Excel sheet",
+  "invfSheetRows": "{name}  ·  {count, plural, =0{{count} rows} =1{1 row} other{{count} rows}}",
+  "@invfSheetRows": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfHeaderRow": "Column headers row",
+  "invfNoHeaders": "No headers",
+  "invfHeaderRowItem": "Row {n}: {text}",
+  "@invfHeaderRowItem": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "invfNotExists": "— none —",
+  "invfColumnNumber": "Column {n}",
+  "@invfColumnNumber": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnNumberLower": "column {n}",
+  "@invfColumnNumberLower": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "invfFileValidation": "File validation",
+  "invfRequiredNote": "I need at least the date, the quantity and the price (or the total amount).",
+  "invfQuantityOrComment": "Quantity (or the comment that has it)",
+  "invfPriceOrTotal": "Price or total amount",
+  "invfMissingColumn": "Choose the column for: {name}",
+  "@invfMissingColumn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfValidationSummary": "{dataRows, plural, =0{0 rows with data} =1{1 row with data} other{{dataRows} rows with data}} · {recognized, plural, =0{0 transactions recognized} =1{1 transaction recognized} other{{recognized} transactions recognized}}",
+  "@invfValidationSummary": {
+    "placeholders": {
+      "dataRows": {
+        "type": "int"
+      },
+      "recognized": {
+        "type": "int"
+      }
+    }
+  },
+  "invfWithProblems": " · {count} with problems",
+  "@invfWithProblems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfIgnoredByUser": " · {count} ignored (not buys or sells)",
+  "@invfIgnoredByUser": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnValid": "{label}: {ok} of {total} valid",
+  "@invfColumnValid": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnValidNamed": "{label} ({column}): {ok} of {total} valid",
+  "@invfColumnValidNamed": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "column": {
+        "type": "String"
+      },
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfUnknownTypes": "Types I didn’t recognize",
+  "invfUnknownTypesHint": "Tell me what they are so I can import them (or ignore them).",
+  "invfUnknownTypeRows": "“{type}” · {count, plural, =0{{count} rows} =1{1 row} other{{count} rows}}",
+  "@invfUnknownTypeRows": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfEmpty": "(empty)",
+  "invfChoose": "Choose",
+  "invfSkippedRows": "{count, plural, =0{{count} rows not imported} =1{1 row not imported} other{{count} rows not imported}}",
+  "@invfSkippedRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfRowReason": "Row {row}: {reason}",
+  "@invfRowReason": {
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAndMore": "… and {count} more",
+  "@invfAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfAllRowsOk": "All rows were read without problems.",
+  "invfImportedOps": "{count, plural, =0{{count} transactions imported} =1{1 transaction imported} other{{count} transactions imported}}",
+  "@invfImportedOps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfImportedHoldings": " and {count, plural, =0{{count} assets created} =1{1 asset created} other{{count} assets created}}",
+  "@invfImportedHoldings": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfUpdatePrices": ". Update prices in the Portfolio.",
+  "invfNegativeCashWarning": " Unallocated cash went negative: link the bank transfers to this platform or adjust the cash.",
+  "invfFieldDate": "Date",
+  "invfFieldType": "Type (buy / sell)",
+  "invfFieldName": "Asset name",
+  "invfFieldCategory": "Category (ETF, stock…)",
+  "invfFieldComment": "Comment (e.g. OPEN BUY 0.5 @ 100)",
+  "invfFieldSymbol": "Symbol",
+  "invfFieldIsin": "ISIN",
+  "invfFieldQuantity": "Quantity",
+  "invfFieldPrice": "Price per unit",
+  "invfFieldTotal": "Total amount",
+  "invfFieldFee": "Fee",
+  "invfFieldCurrency": "Currency",
+  "invfFieldRate": "Exchange rate (units of currency per 1 base currency)",
+  "invfKindEtf": "ETF",
+  "invfKindStock": "Stock",
+  "invfKindCrypto": "Crypto",
+  "invfKindFund": "Fund",
+  "invfKindBond": "Bond",
+  "invfKindOther": "Other",
   "morMoreTitle": "More",
   "morBudgetSubtitle": "Salary and limits per category",
   "morPlanningSubtitle": "Salary and planned expenses per month",
@@ -2643,7 +3348,7 @@
   "morUpdatesSubtitle": "Look for and install a new version",
   "morAppearanceSubtitle": "Dark mode and colors",
   "morAccountsTitle": "Accounts",
-  "morAccountsCount": "{count, plural, =1{1 account} other{{count} accounts}}",
+  "morAccountsCount": "{count, plural, =0{{count} accounts} =1{1 account} other{{count} accounts}}",
   "@morAccountsCount": {
     "placeholders": {
       "count": {
@@ -2652,7 +3357,7 @@
     }
   },
   "morRecurringTitle": "Recurring transactions",
-  "morRecurringCount": "{count, plural, =1{1 recurring} other{{count} recurring}} · salary, rent, subscriptions",
+  "morRecurringCount": "{count, plural, =0{{count} recurring} =1{1 recurring} other{{count} recurring}} · salary, rent, subscriptions",
   "@morRecurringCount": {
     "placeholders": {
       "count": {
@@ -2661,7 +3366,7 @@
     }
   },
   "morCategoriesTitle": "Categories and subcategories",
-  "morCategoriesCount": "{count, plural, =1{1 category} other{{count} categories}}",
+  "morCategoriesCount": "{count, plural, =0{{count} categories} =1{1 category} other{{count} categories}}",
   "@morCategoriesCount": {
     "placeholders": {
       "count": {
@@ -2670,7 +3375,7 @@
     }
   },
   "morGroupsTitle": "Security groups",
-  "morGroupsCount": "{count, plural, =1{1 group} other{{count} groups}}",
+  "morGroupsCount": "{count, plural, =0{{count} groups} =1{1 group} other{{count} groups}}",
   "@morGroupsCount": {
     "placeholders": {
       "count": {
@@ -2679,7 +3384,7 @@
     }
   },
   "morRulesTitle": "Saved rules",
-  "morRulesCount": "{count, plural, =1{1 rule} other{{count} rules}}",
+  "morRulesCount": "{count, plural, =0{{count} rules} =1{1 rule} other{{count} rules}}",
   "@morRulesCount": {
     "placeholders": {
       "count": {
@@ -2701,7 +3406,7 @@
   "morImportsTitle": "Imports",
   "morNoImports": "No imports yet.",
   "morUndoImport": "Undo import",
-  "morImportItemSubtitle": "{count, plural, =1{{date} · 1 transaction} other{{date} · {count} transactions}}",
+  "morImportItemSubtitle": "{count, plural, =0{{date} · {count} transactions} =1{{date} · 1 transaction} other{{date} · {count} transactions}}",
   "@morImportItemSubtitle": {
     "placeholders": {
       "count": {
@@ -2712,7 +3417,7 @@
       }
     }
   },
-  "morRemoveImportQuestion": "{count, plural, =1{Remove the transaction from this import?} other{Remove the {count} transactions from this import?}}",
+  "morRemoveImportQuestion": "{count, plural, =0{Remove the {count} transactions from this import?} =1{Remove the transaction from this import?} other{Remove the {count} transactions from this import?}}",
   "@morRemoveImportQuestion": {
     "placeholders": {
       "count": {
@@ -2745,7 +3450,7 @@
   },
   "morEnded": "ended",
   "morFuture": "upcoming",
-  "morTxnCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
+  "morTxnCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@morTxnCount": {
     "placeholders": {
       "count": {
@@ -2753,7 +3458,7 @@
       }
     }
   },
-  "morMandatoryPeriods": "{count, plural, =1{Required in 1 period} other{Required in {count} periods}}",
+  "morMandatoryPeriods": "{count, plural, =0{Required in {count} periods} =1{Required in 1 period} other{Required in {count} periods}}",
   "@morMandatoryPeriods": {
     "placeholders": {
       "count": {
@@ -2773,7 +3478,7 @@
       }
     }
   },
-  "morDeleteCategoryQuestion": "Delete “{name}”? {count, plural, =1{The transaction is left} other{{count} transactions are left}} without a category{subs}.",
+  "morDeleteCategoryQuestion": "Delete “{name}”? {count, plural, =0{{count} transactions are left} =1{The transaction is left} other{{count} transactions are left}} without a category{subs}.",
   "@morDeleteCategoryQuestion": {
     "placeholders": {
       "name": {
@@ -2900,7 +3605,7 @@
   },
   "morUpdateChannelName": "Updates",
   "morUpdateChannelDescription": "Notice when a new version comes out",
-  "morRecurringNotifBody": "{count, plural, =1{1 recurring transaction recorded} other{{count} recurring transactions recorded}}",
+  "morRecurringNotifBody": "{count, plural, =0{{count} recurring transactions recorded} =1{1 recurring transaction recorded} other{{count} recurring transactions recorded}}",
   "@morRecurringNotifBody": {
     "placeholders": {
       "count": {
@@ -2923,7 +3628,7 @@
       }
     }
   },
-  "morDeliveriesCount": "{count, plural, =1{(1 delivery)} other{({count} deliveries)}}",
+  "morDeliveriesCount": "{count, plural, =0{({count} deliveries)} =1{(1 delivery)} other{({count} deliveries)}}",
   "@morDeliveriesCount": {
     "placeholders": {
       "count": {

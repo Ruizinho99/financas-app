@@ -339,6 +339,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return '$_temp0';
   }
@@ -513,6 +514,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count compras',
       one: '1 compra',
+      zero: '$count compras',
     );
     return '$_temp0 · média $avg';
   }
@@ -633,12 +635,14 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count compras',
       one: '1 compra',
+      zero: '$count compras',
     );
     String _temp1 = intl.Intl.pluralLogic(
       places,
       locale: localeName,
       other: '$places sítios',
       one: '1 sítio',
+      zero: '$places sítios',
     );
     return '$_temp0 em $_temp1 somam $total ($examples). Reduzir um terço poupava $saving por mês.';
   }
@@ -650,6 +654,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count pagamentos recorrentes opcionais',
       one: '1 pagamento recorrente opcional',
+      zero: '$count pagamentos recorrentes opcionais',
     );
     return '$_temp0';
   }
@@ -826,6 +831,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: 'Copiadas $count despesas de $month.',
       one: 'Copiada 1 despesa de $month.',
+      zero: 'Copiadas $count despesas de $month.',
     );
     return '$_temp0';
   }
@@ -1899,6 +1905,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: 'Os $count movimentos ficam',
       one: 'O movimento fica',
+      zero: 'Os $count movimentos ficam',
     );
     return 'Remover “$name”? $_temp0 sem categoria (só depois de guardares).';
   }
@@ -2066,6 +2073,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return '$_temp0 · saldo $balance';
   }
@@ -2077,6 +2085,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: 'Os $count movimentos ficam',
       one: 'O movimento fica',
+      zero: 'Os $count movimentos ficam',
     );
     return 'Apagar a conta “$name”? $_temp0 sem conta.';
   }
@@ -2097,6 +2106,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return 'Saldo inicial $amount · $_temp0';
   }
@@ -2196,6 +2206,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return '$_temp0';
   }
@@ -2242,6 +2253,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count entregas',
       one: '1 entrega',
+      zero: '$count entregas',
     );
     return '$_temp0 · $total';
   }
@@ -2309,6 +2321,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return '$_temp0';
   }
@@ -2331,6 +2344,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: 'Importar $count movimentos',
       one: 'Importar 1 movimento',
+      zero: 'Importar $count movimentos',
     );
     return '$_temp0';
   }
@@ -2342,18 +2356,21 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$added importados',
       one: '1 importado',
+      zero: '$added importados',
     );
     String _temp1 = intl.Intl.pluralLogic(
       duplicates,
       locale: localeName,
       other: '$duplicates duplicados ignorados',
       one: '1 duplicado ignorado',
+      zero: '$duplicates duplicados ignorados',
     );
     String _temp2 = intl.Intl.pluralLogic(
       unclassified,
       locale: localeName,
       other: '$unclassified grupos por classificar.',
       one: '1 grupo por classificar.',
+      zero: '$unclassified grupos por classificar.',
     );
     return '$_temp0, $_temp1. $_temp2';
   }
@@ -2365,6 +2382,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$total grupos',
       one: '1 grupo',
+      zero: '$total grupos',
     );
     return 'Classificação: $classified de $_temp0';
   }
@@ -2380,6 +2398,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count transferências entre contas',
       one: '1 transferência entre contas',
+      zero: '$count transferências entre contas',
     );
     return '$_temp0';
   }
@@ -2400,6 +2419,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$total movimentos',
       one: '1 movimento',
+      zero: '$total movimentos',
     );
     return '$active de $_temp0';
   }
@@ -2420,6 +2440,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count títulos',
       one: '1 título',
+      zero: '$count títulos',
     );
     return 'Junta-se ao grupo “$name” ($_temp0)';
   }
@@ -2441,6 +2462,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count contas detetadas',
       one: '1 conta detetada',
+      zero: '$count contas detetadas',
     );
     return '$_temp0. Escolhe a que corresponde a cada uma na app.';
   }
@@ -2452,6 +2474,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return '$name  ·  $_temp0';
   }
@@ -2478,6 +2501,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count linhas parecem movimentos mas não foram reconhecidas',
       one: '1 linha parece movimentos mas não foi reconhecida',
+      zero: '$count linhas parecem movimentos mas não foram reconhecidas',
     );
     return '$_temp0';
   }
@@ -2583,6 +2607,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos classificados pelas regras.',
       one: '1 movimento classificado pelas regras.',
+      zero: '$count movimentos classificados pelas regras.',
     );
     return '$_temp0';
   }
@@ -2600,6 +2625,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos classificados.',
       one: '1 movimento classificado.',
+      zero: '$count movimentos classificados.',
     );
     return '$_temp0';
   }
@@ -2614,6 +2640,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return 'Aplicar a $_temp0';
   }
@@ -2625,6 +2652,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos',
       one: '1 movimento',
+      zero: '$count movimentos',
     );
     return '$_temp0 · $date';
   }
@@ -2636,6 +2664,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count títulos',
       one: '1 título',
+      zero: '$count títulos',
     );
     return 'Grupo · $_temp0';
   }
@@ -2650,6 +2679,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count selecionados',
       one: '1 selecionado',
+      zero: '$count selecionados',
     );
     return '$_temp0';
   }
@@ -2849,6 +2879,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count títulos',
       one: '1 título',
+      zero: '$count títulos',
     );
     return '$_temp0';
   }
@@ -2928,6 +2959,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count preços atualizados.',
       one: '1 preço atualizado.',
+      zero: '$count preços atualizados.',
     );
     return '$_temp0';
   }
@@ -2997,6 +3029,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count ativos',
       one: '1 ativo',
+      zero: '$count ativos',
     );
     return '$_temp0';
   }
@@ -3008,6 +3041,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count ativos',
       one: '1 ativo',
+      zero: '$count ativos',
     );
     return 'Por alocar $cash · $_temp0';
   }
@@ -3158,6 +3192,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count associadas · não contam como despesa',
       one: '1 associada · não conta como despesa',
+      zero: '$count associadas · não contam como despesa',
     );
     return '$_temp0';
   }
@@ -3172,6 +3207,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos parecem ser desta plataforma',
       one: '1 movimento parece ser desta plataforma',
+      zero: '$count movimentos parecem ser desta plataforma',
     );
     return '$_temp0';
   }
@@ -3507,6 +3543,823 @@ class AppLocalizationsPt extends AppLocalizations {
   String get invClosedPosition => 'Posição fechada';
 
   @override
+  String get invfAccountNewTitle => 'Nova plataforma';
+
+  @override
+  String get invfAccountEditTitle => 'Editar plataforma';
+
+  @override
+  String get invfName => 'Nome';
+
+  @override
+  String get invfAccountNameHint => 'Ex.: XTB, Trade Republic';
+
+  @override
+  String get invfNoteOptional => 'Nota (opcional)';
+
+  @override
+  String get invfNote => 'Nota';
+
+  @override
+  String get invfSave => 'Guardar';
+
+  @override
+  String get invfSaveChanges => 'Guardar alterações';
+
+  @override
+  String get invfEnterName => 'Indica um nome';
+
+  @override
+  String get invfAccountNameTaken => 'Já existe uma plataforma com este nome';
+
+  @override
+  String invfSearchIn(String provider) {
+    return 'Procurar em $provider';
+  }
+
+  @override
+  String get invfCryptoSearchHint => 'Ex.: bitcoin';
+
+  @override
+  String get invfSymbolSearchHint => 'Ex.: VWCE, Apple, S&P 500';
+
+  @override
+  String get invfSearchFailed => 'Não foi possível pesquisar.';
+
+  @override
+  String get invfNothingFound => 'Nada encontrado.';
+
+  @override
+  String get invfClose => 'Fechar';
+
+  @override
+  String get invfHoldingNewTitle => 'Novo ativo';
+
+  @override
+  String get invfHoldingEditTitle => 'Editar ativo';
+
+  @override
+  String get invfHoldingNameHint => 'Ex.: Vanguard FTSE All-World';
+
+  @override
+  String get invfPlatform => 'Plataforma';
+
+  @override
+  String get invfType => 'Tipo';
+
+  @override
+  String get invfAssetCurrency => 'Moeda do ativo';
+
+  @override
+  String get invfAutoCurrency => 'Automática (a do preço)';
+
+  @override
+  String invfBaseCurrencyOption(String ccy) {
+    return '$ccy · moeda de base';
+  }
+
+  @override
+  String invfCurrencyAutoHint(String ccy) {
+    return 'Usa a moeda em que o ativo cota ($ccy). Podes escolher outra à mão.';
+  }
+
+  @override
+  String get invfDetectedOnPrice => 'detetada ao obter o preço';
+
+  @override
+  String get invfUsdHint =>
+      'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.';
+
+  @override
+  String invfForeignCcyHint(String ccy) {
+    return 'Compras e preço médio ficam em $ccy; o valor e o ganho da carteira são convertidos para a moeda de base ao câmbio de mercado (atualizado em \"Atualizar preços\").';
+  }
+
+  @override
+  String invfPriceWithCcy(String ccy) {
+    return 'Preço ($ccy)';
+  }
+
+  @override
+  String invfAvgPriceWithCcy(String ccy) {
+    return 'Preço médio ($ccy)';
+  }
+
+  @override
+  String get invfYahooHint =>
+      'Gratuito, sem chave. ETFs, ações e câmbios (ex.: VWCE.DE, AAPL, BTC-EUR). Converte para euros.';
+
+  @override
+  String get invfCoingeckoHint =>
+      'Gratuito, sem chave. Criptomoedas, pelo id (ex.: bitcoin, ethereum).';
+
+  @override
+  String get invfManualHint =>
+      'Tu defines o preço quando quiseres. Nada é enviado para a internet.';
+
+  @override
+  String get invfCoingeckoId => 'Id no CoinGecko';
+
+  @override
+  String get invfNewPlatformItem => '➕  Nova plataforma…';
+
+  @override
+  String get invfSymbol => 'Símbolo';
+
+  @override
+  String get invfPrice => 'Preço';
+
+  @override
+  String get invfSearchTooltip => 'Procurar';
+
+  @override
+  String invfCurrentPriceOptional(String ccy) {
+    return 'Preço atual ($ccy, opcional)';
+  }
+
+  @override
+  String invfFxLabel(String base, String ccy) {
+    return 'Câmbio: 1 $base = ? $ccy';
+  }
+
+  @override
+  String invfFxRateLabel(String base, String ccy) {
+    return 'Câmbio (1 $base = ? $ccy)';
+  }
+
+  @override
+  String invfAvgFxLabel(String base, String ccy) {
+    return 'Câmbio médio (1 $base = ? $ccy)';
+  }
+
+  @override
+  String get invfLiveFxTooltip => 'Câmbio de mercado atual (internet)';
+
+  @override
+  String invfFxFetchFailed(String message) {
+    return 'Não consegui obter o câmbio: $message';
+  }
+
+  @override
+  String invfPriceFetchFailed(String message) {
+    return 'Não consegui obter o preço: $message';
+  }
+
+  @override
+  String get invfSymbolRequired => 'Indica o símbolo (ou usa a pesquisa)';
+
+  @override
+  String get invfFxOrSyncRequired =>
+      'Indica o câmbio, ou usa o botão de sincronizar para o câmbio de mercado.';
+
+  @override
+  String invfCurrencyPickerHint(String base) {
+    return 'O valor é convertido para $base ao câmbio de mercado, atualizado em \"Atualizar preços\". As operações já registadas mantêm os valores que lá estão.';
+  }
+
+  @override
+  String get invfOpNewTitle => 'Nova operação';
+
+  @override
+  String invfOpEditTitle(String type) {
+    return 'Editar · $type';
+  }
+
+  @override
+  String get invfOpInitial => 'Posição inicial';
+
+  @override
+  String get invfOpBuy => 'Compra';
+
+  @override
+  String get invfOpSell => 'Venda';
+
+  @override
+  String get invfOpDividend => 'Dividendo';
+
+  @override
+  String get invfOpCash => 'Acerto de dinheiro';
+
+  @override
+  String get invfOpAlreadyHeld => 'Já tinha';
+
+  @override
+  String get invfOpCashChip => 'Dinheiro';
+
+  @override
+  String get invfPlatformLower => 'plataforma';
+
+  @override
+  String invfTotalToPay(String amount) {
+    return 'Total a pagar: $amount';
+  }
+
+  @override
+  String invfTotalToPayFee(String amount, String fee) {
+    return 'Total a pagar: $amount (com $fee de comissão)';
+  }
+
+  @override
+  String get invfNoAllocationHint =>
+      'Sem alocação: não desconta do dinheiro por alocar. Podes registar a transferência do banco quando quiseres.';
+
+  @override
+  String invfNotEnoughUnallocated(String amount, String cash) {
+    return 'Ainda não tens $amount por alocar nesta plataforma (tens $cash). Regista a transferência do banco depois, ou desliga \"Descontar do dinheiro por alocar\" em Mais opções.';
+  }
+
+  @override
+  String invfUnallocatedChange(String before, String after) {
+    return 'Dinheiro por alocar: $before → $after.';
+  }
+
+  @override
+  String invfUnallocatedChangeTitle(String before, String after) {
+    return 'Dinheiro por alocar: $before → $after';
+  }
+
+  @override
+  String invfBalanceChange(String before, String after) {
+    return '$before → $after.';
+  }
+
+  @override
+  String invfYouReceive(String amount) {
+    return 'Recebes $amount';
+  }
+
+  @override
+  String invfRealizedGain(String gain, String avg) {
+    return 'Ganho realizado: $gain (preço médio $avg).';
+  }
+
+  @override
+  String invfPositionCost(String amount) {
+    return 'Custo da posição: $amount';
+  }
+
+  @override
+  String get invfInitialHint =>
+      'Posição que já tinhas antes de usar a app. Define o preço médio de compra e não mexe no dinheiro por alocar.';
+
+  @override
+  String invfDividendIn(String amount) {
+    return 'Entram $amount no dinheiro por alocar';
+  }
+
+  @override
+  String get invfCashHint =>
+      'Usa isto para dinheiro que já estava na plataforma antes de começares a usar a app.';
+
+  @override
+  String invfValueWithCcy(String base) {
+    return 'Valor ($base)';
+  }
+
+  @override
+  String invfReceivedWithCcy(String base) {
+    return 'Valor recebido ($base)';
+  }
+
+  @override
+  String invfFeeWithCcy(String base) {
+    return 'Comissão ($base)';
+  }
+
+  @override
+  String get invfQuantity => 'Quantidade';
+
+  @override
+  String invfUnitsEquals(String qty) {
+    return '= $qty unidades';
+  }
+
+  @override
+  String get invfCashIn => 'Entrada';
+
+  @override
+  String get invfCashOut => 'Saída';
+
+  @override
+  String get invfDate => 'Data';
+
+  @override
+  String get invfHolding => 'Ativo';
+
+  @override
+  String get invfNewAssetItem => '➕  Novo ativo…';
+
+  @override
+  String get invfChoosePlatformHint => 'Escolher plataforma';
+
+  @override
+  String get invfChoosePlatformShort => 'Escolhe a plataforma';
+
+  @override
+  String get invfChoosePlatform => 'Escolhe a plataforma.';
+
+  @override
+  String get invfChooseAsset => 'Escolhe o ativo (ou cria um).';
+
+  @override
+  String get invfEnterValidAmounts => 'Indica valores válidos.';
+
+  @override
+  String invfFxRequired(String base, String ccy) {
+    return 'Indica o câmbio (1 $base = ? $ccy).';
+  }
+
+  @override
+  String get invfEnterQtyPrice => 'Indica a quantidade e o preço.';
+
+  @override
+  String invfOnlyHaveUnits(String qty) {
+    return 'Só tens $qty unidades para vender.';
+  }
+
+  @override
+  String get invfMoreOptionsTrade => 'Mais opções (comissão, nota…)';
+
+  @override
+  String get invfDeductUnallocated => 'Descontar do dinheiro por alocar';
+
+  @override
+  String get invfDeductHint =>
+      'Desliga se ainda não registaste a transferência do banco para a plataforma, ou se esta operação já está contada noutro lado.';
+
+  @override
+  String get invfUseTotalInstead =>
+      'Indicar o valor total em vez da quantidade';
+
+  @override
+  String invfAssetCurrencyChange(String ccy) {
+    return 'Moeda do ativo: $ccy · alterar';
+  }
+
+  @override
+  String get invfHasInitialTitle => 'Este ativo já tem uma posição inicial';
+
+  @override
+  String get invfHasInitialBody =>
+      'Está carregada aqui. Ao guardar, substitui a anterior.';
+
+  @override
+  String get invfDeleteOp => 'Apagar operação';
+
+  @override
+  String invfLinkTitle(String name) {
+    return 'Associar a $name';
+  }
+
+  @override
+  String get invfLinkButton => 'Associar';
+
+  @override
+  String invfLinkCount(int count, String amount) {
+    return 'Associar $count ($amount para a plataforma)';
+  }
+
+  @override
+  String get invfLinkHint =>
+      'Escolhe os movimentos do banco que foram dinheiro enviado para (ou recebido de) esta plataforma. Deixam de contar como despesa.';
+
+  @override
+  String get invfSearchTransactions => 'Pesquisar movimentos';
+
+  @override
+  String get invfNoTransactionsToLink => 'Não há movimentos por associar.';
+
+  @override
+  String get invfLooksLikeThis => ' · parece desta plataforma';
+
+  @override
+  String get invfRememberTitles => 'Lembrar estes títulos';
+
+  @override
+  String get invfRememberHint =>
+      'Nas próximas importações, movimentos com o mesmo título são associados sozinhos.';
+
+  @override
+  String get invfImportTitle => 'Importar compras e vendas';
+
+  @override
+  String get invfImportIntro =>
+      'Formatos: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido no telemóvel e nunca sai daqui. Reconhece compras, vendas e dividendos; o resto (depósitos, impostos…) é ignorado.';
+
+  @override
+  String get invfChooseFile => 'Escolher ficheiro';
+
+  @override
+  String get invfChooseOtherFile => 'Escolher outro ficheiro';
+
+  @override
+  String invfFileName(String name) {
+    return 'Ficheiro: $name';
+  }
+
+  @override
+  String invfReadError(String error) {
+    return 'Erro ao ler o ficheiro: $error';
+  }
+
+  @override
+  String get invfExcelNoData => 'O ficheiro Excel não tem dados.';
+
+  @override
+  String get invfPdfNotFound =>
+      'Não encontrei compras ou vendas neste PDF. Pode ser digitalizado (imagem) ou ter um formato diferente. Se a corretora permitir, exporta em CSV ou Excel.';
+
+  @override
+  String get invfNotFoundTrades =>
+      'Não encontrei compras ou vendas. Indica abaixo que coluna é cada coisa.';
+
+  @override
+  String get invfNotFoundWithColumns =>
+      'Não encontrei compras ou vendas com estas colunas.';
+
+  @override
+  String get invfCurrencyAndRate => 'Moeda e câmbio';
+
+  @override
+  String invfCurrencyIntro(String base) {
+    return 'Linhas sem moeda indicada usam a moeda abaixo. Para moedas diferentes de $base indica o câmbio médio; podes afinar cada operação depois.';
+  }
+
+  @override
+  String get invfTransactionCurrency => 'Moeda das operações';
+
+  @override
+  String invfAllInBase(String base) {
+    return 'Todas as operações estão em $base.';
+  }
+
+  @override
+  String get invfAssetsFound => 'Ativos encontrados';
+
+  @override
+  String get invfAssetsHint =>
+      'Liga cada um a um ativo teu, cria um novo ou ignora.';
+
+  @override
+  String invfTradeCountLabel(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count operações',
+      one: '$count operação',
+      zero: '$count operações',
+    );
+    return '$name  ·  $_temp0';
+  }
+
+  @override
+  String get invfCreateNewAsset => '➕  Criar ativo novo';
+
+  @override
+  String get invfIgnore => 'Ignorar';
+
+  @override
+  String get invfOperations => 'Operações';
+
+  @override
+  String invfBuysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count compras',
+      one: '$count compra',
+      zero: '$count compras',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String invfSellsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vendas',
+      one: '$count venda',
+      zero: '$count vendas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String invfDividendsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dividendos',
+      one: '$count dividendo',
+      zero: '$count dividendos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String invfDuplicatesIgnored(int count) {
+    return '$count já existentes (ignoradas)';
+  }
+
+  @override
+  String get invfMissingRate => 'Falta o câmbio';
+
+  @override
+  String invfMissingRateBody(String currencies) {
+    return 'Indica o câmbio de $currencies para importar essas operações.';
+  }
+
+  @override
+  String get invfAllCurrencies => 'todas as moedas';
+
+  @override
+  String invfMissingQtyTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count operações sem quantidade',
+      one: '1 operação sem quantidade',
+      zero: '$count operações sem quantidade',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get invfMissingQtyBody =>
+      'O ficheiro só tem o valor pago. Escolhe a coluna que traz a quantidade e o preço (ex.: o comentário) em \"Colunas do ficheiro\".';
+
+  @override
+  String invfShowingFirst(int total) {
+    return 'A mostrar as primeiras 300 de $total.';
+  }
+
+  @override
+  String get invfAlreadyExists => ' · já existe';
+
+  @override
+  String invfTradeQtyPart(String qty, String price, String ccy) {
+    return ' · $qty un. × $price $ccy';
+  }
+
+  @override
+  String invfImportCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count operações',
+      one: '1 operação',
+      zero: '0 operações',
+    );
+    return 'Importar $_temp0';
+  }
+
+  @override
+  String get invfFileColumns => 'Colunas do ficheiro';
+
+  @override
+  String get invfAutoRecognized =>
+      'Reconhecidas automaticamente. Toca para ajustar.';
+
+  @override
+  String get invfIndicateColumns => 'Indica que coluna é cada coisa.';
+
+  @override
+  String get invfExcelSheet => 'Folha do Excel';
+
+  @override
+  String invfSheetRows(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count linhas',
+      one: '1 linha',
+      zero: '$count linhas',
+    );
+    return '$name  ·  $_temp0';
+  }
+
+  @override
+  String get invfHeaderRow => 'Linha dos títulos das colunas';
+
+  @override
+  String get invfNoHeaders => 'Sem títulos';
+
+  @override
+  String invfHeaderRowItem(int n, String text) {
+    return 'Linha $n: $text';
+  }
+
+  @override
+  String get invfNotExists => '— não existe —';
+
+  @override
+  String invfColumnNumber(int n) {
+    return 'Coluna $n';
+  }
+
+  @override
+  String invfColumnNumberLower(int n) {
+    return 'coluna $n';
+  }
+
+  @override
+  String get invfFileValidation => 'Validação do ficheiro';
+
+  @override
+  String get invfRequiredNote =>
+      'Preciso, no mínimo, da data, da quantidade e do preço (ou do valor total).';
+
+  @override
+  String get invfQuantityOrComment => 'Quantidade (ou o comentário que a traz)';
+
+  @override
+  String get invfPriceOrTotal => 'Preço ou Valor total';
+
+  @override
+  String invfMissingColumn(String name) {
+    return 'Falta escolher a coluna: $name';
+  }
+
+  @override
+  String invfValidationSummary(int dataRows, int recognized) {
+    String _temp0 = intl.Intl.pluralLogic(
+      dataRows,
+      locale: localeName,
+      other: '$dataRows linhas com dados',
+      one: '1 linha com dados',
+      zero: '0 linhas com dados',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      recognized,
+      locale: localeName,
+      other: '$recognized operações reconhecidas',
+      one: '1 operação reconhecida',
+      zero: '0 operações reconhecidas',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String invfWithProblems(int count) {
+    return ' · $count com problemas';
+  }
+
+  @override
+  String invfIgnoredByUser(int count) {
+    return ' · $count ignoradas (não são compras/vendas)';
+  }
+
+  @override
+  String invfColumnValid(String label, int ok, int total) {
+    return '$label: $ok de $total válidas';
+  }
+
+  @override
+  String invfColumnValidNamed(String label, String column, int ok, int total) {
+    return '$label ($column): $ok de $total válidas';
+  }
+
+  @override
+  String get invfUnknownTypes => 'Tipos que não reconheci';
+
+  @override
+  String get invfUnknownTypesHint =>
+      'Diz-me o que são para os importar (ou ignora).';
+
+  @override
+  String invfUnknownTypeRows(String type, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count linhas',
+      one: '1 linha',
+      zero: '$count linhas',
+    );
+    return '“$type” · $_temp0';
+  }
+
+  @override
+  String get invfEmpty => '(vazio)';
+
+  @override
+  String get invfChoose => 'Escolher';
+
+  @override
+  String invfSkippedRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count linhas não importadas',
+      one: '1 linha não importada',
+      zero: '$count linhas não importadas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String invfRowReason(int row, String reason) {
+    return 'Linha $row: $reason';
+  }
+
+  @override
+  String invfAndMore(int count) {
+    return '… e mais $count';
+  }
+
+  @override
+  String get invfAllRowsOk => 'Todas as linhas foram lidas sem problemas.';
+
+  @override
+  String invfImportedOps(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count operações importadas',
+      one: '1 operação importada',
+      zero: '$count operações importadas',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String invfImportedHoldings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ativos criados',
+      one: '1 ativo criado',
+      zero: '$count ativos criados',
+    );
+    return ' e $_temp0';
+  }
+
+  @override
+  String get invfUpdatePrices => '. Atualiza os preços na Carteira.';
+
+  @override
+  String get invfNegativeCashWarning =>
+      ' O dinheiro por alocar ficou negativo: associa as transferências do banco a esta plataforma ou acerta o dinheiro.';
+
+  @override
+  String get invfFieldDate => 'Data';
+
+  @override
+  String get invfFieldType => 'Tipo (compra / venda)';
+
+  @override
+  String get invfFieldName => 'Nome do ativo';
+
+  @override
+  String get invfFieldCategory => 'Categoria (ETF, ação…)';
+
+  @override
+  String get invfFieldComment => 'Comentário (ex.: OPEN BUY 0.5 @ 100)';
+
+  @override
+  String get invfFieldSymbol => 'Símbolo';
+
+  @override
+  String get invfFieldIsin => 'ISIN';
+
+  @override
+  String get invfFieldQuantity => 'Quantidade';
+
+  @override
+  String get invfFieldPrice => 'Preço por unidade';
+
+  @override
+  String get invfFieldTotal => 'Valor total';
+
+  @override
+  String get invfFieldFee => 'Comissão';
+
+  @override
+  String get invfFieldCurrency => 'Moeda';
+
+  @override
+  String get invfFieldRate =>
+      'Câmbio (unidades da moeda por 1 da moeda de base)';
+
+  @override
+  String get invfKindEtf => 'ETF';
+
+  @override
+  String get invfKindStock => 'Ação';
+
+  @override
+  String get invfKindCrypto => 'Cripto';
+
+  @override
+  String get invfKindFund => 'Fundo';
+
+  @override
+  String get invfKindBond => 'Obrigação';
+
+  @override
+  String get invfKindOther => 'Outro';
+
+  @override
   String get morMoreTitle => 'Mais';
 
   @override
@@ -3546,6 +4399,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count contas',
       one: '1 conta',
+      zero: '$count contas',
     );
     return '$_temp0';
   }
@@ -3560,6 +4414,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count recorrentes',
       one: '1 recorrente',
+      zero: '$count recorrentes',
     );
     return '$_temp0 · salário, renda, subscrições';
   }
@@ -3574,6 +4429,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count categorias',
       one: '1 categoria',
+      zero: '$count categorias',
     );
     return '$_temp0';
   }
@@ -3588,6 +4444,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count grupos',
       one: '1 grupo',
+      zero: '$count grupos',
     );
     return '$_temp0';
   }
@@ -3602,6 +4459,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count regras',
       one: '1 regra',
+      zero: '$count regras',
     );
     return '$_temp0';
   }
@@ -3659,6 +4517,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$date · $count movimentos',
       one: '$date · 1 movimento',
+      zero: '$date · $count movimentos',
     );
     return '$_temp0';
   }
@@ -3670,6 +4529,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: 'Remover os $count movimentos desta importação?',
       one: 'Remover o movimento desta importação?',
+      zero: 'Remover os $count movimentos desta importação?',
     );
     return '$_temp0';
   }
@@ -3718,6 +4578,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count mov.',
       one: '1 mov.',
+      zero: '$count mov.',
     );
     return '$_temp0';
   }
@@ -3751,6 +4612,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: 'Os $count movimentos ficam',
       one: 'O movimento fica',
+      zero: 'Os $count movimentos ficam',
     );
     return 'Apagar “$name”? $_temp0 sem categoria$subs.';
   }
@@ -3927,6 +4789,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos recorrentes registados',
       one: '1 movimento recorrente registado',
+      zero: '$count movimentos recorrentes registados',
     );
     return '$_temp0';
   }
@@ -3946,6 +4809,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '($count entregas)',
       one: '(1 entrega)',
+      zero: '($count entregas)',
     );
     return '$_temp0';
   }

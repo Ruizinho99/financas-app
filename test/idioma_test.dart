@@ -72,4 +72,20 @@ void main() {
     expect(find.text('Start here'), findsOneWidget);
     expect(find.text('Import a statement'), findsOneWidget);
   });
+
+  test(
+    'plurais: zero não aparece como singular (em português 0 e 1 são "um")',
+    () async {
+      final pt = await AppLocalizations.delegate.load(const Locale('pt', 'PT'));
+      final en = await AppLocalizations.delegate.load(const Locale('en'));
+      expect(pt.morAccountsCount(0), '0 contas');
+      expect(pt.morAccountsCount(1), '1 conta');
+      expect(pt.morAccountsCount(2), '2 contas');
+      expect(pt.impTxnCount(0), '0 movimentos');
+      expect(pt.invAssetsCount(0), '0 ativos');
+      expect(en.morAccountsCount(0), '0 accounts');
+      expect(en.morAccountsCount(1), '1 account');
+      expect(en.impTxnCount(0), '0 transactions');
+    },
+  );
 }

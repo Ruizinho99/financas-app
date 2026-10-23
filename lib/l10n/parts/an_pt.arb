@@ -274,7 +274,7 @@
   "anLargestSpends": "Maiores despesas",
   "anLargestSub": "As que mais pesaram neste período",
   "anMonthByMonth": "Mês a mês",
-  "anTxCount": "{count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "anTxCount": "{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}",
   "@anTxCount": {
     "placeholders": {
       "count": {
@@ -445,7 +445,7 @@
   "anCancelAdvice": "Cancelar o que já não usas é a forma mais fácil de poupar.",
   "anFrequentSmall": "Pequenas compras frequentes",
   "anSmallSub": "Compras de baixo valor que se repetem muito",
-  "anPurchasesAvg": "{count, plural, =1{1 compra} other{{count} compras}} · média {avg}",
+  "anPurchasesAvg": "{count, plural, =0{{count} compras} =1{1 compra} other{{count} compras}} · média {avg}",
   "@anPurchasesAvg": {
     "placeholders": {
       "count": {
@@ -575,7 +575,7 @@
       }
     }
   },
-  "anSmallDetail": "{count, plural, =1{1 compra} other{{count} compras}} em {places, plural, =1{1 sítio} other{{places} sítios}} somam {total} ({examples}). Reduzir um terço poupava {saving} por mês.",
+  "anSmallDetail": "{count, plural, =0{{count} compras} =1{1 compra} other{{count} compras}} em {places, plural, =0{{places} sítios} =1{1 sítio} other{{places} sítios}} somam {total} ({examples}). Reduzir um terço poupava {saving} por mês.",
   "@anSmallDetail": {
     "placeholders": {
       "count": {
@@ -595,7 +595,7 @@
       }
     }
   },
-  "anRecurringTitle": "{count, plural, =1{1 pagamento recorrente opcional} other{{count} pagamentos recorrentes opcionais}}",
+  "anRecurringTitle": "{count, plural, =0{{count} pagamentos recorrentes opcionais} =1{1 pagamento recorrente opcional} other{{count} pagamentos recorrentes opcionais}}",
   "@anRecurringTitle": {
     "placeholders": {
       "count": {

@@ -22,7 +22,7 @@
   "invUnallocatedStandby": "Por alocar (standby)",
   "invRealizedGain": "Ganho realizado",
   "invDividends": "Dividendos",
-  "invPricesUpdated": "{count, plural, =1{1 preço atualizado.} other{{count} preços atualizados.}}",
+  "invPricesUpdated": "{count, plural, =0{{count} preços atualizados.} =1{1 preço atualizado.} other{{count} preços atualizados.}}",
   "@invPricesUpdated": {
     "placeholders": {
       "count": {
@@ -61,7 +61,7 @@
   "invAllocate": "Alocar",
   "invAdjust": "Acertar",
   "invPlatforms": "Plataformas",
-  "invAssetsCount": "{count, plural, =1{1 ativo} other{{count} ativos}}",
+  "invAssetsCount": "{count, plural, =0{{count} ativos} =1{1 ativo} other{{count} ativos}}",
   "@invAssetsCount": {
     "placeholders": {
       "count": {
@@ -69,7 +69,7 @@
       }
     }
   },
-  "invAccountLine": "Por alocar {cash} · {count, plural, =1{1 ativo} other{{count} ativos}}",
+  "invAccountLine": "Por alocar {cash} · {count, plural, =0{{count} ativos} =1{1 ativo} other{{count} ativos}}",
   "@invAccountLine": {
     "placeholders": {
       "cash": {
@@ -152,7 +152,7 @@
       }
     }
   },
-  "invLinkedCount": "{count, plural, =1{1 associada · não conta como despesa} other{{count} associadas · não contam como despesa}}",
+  "invLinkedCount": "{count, plural, =0{{count} associadas · não contam como despesa} =1{1 associada · não conta como despesa} other{{count} associadas · não contam como despesa}}",
   "@invLinkedCount": {
     "placeholders": {
       "count": {
@@ -161,7 +161,7 @@
     }
   },
   "invLinkBankTransfers": "Associar transferências do banco",
-  "invSuggestedMatches": "{count, plural, =1{1 movimento parece ser desta plataforma} other{{count} movimentos parecem ser desta plataforma}}",
+  "invSuggestedMatches": "{count, plural, =0{{count} movimentos parecem ser desta plataforma} =1{1 movimento parece ser desta plataforma} other{{count} movimentos parecem ser desta plataforma}}",
   "@invSuggestedMatches": {
     "placeholders": {
       "count": {

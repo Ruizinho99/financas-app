@@ -5,56 +5,179 @@
   "impChooseFile": "Choose file",
   "impChooseOtherFile": "Choose another file",
   "impFileName": "File: {name}",
-  "@impFileName": { "placeholders": { "name": { "type": "String" } } },
+  "@impFileName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "impPdfNoRows": "No transactions found in this PDF. It may be a scanned (image) PDF or a different format. Try exporting CSV/Excel from your online banking.",
   "impCsvNoRows": "Couldn't read any transactions. Adjust the columns below.",
   "impReadError": "Error reading the file: {error}",
-  "@impReadError": { "placeholders": { "error": { "type": "String" } } },
+  "@impReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "impStatementAccount": "Account for this statement",
   "impPickAccountOptional": "Select an account (optional)",
-  "impTxnCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
-  "@impTxnCount": { "placeholders": { "count": { "type": "int" } } },
+  "impTxnCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@impTxnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impIncomeExpense": "Income {income}   ·   Expenses {expense}",
-  "@impIncomeExpense": { "placeholders": { "income": { "type": "String" }, "expense": { "type": "String" } } },
+  "@impIncomeExpense": {
+    "placeholders": {
+      "income": {
+        "type": "String"
+      },
+      "expense": {
+        "type": "String"
+      }
+    }
+  },
   "impInvertSigns": "Invert signs",
   "impInvertSignsHint": "Use this if expenses show as positive",
-  "impImportButton": "{count, plural, =1{Import 1 transaction} other{Import {count} transactions}}",
-  "@impImportButton": { "placeholders": { "count": { "type": "int" } } },
-  "impImportDone": "{added, plural, =1{1 imported} other{{added} imported}}, {duplicates, plural, =1{1 duplicate skipped} other{{duplicates} duplicates skipped}}. {unclassified, plural, =1{1 group to classify.} other{{unclassified} groups to classify.}}",
-  "@impImportDone": { "placeholders": { "added": { "type": "int" }, "duplicates": { "type": "int" }, "unclassified": { "type": "int" } } },
-  "impClassifiedOf": "Classified: {classified} of {total, plural, =1{1 group} other{{total} groups}}",
-  "@impClassifiedOf": { "placeholders": { "classified": { "type": "int" }, "total": { "type": "int" } } },
+  "impImportButton": "{count, plural, =0{Import {count} transactions} =1{Import 1 transaction} other{Import {count} transactions}}",
+  "@impImportButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impImportDone": "{added, plural, =0{{added} imported} =1{1 imported} other{{added} imported}}, {duplicates, plural, =0{{duplicates} duplicates skipped} =1{1 duplicate skipped} other{{duplicates} duplicates skipped}}. {unclassified, plural, =0{{unclassified} groups to classify.} =1{1 group to classify.} other{{unclassified} groups to classify.}}",
+  "@impImportDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      },
+      "unclassified": {
+        "type": "int"
+      }
+    }
+  },
+  "impClassifiedOf": "Classified: {classified} of {total, plural, =0{{total} groups} =1{1 group} other{{total} groups}}",
+  "@impClassifiedOf": {
+    "placeholders": {
+      "classified": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "impGroupsExplain": "Transactions with the same name are grouped together. Choose the category and subcategory for each group (or leave it unclassified). Rules you already saved are filled in.",
-  "impTransfersCount": "{count, plural, =1{1 transfer between accounts} other{{count} transfers between accounts}}",
-  "@impTransfersCount": { "placeholders": { "count": { "type": "int" } } },
+  "impTransfersCount": "{count, plural, =0{{count} transfers between accounts} =1{1 transfer between accounts} other{{count} transfers between accounts}}",
+  "@impTransfersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impTransfersHint": "They don't need a category and are kept out of expenses and income.",
   "impOriginal": "Original: {description}",
-  "@impOriginal": { "placeholders": { "description": { "type": "String" } } },
-  "impActiveOfTotal": "{active} of {total, plural, =1{1 transaction} other{{total} transactions}}",
-  "@impActiveOfTotal": { "placeholders": { "active": { "type": "int" }, "total": { "type": "int" } } },
+  "@impOriginal": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "impActiveOfTotal": "{active} of {total, plural, =0{{total} transactions} =1{1 transaction} other{{total} transactions}}",
+  "@impActiveOfTotal": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "impRememberedRule": " · remembered rule",
   "impNameOrGroup": "Name or group (optional)",
   "impNameHint": "E.g.: Gym, Arminda Restaurant…",
-  "impJoinsGroup": "Joins the group “{name}” ({count, plural, =1{1 title} other{{count} titles}})",
-  "@impJoinsGroup": { "placeholders": { "name": { "type": "String" }, "count": { "type": "int" } } },
+  "impJoinsGroup": "Joins the group “{name}” ({count, plural, =0{{count} titles} =1{1 title} other{{count} titles}})",
+  "@impJoinsGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impRememberNameCategory": "Remember name and category for the future",
   "impViewTransactions": "View transactions",
   "impAccountsInStatement": "Accounts in this statement",
-  "impAccountsDetected": "{count, plural, =1{1 account detected} other{{count} accounts detected}}. Choose the one that matches each in the app.",
-  "@impAccountsDetected": { "placeholders": { "count": { "type": "int" } } },
-  "impAccountTxns": "{name}  ·  {count, plural, =1{1 transaction} other{{count} transactions}}",
-  "@impAccountTxns": { "placeholders": { "name": { "type": "String" }, "count": { "type": "int" } } },
+  "impAccountsDetected": "{count, plural, =0{{count} accounts detected} =1{1 account detected} other{{count} accounts detected}}. Choose the one that matches each in the app.",
+  "@impAccountsDetected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAccountTxns": "{name}  ·  {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@impAccountTxns": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impCreateAccount": "➕  Create account “{name}”",
-  "@impCreateAccount": { "placeholders": { "name": { "type": "String" } } },
+  "@impCreateAccount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "impNoAccount": "No account",
   "impDetectTransfers": "Detect transfers between these accounts",
   "impDetectTransfersHint": "An outflow from one account and an inflow to another of the same amount don't count as expense or income.",
-  "impSkippedTitle": "{count, plural, =1{1 line looks like transactions but was not recognized} other{{count} lines look like transactions but were not recognized}}",
-  "@impSkippedTitle": { "placeholders": { "count": { "type": "int" } } },
+  "impSkippedTitle": "{count, plural, =0{{count} lines look like transactions but were not recognized} =1{1 line looks like transactions but was not recognized} other{{count} lines look like transactions but were not recognized}}",
+  "@impSkippedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impSkippedSub": "Read: {count}. Tap to see the skipped lines.",
-  "@impSkippedSub": { "placeholders": { "count": { "type": "int" } } },
+  "@impSkippedSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impAndMore": "… and {count} more",
-  "@impAndMore": { "placeholders": { "count": { "type": "int" } } },
+  "@impAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impSkippedHelp": "If this is a statement from your bank, export it as CSV/Excel from online banking, or send me an example (with the data hidden) so I can adjust the reader.",
   "impYearForDates": "Year for dates without a year",
   "impYearHint": "Only affects dates written as dd-mm",
@@ -68,7 +191,13 @@
   "impBalanceOptional": "Balance (optional)",
   "impDoNotUse": "— don't use —",
   "impColumnN": "Column {n}",
-  "@impColumnN": { "placeholders": { "n": { "type": "int" } } },
+  "@impColumnN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "impClassifyTitle": "Classify",
   "impClassifySubtitle": "Review and categorize your imported transactions",
   "impSort": "Sort",
@@ -80,28 +209,79 @@
   "impRules": "Remembered rules",
   "impSearchGroups": "Search groups or merchants…",
   "impToClassifyChip": "To classify ({count})",
-  "@impToClassifyChip": { "placeholders": { "count": { "type": "int" } } },
+  "@impToClassifyChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impAll": "All",
   "impApplyRules": "Apply rules",
-  "impClassifiedByRules": "{count, plural, =1{1 transaction classified by the rules.} other{{count} transactions classified by the rules.}}",
-  "@impClassifiedByRules": { "placeholders": { "count": { "type": "int" } } },
+  "impClassifiedByRules": "{count, plural, =0{{count} transactions classified by the rules.} =1{1 transaction classified by the rules.} other{{count} transactions classified by the rules.}}",
+  "@impClassifiedByRules": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impAllClassified": "All classified! 🎉",
   "impNoTransactionsYet": "No transactions yet.",
-  "impClassifiedCount": "{count, plural, =1{1 transaction classified.} other{{count} transactions classified.}}",
-  "@impClassifiedCount": { "placeholders": { "count": { "type": "int" } } },
+  "impClassifiedCount": "{count, plural, =0{{count} transactions classified.} =1{1 transaction classified.} other{{count} transactions classified.}}",
+  "@impClassifiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impSelectAll": "Select all",
-  "impApplyTo": "Apply to {count, plural, =1{1 transaction} other{{count} transactions}}",
-  "@impApplyTo": { "placeholders": { "count": { "type": "int" } } },
-  "impTxnCountDate": "{count, plural, =1{1 transaction} other{{count} transactions}} · {date}",
-  "@impTxnCountDate": { "placeholders": { "count": { "type": "int" }, "date": { "type": "String" } } },
-  "impGroupChip": "Group · {count, plural, =1{1 title} other{{count} titles}}",
-  "@impGroupChip": { "placeholders": { "count": { "type": "int" } } },
+  "impApplyTo": "Apply to {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@impApplyTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impTxnCountDate": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}} · {date}",
+  "@impTxnCountDate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "impGroupChip": "Group · {count, plural, =0{{count} titles} =1{1 title} other{{count} titles}}",
+  "@impGroupChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impRemembered": "Remembered",
-  "impSelectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
-  "@impSelectedCount": { "placeholders": { "count": { "type": "int" } } },
+  "impSelectedCount": "{count, plural, =0{{count} selected} =1{1 selected} other{{count} selected}}",
+  "@impSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impChooseCategory": "Choose a category",
   "impMoveTo": "Move to {category}",
-  "@impMoveTo": { "placeholders": { "category": { "type": "String" } } },
+  "@impMoveTo": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
   "impRememberForFuture": "Remember for future",
   "impWhatIsThis": "What is this?",
   "impRememberHelp": "Saves a rule: the next time a transaction with this title appears, the app immediately applies the name and category you chose.",
@@ -109,7 +289,13 @@
   "impNameAndNotes": "Name and notes",
   "impForgetRule": "Forget rule",
   "impForgetRuleQuestion": "Forget the rule for “{key}”? Transactions already classified stay that way.",
-  "@impForgetRuleQuestion": { "placeholders": { "key": { "type": "String" } } },
+  "@impForgetRuleQuestion": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
   "impForget": "Forget",
   "impJoinGroup": "Join group",
   "impManageGroup": "Manage group",
@@ -138,31 +324,82 @@
   "impDeleteGroup": "Delete group",
   "impGroupDeleted": "Group deleted.",
   "impDeleteGroupQuestion": "Delete the group “{name}”? The titles keep the name and category they had in the group, but are no longer grouped together.",
-  "@impDeleteGroupQuestion": { "placeholders": { "name": { "type": "String" } } },
+  "@impDeleteGroupQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "impJoinTitles": "Join titles",
   "impGroupName": "Group name",
   "impGroupSaved": "Group saved.",
   "impGroupExists": "A group named “{name}” already exists.",
-  "@impGroupExists": { "placeholders": { "name": { "type": "String" } } },
+  "@impGroupExists": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "impTitlesInGroup": "Titles in this group ({count})",
-  "@impTitlesInGroup": { "placeholders": { "count": { "type": "int" } } },
+  "@impTitlesInGroup": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "impGroupAnyTitle": "Any transaction with one of these titles gets the group's name and category, now and in future imports.",
   "impGroupEmptyHint": "Still empty. Use “Join titles”.",
   "impRemoveFromGroup": "Remove from group",
   "impSearchTitles": "Search titles",
   "impNoTitlesFound": "No titles found.",
   "impAlreadyInGroup": " · already in “{name}”",
-  "@impAlreadyInGroup": { "placeholders": { "name": { "type": "String" } } },
+  "@impAlreadyInGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "impOrAnyTitle": "Or: any title containing…",
   "impJoin": "Join",
   "impTitleLabel": "Title: {title}",
-  "@impTitleLabel": { "placeholders": { "title": { "type": "String" } } },
+  "@impTitleLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "impTitlesList": "{count} titles: {list}",
-  "@impTitlesList": { "placeholders": { "count": { "type": "int" }, "list": { "type": "String" } } },
+  "@impTitlesList": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
   "impExistingGroup": "Existing group",
   "impOr": "or",
   "impExistsJoins": "Already exists: will join “{name}”",
-  "@impExistsJoins": { "placeholders": { "name": { "type": "String" } } },
-  "impTitleCount": "{count, plural, =1{1 title} other{{count} titles}}",
-  "@impTitleCount": { "placeholders": { "count": { "type": "int" } } }
+  "@impExistsJoins": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impTitleCount": "{count, plural, =0{{count} titles} =1{1 title} other{{count} titles}}",
+  "@impTitleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

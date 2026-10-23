@@ -143,7 +143,7 @@
   "bpSalaryDefaultHint": "Off: becomes the default amount for every month",
   "bpUseBaseSalary": "Use base amount",
   "bpCopyPreviousPlan": "Copy plan from previous month",
-  "bpCopiedPlanItems": "{count, plural, =1{Copied 1 expense from {month}.} other{Copied {count} expenses from {month}.}}",
+  "bpCopiedPlanItems": "{count, plural, =0{Copied {count} expenses from {month}.} =1{Copied 1 expense from {month}.} other{Copied {count} expenses from {month}.}}",
   "@bpCopiedPlanItems": {
     "placeholders": {
       "count": {

@@ -22,7 +22,7 @@
   "invUnallocatedStandby": "Unallocated (standby)",
   "invRealizedGain": "Realized gain",
   "invDividends": "Dividends",
-  "invPricesUpdated": "{count, plural, =1{1 price updated.} other{{count} prices updated.}}",
+  "invPricesUpdated": "{count, plural, =0{{count} prices updated.} =1{1 price updated.} other{{count} prices updated.}}",
   "@invPricesUpdated": {
     "placeholders": {
       "count": {
@@ -61,7 +61,7 @@
   "invAllocate": "Allocate",
   "invAdjust": "Adjust",
   "invPlatforms": "Platforms",
-  "invAssetsCount": "{count, plural, =1{1 asset} other{{count} assets}}",
+  "invAssetsCount": "{count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
   "@invAssetsCount": {
     "placeholders": {
       "count": {
@@ -69,7 +69,7 @@
       }
     }
   },
-  "invAccountLine": "Unallocated {cash} · {count, plural, =1{1 asset} other{{count} assets}}",
+  "invAccountLine": "Unallocated {cash} · {count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
   "@invAccountLine": {
     "placeholders": {
       "cash": {
@@ -152,7 +152,7 @@
       }
     }
   },
-  "invLinkedCount": "{count, plural, =1{1 linked · not counted as an expense} other{{count} linked · not counted as expenses}}",
+  "invLinkedCount": "{count, plural, =0{{count} linked · not counted as expenses} =1{1 linked · not counted as an expense} other{{count} linked · not counted as expenses}}",
   "@invLinkedCount": {
     "placeholders": {
       "count": {
@@ -161,7 +161,7 @@
     }
   },
   "invLinkBankTransfers": "Link bank transfers",
-  "invSuggestedMatches": "{count, plural, =1{1 transaction looks like it belongs to this platform} other{{count} transactions look like they belong to this platform}}",
+  "invSuggestedMatches": "{count, plural, =0{{count} transactions look like they belong to this platform} =1{1 transaction looks like it belongs to this platform} other{{count} transactions look like they belong to this platform}}",
   "@invSuggestedMatches": {
     "placeholders": {
       "count": {

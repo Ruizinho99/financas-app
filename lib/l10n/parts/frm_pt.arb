@@ -261,7 +261,7 @@
   },
   "frmThisCategory": "esta categoria",
   "frmRepeatedName": "Nome repetido",
-  "frmRemoveSubQuestion": "Remover “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria (só depois de guardares).",
+  "frmRemoveSubQuestion": "Remover “{name}”? {count, plural, =0{Os {count} movimentos ficam} =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria (só depois de guardares).",
   "@frmRemoveSubQuestion": {
     "placeholders": {
       "name": {
@@ -346,7 +346,7 @@
   "frmNewAccountItem": "Nova conta…",
   "frmNoAccount": "Sem conta",
   "frmNoAccountsYet": "Ainda não tens contas.\nCria uma para saberes de onde vem cada movimento e para registar transferências entre contas.",
-  "frmAccountSubtitle": "{count, plural, =1{1 movimento} other{{count} movimentos}} · saldo {balance}",
+  "frmAccountSubtitle": "{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}} · saldo {balance}",
   "@frmAccountSubtitle": {
     "placeholders": {
       "count": {
@@ -357,7 +357,7 @@
       }
     }
   },
-  "frmDeleteAccountQuestion": "Apagar a conta “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem conta.",
+  "frmDeleteAccountQuestion": "Apagar a conta “{name}”? {count, plural, =0{Os {count} movimentos ficam} =1{O movimento fica} other{Os {count} movimentos ficam}} sem conta.",
   "@frmDeleteAccountQuestion": {
     "placeholders": {
       "name": {
@@ -371,7 +371,7 @@
   "frmAccountDeleted": "Conta apagada.",
   "frmEdit": "Editar",
   "frmBalance": "Saldo",
-  "frmOpeningBalanceLine": "Saldo inicial {amount} · {count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "frmOpeningBalanceLine": "Saldo inicial {amount} · {count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}",
   "@frmOpeningBalanceLine": {
     "placeholders": {
       "amount": {
@@ -416,7 +416,7 @@
   "frmAll": "Todos",
   "frmExpenses": "Despesas",
   "frmTransfers": "Transferências",
-  "frmTransactionsCount": "{count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "frmTransactionsCount": "{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}",
   "@frmTransactionsCount": {
     "placeholders": {
       "count": {
@@ -467,7 +467,7 @@
       }
     }
   },
-  "frmDeliveriesCount": "{count, plural, =1{1 entrega} other{{count} entregas}} · {total}",
+  "frmDeliveriesCount": "{count, plural, =0{{count} entregas} =1{1 entrega} other{{count} entregas}} · {total}",
   "@frmDeliveriesCount": {
     "placeholders": {
       "count": {

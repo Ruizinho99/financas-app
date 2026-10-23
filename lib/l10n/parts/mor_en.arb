@@ -11,7 +11,7 @@
   "morUpdatesSubtitle": "Look for and install a new version",
   "morAppearanceSubtitle": "Dark mode and colors",
   "morAccountsTitle": "Accounts",
-  "morAccountsCount": "{count, plural, =1{1 account} other{{count} accounts}}",
+  "morAccountsCount": "{count, plural, =0{{count} accounts} =1{1 account} other{{count} accounts}}",
   "@morAccountsCount": {
     "placeholders": {
       "count": {
@@ -20,7 +20,7 @@
     }
   },
   "morRecurringTitle": "Recurring transactions",
-  "morRecurringCount": "{count, plural, =1{1 recurring} other{{count} recurring}} · salary, rent, subscriptions",
+  "morRecurringCount": "{count, plural, =0{{count} recurring} =1{1 recurring} other{{count} recurring}} · salary, rent, subscriptions",
   "@morRecurringCount": {
     "placeholders": {
       "count": {
@@ -29,7 +29,7 @@
     }
   },
   "morCategoriesTitle": "Categories and subcategories",
-  "morCategoriesCount": "{count, plural, =1{1 category} other{{count} categories}}",
+  "morCategoriesCount": "{count, plural, =0{{count} categories} =1{1 category} other{{count} categories}}",
   "@morCategoriesCount": {
     "placeholders": {
       "count": {
@@ -38,7 +38,7 @@
     }
   },
   "morGroupsTitle": "Security groups",
-  "morGroupsCount": "{count, plural, =1{1 group} other{{count} groups}}",
+  "morGroupsCount": "{count, plural, =0{{count} groups} =1{1 group} other{{count} groups}}",
   "@morGroupsCount": {
     "placeholders": {
       "count": {
@@ -47,7 +47,7 @@
     }
   },
   "morRulesTitle": "Saved rules",
-  "morRulesCount": "{count, plural, =1{1 rule} other{{count} rules}}",
+  "morRulesCount": "{count, plural, =0{{count} rules} =1{1 rule} other{{count} rules}}",
   "@morRulesCount": {
     "placeholders": {
       "count": {
@@ -69,7 +69,7 @@
   "morImportsTitle": "Imports",
   "morNoImports": "No imports yet.",
   "morUndoImport": "Undo import",
-  "morImportItemSubtitle": "{count, plural, =1{{date} · 1 transaction} other{{date} · {count} transactions}}",
+  "morImportItemSubtitle": "{count, plural, =0{{date} · {count} transactions} =1{{date} · 1 transaction} other{{date} · {count} transactions}}",
   "@morImportItemSubtitle": {
     "placeholders": {
       "count": {
@@ -80,7 +80,7 @@
       }
     }
   },
-  "morRemoveImportQuestion": "{count, plural, =1{Remove the transaction from this import?} other{Remove the {count} transactions from this import?}}",
+  "morRemoveImportQuestion": "{count, plural, =0{Remove the {count} transactions from this import?} =1{Remove the transaction from this import?} other{Remove the {count} transactions from this import?}}",
   "@morRemoveImportQuestion": {
     "placeholders": {
       "count": {
@@ -113,7 +113,7 @@
   },
   "morEnded": "ended",
   "morFuture": "upcoming",
-  "morTxnCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
+  "morTxnCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@morTxnCount": {
     "placeholders": {
       "count": {
@@ -121,7 +121,7 @@
       }
     }
   },
-  "morMandatoryPeriods": "{count, plural, =1{Required in 1 period} other{Required in {count} periods}}",
+  "morMandatoryPeriods": "{count, plural, =0{Required in {count} periods} =1{Required in 1 period} other{Required in {count} periods}}",
   "@morMandatoryPeriods": {
     "placeholders": {
       "count": {
@@ -141,7 +141,7 @@
       }
     }
   },
-  "morDeleteCategoryQuestion": "Delete “{name}”? {count, plural, =1{The transaction is left} other{{count} transactions are left}} without a category{subs}.",
+  "morDeleteCategoryQuestion": "Delete “{name}”? {count, plural, =0{{count} transactions are left} =1{The transaction is left} other{{count} transactions are left}} without a category{subs}.",
   "@morDeleteCategoryQuestion": {
     "placeholders": {
       "name": {
@@ -268,7 +268,7 @@
   },
   "morUpdateChannelName": "Updates",
   "morUpdateChannelDescription": "Notice when a new version comes out",
-  "morRecurringNotifBody": "{count, plural, =1{1 recurring transaction recorded} other{{count} recurring transactions recorded}}",
+  "morRecurringNotifBody": "{count, plural, =0{{count} recurring transactions recorded} =1{1 recurring transaction recorded} other{{count} recurring transactions recorded}}",
   "@morRecurringNotifBody": {
     "placeholders": {
       "count": {
@@ -291,7 +291,7 @@
       }
     }
   },
-  "morDeliveriesCount": "{count, plural, =1{(1 delivery)} other{({count} deliveries)}}",
+  "morDeliveriesCount": "{count, plural, =0{({count} deliveries)} =1{(1 delivery)} other{({count} deliveries)}}",
   "@morDeliveriesCount": {
     "placeholders": {
       "count": {

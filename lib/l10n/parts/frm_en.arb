@@ -261,7 +261,7 @@
   },
   "frmThisCategory": "this category",
   "frmRepeatedName": "Repeated name",
-  "frmRemoveSubQuestion": "Remove “{name}”? {count, plural, =1{The transaction will} other{The {count} transactions will}} be left without a category (only after you save).",
+  "frmRemoveSubQuestion": "Remove “{name}”? {count, plural, =0{The {count} transactions will} =1{The transaction will} other{The {count} transactions will}} be left without a category (only after you save).",
   "@frmRemoveSubQuestion": {
     "placeholders": {
       "name": {
@@ -312,7 +312,7 @@
   "frmSetEnd": "Set end",
   "frmMandatoryIn": "Mandatory in…",
   "frmOptionalAllMonths": "Optional in all months",
-  "frmPeriodsDefined": "{count, plural, =1{1 period set} other{{count} periods set}}",
+  "frmPeriodsDefined": "{count, plural, =0{{count} periods set} =1{1 period set} other{{count} periods set}}",
   "@frmPeriodsDefined": {
     "placeholders": {
       "count": {
@@ -346,7 +346,7 @@
   "frmNewAccountItem": "New account…",
   "frmNoAccount": "No account",
   "frmNoAccountsYet": "You don't have any accounts yet.\nCreate one to see where each transaction comes from and to record transfers between accounts.",
-  "frmAccountSubtitle": "{count, plural, =1{1 transaction} other{{count} transactions}} · balance {balance}",
+  "frmAccountSubtitle": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}} · balance {balance}",
   "@frmAccountSubtitle": {
     "placeholders": {
       "count": {
@@ -357,7 +357,7 @@
       }
     }
   },
-  "frmDeleteAccountQuestion": "Delete the account “{name}”? {count, plural, =1{The transaction will} other{The {count} transactions will}} be left without an account.",
+  "frmDeleteAccountQuestion": "Delete the account “{name}”? {count, plural, =0{The {count} transactions will} =1{The transaction will} other{The {count} transactions will}} be left without an account.",
   "@frmDeleteAccountQuestion": {
     "placeholders": {
       "name": {
@@ -371,7 +371,7 @@
   "frmAccountDeleted": "Account deleted.",
   "frmEdit": "Edit",
   "frmBalance": "Balance",
-  "frmOpeningBalanceLine": "Opening balance {amount} · {count, plural, =1{1 transaction} other{{count} transactions}}",
+  "frmOpeningBalanceLine": "Opening balance {amount} · {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@frmOpeningBalanceLine": {
     "placeholders": {
       "amount": {
@@ -416,7 +416,7 @@
   "frmAll": "All",
   "frmExpenses": "Expenses",
   "frmTransfers": "Transfers",
-  "frmTransactionsCount": "{count, plural, =1{1 transaction} other{{count} transactions}}",
+  "frmTransactionsCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
   "@frmTransactionsCount": {
     "placeholders": {
       "count": {
@@ -467,7 +467,7 @@
       }
     }
   },
-  "frmDeliveriesCount": "{count, plural, =1{1 delivery} other{{count} deliveries}} · {total}",
+  "frmDeliveriesCount": "{count, plural, =0{{count} deliveries} =1{1 delivery} other{{count} deliveries}} · {total}",
   "@frmDeliveriesCount": {
     "placeholders": {
       "count": {

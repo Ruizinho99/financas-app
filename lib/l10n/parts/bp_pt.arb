@@ -143,7 +143,7 @@
   "bpSalaryDefaultHint": "Desligado: passa a ser o valor por omissão de todos os meses",
   "bpUseBaseSalary": "Usar valor base",
   "bpCopyPreviousPlan": "Copiar o plano do mês anterior",
-  "bpCopiedPlanItems": "{count, plural, =1{Copiada 1 despesa de {month}.} other{Copiadas {count} despesas de {month}.}}",
+  "bpCopiedPlanItems": "{count, plural, =0{Copiadas {count} despesas de {month}.} =1{Copiada 1 despesa de {month}.} other{Copiadas {count} despesas de {month}.}}",
   "@bpCopiedPlanItems": {
     "placeholders": {
       "count": {

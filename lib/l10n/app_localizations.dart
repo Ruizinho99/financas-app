@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @anTxCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento} other{{count} movimentos}}'**
+  /// **'{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}'**
   String anTxCount(int count);
 
   /// No description provided for @anWhereFrom.
@@ -905,7 +905,7 @@ abstract class AppLocalizations {
   /// No description provided for @anPurchasesAvg.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 compra} other{{count} compras}} · média {avg}'**
+  /// **'{count, plural, =0{{count} compras} =1{1 compra} other{{count} compras}} · média {avg}'**
   String anPurchasesAvg(int count, String avg);
 
   /// No description provided for @anMandatoryTag.
@@ -1073,7 +1073,7 @@ abstract class AppLocalizations {
   /// No description provided for @anSmallDetail.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 compra} other{{count} compras}} em {places, plural, =1{1 sítio} other{{places} sítios}} somam {total} ({examples}). Reduzir um terço poupava {saving} por mês.'**
+  /// **'{count, plural, =0{{count} compras} =1{1 compra} other{{count} compras}} em {places, plural, =0{{places} sítios} =1{1 sítio} other{{places} sítios}} somam {total} ({examples}). Reduzir um terço poupava {saving} por mês.'**
   String anSmallDetail(
     int count,
     int places,
@@ -1085,7 +1085,7 @@ abstract class AppLocalizations {
   /// No description provided for @anRecurringTitle.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 pagamento recorrente opcional} other{{count} pagamentos recorrentes opcionais}}'**
+  /// **'{count, plural, =0{{count} pagamentos recorrentes opcionais} =1{1 pagamento recorrente opcional} other{{count} pagamentos recorrentes opcionais}}'**
   String anRecurringTitle(int count);
 
   /// No description provided for @anRecurringDetail.
@@ -1355,7 +1355,7 @@ abstract class AppLocalizations {
   /// No description provided for @bpCopiedPlanItems.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{Copiada 1 despesa de {month}.} other{Copiadas {count} despesas de {month}.}}'**
+  /// **'{count, plural, =0{Copiadas {count} despesas de {month}.} =1{Copiada 1 despesa de {month}.} other{Copiadas {count} despesas de {month}.}}'**
   String bpCopiedPlanItems(int count, String month);
 
   /// No description provided for @bpMandatoryPlanned.
@@ -3215,7 +3215,7 @@ abstract class AppLocalizations {
   /// No description provided for @frmRemoveSubQuestion.
   ///
   /// In pt, this message translates to:
-  /// **'Remover “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria (só depois de guardares).'**
+  /// **'Remover “{name}”? {count, plural, =0{Os {count} movimentos ficam} =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria (só depois de guardares).'**
   String frmRemoveSubQuestion(String name, int count);
 
   /// No description provided for @frmEditCategory.
@@ -3497,13 +3497,13 @@ abstract class AppLocalizations {
   /// No description provided for @frmAccountSubtitle.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento} other{{count} movimentos}} · saldo {balance}'**
+  /// **'{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}} · saldo {balance}'**
   String frmAccountSubtitle(int count, String balance);
 
   /// No description provided for @frmDeleteAccountQuestion.
   ///
   /// In pt, this message translates to:
-  /// **'Apagar a conta “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem conta.'**
+  /// **'Apagar a conta “{name}”? {count, plural, =0{Os {count} movimentos ficam} =1{O movimento fica} other{Os {count} movimentos ficam}} sem conta.'**
   String frmDeleteAccountQuestion(String name, int count);
 
   /// No description provided for @frmAccountDeleted.
@@ -3527,7 +3527,7 @@ abstract class AppLocalizations {
   /// No description provided for @frmOpeningBalanceLine.
   ///
   /// In pt, this message translates to:
-  /// **'Saldo inicial {amount} · {count, plural, =1{1 movimento} other{{count} movimentos}}'**
+  /// **'Saldo inicial {amount} · {count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}'**
   String frmOpeningBalanceLine(String amount, int count);
 
   /// No description provided for @frmThisMonth.
@@ -3695,7 +3695,7 @@ abstract class AppLocalizations {
   /// No description provided for @frmTransactionsCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento} other{{count} movimentos}}'**
+  /// **'{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}'**
   String frmTransactionsCount(int count);
 
   /// No description provided for @frmInvestmentOf.
@@ -3749,7 +3749,7 @@ abstract class AppLocalizations {
   /// No description provided for @frmDeliveriesCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 entrega} other{{count} entregas}} · {total}'**
+  /// **'{count, plural, =0{{count} entregas} =1{1 entrega} other{{count} entregas}} · {total}'**
   String frmDeliveriesCount(int count, String total);
 
   /// No description provided for @frmSetSalaryLeft.
@@ -3839,7 +3839,7 @@ abstract class AppLocalizations {
   /// No description provided for @impTxnCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento} other{{count} movimentos}}'**
+  /// **'{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}'**
   String impTxnCount(int count);
 
   /// No description provided for @impIncomeExpense.
@@ -3863,19 +3863,19 @@ abstract class AppLocalizations {
   /// No description provided for @impImportButton.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{Importar 1 movimento} other{Importar {count} movimentos}}'**
+  /// **'{count, plural, =0{Importar {count} movimentos} =1{Importar 1 movimento} other{Importar {count} movimentos}}'**
   String impImportButton(int count);
 
   /// No description provided for @impImportDone.
   ///
   /// In pt, this message translates to:
-  /// **'{added, plural, =1{1 importado} other{{added} importados}}, {duplicates, plural, =1{1 duplicado ignorado} other{{duplicates} duplicados ignorados}}. {unclassified, plural, =1{1 grupo por classificar.} other{{unclassified} grupos por classificar.}}'**
+  /// **'{added, plural, =0{{added} importados} =1{1 importado} other{{added} importados}}, {duplicates, plural, =0{{duplicates} duplicados ignorados} =1{1 duplicado ignorado} other{{duplicates} duplicados ignorados}}. {unclassified, plural, =0{{unclassified} grupos por classificar.} =1{1 grupo por classificar.} other{{unclassified} grupos por classificar.}}'**
   String impImportDone(int added, int duplicates, int unclassified);
 
   /// No description provided for @impClassifiedOf.
   ///
   /// In pt, this message translates to:
-  /// **'Classificação: {classified} de {total, plural, =1{1 grupo} other{{total} grupos}}'**
+  /// **'Classificação: {classified} de {total, plural, =0{{total} grupos} =1{1 grupo} other{{total} grupos}}'**
   String impClassifiedOf(int classified, int total);
 
   /// No description provided for @impGroupsExplain.
@@ -3887,7 +3887,7 @@ abstract class AppLocalizations {
   /// No description provided for @impTransfersCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 transferência entre contas} other{{count} transferências entre contas}}'**
+  /// **'{count, plural, =0{{count} transferências entre contas} =1{1 transferência entre contas} other{{count} transferências entre contas}}'**
   String impTransfersCount(int count);
 
   /// No description provided for @impTransfersHint.
@@ -3905,7 +3905,7 @@ abstract class AppLocalizations {
   /// No description provided for @impActiveOfTotal.
   ///
   /// In pt, this message translates to:
-  /// **'{active} de {total, plural, =1{1 movimento} other{{total} movimentos}}'**
+  /// **'{active} de {total, plural, =0{{total} movimentos} =1{1 movimento} other{{total} movimentos}}'**
   String impActiveOfTotal(int active, int total);
 
   /// No description provided for @impRememberedRule.
@@ -3929,7 +3929,7 @@ abstract class AppLocalizations {
   /// No description provided for @impJoinsGroup.
   ///
   /// In pt, this message translates to:
-  /// **'Junta-se ao grupo “{name}” ({count, plural, =1{1 título} other{{count} títulos}})'**
+  /// **'Junta-se ao grupo “{name}” ({count, plural, =0{{count} títulos} =1{1 título} other{{count} títulos}})'**
   String impJoinsGroup(String name, int count);
 
   /// No description provided for @impRememberNameCategory.
@@ -3953,13 +3953,13 @@ abstract class AppLocalizations {
   /// No description provided for @impAccountsDetected.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 conta detetada} other{{count} contas detetadas}}. Escolhe a que corresponde a cada uma na app.'**
+  /// **'{count, plural, =0{{count} contas detetadas} =1{1 conta detetada} other{{count} contas detetadas}}. Escolhe a que corresponde a cada uma na app.'**
   String impAccountsDetected(int count);
 
   /// No description provided for @impAccountTxns.
   ///
   /// In pt, this message translates to:
-  /// **'{name}  ·  {count, plural, =1{1 movimento} other{{count} movimentos}}'**
+  /// **'{name}  ·  {count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}'**
   String impAccountTxns(String name, int count);
 
   /// No description provided for @impCreateAccount.
@@ -3989,7 +3989,7 @@ abstract class AppLocalizations {
   /// No description provided for @impSkippedTitle.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 linha parece movimentos mas não foi reconhecida} other{{count} linhas parecem movimentos mas não foram reconhecidas}}'**
+  /// **'{count, plural, =0{{count} linhas parecem movimentos mas não foram reconhecidas} =1{1 linha parece movimentos mas não foi reconhecida} other{{count} linhas parecem movimentos mas não foram reconhecidas}}'**
   String impSkippedTitle(int count);
 
   /// No description provided for @impSkippedSub.
@@ -4163,7 +4163,7 @@ abstract class AppLocalizations {
   /// No description provided for @impClassifiedByRules.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento classificado pelas regras.} other{{count} movimentos classificados pelas regras.}}'**
+  /// **'{count, plural, =0{{count} movimentos classificados pelas regras.} =1{1 movimento classificado pelas regras.} other{{count} movimentos classificados pelas regras.}}'**
   String impClassifiedByRules(int count);
 
   /// No description provided for @impAllClassified.
@@ -4181,7 +4181,7 @@ abstract class AppLocalizations {
   /// No description provided for @impClassifiedCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento classificado.} other{{count} movimentos classificados.}}'**
+  /// **'{count, plural, =0{{count} movimentos classificados.} =1{1 movimento classificado.} other{{count} movimentos classificados.}}'**
   String impClassifiedCount(int count);
 
   /// No description provided for @impSelectAll.
@@ -4193,19 +4193,19 @@ abstract class AppLocalizations {
   /// No description provided for @impApplyTo.
   ///
   /// In pt, this message translates to:
-  /// **'Aplicar a {count, plural, =1{1 movimento} other{{count} movimentos}}'**
+  /// **'Aplicar a {count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}'**
   String impApplyTo(int count);
 
   /// No description provided for @impTxnCountDate.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento} other{{count} movimentos}} · {date}'**
+  /// **'{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}} · {date}'**
   String impTxnCountDate(int count, String date);
 
   /// No description provided for @impGroupChip.
   ///
   /// In pt, this message translates to:
-  /// **'Grupo · {count, plural, =1{1 título} other{{count} títulos}}'**
+  /// **'Grupo · {count, plural, =0{{count} títulos} =1{1 título} other{{count} títulos}}'**
   String impGroupChip(int count);
 
   /// No description provided for @impRemembered.
@@ -4217,7 +4217,7 @@ abstract class AppLocalizations {
   /// No description provided for @impSelectedCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 selecionado} other{{count} selecionados}}'**
+  /// **'{count, plural, =0{{count} selecionados} =1{1 selecionado} other{{count} selecionados}}'**
   String impSelectedCount(int count);
 
   /// No description provided for @impChooseCategory.
@@ -4553,7 +4553,7 @@ abstract class AppLocalizations {
   /// No description provided for @impTitleCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 título} other{{count} títulos}}'**
+  /// **'{count, plural, =0{{count} títulos} =1{1 título} other{{count} títulos}}'**
   String impTitleCount(int count);
 
   /// No description provided for @invAdd.
@@ -4691,7 +4691,7 @@ abstract class AppLocalizations {
   /// No description provided for @invPricesUpdated.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 preço atualizado.} other{{count} preços atualizados.}}'**
+  /// **'{count, plural, =0{{count} preços atualizados.} =1{1 preço atualizado.} other{{count} preços atualizados.}}'**
   String invPricesUpdated(int count);
 
   /// No description provided for @invPricesFailed.
@@ -4799,13 +4799,13 @@ abstract class AppLocalizations {
   /// No description provided for @invAssetsCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 ativo} other{{count} ativos}}'**
+  /// **'{count, plural, =0{{count} ativos} =1{1 ativo} other{{count} ativos}}'**
   String invAssetsCount(int count);
 
   /// No description provided for @invAccountLine.
   ///
   /// In pt, this message translates to:
-  /// **'Por alocar {cash} · {count, plural, =1{1 ativo} other{{count} ativos}}'**
+  /// **'Por alocar {cash} · {count, plural, =0{{count} ativos} =1{1 ativo} other{{count} ativos}}'**
   String invAccountLine(String cash, int count);
 
   /// No description provided for @invIntroTitle.
@@ -5057,7 +5057,7 @@ abstract class AppLocalizations {
   /// No description provided for @invLinkedCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 associada · não conta como despesa} other{{count} associadas · não contam como despesa}}'**
+  /// **'{count, plural, =0{{count} associadas · não contam como despesa} =1{1 associada · não conta como despesa} other{{count} associadas · não contam como despesa}}'**
   String invLinkedCount(int count);
 
   /// No description provided for @invLinkBankTransfers.
@@ -5069,7 +5069,7 @@ abstract class AppLocalizations {
   /// No description provided for @invSuggestedMatches.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento parece ser desta plataforma} other{{count} movimentos parecem ser desta plataforma}}'**
+  /// **'{count, plural, =0{{count} movimentos parecem ser desta plataforma} =1{1 movimento parece ser desta plataforma} other{{count} movimentos parecem ser desta plataforma}}'**
   String invSuggestedMatches(int count);
 
   /// No description provided for @invSuggestedBody.
@@ -5600,6 +5600,1158 @@ abstract class AppLocalizations {
   /// **'Posição fechada'**
   String get invClosedPosition;
 
+  /// No description provided for @invfAccountNewTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova plataforma'**
+  String get invfAccountNewTitle;
+
+  /// No description provided for @invfAccountEditTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar plataforma'**
+  String get invfAccountEditTitle;
+
+  /// No description provided for @invfName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome'**
+  String get invfName;
+
+  /// No description provided for @invfAccountNameHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ex.: XTB, Trade Republic'**
+  String get invfAccountNameHint;
+
+  /// No description provided for @invfNoteOptional.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nota (opcional)'**
+  String get invfNoteOptional;
+
+  /// No description provided for @invfNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nota'**
+  String get invfNote;
+
+  /// No description provided for @invfSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardar'**
+  String get invfSave;
+
+  /// No description provided for @invfSaveChanges.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardar alterações'**
+  String get invfSaveChanges;
+
+  /// No description provided for @invfEnterName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica um nome'**
+  String get invfEnterName;
+
+  /// No description provided for @invfAccountNameTaken.
+  ///
+  /// In pt, this message translates to:
+  /// **'Já existe uma plataforma com este nome'**
+  String get invfAccountNameTaken;
+
+  /// No description provided for @invfSearchIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Procurar em {provider}'**
+  String invfSearchIn(String provider);
+
+  /// No description provided for @invfCryptoSearchHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ex.: bitcoin'**
+  String get invfCryptoSearchHint;
+
+  /// No description provided for @invfSymbolSearchHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ex.: VWCE, Apple, S&P 500'**
+  String get invfSymbolSearchHint;
+
+  /// No description provided for @invfSearchFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível pesquisar.'**
+  String get invfSearchFailed;
+
+  /// No description provided for @invfNothingFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nada encontrado.'**
+  String get invfNothingFound;
+
+  /// No description provided for @invfClose.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fechar'**
+  String get invfClose;
+
+  /// No description provided for @invfHoldingNewTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo ativo'**
+  String get invfHoldingNewTitle;
+
+  /// No description provided for @invfHoldingEditTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar ativo'**
+  String get invfHoldingEditTitle;
+
+  /// No description provided for @invfHoldingNameHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ex.: Vanguard FTSE All-World'**
+  String get invfHoldingNameHint;
+
+  /// No description provided for @invfPlatform.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plataforma'**
+  String get invfPlatform;
+
+  /// No description provided for @invfType.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tipo'**
+  String get invfType;
+
+  /// No description provided for @invfAssetCurrency.
+  ///
+  /// In pt, this message translates to:
+  /// **'Moeda do ativo'**
+  String get invfAssetCurrency;
+
+  /// No description provided for @invfAutoCurrency.
+  ///
+  /// In pt, this message translates to:
+  /// **'Automática (a do preço)'**
+  String get invfAutoCurrency;
+
+  /// No description provided for @invfBaseCurrencyOption.
+  ///
+  /// In pt, this message translates to:
+  /// **'{ccy} · moeda de base'**
+  String invfBaseCurrencyOption(String ccy);
+
+  /// No description provided for @invfCurrencyAutoHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Usa a moeda em que o ativo cota ({ccy}). Podes escolher outra à mão.'**
+  String invfCurrencyAutoHint(String ccy);
+
+  /// No description provided for @invfDetectedOnPrice.
+  ///
+  /// In pt, this message translates to:
+  /// **'detetada ao obter o preço'**
+  String get invfDetectedOnPrice;
+
+  /// No description provided for @invfUsdHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'**
+  String get invfUsdHint;
+
+  /// No description provided for @invfForeignCcyHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Compras e preço médio ficam em {ccy}; o valor e o ganho da carteira são convertidos para a moeda de base ao câmbio de mercado (atualizado em \"Atualizar preços\").'**
+  String invfForeignCcyHint(String ccy);
+
+  /// No description provided for @invfPriceWithCcy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preço ({ccy})'**
+  String invfPriceWithCcy(String ccy);
+
+  /// No description provided for @invfAvgPriceWithCcy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preço médio ({ccy})'**
+  String invfAvgPriceWithCcy(String ccy);
+
+  /// No description provided for @invfYahooHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gratuito, sem chave. ETFs, ações e câmbios (ex.: VWCE.DE, AAPL, BTC-EUR). Converte para euros.'**
+  String get invfYahooHint;
+
+  /// No description provided for @invfCoingeckoHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gratuito, sem chave. Criptomoedas, pelo id (ex.: bitcoin, ethereum).'**
+  String get invfCoingeckoHint;
+
+  /// No description provided for @invfManualHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tu defines o preço quando quiseres. Nada é enviado para a internet.'**
+  String get invfManualHint;
+
+  /// No description provided for @invfCoingeckoId.
+  ///
+  /// In pt, this message translates to:
+  /// **'Id no CoinGecko'**
+  String get invfCoingeckoId;
+
+  /// No description provided for @invfNewPlatformItem.
+  ///
+  /// In pt, this message translates to:
+  /// **'➕  Nova plataforma…'**
+  String get invfNewPlatformItem;
+
+  /// No description provided for @invfSymbol.
+  ///
+  /// In pt, this message translates to:
+  /// **'Símbolo'**
+  String get invfSymbol;
+
+  /// No description provided for @invfPrice.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preço'**
+  String get invfPrice;
+
+  /// No description provided for @invfSearchTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Procurar'**
+  String get invfSearchTooltip;
+
+  /// No description provided for @invfCurrentPriceOptional.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preço atual ({ccy}, opcional)'**
+  String invfCurrentPriceOptional(String ccy);
+
+  /// No description provided for @invfFxLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmbio: 1 {base} = ? {ccy}'**
+  String invfFxLabel(String base, String ccy);
+
+  /// No description provided for @invfFxRateLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmbio (1 {base} = ? {ccy})'**
+  String invfFxRateLabel(String base, String ccy);
+
+  /// No description provided for @invfAvgFxLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmbio médio (1 {base} = ? {ccy})'**
+  String invfAvgFxLabel(String base, String ccy);
+
+  /// No description provided for @invfLiveFxTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmbio de mercado atual (internet)'**
+  String get invfLiveFxTooltip;
+
+  /// No description provided for @invfFxFetchFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não consegui obter o câmbio: {message}'**
+  String invfFxFetchFailed(String message);
+
+  /// No description provided for @invfPriceFetchFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não consegui obter o preço: {message}'**
+  String invfPriceFetchFailed(String message);
+
+  /// No description provided for @invfSymbolRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica o símbolo (ou usa a pesquisa)'**
+  String get invfSymbolRequired;
+
+  /// No description provided for @invfFxOrSyncRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica o câmbio, ou usa o botão de sincronizar para o câmbio de mercado.'**
+  String get invfFxOrSyncRequired;
+
+  /// No description provided for @invfCurrencyPickerHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'O valor é convertido para {base} ao câmbio de mercado, atualizado em \"Atualizar preços\". As operações já registadas mantêm os valores que lá estão.'**
+  String invfCurrencyPickerHint(String base);
+
+  /// No description provided for @invfOpNewTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova operação'**
+  String get invfOpNewTitle;
+
+  /// No description provided for @invfOpEditTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar · {type}'**
+  String invfOpEditTitle(String type);
+
+  /// No description provided for @invfOpInitial.
+  ///
+  /// In pt, this message translates to:
+  /// **'Posição inicial'**
+  String get invfOpInitial;
+
+  /// No description provided for @invfOpBuy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Compra'**
+  String get invfOpBuy;
+
+  /// No description provided for @invfOpSell.
+  ///
+  /// In pt, this message translates to:
+  /// **'Venda'**
+  String get invfOpSell;
+
+  /// No description provided for @invfOpDividend.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dividendo'**
+  String get invfOpDividend;
+
+  /// No description provided for @invfOpCash.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acerto de dinheiro'**
+  String get invfOpCash;
+
+  /// No description provided for @invfOpAlreadyHeld.
+  ///
+  /// In pt, this message translates to:
+  /// **'Já tinha'**
+  String get invfOpAlreadyHeld;
+
+  /// No description provided for @invfOpCashChip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dinheiro'**
+  String get invfOpCashChip;
+
+  /// No description provided for @invfPlatformLower.
+  ///
+  /// In pt, this message translates to:
+  /// **'plataforma'**
+  String get invfPlatformLower;
+
+  /// No description provided for @invfTotalToPay.
+  ///
+  /// In pt, this message translates to:
+  /// **'Total a pagar: {amount}'**
+  String invfTotalToPay(String amount);
+
+  /// No description provided for @invfTotalToPayFee.
+  ///
+  /// In pt, this message translates to:
+  /// **'Total a pagar: {amount} (com {fee} de comissão)'**
+  String invfTotalToPayFee(String amount, String fee);
+
+  /// No description provided for @invfNoAllocationHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem alocação: não desconta do dinheiro por alocar. Podes registar a transferência do banco quando quiseres.'**
+  String get invfNoAllocationHint;
+
+  /// No description provided for @invfNotEnoughUnallocated.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ainda não tens {amount} por alocar nesta plataforma (tens {cash}). Regista a transferência do banco depois, ou desliga \"Descontar do dinheiro por alocar\" em Mais opções.'**
+  String invfNotEnoughUnallocated(String amount, String cash);
+
+  /// No description provided for @invfUnallocatedChange.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dinheiro por alocar: {before} → {after}.'**
+  String invfUnallocatedChange(String before, String after);
+
+  /// No description provided for @invfUnallocatedChangeTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dinheiro por alocar: {before} → {after}'**
+  String invfUnallocatedChangeTitle(String before, String after);
+
+  /// No description provided for @invfBalanceChange.
+  ///
+  /// In pt, this message translates to:
+  /// **'{before} → {after}.'**
+  String invfBalanceChange(String before, String after);
+
+  /// No description provided for @invfYouReceive.
+  ///
+  /// In pt, this message translates to:
+  /// **'Recebes {amount}'**
+  String invfYouReceive(String amount);
+
+  /// No description provided for @invfRealizedGain.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ganho realizado: {gain} (preço médio {avg}).'**
+  String invfRealizedGain(String gain, String avg);
+
+  /// No description provided for @invfPositionCost.
+  ///
+  /// In pt, this message translates to:
+  /// **'Custo da posição: {amount}'**
+  String invfPositionCost(String amount);
+
+  /// No description provided for @invfInitialHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Posição que já tinhas antes de usar a app. Define o preço médio de compra e não mexe no dinheiro por alocar.'**
+  String get invfInitialHint;
+
+  /// No description provided for @invfDividendIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Entram {amount} no dinheiro por alocar'**
+  String invfDividendIn(String amount);
+
+  /// No description provided for @invfCashHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Usa isto para dinheiro que já estava na plataforma antes de começares a usar a app.'**
+  String get invfCashHint;
+
+  /// No description provided for @invfValueWithCcy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor ({base})'**
+  String invfValueWithCcy(String base);
+
+  /// No description provided for @invfReceivedWithCcy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor recebido ({base})'**
+  String invfReceivedWithCcy(String base);
+
+  /// No description provided for @invfFeeWithCcy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Comissão ({base})'**
+  String invfFeeWithCcy(String base);
+
+  /// No description provided for @invfQuantity.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quantidade'**
+  String get invfQuantity;
+
+  /// No description provided for @invfUnitsEquals.
+  ///
+  /// In pt, this message translates to:
+  /// **'= {qty} unidades'**
+  String invfUnitsEquals(String qty);
+
+  /// No description provided for @invfCashIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Entrada'**
+  String get invfCashIn;
+
+  /// No description provided for @invfCashOut.
+  ///
+  /// In pt, this message translates to:
+  /// **'Saída'**
+  String get invfCashOut;
+
+  /// No description provided for @invfDate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Data'**
+  String get invfDate;
+
+  /// No description provided for @invfHolding.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativo'**
+  String get invfHolding;
+
+  /// No description provided for @invfNewAssetItem.
+  ///
+  /// In pt, this message translates to:
+  /// **'➕  Novo ativo…'**
+  String get invfNewAssetItem;
+
+  /// No description provided for @invfChoosePlatformHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher plataforma'**
+  String get invfChoosePlatformHint;
+
+  /// No description provided for @invfChoosePlatformShort.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolhe a plataforma'**
+  String get invfChoosePlatformShort;
+
+  /// No description provided for @invfChoosePlatform.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolhe a plataforma.'**
+  String get invfChoosePlatform;
+
+  /// No description provided for @invfChooseAsset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolhe o ativo (ou cria um).'**
+  String get invfChooseAsset;
+
+  /// No description provided for @invfEnterValidAmounts.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica valores válidos.'**
+  String get invfEnterValidAmounts;
+
+  /// No description provided for @invfFxRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica o câmbio (1 {base} = ? {ccy}).'**
+  String invfFxRequired(String base, String ccy);
+
+  /// No description provided for @invfEnterQtyPrice.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica a quantidade e o preço.'**
+  String get invfEnterQtyPrice;
+
+  /// No description provided for @invfOnlyHaveUnits.
+  ///
+  /// In pt, this message translates to:
+  /// **'Só tens {qty} unidades para vender.'**
+  String invfOnlyHaveUnits(String qty);
+
+  /// No description provided for @invfMoreOptionsTrade.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mais opções (comissão, nota…)'**
+  String get invfMoreOptionsTrade;
+
+  /// No description provided for @invfDeductUnallocated.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descontar do dinheiro por alocar'**
+  String get invfDeductUnallocated;
+
+  /// No description provided for @invfDeductHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desliga se ainda não registaste a transferência do banco para a plataforma, ou se esta operação já está contada noutro lado.'**
+  String get invfDeductHint;
+
+  /// No description provided for @invfUseTotalInstead.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indicar o valor total em vez da quantidade'**
+  String get invfUseTotalInstead;
+
+  /// No description provided for @invfAssetCurrencyChange.
+  ///
+  /// In pt, this message translates to:
+  /// **'Moeda do ativo: {ccy} · alterar'**
+  String invfAssetCurrencyChange(String ccy);
+
+  /// No description provided for @invfHasInitialTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este ativo já tem uma posição inicial'**
+  String get invfHasInitialTitle;
+
+  /// No description provided for @invfHasInitialBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Está carregada aqui. Ao guardar, substitui a anterior.'**
+  String get invfHasInitialBody;
+
+  /// No description provided for @invfDeleteOp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar operação'**
+  String get invfDeleteOp;
+
+  /// No description provided for @invfLinkTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Associar a {name}'**
+  String invfLinkTitle(String name);
+
+  /// No description provided for @invfLinkButton.
+  ///
+  /// In pt, this message translates to:
+  /// **'Associar'**
+  String get invfLinkButton;
+
+  /// No description provided for @invfLinkCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Associar {count} ({amount} para a plataforma)'**
+  String invfLinkCount(int count, String amount);
+
+  /// No description provided for @invfLinkHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolhe os movimentos do banco que foram dinheiro enviado para (ou recebido de) esta plataforma. Deixam de contar como despesa.'**
+  String get invfLinkHint;
+
+  /// No description provided for @invfSearchTransactions.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pesquisar movimentos'**
+  String get invfSearchTransactions;
+
+  /// No description provided for @invfNoTransactionsToLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não há movimentos por associar.'**
+  String get invfNoTransactionsToLink;
+
+  /// No description provided for @invfLooksLikeThis.
+  ///
+  /// In pt, this message translates to:
+  /// **' · parece desta plataforma'**
+  String get invfLooksLikeThis;
+
+  /// No description provided for @invfRememberTitles.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lembrar estes títulos'**
+  String get invfRememberTitles;
+
+  /// No description provided for @invfRememberHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nas próximas importações, movimentos com o mesmo título são associados sozinhos.'**
+  String get invfRememberHint;
+
+  /// No description provided for @invfImportTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importar compras e vendas'**
+  String get invfImportTitle;
+
+  /// No description provided for @invfImportIntro.
+  ///
+  /// In pt, this message translates to:
+  /// **'Formatos: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido no telemóvel e nunca sai daqui. Reconhece compras, vendas e dividendos; o resto (depósitos, impostos…) é ignorado.'**
+  String get invfImportIntro;
+
+  /// No description provided for @invfChooseFile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher ficheiro'**
+  String get invfChooseFile;
+
+  /// No description provided for @invfChooseOtherFile.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher outro ficheiro'**
+  String get invfChooseOtherFile;
+
+  /// No description provided for @invfFileName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ficheiro: {name}'**
+  String invfFileName(String name);
+
+  /// No description provided for @invfReadError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Erro ao ler o ficheiro: {error}'**
+  String invfReadError(String error);
+
+  /// No description provided for @invfExcelNoData.
+  ///
+  /// In pt, this message translates to:
+  /// **'O ficheiro Excel não tem dados.'**
+  String get invfExcelNoData;
+
+  /// No description provided for @invfPdfNotFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não encontrei compras ou vendas neste PDF. Pode ser digitalizado (imagem) ou ter um formato diferente. Se a corretora permitir, exporta em CSV ou Excel.'**
+  String get invfPdfNotFound;
+
+  /// No description provided for @invfNotFoundTrades.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não encontrei compras ou vendas. Indica abaixo que coluna é cada coisa.'**
+  String get invfNotFoundTrades;
+
+  /// No description provided for @invfNotFoundWithColumns.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não encontrei compras ou vendas com estas colunas.'**
+  String get invfNotFoundWithColumns;
+
+  /// No description provided for @invfCurrencyAndRate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Moeda e câmbio'**
+  String get invfCurrencyAndRate;
+
+  /// No description provided for @invfCurrencyIntro.
+  ///
+  /// In pt, this message translates to:
+  /// **'Linhas sem moeda indicada usam a moeda abaixo. Para moedas diferentes de {base} indica o câmbio médio; podes afinar cada operação depois.'**
+  String invfCurrencyIntro(String base);
+
+  /// No description provided for @invfTransactionCurrency.
+  ///
+  /// In pt, this message translates to:
+  /// **'Moeda das operações'**
+  String get invfTransactionCurrency;
+
+  /// No description provided for @invfAllInBase.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todas as operações estão em {base}.'**
+  String invfAllInBase(String base);
+
+  /// No description provided for @invfAssetsFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativos encontrados'**
+  String get invfAssetsFound;
+
+  /// No description provided for @invfAssetsHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Liga cada um a um ativo teu, cria um novo ou ignora.'**
+  String get invfAssetsHint;
+
+  /// No description provided for @invfTradeCountLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'{name}  ·  {count, plural, =0{{count} operações} =1{{count} operação} other{{count} operações}}'**
+  String invfTradeCountLabel(String name, int count);
+
+  /// No description provided for @invfCreateNewAsset.
+  ///
+  /// In pt, this message translates to:
+  /// **'➕  Criar ativo novo'**
+  String get invfCreateNewAsset;
+
+  /// No description provided for @invfIgnore.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ignorar'**
+  String get invfIgnore;
+
+  /// No description provided for @invfOperations.
+  ///
+  /// In pt, this message translates to:
+  /// **'Operações'**
+  String get invfOperations;
+
+  /// No description provided for @invfBuysCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} compras} =1{{count} compra} other{{count} compras}}'**
+  String invfBuysCount(int count);
+
+  /// No description provided for @invfSellsCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} vendas} =1{{count} venda} other{{count} vendas}}'**
+  String invfSellsCount(int count);
+
+  /// No description provided for @invfDividendsCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} dividendos} =1{{count} dividendo} other{{count} dividendos}}'**
+  String invfDividendsCount(int count);
+
+  /// No description provided for @invfDuplicatesIgnored.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} já existentes (ignoradas)'**
+  String invfDuplicatesIgnored(int count);
+
+  /// No description provided for @invfMissingRate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Falta o câmbio'**
+  String get invfMissingRate;
+
+  /// No description provided for @invfMissingRateBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica o câmbio de {currencies} para importar essas operações.'**
+  String invfMissingRateBody(String currencies);
+
+  /// No description provided for @invfAllCurrencies.
+  ///
+  /// In pt, this message translates to:
+  /// **'todas as moedas'**
+  String get invfAllCurrencies;
+
+  /// No description provided for @invfMissingQtyTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} operações sem quantidade} =1{1 operação sem quantidade} other{{count} operações sem quantidade}}'**
+  String invfMissingQtyTitle(int count);
+
+  /// No description provided for @invfMissingQtyBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'O ficheiro só tem o valor pago. Escolhe a coluna que traz a quantidade e o preço (ex.: o comentário) em \"Colunas do ficheiro\".'**
+  String get invfMissingQtyBody;
+
+  /// No description provided for @invfShowingFirst.
+  ///
+  /// In pt, this message translates to:
+  /// **'A mostrar as primeiras 300 de {total}.'**
+  String invfShowingFirst(int total);
+
+  /// No description provided for @invfAlreadyExists.
+  ///
+  /// In pt, this message translates to:
+  /// **' · já existe'**
+  String get invfAlreadyExists;
+
+  /// No description provided for @invfTradeQtyPart.
+  ///
+  /// In pt, this message translates to:
+  /// **' · {qty} un. × {price} {ccy}'**
+  String invfTradeQtyPart(String qty, String price, String ccy);
+
+  /// No description provided for @invfImportCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importar {count, plural, =0{0 operações} =1{1 operação} other{{count} operações}}'**
+  String invfImportCount(int count);
+
+  /// No description provided for @invfFileColumns.
+  ///
+  /// In pt, this message translates to:
+  /// **'Colunas do ficheiro'**
+  String get invfFileColumns;
+
+  /// No description provided for @invfAutoRecognized.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reconhecidas automaticamente. Toca para ajustar.'**
+  String get invfAutoRecognized;
+
+  /// No description provided for @invfIndicateColumns.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica que coluna é cada coisa.'**
+  String get invfIndicateColumns;
+
+  /// No description provided for @invfExcelSheet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Folha do Excel'**
+  String get invfExcelSheet;
+
+  /// No description provided for @invfSheetRows.
+  ///
+  /// In pt, this message translates to:
+  /// **'{name}  ·  {count, plural, =0{{count} linhas} =1{1 linha} other{{count} linhas}}'**
+  String invfSheetRows(String name, int count);
+
+  /// No description provided for @invfHeaderRow.
+  ///
+  /// In pt, this message translates to:
+  /// **'Linha dos títulos das colunas'**
+  String get invfHeaderRow;
+
+  /// No description provided for @invfNoHeaders.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem títulos'**
+  String get invfNoHeaders;
+
+  /// No description provided for @invfHeaderRowItem.
+  ///
+  /// In pt, this message translates to:
+  /// **'Linha {n}: {text}'**
+  String invfHeaderRowItem(int n, String text);
+
+  /// No description provided for @invfNotExists.
+  ///
+  /// In pt, this message translates to:
+  /// **'— não existe —'**
+  String get invfNotExists;
+
+  /// No description provided for @invfColumnNumber.
+  ///
+  /// In pt, this message translates to:
+  /// **'Coluna {n}'**
+  String invfColumnNumber(int n);
+
+  /// No description provided for @invfColumnNumberLower.
+  ///
+  /// In pt, this message translates to:
+  /// **'coluna {n}'**
+  String invfColumnNumberLower(int n);
+
+  /// No description provided for @invfFileValidation.
+  ///
+  /// In pt, this message translates to:
+  /// **'Validação do ficheiro'**
+  String get invfFileValidation;
+
+  /// No description provided for @invfRequiredNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preciso, no mínimo, da data, da quantidade e do preço (ou do valor total).'**
+  String get invfRequiredNote;
+
+  /// No description provided for @invfQuantityOrComment.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quantidade (ou o comentário que a traz)'**
+  String get invfQuantityOrComment;
+
+  /// No description provided for @invfPriceOrTotal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preço ou Valor total'**
+  String get invfPriceOrTotal;
+
+  /// No description provided for @invfMissingColumn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Falta escolher a coluna: {name}'**
+  String invfMissingColumn(String name);
+
+  /// No description provided for @invfValidationSummary.
+  ///
+  /// In pt, this message translates to:
+  /// **'{dataRows, plural, =0{0 linhas com dados} =1{1 linha com dados} other{{dataRows} linhas com dados}} · {recognized, plural, =0{0 operações reconhecidas} =1{1 operação reconhecida} other{{recognized} operações reconhecidas}}'**
+  String invfValidationSummary(int dataRows, int recognized);
+
+  /// No description provided for @invfWithProblems.
+  ///
+  /// In pt, this message translates to:
+  /// **' · {count} com problemas'**
+  String invfWithProblems(int count);
+
+  /// No description provided for @invfIgnoredByUser.
+  ///
+  /// In pt, this message translates to:
+  /// **' · {count} ignoradas (não são compras/vendas)'**
+  String invfIgnoredByUser(int count);
+
+  /// No description provided for @invfColumnValid.
+  ///
+  /// In pt, this message translates to:
+  /// **'{label}: {ok} de {total} válidas'**
+  String invfColumnValid(String label, int ok, int total);
+
+  /// No description provided for @invfColumnValidNamed.
+  ///
+  /// In pt, this message translates to:
+  /// **'{label} ({column}): {ok} de {total} válidas'**
+  String invfColumnValidNamed(String label, String column, int ok, int total);
+
+  /// No description provided for @invfUnknownTypes.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tipos que não reconheci'**
+  String get invfUnknownTypes;
+
+  /// No description provided for @invfUnknownTypesHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Diz-me o que são para os importar (ou ignora).'**
+  String get invfUnknownTypesHint;
+
+  /// No description provided for @invfUnknownTypeRows.
+  ///
+  /// In pt, this message translates to:
+  /// **'“{type}” · {count, plural, =0{{count} linhas} =1{1 linha} other{{count} linhas}}'**
+  String invfUnknownTypeRows(String type, int count);
+
+  /// No description provided for @invfEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'(vazio)'**
+  String get invfEmpty;
+
+  /// No description provided for @invfChoose.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher'**
+  String get invfChoose;
+
+  /// No description provided for @invfSkippedRows.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} linhas não importadas} =1{1 linha não importada} other{{count} linhas não importadas}}'**
+  String invfSkippedRows(int count);
+
+  /// No description provided for @invfRowReason.
+  ///
+  /// In pt, this message translates to:
+  /// **'Linha {row}: {reason}'**
+  String invfRowReason(int row, String reason);
+
+  /// No description provided for @invfAndMore.
+  ///
+  /// In pt, this message translates to:
+  /// **'… e mais {count}'**
+  String invfAndMore(int count);
+
+  /// No description provided for @invfAllRowsOk.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todas as linhas foram lidas sem problemas.'**
+  String get invfAllRowsOk;
+
+  /// No description provided for @invfImportedOps.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} operações importadas} =1{1 operação importada} other{{count} operações importadas}}'**
+  String invfImportedOps(int count);
+
+  /// No description provided for @invfImportedHoldings.
+  ///
+  /// In pt, this message translates to:
+  /// **' e {count, plural, =0{{count} ativos criados} =1{1 ativo criado} other{{count} ativos criados}}'**
+  String invfImportedHoldings(int count);
+
+  /// No description provided for @invfUpdatePrices.
+  ///
+  /// In pt, this message translates to:
+  /// **'. Atualiza os preços na Carteira.'**
+  String get invfUpdatePrices;
+
+  /// No description provided for @invfNegativeCashWarning.
+  ///
+  /// In pt, this message translates to:
+  /// **' O dinheiro por alocar ficou negativo: associa as transferências do banco a esta plataforma ou acerta o dinheiro.'**
+  String get invfNegativeCashWarning;
+
+  /// No description provided for @invfFieldDate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Data'**
+  String get invfFieldDate;
+
+  /// No description provided for @invfFieldType.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tipo (compra / venda)'**
+  String get invfFieldType;
+
+  /// No description provided for @invfFieldName.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome do ativo'**
+  String get invfFieldName;
+
+  /// No description provided for @invfFieldCategory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Categoria (ETF, ação…)'**
+  String get invfFieldCategory;
+
+  /// No description provided for @invfFieldComment.
+  ///
+  /// In pt, this message translates to:
+  /// **'Comentário (ex.: OPEN BUY 0.5 @ 100)'**
+  String get invfFieldComment;
+
+  /// No description provided for @invfFieldSymbol.
+  ///
+  /// In pt, this message translates to:
+  /// **'Símbolo'**
+  String get invfFieldSymbol;
+
+  /// No description provided for @invfFieldIsin.
+  ///
+  /// In pt, this message translates to:
+  /// **'ISIN'**
+  String get invfFieldIsin;
+
+  /// No description provided for @invfFieldQuantity.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quantidade'**
+  String get invfFieldQuantity;
+
+  /// No description provided for @invfFieldPrice.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preço por unidade'**
+  String get invfFieldPrice;
+
+  /// No description provided for @invfFieldTotal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor total'**
+  String get invfFieldTotal;
+
+  /// No description provided for @invfFieldFee.
+  ///
+  /// In pt, this message translates to:
+  /// **'Comissão'**
+  String get invfFieldFee;
+
+  /// No description provided for @invfFieldCurrency.
+  ///
+  /// In pt, this message translates to:
+  /// **'Moeda'**
+  String get invfFieldCurrency;
+
+  /// No description provided for @invfFieldRate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmbio (unidades da moeda por 1 da moeda de base)'**
+  String get invfFieldRate;
+
+  /// No description provided for @invfKindEtf.
+  ///
+  /// In pt, this message translates to:
+  /// **'ETF'**
+  String get invfKindEtf;
+
+  /// No description provided for @invfKindStock.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ação'**
+  String get invfKindStock;
+
+  /// No description provided for @invfKindCrypto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cripto'**
+  String get invfKindCrypto;
+
+  /// No description provided for @invfKindFund.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fundo'**
+  String get invfKindFund;
+
+  /// No description provided for @invfKindBond.
+  ///
+  /// In pt, this message translates to:
+  /// **'Obrigação'**
+  String get invfKindBond;
+
+  /// No description provided for @invfKindOther.
+  ///
+  /// In pt, this message translates to:
+  /// **'Outro'**
+  String get invfKindOther;
+
   /// No description provided for @morMoreTitle.
   ///
   /// In pt, this message translates to:
@@ -5669,7 +6821,7 @@ abstract class AppLocalizations {
   /// No description provided for @morAccountsCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 conta} other{{count} contas}}'**
+  /// **'{count, plural, =0{{count} contas} =1{1 conta} other{{count} contas}}'**
   String morAccountsCount(int count);
 
   /// No description provided for @morRecurringTitle.
@@ -5681,7 +6833,7 @@ abstract class AppLocalizations {
   /// No description provided for @morRecurringCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 recorrente} other{{count} recorrentes}} · salário, renda, subscrições'**
+  /// **'{count, plural, =0{{count} recorrentes} =1{1 recorrente} other{{count} recorrentes}} · salário, renda, subscrições'**
   String morRecurringCount(int count);
 
   /// No description provided for @morCategoriesTitle.
@@ -5693,7 +6845,7 @@ abstract class AppLocalizations {
   /// No description provided for @morCategoriesCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 categoria} other{{count} categorias}}'**
+  /// **'{count, plural, =0{{count} categorias} =1{1 categoria} other{{count} categorias}}'**
   String morCategoriesCount(int count);
 
   /// No description provided for @morGroupsTitle.
@@ -5705,7 +6857,7 @@ abstract class AppLocalizations {
   /// No description provided for @morGroupsCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 grupo} other{{count} grupos}}'**
+  /// **'{count, plural, =0{{count} grupos} =1{1 grupo} other{{count} grupos}}'**
   String morGroupsCount(int count);
 
   /// No description provided for @morRulesTitle.
@@ -5717,7 +6869,7 @@ abstract class AppLocalizations {
   /// No description provided for @morRulesCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 regra} other{{count} regras}}'**
+  /// **'{count, plural, =0{{count} regras} =1{1 regra} other{{count} regras}}'**
   String morRulesCount(int count);
 
   /// No description provided for @morImportTitle.
@@ -5807,13 +6959,13 @@ abstract class AppLocalizations {
   /// No description provided for @morImportItemSubtitle.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{{date} · 1 movimento} other{{date} · {count} movimentos}}'**
+  /// **'{count, plural, =0{{date} · {count} movimentos} =1{{date} · 1 movimento} other{{date} · {count} movimentos}}'**
   String morImportItemSubtitle(int count, String date);
 
   /// No description provided for @morRemoveImportQuestion.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{Remover o movimento desta importação?} other{Remover os {count} movimentos desta importação?}}'**
+  /// **'{count, plural, =0{Remover os {count} movimentos desta importação?} =1{Remover o movimento desta importação?} other{Remover os {count} movimentos desta importação?}}'**
   String morRemoveImportQuestion(int count);
 
   /// No description provided for @morCategoriesScreenTitle.
@@ -5885,7 +7037,7 @@ abstract class AppLocalizations {
   /// No description provided for @morTxnCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 mov.} other{{count} mov.}}'**
+  /// **'{count, plural, =0{{count} mov.} =1{1 mov.} other{{count} mov.}}'**
   String morTxnCount(int count);
 
   /// No description provided for @morMandatoryPeriods.
@@ -5927,7 +7079,7 @@ abstract class AppLocalizations {
   /// No description provided for @morDeleteCategoryQuestion.
   ///
   /// In pt, this message translates to:
-  /// **'Apagar “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria{subs}.'**
+  /// **'Apagar “{name}”? {count, plural, =0{Os {count} movimentos ficam} =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria{subs}.'**
   String morDeleteCategoryQuestion(String name, int count, String subs);
 
   /// No description provided for @morSubcategoriesDeleted.
@@ -6215,7 +7367,7 @@ abstract class AppLocalizations {
   /// No description provided for @morRecurringNotifBody.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento recorrente registado} other{{count} movimentos recorrentes registados}}'**
+  /// **'{count, plural, =0{{count} movimentos recorrentes registados} =1{1 movimento recorrente registado} other{{count} movimentos recorrentes registados}}'**
   String morRecurringNotifBody(int count);
 
   /// No description provided for @morAllocationTitle.
@@ -6233,7 +7385,7 @@ abstract class AppLocalizations {
   /// No description provided for @morDeliveriesCount.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{(1 entrega)} other{({count} entregas)}}'**
+  /// **'{count, plural, =0{({count} entregas)} =1{(1 entrega)} other{({count} entregas)}}'**
   String morDeliveriesCount(int count);
 
   /// No description provided for @morUndistributed.
