@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/widgets.dart';
+import '../l10n/app_localizations.dart';
 import '../screens/transactions_screen.dart' show confirm;
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -21,6 +22,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
   bool refreshing = false;
 
   Future<void> _setPrice(AppState s, Holding h) async {
+    final l = AppLocalizations.of(context)!;
     final ctrl = TextEditingController(
       text: h.priceOrig?.toString().replaceAll('.', ',') ?? '',
     );
@@ -32,7 +34,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Definir preço'),
+        title: Text(l.invSetPrice),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -43,8 +45,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                 decimal: true,
               ),
               decoration: InputDecoration(
-                labelText:
-                    'Preço por unidade (${h.foreign ? h.currency : baseSym})',
+                labelText: l.invPricePerUnit(h.foreign ? h.currency : baseSym),
                 prefixText: h.foreign ? null : '$baseSym  ',
               ),
             ),
@@ -56,7 +57,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                   decimal: true,
                 ),
                 decoration: InputDecoration(
-                  labelText: 'Câmbio: 1 $baseSym = ? ${h.currency}',
+                  labelText: l.invFxRate(baseSym, h.currency),
                 ),
               ),
             ],
@@ -65,11 +66,11 @@ class _HoldingScreenState extends State<HoldingScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Guardar'),
+            child: Text(l.invSave),
           ),
         ],
       ),
@@ -86,13 +87,14 @@ class _HoldingScreenState extends State<HoldingScreen> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final h = s.holding(widget.holdingId);
     if (h == null)
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Ativo apagado.')),
+        body: Center(child: Text(l.invHoldingDeleted)),
       );
     final acc = s.investAccount(h.accountId);
     final pf = s.portfolio;
@@ -110,18 +112,15 @@ class _HoldingScreenState extends State<HoldingScreen> {
         title: Text(h.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
-            tooltip: 'Editar',
+            tooltip: l.invEdit,
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => showHoldingEditor(context, edit: h),
           ),
           IconButton(
-            tooltip: 'Apagar',
+            tooltip: l.delete,
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
-              if (await confirm(
-                context,
-                'Apagar o ativo “${h.name}” e as suas operações?',
-              )) {
+              if (await confirm(context, l.invDeleteHoldingConfirm(h.name))) {
                 s.deleteHolding(h.id);
                 if (context.mounted) Navigator.pop(context);
               }
@@ -134,15 +133,15 @@ class _HoldingScreenState extends State<HoldingScreen> {
         children: [
           // ----- preço -----
           SectionCard(
-            title: 'Preço atual',
+            title: l.invCurrentPrice,
             subtitle:
-                '${h.kind.emoji} ${h.kind.label} · ${h.currency} · ${acc?.name ?? ''} · ${h.provider.label}${h.symbol.isEmpty ? '' : ' (${h.symbol})'}',
+                '${h.kind.emoji} ${h.kind.labelL(l)} · ${h.currency} · ${acc?.name ?? ''} · ${h.provider.labelL(l)}${h.symbol.isEmpty ? '' : ' (${h.symbol})'}',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   h.lastPrice == null
-                      ? 'Sem preço'
+                      ? l.invNoPrice
                       : fmtPriceIn(h.priceOrig ?? h.lastPrice!, h.currency),
                   style: tt.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
@@ -153,7 +152,12 @@ class _HoldingScreenState extends State<HoldingScreen> {
                   child: ActionChip(
                     avatar: const Icon(Icons.currency_exchange, size: 16),
                     label: Text(
-                      'Moeda: ${h.currency} · ${h.currencyManual || !h.canAutoPrice ? 'escolhida' : 'automática'}',
+                      l.invCurrencyChip(
+                        h.currency,
+                        h.currencyManual || !h.canAutoPrice
+                            ? l.invCurrencyChosen
+                            : l.invCurrencyAuto,
+                      ),
                     ),
                     onPressed: () => showCurrencyPicker(context, h),
                   ),
@@ -165,7 +169,10 @@ class _HoldingScreenState extends State<HoldingScreen> {
                   ),
                 if (h.lastPriceAt != null)
                   Text(
-                    'Atualizado ${fmtAgo(h.lastPriceAt!)} · ${fmtDate(h.lastPriceAt!)}',
+                    l.invUpdatedAgo(
+                      fmtAgo(h.lastPriceAt!),
+                      fmtDate(h.lastPriceAt!),
+                    ),
                     style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 const SizedBox(height: 12),
@@ -182,9 +189,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                             ? null
                             : () async {
                                 setState(() => refreshing = true);
-                                final messenger = ScaffoldMessenger.of(
-                                  context,
-                                );
+                                final messenger = ScaffoldMessenger.of(context);
                                 final r = await s.refreshPrices(
                                   holdingId: h.id,
                                 );
@@ -194,8 +199,11 @@ class _HoldingScreenState extends State<HoldingScreen> {
                                   SnackBar(
                                     content: Text(
                                       r.updated == 1
-                                          ? 'Preço atualizado.'
-                                          : 'Não consegui atualizar: ${r.failed.values.firstOrNull ?? 'erro'}',
+                                          ? l.invPriceUpdated
+                                          : l.invRefreshFailedReason(
+                                              r.failed.values.firstOrNull ??
+                                                  l.invErrorWord,
+                                            ),
                                     ),
                                   ),
                                 );
@@ -209,7 +217,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                                 ),
                               )
                             : const Icon(Icons.sync, size: 18),
-                        label: const Text('Atualizar preço'),
+                        label: Text(l.invRefreshPrice),
                       ),
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
@@ -217,7 +225,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                       ),
                       onPressed: () => _setPrice(s, h),
                       icon: const Icon(Icons.edit, size: 18),
-                      label: const Text('Definir à mão'),
+                      label: Text(l.invSetPriceManual),
                     ),
                   ],
                 ),
@@ -227,11 +235,9 @@ class _HoldingScreenState extends State<HoldingScreen> {
 
           // ----- posição -----
           SectionCard(
-            title: 'A minha posição',
+            title: l.invMyPosition,
             child: p.qty <= 1e-9 && ops.isEmpty
-                ? const Text(
-                    'Ainda sem posição. Regista a quantidade e o preço médio do que já tinhas, ou uma compra.',
-                  )
+                ? Text(l.invNoPositionYet)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -239,9 +245,9 @@ class _HoldingScreenState extends State<HoldingScreen> {
                         spacing: 28,
                         runSpacing: 14,
                         children: [
-                          Stat('Quantidade', fmtQty(p.qty)),
+                          Stat(l.invQuantity, fmtQty(p.qty)),
                           Stat(
-                            'Preço médio de compra',
+                            l.invAvgCost,
                             p.open
                                 ? fmtPriceIn(
                                     h.foreign ? p.avgCostOrig : p.avgCost,
@@ -257,11 +263,11 @@ class _HoldingScreenState extends State<HoldingScreen> {
                                   )
                                 : null,
                           ),
-                          Stat('Investido', fmtMoney(p.costCents)),
-                          Stat('Valor atual', fmtMoney(p.valueCents)),
+                          Stat(l.invInvested, fmtMoney(p.costCents)),
+                          Stat(l.invCurrentValue, fmtMoney(p.valueCents)),
                           if (p.open && p.priced)
                             Stat(
-                              'Ganho / perda',
+                              l.invGainLoss,
                               fmtSignedMoney(p.plCents),
                               color: plColor(context, p.plCents),
                               extra: p.plPct == null
@@ -276,12 +282,12 @@ class _HoldingScreenState extends State<HoldingScreen> {
                             ),
                           if (p.plOrig != null)
                             Stat(
-                              'Ganho em ${h.currency}',
+                              l.invGainIn(h.currency),
                               '${p.plOrig! >= 0 ? '+' : '−'}${fmtPriceIn(p.plOrig!.abs(), h.currency)}',
                               extra: p.plOrigPct == null
                                   ? null
                                   : Text(
-                                      '${fmtSignedPercent(p.plOrigPct!)} · só o preço',
+                                      '${fmtSignedPercent(p.plOrigPct!)} · ${l.invPriceOnly}',
                                       style: tt.bodySmall?.copyWith(
                                         color: cs.onSurfaceVariant,
                                       ),
@@ -289,19 +295,19 @@ class _HoldingScreenState extends State<HoldingScreen> {
                             ),
                           if (p.realizedCents != 0)
                             Stat(
-                              'Ganho realizado',
+                              l.invRealizedGain,
                               fmtSignedMoney(p.realizedCents),
                               color: plColor(context, p.realizedCents),
                             ),
                           if (p.dividendsCents > 0)
-                            Stat('Dividendos', fmtMoney(p.dividendsCents)),
+                            Stat(l.invDividends, fmtMoney(p.dividendsCents)),
                         ],
                       ),
                       if (p.open && !p.priced)
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Text(
-                            'Define o preço atual para ver o ganho ou perda.',
+                            l.invSetPriceToSeePl,
                             style: tt.bodySmall?.copyWith(
                               color: cs.onSurfaceVariant,
                             ),
@@ -325,7 +331,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                   accountId: h.accountId,
                 ),
                 icon: const Icon(Icons.add_shopping_cart, size: 18),
-                label: const Text('Comprar'),
+                label: Text(l.invBuy),
               ),
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(minimumSize: const Size(0, 46)),
@@ -338,7 +344,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                       )
                     : null,
                 icon: const Icon(Icons.sell_outlined, size: 18),
-                label: const Text('Vender'),
+                label: Text(l.invSell),
               ),
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(minimumSize: const Size(0, 46)),
@@ -349,7 +355,7 @@ class _HoldingScreenState extends State<HoldingScreen> {
                   accountId: h.accountId,
                 ),
                 icon: const Icon(Icons.history, size: 18),
-                label: const Text('Posição inicial'),
+                label: Text(l.invOpInitial),
               ),
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(minimumSize: const Size(0, 46)),
@@ -360,15 +366,15 @@ class _HoldingScreenState extends State<HoldingScreen> {
                   accountId: h.accountId,
                 ),
                 icon: const Icon(Icons.payments_outlined, size: 18),
-                label: const Text('Dividendo'),
+                label: Text(l.invOpDividend),
               ),
             ],
           ),
 
           if (ops.isNotEmpty)
             SectionCard(
-              title: 'Operações',
-              subtitle: 'Toca para editar',
+              title: l.invOperations,
+              subtitle: l.invTapToEdit,
               child: Column(
                 children: [
                   for (final o in ops)

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/widgets.dart';
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -17,6 +18,7 @@ class TransferRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final a = s.transferAllocation(txn);
@@ -35,7 +37,7 @@ class TransferRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${fmtDate(txn.date)} · ${acc?.emoji ?? ''} ${acc?.name ?? 'Plataforma'}'
+                    '${fmtDate(txn.date)} · ${acc?.emoji ?? ''} ${acc?.name ?? l.invPlatformDefault}'
                         .replaceAll('  ', ' '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -60,8 +62,13 @@ class TransferRow extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               a.allocated == 0
-                  ? 'Nada associado ainda · toca para escolher as compras'
-                  : 'Investido ${fmtMoney(a.allocated)} · ${a.onHold >= 0 ? 'em espera ${fmtMoney(a.onHold)}' : 'mais ${fmtMoney(-a.onHold)} do que a transferência'}',
+                  ? l.invNothingAssigned
+                  : l.invAllocationSummary(
+                      fmtMoney(a.allocated),
+                      a.onHold >= 0
+                          ? l.invOnHoldLower(fmtMoney(a.onHold))
+                          : l.invOverAllocatedLower(fmtMoney(-a.onHold)),
+                    ),
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ],
@@ -77,6 +84,7 @@ class TransfersCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final list = s.investDeliveries;
     if (list.isEmpty) return const SizedBox.shrink();
     final hold = list.fold(
@@ -88,10 +96,10 @@ class TransfersCard extends StatelessWidget {
               : 0),
     );
     return SectionCard(
-      title: 'Transferências para investir',
+      title: l.invTransfersTitle,
       subtitle: hold > 0
-          ? 'Toca numa para dizer em que compras foi usada. Por investir: ${fmtMoney(hold)}'
-          : 'Toca numa para dizer em que compras foi usada',
+          ? l.invTapToAssignWithAmount(fmtMoney(hold))
+          : l.invTapToAssign,
       child: Column(
         children: [
           for (final t in list.take(4))
@@ -112,7 +120,7 @@ class TransfersCard extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (_) => const TransfersScreen()),
                 ),
-                child: Text('Ver todas (${list.length})'),
+                child: Text(l.invSeeAll(list.length)),
               ),
             ),
         ],
@@ -126,8 +134,9 @@ class TransfersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Transferências para investir')),
+      appBar: AppBar(title: Text(l.invTransfersTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         children: [
@@ -142,11 +151,9 @@ class TransfersScreen extends StatelessWidget {
               ),
             ),
           if (s.investDeliveries.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Text(
-                'Ainda não associaste transferências do banco a uma plataforma.',
-              ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(l.invNoTransfersYet),
             ),
         ],
       ),
@@ -201,13 +208,14 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final t = _txn(s);
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     if (t == null)
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Transferência apagada.')),
+        body: Center(child: Text(l.invTransferDeleted)),
       );
     final total = t.amount.abs();
     final buys =
@@ -223,14 +231,14 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
     final hold = total - allocated;
     final acc = s.investAccount(t.investAccountId);
     return Scaffold(
-      appBar: AppBar(title: const Text('Usar esta transferência')),
+      appBar: AppBar(title: Text(l.invUseTransfer)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
         children: [
           FormCard(
             children: [
               Text(
-                '${fmtMoney(total)} para ${acc?.name ?? 'a plataforma'}',
+                l.invTransferTo(fmtMoney(total), acc?.name ?? l.invThePlatform),
                 style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
               Text(
@@ -253,7 +261,7 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Investido ${fmtMoney(allocated)}',
+                      l.invInvestedAmount(fmtMoney(allocated)),
                       style: tt.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -261,8 +269,8 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
                   ),
                   Text(
                     hold >= 0
-                        ? 'Em espera ${fmtMoney(hold)}'
-                        : 'Mais ${fmtMoney(-hold)}',
+                        ? l.invOnHold(fmtMoney(hold))
+                        : l.invMoreThanAmount(fmtMoney(-hold)),
                     style: tt.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: hold >= 0 ? Colors.orange.shade800 : cs.error,
@@ -273,16 +281,13 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
               if (hold < 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(
-                    'As compras escolhidas somam mais do que a transferência. Deve ter entrado dinheiro de antes; podes continuar.',
-                    style: tt.bodySmall,
-                  ),
+                  child: Text(l.invOverAllocatedNote, style: tt.bodySmall),
                 ),
               if (hold > 0 && allocated > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    '${fmtMoney(hold)} desta transferência ficou em espera, por investir.',
+                    l.invHoldRemainder(fmtMoney(hold)),
                     style: tt.bodySmall,
                   ),
                 ),
@@ -297,29 +302,26 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
                         ..addAll(_suggest(s, t)),
                     ),
                     icon: const Icon(Icons.auto_awesome, size: 18),
-                    label: const Text('Sugerir'),
+                    label: Text(l.invSuggest),
                   ),
                   if (selected.isNotEmpty)
                     TextButton(
                       onPressed: () => setState(selected.clear),
-                      child: const Text('Limpar (tudo em espera)'),
+                      child: Text(l.invClearAll),
                     ),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Text('Compras nesta plataforma', style: tt.titleMedium),
+          Text(l.invBuysOnPlatform, style: tt.titleMedium),
           const SizedBox(height: 4),
-          Text(
-            'Marca as que foram pagas com esta transferência.',
-            style: tt.bodySmall,
-          ),
+          Text(l.invMarkBuysHint, style: tt.bodySmall),
           const SizedBox(height: 6),
           if (buys.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Ainda não há compras registadas nesta plataforma.'),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(l.invNoBuysYet),
             ),
           for (final o in buys)
             Material(
@@ -337,12 +339,12 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
                             : selected.remove(o.id),
                       ),
                 title: Text(
-                  s.holding(o.holdingId)?.name ?? 'Compra',
+                  s.holding(o.holdingId)?.name ?? l.invOpBuy,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: Text(
-                  '${fmtDate(o.date)} · ${fmtQty(o.quantity)} un.${o.txnId != null && o.txnId != t.id ? ' · usada noutra transferência' : ''}',
+                  '${fmtDate(o.date)} · ${l.invUnits(fmtQty(o.quantity))}${o.txnId != null && o.txnId != t.id ? ' · ${l.invUsedElsewhere}' : ''}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -364,9 +366,7 @@ class _TransferAllocScreenState extends State<TransferAllocScreen> {
                 s.allocateTransfer(t.id, selected);
                 Navigator.pop(context);
               },
-              child: Text(
-                selected.isEmpty ? 'Guardar (tudo em espera)' : 'Guardar',
-              ),
+              child: Text(selected.isEmpty ? l.invSaveAllOnHold : l.invSave),
             ),
           ),
         ),

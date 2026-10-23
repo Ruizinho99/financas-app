@@ -1,0 +1,464 @@
+{
+  "@@locale": "pt",
+  "invAdd": "Adicionar",
+  "invRecordOperation": "Registar operação",
+  "invRecordOperationHint": "Compra, venda, dividendo ou o que já tinhas",
+  "invImportFromFile": "Importar de um ficheiro",
+  "invImportFileHint": "PDF, CSV ou Excel da corretora",
+  "invNewHolding": "Novo ativo",
+  "invNewHoldingHint": "ETF, ação, cripto, fundo…",
+  "invNewAccount": "Nova plataforma",
+  "invNewAccountHint": "XTB, Trade Republic, exchange…",
+  "invTitle": "Investimentos",
+  "invImportTrades": "Importar compras e vendas",
+  "invRefreshPrices": "Atualizar preços",
+  "invImportCardHint": "Escolhe um ficheiro PDF, CSV ou Excel da tua corretora",
+  "invMyPortfolio": "A minha carteira",
+  "invTotalValue": "Valor total",
+  "invInvested": "Investido",
+  "invCurrentValue": "Valor atual",
+  "invGainLoss": "Ganho / perda",
+  "invUnallocated": "Por alocar",
+  "invUnallocatedStandby": "Por alocar (standby)",
+  "invRealizedGain": "Ganho realizado",
+  "invDividends": "Dividendos",
+  "invPricesUpdated": "{count, plural, =1{1 preço atualizado.} other{{count} preços atualizados.}}",
+  "@invPricesUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invPricesFailed": "Falhou: {details}",
+  "@invPricesFailed": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoAutoPrices": "Nenhum ativo com preço automático.",
+  "invPricesUpdatedAgo": "Preços atualizados {ago}",
+  "@invPricesUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoPricesYet": "Ainda sem preços. Carrega em atualizar.",
+  "invPricesManual": "Preços definidos à mão em cada ativo.",
+  "invUnpricedNote": "Ativos sem preço contam pelo custo, para não distorcer o total.",
+  "invWhereMoneyIs": "Onde está o dinheiro",
+  "invByAsset": "Por ativo",
+  "invByPlatform": "Por plataforma",
+  "invByType": "Por tipo",
+  "invTotal": "Total",
+  "invCashToAllocate": "Dinheiro por alocar",
+  "invCashSubtitle": "Enviado para as plataformas e ainda não investido (standby)",
+  "invNegativeCashHint": "Negativo: falta uma entrega ou um acerto de dinheiro",
+  "invAllocate": "Alocar",
+  "invAdjust": "Acertar",
+  "invPlatforms": "Plataformas",
+  "invAssetsCount": "{count, plural, =1{1 ativo} other{{count} ativos}}",
+  "@invAssetsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invAccountLine": "Por alocar {cash} · {count, plural, =1{1 ativo} other{{count} ativos}}",
+  "@invAccountLine": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invIntroTitle": "Acompanha o que tens investido",
+  "invIntroSubtitle": "Onde está o teu dinheiro, quanto vale e quanto está por alocar",
+  "invStep1Title": "1. Cria uma plataforma",
+  "invStep1Desc": "XTB, Trade Republic, uma exchange de cripto…",
+  "invStep2Title": "2. Associa as transferências do banco",
+  "invStep2Desc": "Marcas quais foram dinheiro enviado para a plataforma. Deixam de contar como despesa.",
+  "invStep3Title": "3. Diz o que já tinhas",
+  "invStep3Desc": "Quantidade e preço médio de compra do que investiste antes de usar a app.",
+  "invStep4Title": "4. Aloca o dinheiro",
+  "invStep4Desc": "Regista compras. O que sobra fica por alocar (standby).",
+  "invStep5Title": "5. Atualiza os preços",
+  "invStep5Desc": "Com APIs gratuitas (Yahoo Finance e CoinGecko), só quando tu pedires.",
+  "invCreateFirstPlatform": "Criar a primeira plataforma",
+  "invImportFromFileButton": "Importar compras e vendas de um ficheiro",
+  "invTopAssetWeight": "{label} pesa {share} da carteira.",
+  "@invTopAssetWeight": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "invKindEtf": "ETF",
+  "invKindStock": "Ação",
+  "invKindCrypto": "Cripto",
+  "invKindFund": "Fundo",
+  "invKindBond": "Obrigação",
+  "invKindOther": "Outro",
+  "invProviderManual": "Manual",
+  "invProviderYahoo": "Yahoo Finance",
+  "invProviderCoingecko": "CoinGecko",
+  "invOpInitial": "Posição inicial",
+  "invOpBuy": "Compra",
+  "invOpSell": "Venda",
+  "invOpDividend": "Dividendo",
+  "invOpCash": "Acerto de dinheiro",
+  "invAddToAccount": "Adicionar a {name}",
+  "@invAddToAccount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invDeleteAccountConfirm": "Apagar a plataforma “{name}” com os seus ativos e operações? Os movimentos do banco ficam (deixam de estar associados).",
+  "@invDeleteAccountConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invSummary": "Resumo",
+  "invCashAccountSubtitle": "O que está na plataforma e ainda não foi investido",
+  "invBankDepositsNet": "Entregas do banco (líquidas)",
+  "invCashAdjustments": "Acertos de dinheiro",
+  "invSales": "Vendas",
+  "invPurchases": "Compras",
+  "invNegativeAccountCash": "O valor está negativo: gastaste mais do que o dinheiro registado. Associa a transferência do banco ou acerta o dinheiro que já lá estava.",
+  "invAllocateMoney": "Alocar dinheiro",
+  "invBankTransfers": "Transferências do banco",
+  "invMarkTransfersFor": "Marca quais foram dinheiro enviado para {name}",
+  "@invMarkTransfersFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invLinkedCount": "{count, plural, =1{1 associada · não conta como despesa} other{{count} associadas · não contam como despesa}}",
+  "@invLinkedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invLinkBankTransfers": "Associar transferências do banco",
+  "invSuggestedMatches": "{count, plural, =1{1 movimento parece ser desta plataforma} other{{count} movimentos parecem ser desta plataforma}}",
+  "@invSuggestedMatches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invSuggestedBody": "Têm “{name}” no nome. Toca para rever e associar.",
+  "@invSuggestedBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invUnlink": "Desassociar",
+  "invDeliveryLower": "entrega",
+  "invWithdrawalLower": "levantamento",
+  "invAndMore": "… e mais {count}",
+  "@invAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invRememberedTitles": "Títulos lembrados para as próximas importações",
+  "invAssets": "Ativos",
+  "invNew": "Novo",
+  "invNoAssetsYet": "Ainda sem ativos. Cria um (ex.: o ETF ou a ação que compraste) e regista a posição que já tinhas ou uma compra.",
+  "invHistory": "Histórico",
+  "invTapToEdit": "Toca para editar",
+  "invEdit": "Editar",
+  "invHoldingDeleted": "Ativo apagado.",
+  "invHoldingDeletedShort": "Ativo apagado",
+  "invAccountDeleted": "Plataforma apagada.",
+  "invTransferDeleted": "Transferência apagada.",
+  "invTransfersTitle": "Transferências para investir",
+  "invTapToAssignWithAmount": "Toca numa para dizer em que compras foi usada. Por investir: {amount}",
+  "@invTapToAssignWithAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invTapToAssign": "Toca numa para dizer em que compras foi usada",
+  "invSeeAll": "Ver todas ({count})",
+  "@invSeeAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invNoTransfersYet": "Ainda não associaste transferências do banco a uma plataforma.",
+  "invNothingAssigned": "Nada associado ainda · toca para escolher as compras",
+  "invAllocationSummary": "Investido {allocated} · {holdText}",
+  "@invAllocationSummary": {
+    "placeholders": {
+      "allocated": {
+        "type": "String"
+      },
+      "holdText": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHoldLower": "em espera {amount}",
+  "@invOnHoldLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedLower": "mais {amount} do que a transferência",
+  "@invOverAllocatedLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invInvestedAmount": "Investido {amount}",
+  "@invInvestedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHold": "Em espera {amount}",
+  "@invOnHold": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invMoreThanAmount": "Mais {amount}",
+  "@invMoreThanAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invUseTransfer": "Usar esta transferência",
+  "invPlatformDefault": "Plataforma",
+  "invThePlatform": "a plataforma",
+  "invTransferTo": "{amount} para {name}",
+  "@invTransferTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedNote": "As compras escolhidas somam mais do que a transferência. Deve ter entrado dinheiro de antes; podes continuar.",
+  "invHoldRemainder": "{amount} desta transferência ficou em espera, por investir.",
+  "@invHoldRemainder": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSuggest": "Sugerir",
+  "invClearAll": "Limpar (tudo em espera)",
+  "invSaveAllOnHold": "Guardar (tudo em espera)",
+  "invSave": "Guardar",
+  "invBuysOnPlatform": "Compras nesta plataforma",
+  "invMarkBuysHint": "Marca as que foram pagas com esta transferência.",
+  "invNoBuysYet": "Ainda não há compras registadas nesta plataforma.",
+  "invUsedElsewhere": "usada noutra transferência",
+  "invUnits": "{qty} un.",
+  "@invUnits": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invSetPrice": "Definir preço",
+  "invSetPriceManual": "Definir à mão",
+  "invPricePerUnit": "Preço por unidade ({currency})",
+  "@invPricePerUnit": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invFxRate": "Câmbio: 1 {base} = ? {currency}",
+  "@invFxRate": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrentPrice": "Preço atual",
+  "invNoPrice": "Sem preço",
+  "invCurrencyChip": "Moeda: {currency} · {mode}",
+  "@invCurrencyChip": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrencyChosen": "escolhida",
+  "invCurrencyAuto": "automática",
+  "invUpdatedAgo": "Atualizado {ago} · {date}",
+  "@invUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "invRefreshPrice": "Atualizar preço",
+  "invPriceUpdated": "Preço atualizado.",
+  "invRefreshFailedReason": "Não consegui atualizar: {reason}",
+  "@invRefreshFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "invErrorWord": "erro",
+  "invDeleteHoldingConfirm": "Apagar o ativo “{name}” e as suas operações?",
+  "@invDeleteHoldingConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invMyPosition": "A minha posição",
+  "invNoPositionYet": "Ainda sem posição. Regista a quantidade e o preço médio do que já tinhas, ou uma compra.",
+  "invQuantity": "Quantidade",
+  "invAvgCost": "Preço médio de compra",
+  "invGainIn": "Ganho em {currency}",
+  "@invGainIn": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invPriceOnly": "só o preço",
+  "invSetPriceToSeePl": "Define o preço atual para ver o ganho ou perda.",
+  "invBuy": "Comprar",
+  "invSell": "Vender",
+  "invOperations": "Operações",
+  "invFeeLabel": "comissão {amount}",
+  "@invFeeLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTitle": "Plano de investimento",
+  "invPlanCardDesc": "Quando entra uma transferência numa plataforma, a Carteira mostra quanto vai para cada ativo. A app não regista compras.",
+  "invNoPlan": "Sem plano",
+  "invMissingPercent": "faltam {pct}% por distribuir",
+  "@invMissingPercent": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanOf": "Plano de {name}",
+  "@invPlanOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanEditorHint": "Percentagem de cada entrega para cada ativo. Podes deixar parte por distribuir.",
+  "invPlanNoAssets": "Esta plataforma ainda não tem ativos. Adiciona ativos na Carteira.",
+  "invPlanOver": "Passa {pct}% dos 100%.",
+  "@invPlanOver": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTotal": "Total: {pct}%",
+  "@invPlanTotal": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invSumOver100": "A soma não pode passar 100%.",
+  "invInvalidValue": "Valor inválido.",
+  "invSavePlan": "Guardar plano",
+  "invRemovePlan": "Remover plano",
+  "invPendingDeliveries": "Entregas para distribuir ({count})",
+  "@invPendingDeliveries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invUndistributed": "Por distribuir: {amount}",
+  "@invUndistributed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSeen": "Visto",
+  "invAvgShort": "médio",
+  "invNoPriceShort": "sem preço",
+  "invClosedPosition": "Posição fechada"
+}

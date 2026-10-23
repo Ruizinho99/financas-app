@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../util/format.dart' show baseCcy;
 
@@ -372,4 +373,35 @@ class Portfolio {
     out.sort((a, b) => b.total.compareTo(a.total));
     return Portfolio(out);
   }
+}
+
+// Versões traduzidas dos rótulos (recebem AppLocalizations). Os getters `label` acima ficam para
+// os ecrãs que ainda não usam traduções.
+extension HoldingKindL10n on HoldingKind {
+  String labelL(AppLocalizations l) => switch (this) {
+    HoldingKind.etf => l.invKindEtf,
+    HoldingKind.stock => l.invKindStock,
+    HoldingKind.crypto => l.invKindCrypto,
+    HoldingKind.fund => l.invKindFund,
+    HoldingKind.bond => l.invKindBond,
+    HoldingKind.other => l.invKindOther,
+  };
+}
+
+extension PriceProviderL10n on PriceProvider {
+  String labelL(AppLocalizations l) => switch (this) {
+    PriceProvider.manual => l.invProviderManual,
+    PriceProvider.yahoo => l.invProviderYahoo,
+    PriceProvider.coingecko => l.invProviderCoingecko,
+  };
+}
+
+extension OpTypeL10n on OpType {
+  String labelL(AppLocalizations l) => switch (this) {
+    OpType.initial => l.invOpInitial,
+    OpType.buy => l.invOpBuy,
+    OpType.sell => l.invOpSell,
+    OpType.dividend => l.invOpDividend,
+    OpType.cash => l.invOpCash,
+  };
 }

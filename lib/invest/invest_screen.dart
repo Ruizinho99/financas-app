@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/widgets.dart';
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import 'account_screen.dart';
@@ -27,18 +28,19 @@ class _InvestScreenState extends State<InvestScreen> {
   bool refreshing = false;
 
   Future<void> _refresh(AppState s, {int? accountId}) async {
+    final l = AppLocalizations.of(context)!;
     setState(() => refreshing = true);
     final r = await s.refreshPrices(accountId: accountId);
     if (!mounted) return;
     setState(() => refreshing = false);
     final msg = StringBuffer(
       r.updated == 0 && r.failed.isEmpty
-          ? 'Nenhum ativo com preço automático.'
-          : '${r.updated} ${r.updated == 1 ? 'preço atualizado' : 'preços atualizados'}.',
+          ? l.invNoAutoPrices
+          : l.invPricesUpdated(r.updated),
     );
     if (r.failed.isNotEmpty)
       msg.write(
-        ' Falhou: ${r.failed.entries.map((e) => '${e.key} (${e.value})').join('; ')}',
+        ' ${l.invPricesFailed(r.failed.entries.map((e) => '${e.key} (${e.value})').join('; '))}',
       );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -50,6 +52,7 @@ class _InvestScreenState extends State<InvestScreen> {
 
   void _addMenu(BuildContext context, AppState s) {
     final hasAcc = s.investAccounts.isNotEmpty;
+    final l = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -62,7 +65,7 @@ class _InvestScreenState extends State<InvestScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Adicionar',
+                  l.invAdd,
                   style: Theme.of(ctx).textTheme.titleLarge,
                 ),
               ),
@@ -71,30 +74,30 @@ class _InvestScreenState extends State<InvestScreen> {
               _item(
                 ctx,
                 Icons.edit_note,
-                'Registar operação',
-                'Compra, venda, dividendo ou o que já tinhas',
+                l.invRecordOperation,
+                l.invRecordOperationHint,
                 () => showOpForm(context, type: OpType.buy),
               ),
             _item(
               ctx,
               Icons.upload_file,
-              'Importar de um ficheiro',
-              'PDF, CSV ou Excel da corretora',
+              l.invImportFromFile,
+              l.invImportFileHint,
               () => _openImport(context),
             ),
             if (hasAcc)
               _item(
                 ctx,
                 Icons.pie_chart_outline,
-                'Novo ativo',
-                'ETF, ação, cripto, fundo…',
+                l.invNewHolding,
+                l.invNewHoldingHint,
                 () => showHoldingEditor(context),
               ),
             _item(
               ctx,
               Icons.account_balance_outlined,
-              'Nova plataforma',
-              'XTB, Trade Republic, exchange…',
+              l.invNewAccount,
+              l.invNewAccountHint,
               () => showInvestAccountEditor(context),
             ),
             const SizedBox(height: 8),
@@ -111,6 +114,7 @@ class _InvestScreenState extends State<InvestScreen> {
 
   /// Cartão bem visível para importar um ficheiro da corretora.
   Widget _importCard(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     return Card(
       color: cs.primaryContainer.withValues(alpha: 0.45),
@@ -119,13 +123,11 @@ class _InvestScreenState extends State<InvestScreen> {
           backgroundColor: cs.primary,
           child: Icon(Icons.upload_file, color: cs.onPrimary),
         ),
-        title: const Text(
-          'Importar compras e vendas',
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Text(
+          l.invImportTrades,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        subtitle: const Text(
-          'Escolhe um ficheiro PDF, CSV ou Excel da tua corretora',
-        ),
+        subtitle: Text(l.invImportCardHint),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => _openImport(context),
       ),
@@ -152,6 +154,7 @@ class _InvestScreenState extends State<InvestScreen> {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final pf = s.portfolio;
     final colors = chartColors(cs);
@@ -165,10 +168,10 @@ class _InvestScreenState extends State<InvestScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Investimentos'),
+        title: Text(l.invTitle),
         actions: [
           IconButton(
-            tooltip: 'Importar compras e vendas',
+            tooltip: l.invImportTrades,
             icon: const Icon(Icons.upload_file),
             onPressed: () => _openImport(context),
           ),
@@ -183,7 +186,7 @@ class _InvestScreenState extends State<InvestScreen> {
                     ),
                   )
                 : IconButton(
-                    tooltip: 'Atualizar preços',
+                    tooltip: l.invRefreshPrices,
                     icon: const Icon(Icons.sync),
                     onPressed: () => _refresh(s),
                   ),
@@ -193,7 +196,7 @@ class _InvestScreenState extends State<InvestScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addMenu(context, s),
         icon: const Icon(Icons.add),
-        label: const Text('Adicionar'),
+        label: Text(l.invAdd),
       ),
       body: pf.isEmpty
           ? _intro(context, s)
@@ -204,12 +207,12 @@ class _InvestScreenState extends State<InvestScreen> {
                 const PendingAllocationsCard(),
                 // ----- resumo -----
                 SectionCard(
-                  title: 'A minha carteira',
+                  title: l.invMyPortfolio,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Valor total',
+                        l.invTotalValue,
                         style: tt.bodySmall?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
@@ -229,10 +232,10 @@ class _InvestScreenState extends State<InvestScreen> {
                         spacing: 28,
                         runSpacing: 12,
                         children: [
-                          Stat('Investido', fmtMoney(pf.costBasis)),
-                          Stat('Valor atual', fmtMoney(pf.investedValue)),
+                          Stat(l.invInvested, fmtMoney(pf.costBasis)),
+                          Stat(l.invCurrentValue, fmtMoney(pf.investedValue)),
                           Stat(
-                            'Ganho / perda',
+                            l.invGainLoss,
                             fmtSignedMoney(pf.pl),
                             color: plColor(context, pf.pl),
                             extra: pf.plPct == null
@@ -246,18 +249,18 @@ class _InvestScreenState extends State<InvestScreen> {
                                   ),
                           ),
                           Stat(
-                            'Por alocar',
+                            l.invUnallocated,
                             fmtMoney(pf.cash),
                             color: pf.cash < 0 ? Colors.orange.shade700 : null,
                           ),
                           if (pf.realized != 0)
                             Stat(
-                              'Ganho realizado',
+                              l.invRealizedGain,
                               fmtSignedMoney(pf.realized),
                               color: plColor(context, pf.realized),
                             ),
                           if (pf.dividends > 0)
-                            Stat('Dividendos', fmtMoney(pf.dividends)),
+                            Stat(l.invDividends, fmtMoney(pf.dividends)),
                         ],
                       ),
                       const SizedBox(height: 14),
@@ -267,9 +270,9 @@ class _InvestScreenState extends State<InvestScreen> {
                             child: Text(
                               times.isEmpty
                                   ? (anyAuto
-                                        ? 'Ainda sem preços. Carrega em atualizar.'
-                                        : 'Preços definidos à mão em cada ativo.')
-                                  : 'Preços atualizados ${fmtAgo(times.last)}',
+                                        ? l.invNoPricesYet
+                                        : l.invPricesManual)
+                                  : l.invPricesUpdatedAgo(fmtAgo(times.last)),
                               style: tt.bodySmall?.copyWith(
                                 color: cs.onSurfaceVariant,
                               ),
@@ -279,7 +282,7 @@ class _InvestScreenState extends State<InvestScreen> {
                             TextButton.icon(
                               onPressed: refreshing ? null : () => _refresh(s),
                               icon: const Icon(Icons.sync, size: 18),
-                              label: const Text('Atualizar preços'),
+                              label: Text(l.invRefreshPrices),
                             ),
                         ],
                       ),
@@ -287,7 +290,7 @@ class _InvestScreenState extends State<InvestScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            'Ativos sem preço contam pelo custo, para não distorcer o total.',
+                            l.invUnpricedNote,
                             style: tt.bodySmall?.copyWith(
                               color: cs.onSurfaceVariant,
                             ),
@@ -308,8 +311,8 @@ class _InvestScreenState extends State<InvestScreen> {
                 // ----- dinheiro por alocar -----
                 if (pf.accounts.any((a) => a.cashCents != 0))
                   SectionCard(
-                    title: 'Dinheiro por alocar',
-                    subtitle: 'Enviado para as plataformas e ainda não investido (standby)',
+                    title: l.invCashToAllocate,
+                    subtitle: l.invCashSubtitle,
                     child: Column(
                       children: [
                         for (final a in pf.accounts.where(
@@ -350,7 +353,7 @@ class _InvestScreenState extends State<InvestScreen> {
                                       ),
                                       if (a.cashCents < 0)
                                         Text(
-                                          'Negativo: falta uma entrega ou um acerto de dinheiro',
+                                          l.invNegativeCashHint,
                                           style: tt.bodySmall?.copyWith(
                                             color: Colors.orange.shade700,
                                           ),
@@ -369,7 +372,7 @@ class _InvestScreenState extends State<InvestScreen> {
                                       accountId: a.account.id,
                                       prefillCents: a.cashCents,
                                     ),
-                                    child: const Text('Alocar'),
+                                    child: Text(l.invAllocate),
                                   )
                                 else
                                   OutlinedButton(
@@ -381,7 +384,7 @@ class _InvestScreenState extends State<InvestScreen> {
                                       type: OpType.cash,
                                       accountId: a.account.id,
                                     ),
-                                    child: const Text('Acertar'),
+                                    child: Text(l.invAdjust),
                                   ),
                               ],
                             ),
@@ -394,7 +397,7 @@ class _InvestScreenState extends State<InvestScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 12, 4, 0),
                   child: Text(
-                    'Plataformas',
+                    l.invPlatforms,
                     style: tt.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -460,7 +463,10 @@ class _InvestScreenState extends State<InvestScreen> {
                             Padding(
                               padding: const EdgeInsets.only(top: 4, left: 34),
                               child: Text(
-                                'Por alocar ${fmtMoney(a.cashCents)} · ${a.positions.where((p) => p.open).length} ativos',
+                                l.invAccountLine(
+                                  fmtMoney(a.cashCents),
+                                  a.positions.where((p) => p.open).length,
+                                ),
                                 style: tt.bodySmall?.copyWith(
                                   color: cs.onSurfaceVariant,
                                 ),
@@ -484,7 +490,7 @@ class _InvestScreenState extends State<InvestScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(top: 4),
                                 child: Text(
-                                  '+ ${a.positions.where((p) => p.open).length - 4} ativos',
+                                  '+ ${l.invAssetsCount(a.positions.where((p) => p.open).length - 4)}',
                                   style: tt.bodySmall,
                                 ),
                               ),
@@ -504,6 +510,7 @@ class _InvestScreenState extends State<InvestScreen> {
     List<Color> colors,
     ColorScheme cs,
   ) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final items = <({String label, int value, int? pl})>[];
     switch (view) {
@@ -525,7 +532,7 @@ class _InvestScreenState extends State<InvestScreen> {
           m[p.holding.kind] = (m[p.holding.kind] ?? 0) + p.valueCents;
         }
         for (final e in m.entries) {
-          items.add((label: e.key.label, value: e.value, pl: null));
+          items.add((label: e.key.labelL(l), value: e.value, pl: null));
         }
     }
     items.sort((a, b) => b.value.compareTo(a.value));
@@ -534,10 +541,10 @@ class _InvestScreenState extends State<InvestScreen> {
     final donutItems = [
       for (var i = 0; i < items.length; i++)
         DonutItem(items[i].label, items[i].value, colors[i % colors.length]),
-      if (cash > 0) DonutItem('Por alocar', cash, cs.outline),
+      if (cash > 0) DonutItem(l.invUnallocated, cash, cs.outline),
     ];
     return SectionCard(
-      title: 'Onde está o dinheiro',
+      title: l.invWhereMoneyIs,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -547,9 +554,9 @@ class _InvestScreenState extends State<InvestScreen> {
               scrollDirection: Axis.horizontal,
               children: [
                 for (final (v, label) in [
-                  (_View.asset, 'Por ativo'),
-                  (_View.platform, 'Por plataforma'),
-                  (_View.kind, 'Por tipo'),
+                  (_View.asset, l.invByAsset),
+                  (_View.platform, l.invByPlatform),
+                  (_View.kind, l.invByType),
                 ])
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
@@ -566,7 +573,7 @@ class _InvestScreenState extends State<InvestScreen> {
           Center(
             child: Donut(
               items: donutItems,
-              centerTop: 'Total',
+              centerTop: l.invTotal,
               centerBottom: fmtMoney(total, short: true),
             ),
           ),
@@ -581,7 +588,7 @@ class _InvestScreenState extends State<InvestScreen> {
           if (cash > 0)
             LegendRow(
               color: cs.outline,
-              label: 'Por alocar (standby)',
+              label: l.invUnallocatedStandby,
               value: fmtMoney(cash),
               share: total == 0 ? null : fmtPercent(cash / total),
             ),
@@ -592,7 +599,10 @@ class _InvestScreenState extends State<InvestScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                '${items.first.label} pesa ${fmtPercent(items.first.value / total)} da carteira.',
+                l.invTopAssetWeight(
+                  items.first.label,
+                  fmtPercent(items.first.value / total),
+                ),
                 style: tt.bodySmall,
               ),
             ),
@@ -602,6 +612,7 @@ class _InvestScreenState extends State<InvestScreen> {
   }
 
   Widget _intro(BuildContext context, AppState s) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     Widget step(IconData i, String t, String d) => Padding(
@@ -637,48 +648,31 @@ class _InvestScreenState extends State<InvestScreen> {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
       children: [
         SectionCard(
-          title: 'Acompanha o que tens investido',
-          subtitle:
-              'Onde está o teu dinheiro, quanto vale e quanto está por alocar',
+          title: l.invIntroTitle,
+          subtitle: l.invIntroSubtitle,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               step(
                 Icons.account_balance_outlined,
-                '1. Cria uma plataforma',
-                'XTB, Trade Republic, uma exchange de cripto…',
+                l.invStep1Title,
+                l.invStep1Desc,
               ),
-              step(
-                Icons.swap_horiz,
-                '2. Associa as transferências do banco',
-                'Marcas quais foram dinheiro enviado para a plataforma. Deixam de contar como despesa.',
-              ),
-              step(
-                Icons.history,
-                '3. Diz o que já tinhas',
-                'Quantidade e preço médio de compra do que investiste antes de usar a app.',
-              ),
-              step(
-                Icons.add_shopping_cart,
-                '4. Aloca o dinheiro',
-                'Regista compras. O que sobra fica por alocar (standby).',
-              ),
-              step(
-                Icons.sync,
-                '5. Atualiza os preços',
-                'Com APIs gratuitas (Yahoo Finance e CoinGecko), só quando tu pedires.',
-              ),
+              step(Icons.swap_horiz, l.invStep2Title, l.invStep2Desc),
+              step(Icons.history, l.invStep3Title, l.invStep3Desc),
+              step(Icons.add_shopping_cart, l.invStep4Title, l.invStep4Desc),
+              step(Icons.sync, l.invStep5Title, l.invStep5Desc),
               const SizedBox(height: 12),
               FilledButton.icon(
                 onPressed: () => showInvestAccountEditor(context),
                 icon: const Icon(Icons.add),
-                label: const Text('Criar a primeira plataforma'),
+                label: Text(l.invCreateFirstPlatform),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: () => _openImport(context),
                 icon: const Icon(Icons.upload_file),
-                label: const Text('Importar compras e vendas de um ficheiro'),
+                label: Text(l.invImportFromFileButton),
               ),
             ],
           ),
