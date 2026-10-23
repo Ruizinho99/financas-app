@@ -1,0 +1,172 @@
+{
+  "@@locale": "pt",
+  "appName": "Finanças",
+  "appearanceTitle": "Aparência",
+  "languageTitle": "Idioma",
+  "languageSystem": "Automático",
+  "languagePortuguese": "Português",
+  "languageEnglish": "English",
+  "onboardingStart": "Começar",
+  "onboardingSkip": "Saltar",
+  "monthPrevious": "Mês anterior",
+  "monthNext": "Mês seguinte",
+  "pickDayOfMonth": "Escolhe um dia do mês",
+  "transaction": "Movimento",
+  "transactions": "Movimentos",
+  "startHere": "Começa por aqui",
+  "monthAppearsHint": "O mês aparece assim que tiveres movimentos",
+  "importStatement": "Importar um extrato",
+  "addTransaction": "Adicionar um movimento",
+  "spent": "Gasto",
+  "canStillSpend": "Ainda podes gastar {amount}",
+  "@canStillSpend": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyAverage": "Média de {amount} por dia",
+  "@dailyAverage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "income": "Receitas",
+  "saved": "Poupado",
+  "sentToInvest": "Enviado para investir",
+  "whereSpendMost": "Onde gastas mais",
+  "seeAnalysis": "Ver análise",
+  "classifyHint": "Um cartão por nome; memoriza para as próximas vezes",
+  "budget": "Orçamento",
+  "analysis": "Análise",
+  "backToThisMonth": "Voltar a este mês",
+  "goals": "Objetivos",
+  "seeAll": "Ver todos",
+  "deliveriesToDistribute": "Entregas para distribuir",
+  "distribute": "Distribuir",
+  "deliveriesHint": "Entregas do banco que ainda não repartiste pelos ativos.",
+  "planning": "Planeamento",
+  "seePlan": "Ver plano",
+  "planned": "Planeado",
+  "actualSpent": "Gasto real",
+  "leftAfterPlan": "Sobra do salário, depois do plano: {amount}",
+  "@leftAfterPlan": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reached": "Atingido",
+  "missingAmount": "Faltam {amount}",
+  "@missingAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "categorize": "Categorizar",
+  "delete": "Apagar",
+  "deleteTransactionsQuestion": "Apagar {count} movimentos?",
+  "@deleteTransactionsQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectedCount": "{count} selecionados",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search": "Pesquisar…",
+  "noCategory": "Sem categoria",
+  "allAccounts": "Todas as contas",
+  "accountFallback": "Conta",
+  "allMonths": "Todos os meses",
+  "noTransactionsHint": "Sem movimentos.\nImporta um extrato (ícone no topo) ou adiciona manualmente.",
+  "reversalDeleted": "Anula uma despesa já apagada ({amount})",
+  "@reversalDeleted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reversalOf": "Anula {name} ({amount})",
+  "@reversalOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reversedLeft": "Anulado {done} · fica {left}",
+  "@reversedLeft": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "goalFallback": "Objetivo",
+  "goalsSplit": "Objetivos: {parts}",
+  "@goalsSplit": {
+    "placeholders": {
+      "parts": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancelar",
+  "monthStartTitle": "Início do mês",
+  "monthStartSubtitle": "Dia fixo ou o dia do salário",
+  "monthModeCalendar": "Calendário",
+  "monthModeFixed": "Dia fixo",
+  "monthModeSalary": "Salário",
+  "monthStartDayLabel": "Dia em que o mês começa",
+  "monthNamedByEnd": "O mês tem o nome do mês em que termina: 25 ago – 24 set é setembro.",
+  "monthCalendarHint": "O mês vai do dia 1 ao último dia, como no calendário.",
+  "salaryCategoryLabel": "Categoria do salário",
+  "salaryCategoryChoose": "Escolher categoria",
+  "salaryCategoryHint": "O mês começa no dia em que entra um movimento positivo nesta categoria.",
+  "salaryDatesFound": "Salários encontrados: {count}",
+  "@salaryDatesFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "salaryNoneFound": "Ainda sem salários nesta categoria. Até lá, o mês é o do calendário.",
+  "thisMonthIs": "Este mês: {range}",
+  "@thisMonthIs": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "dayOfMonthItem": "Dia {day}",
+  "@dayOfMonthItem": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  }
+}
