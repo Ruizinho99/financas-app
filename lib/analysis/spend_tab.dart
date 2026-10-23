@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -32,45 +33,51 @@ class _SpendTabState extends State<SpendTab> {
   _View view = _View.category;
   bool showAll = false;
 
-  List<Slice> _slices(Analytics a) => switch (view) {
-    _View.category => a.byCategory(),
-    _View.sub => a.bySubcategory(),
+  List<Slice> _slices(Analytics a, AppLocalizations l) => switch (view) {
+    _View.category => a.byCategoryL(l),
+    _View.sub => a.bySubcategoryL(l),
     _View.merchant => a.byMerchant(),
-    _View.account => a.byAccount(),
+    _View.account => a.byAccountL(l),
   };
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final a = widget.a;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final colors = chartColors(cs);
     if (a.spends.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(
-            'Sem despesas neste período (ou os filtros não encontram nada).',
-            textAlign: TextAlign.center,
-          ),
+          padding: const EdgeInsets.all(32),
+          child: Text(l.anNoSpendPeriodFilter, textAlign: TextAlign.center),
         ),
       );
     }
-    final slices = _slices(a);
+    final slices = _slices(a, l);
     final top = slices.take(6).toList();
     final others = slices.skip(6).fold(0, (x, e) => x + e.amount);
     final max = slices.isEmpty ? 1 : slices.first.amount;
     final shown = showAll ? slices : slices.take(10).toList();
     final w = a.byWeekday();
-    const names = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-    const longNames = [
-      'à segunda',
-      'à terça',
-      'à quarta',
-      'à quinta',
-      'à sexta',
-      'ao sábado',
-      'ao domingo',
+    final names = [
+      l.anWdMon,
+      l.anWdTue,
+      l.anWdWed,
+      l.anWdThu,
+      l.anWdFri,
+      l.anWdSat,
+      l.anWdSun,
+    ];
+    final longNames = [
+      l.anDayMon,
+      l.anDayTue,
+      l.anDayWed,
+      l.anDayThu,
+      l.anDayFri,
+      l.anDaySat,
+      l.anDaySun,
     ];
     final maxDay = w.totals.indexOf(w.totals.reduce((x, y) => x > y ? x : y));
 
@@ -84,12 +91,12 @@ class _SpendTabState extends State<SpendTab> {
             padding: const EdgeInsets.symmetric(vertical: 6),
             children: [
               for (final (v, label, icon) in [
-                (_View.category, 'Categorias', Icons.category_outlined),
-                (_View.sub, 'Subcategorias', Icons.account_tree_outlined),
-                (_View.merchant, 'Comerciantes', Icons.storefront_outlined),
+                (_View.category, l.anCategories, Icons.category_outlined),
+                (_View.sub, l.anSubcategories, Icons.account_tree_outlined),
+                (_View.merchant, l.anMerchants, Icons.storefront_outlined),
                 (
                   _View.account,
-                  'Contas',
+                  l.anAccounts,
                   Icons.account_balance_wallet_outlined,
                 ),
               ])
@@ -110,12 +117,12 @@ class _SpendTabState extends State<SpendTab> {
         ),
         SectionCard(
           title: switch (view) {
-            _View.category => 'Para onde vai o dinheiro',
-            _View.sub => 'Detalhe por subcategoria',
-            _View.merchant => 'Onde mais gastas',
-            _View.account => 'Gastos por conta',
+            _View.category => l.anWhereMoneyGoes,
+            _View.sub => l.anSubDetail,
+            _View.merchant => l.anWhereMostSpend,
+            _View.account => l.anSpendByAccount,
           },
-          subtitle: 'Toca numa linha para ver os movimentos',
+          subtitle: l.anTapRowHint,
           child: Column(
             children: [
               LayoutBuilder(
@@ -124,9 +131,9 @@ class _SpendTabState extends State<SpendTab> {
                     items: [
                       for (var i = 0; i < top.length; i++)
                         DonutItem(top[i].label, top[i].amount, colors[i]),
-                      if (others > 0) DonutItem('Outros', others, cs.outline),
+                      if (others > 0) DonutItem(l.anOthers, others, cs.outline),
                     ],
-                    centerTop: 'Total',
+                    centerTop: l.anTotal,
                     centerBottom: fmtMoney(a.spent, short: true),
                   );
                   final legend = Column(
@@ -141,7 +148,7 @@ class _SpendTabState extends State<SpendTab> {
                       if (others > 0)
                         LegendRow(
                           color: cs.outline,
-                          label: 'Outros',
+                          label: l.anOthers,
                           value: fmtPercent(others / a.spent),
                         ),
                     ],
@@ -174,7 +181,7 @@ class _SpendTabState extends State<SpendTab> {
                 TextButton(
                   onPressed: () => setState(() => showAll = !showAll),
                   child: Text(
-                    showAll ? 'Mostrar menos' : 'Ver todos (${slices.length})',
+                    showAll ? l.anShowLess : l.anSeeAllCount(slices.length),
                   ),
                 ),
             ],
@@ -182,9 +189,13 @@ class _SpendTabState extends State<SpendTab> {
         ),
         // ----- dias da semana -----
         SectionCard(
-          title: 'Em que dias gastas mais',
+          title: l.anWhichDays,
           subtitle: w.totals[maxDay] > 0
-              ? 'Gastas mais ${longNames[maxDay]}: ${fmtMoney(w.totals[maxDay])} em ${w.counts[maxDay]} movimentos'
+              ? l.anSpendMostOn(
+                  longNames[maxDay],
+                  fmtMoney(w.totals[maxDay]),
+                  w.counts[maxDay],
+                )
               : null,
           child: SizedBox(
             height: 150,
@@ -248,8 +259,8 @@ class _SpendTabState extends State<SpendTab> {
         ),
         // ----- maiores despesas -----
         SectionCard(
-          title: 'Maiores despesas',
-          subtitle: 'As que mais pesaram neste período',
+          title: l.anLargestSpends,
+          subtitle: l.anLargestSub,
           child: Column(
             children: [
               for (final e in a.largest(5))
@@ -355,7 +366,7 @@ class _SliceRow extends StatelessWidget {
                       Text(
                         [
                           if (slice.subtitle != null) slice.subtitle!,
-                          '${slice.count} ${slice.count == 1 ? 'movimento' : 'movimentos'}',
+                          AppLocalizations.of(context)!.anTxCount(slice.count),
                         ].join(' · '),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -423,6 +434,7 @@ class _SliceDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.read<AppState>();
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final items = [...slice.items]
@@ -431,11 +443,11 @@ class _SliceDetail extends StatelessWidget {
     final bySub = <String, int>{};
     for (final e in slice.items) {
       final label = e.cat == null
-          ? 'Sem categoria'
+          ? l.anNoCategory
           : (e.cat!.parentId == null
                 ? (s.childrenOf(e.cat!.id).isEmpty
                       ? e.cat!.name
-                      : '${e.cat!.name} (geral)')
+                      : l.anGeneralCat(e.cat!.name))
                 : e.cat!.name);
       bySub[label] = (bySub[label] ?? 0) + e.amount;
     }
@@ -485,7 +497,11 @@ class _SliceDetail extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${fmtPercent(a.spent == 0 ? 0 : slice.amount / a.spent)} das despesas',
+                            l.anOfSpending(
+                              fmtPercent(
+                                a.spent == 0 ? 0 : slice.amount / a.spent,
+                              ),
+                            ),
                             style: tt.bodySmall,
                           ),
                           if (compare) ...[
@@ -513,17 +529,17 @@ class _SliceDetail extends StatelessWidget {
                   spacing: 28,
                   runSpacing: 10,
                   children: [
-                    Stat('Movimentos', '${slice.count}'),
-                    Stat('Valor médio', fmtMoney(slice.avg)),
-                    Stat('Por mês', fmtMoney(a.perMonth(slice.amount))),
+                    Stat(l.transactions, '${slice.count}'),
+                    Stat(l.anAvgValue, fmtMoney(slice.avg)),
+                    Stat(l.anPerMonthCap, fmtMoney(a.perMonth(slice.amount))),
                     if (compare && slice.prev > 0)
-                      Stat('Período anterior', fmtMoney(slice.prev)),
+                      Stat(l.anPrevPeriod, fmtMoney(slice.prev)),
                   ],
                 ),
                 if (parts.length > 1) ...[
                   const SizedBox(height: 20),
                   Text(
-                    'De onde vem',
+                    l.anWhereFrom,
                     style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
@@ -562,7 +578,7 @@ class _SliceDetail extends StatelessWidget {
                 if (months.length > 1) ...[
                   const SizedBox(height: 20),
                   Text(
-                    'Mês a mês',
+                    l.anMonthByMonth,
                     style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
@@ -634,7 +650,7 @@ class _SliceDetail extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Movimentos',
+                        l.transactions,
                         style: tt.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -644,7 +660,7 @@ class _SliceDetail extends StatelessWidget {
                       TextButton.icon(
                         onPressed: onFilter,
                         icon: const Icon(Icons.filter_alt_outlined, size: 18),
-                        label: const Text('Analisar só esta'),
+                        label: Text(l.anAnalyseOnly),
                       ),
                   ],
                 ),
@@ -672,7 +688,7 @@ class _SliceDetail extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(8),
                     child: Text(
-                      '… e mais ${items.length - 30}',
+                      l.anAndMore(items.length - 30),
                       style: tt.bodySmall,
                     ),
                   ),

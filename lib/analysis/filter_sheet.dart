@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import 'analytics.dart';
 
-String _typeLabel(SpendType t) => switch (t) {
-  SpendType.all => 'Todas',
-  SpendType.mandatory => 'Obrigatórias',
-  SpendType.optional => 'Opcionais',
+String _typeLabel(AppLocalizations l, SpendType t) => switch (t) {
+  SpendType.all => l.anTypeAll,
+  SpendType.mandatory => l.anMandatory,
+  SpendType.optional => l.anOptional,
 };
 
 /// Linha com o botão "Filtros" e os filtros ativos (cada um removível).
@@ -20,20 +21,21 @@ class FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final f = filter;
     String eur(int c) => fmtMoney(c, short: c % 100 == 0);
     final chips = <Widget>[
       if (f.type != SpendType.all)
         InputChip(
-          label: Text(_typeLabel(f.type)),
+          label: Text(_typeLabel(l, f.type)),
           onDeleted: () => onChanged(f.copyWith(type: SpendType.all)),
         ),
       if (f.categoryIds.isNotEmpty)
         InputChip(
           label: Text(
             f.categoryIds.length == 1
-                ? (s.cat(f.categoryIds.first)?.name ?? 'Categoria')
-                : '${f.categoryIds.length} categorias',
+                ? (s.cat(f.categoryIds.first)?.name ?? l.anCategory)
+                : l.anCategoriesCount(f.categoryIds.length),
           ),
           onDeleted: () => onChanged(f.copyWith(categoryIds: {})),
         ),
@@ -41,8 +43,8 @@ class FilterBar extends StatelessWidget {
         InputChip(
           label: Text(
             f.accountIds.length == 1
-                ? (s.account(f.accountIds.first)?.name ?? 'Conta')
-                : '${f.accountIds.length} contas',
+                ? (s.account(f.accountIds.first)?.name ?? l.anAccount)
+                : l.anAccountsCount(f.accountIds.length),
           ),
           onDeleted: () => onChanged(f.copyWith(accountIds: {})),
         ),
@@ -74,7 +76,7 @@ class FilterBar extends StatelessWidget {
             label: Text('${f.activeCount}'),
             child: ActionChip(
               avatar: const Icon(Icons.tune, size: 18),
-              label: const Text('Filtros'),
+              label: Text(l.anFilters),
               onPressed: () async {
                 final r = await showAnalysisFilterSheet(context, f);
                 if (r != null) onChanged(r);
@@ -88,7 +90,7 @@ class FilterBar extends StatelessWidget {
               padding: const EdgeInsets.only(left: 8),
               child: TextButton(
                 onPressed: () => onChanged(const AnalysisFilter()),
-                child: const Text('Limpar tudo'),
+                child: Text(l.anClearAll),
               ),
             ),
         ],
@@ -164,6 +166,7 @@ class _FilterSheetState extends State<_FilterSheet> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final roots = s.roots.where((r) => !r.isIncome).toList();
     return DraggableScrollableSheet(
       expand: false,
@@ -177,7 +180,7 @@ class _FilterSheetState extends State<_FilterSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    'Filtros',
+                    l.anFilters,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
@@ -190,7 +193,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     minC.clear();
                     maxC.clear();
                   }),
-                  child: const Text('Limpar'),
+                  child: Text(l.anClear),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -204,25 +207,25 @@ class _FilterSheetState extends State<_FilterSheet> {
               controller: controller,
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               children: [
-                _label('Tipo de despesa'),
+                _label(l.anExpenseType),
                 SegmentedButton<SpendType>(
                   showSelectedIcon: false,
                   segments: [
                     for (final t in SpendType.values)
-                      ButtonSegment(value: t, label: Text(_typeLabel(t))),
+                      ButtonSegment(value: t, label: Text(_typeLabel(l, t))),
                   ],
                   selected: {type},
                   onSelectionChanged: (v) => setState(() => type = v.first),
                 ),
-                _label('Pesquisar'),
+                _label(l.anSearch),
                 TextField(
                   controller: query,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    hintText: 'Nome, nota, categoria…',
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: l.anSearchHint,
                   ),
                 ),
-                _label('Valor do movimento'),
+                _label(l.anTxAmount),
                 Row(
                   children: [
                     Expanded(
@@ -232,7 +235,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                           decimal: true,
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Mínimo ($baseSym)',
+                          labelText: l.anMinAmount(baseSym),
                         ),
                       ),
                     ),
@@ -244,14 +247,14 @@ class _FilterSheetState extends State<_FilterSheet> {
                           decimal: true,
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Máximo ($baseSym)',
+                          labelText: l.anMaxAmount(baseSym),
                         ),
                       ),
                     ),
                   ],
                 ),
                 if (s.accounts.isNotEmpty) ...[
-                  _label('Contas'),
+                  _label(l.anAccounts),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -272,8 +275,8 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ],
                   ),
                 ],
-                _label('Categorias'),
-                if (roots.isEmpty) const Text('Ainda não há categorias.'),
+                _label(l.anCategories),
+                if (roots.isEmpty) Text(l.anNoCategoriesYet),
                 for (final r in roots)
                   Builder(
                     builder: (_) {
@@ -350,7 +353,7 @@ class _FilterSheetState extends State<_FilterSheet> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: _apply,
-                child: const Text('Aplicar filtros'),
+                child: Text(l.anApplyFilters),
               ),
             ),
           ),
