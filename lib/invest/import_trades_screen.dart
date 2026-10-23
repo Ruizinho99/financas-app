@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/widgets.dart';
+import '../l10n/app_localizations.dart';
 import '../import/parsers.dart'
     show decodeText, parseCsv, parseXlsxSheets, pdfText;
 import '../state/app_state.dart';
@@ -73,6 +74,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   }
 
   Future<void> _pick() async {
+    final l = AppLocalizations.of(context)!;
     setState(() {
       busy = true;
       error = null;
@@ -90,13 +92,14 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       await _load(f.name, await f.readAsBytes());
     } catch (e) {
       setState(() {
-        error = 'Erro ao ler o ficheiro: $e';
+        error = l.invfReadError('$e');
         busy = false;
       });
     }
   }
 
   Future<void> _load(String name, Uint8List bytes) async {
+    final l = AppLocalizations.of(context)!;
     try {
       final ext = name.split('.').last.toLowerCase();
       filename = name;
@@ -112,8 +115,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
         sheets = {};
         if (ext == 'xlsx') {
           sheets = parseXlsxSheets(bytes);
-          if (sheets.isEmpty)
-            throw const FormatException('O ficheiro Excel não tem dados.');
+          if (sheets.isEmpty) throw FormatException(l.invfExcelNoData);
           // escolhe a folha onde as colunas são melhor reconhecidas
           var bestScore = -1;
           for (final e in sheets.entries) {
@@ -141,15 +143,13 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       }
       _afterParse();
       if (trades.isEmpty) {
-        error = ext == 'pdf'
-            ? 'Não encontrei compras ou vendas neste PDF. Pode ser digitalizado (imagem) ou ter um formato diferente. Se a corretora permitir, exporta em CSV ou Excel.'
-            : 'Não encontrei compras ou vendas. Indica abaixo que coluna é cada coisa.';
+        error = ext == 'pdf' ? l.invfPdfNotFound : l.invfNotFoundTrades;
       } else {
         error = null;
       }
     } catch (e) {
       trades = [];
-      error = 'Erro ao ler o ficheiro: $e';
+      error = l.invfReadError('$e');
     }
     if (mounted) setState(() => busy = false);
   }
@@ -166,14 +166,11 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   }
 
   void _reparse() {
+    final l = AppLocalizations.of(context)!;
     _parseTable();
     excluded.clear();
     _afterParse();
-    setState(
-      () => error = trades.isEmpty
-          ? 'Não encontrei compras ou vendas com estas colunas.'
-          : null,
-    );
+    setState(() => error = trades.isEmpty ? l.invfNotFoundWithColumns : null);
   }
 
   bool _inRange(ParsedTrade t) {
@@ -280,14 +277,15 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   };
 
   Future<void> _liveRate(AppState s, String ccy) async {
+    final l = AppLocalizations.of(context)!;
     try {
       final r = await s.prices.fxRate(ccy, baseCcy);
       if (r > 0 && mounted) setState(() => rateCtrls[ccy]?.text = _num4(1 / r));
     } on PriceException catch (e) {
       if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Não consegui obter o câmbio: ${e.message}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.invfFxFetchFailed(e.message))));
     }
   }
 
@@ -363,6 +361,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   }
 
   void _import(AppState s) {
+    final l = AppLocalizations.of(context)!;
     final b = _build(s);
     final toSave = [
       for (final e in b.ops)
@@ -400,8 +399,8 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '$n operações importadas${newH.isEmpty ? '' : ' e ${newH.length} ${newH.length == 1 ? 'ativo criado' : 'ativos criados'}'}. Atualiza os preços na Carteira.'
-          '${negativeCash ? ' O dinheiro por alocar ficou negativo: associa as transferências do banco a esta plataforma ou acerta o dinheiro.' : ''}',
+          '${l.invfImportedOps(n)}${newH.isEmpty ? '' : l.invfImportedHoldings(newH.length)}${l.invfUpdatePrices}'
+          '${negativeCash ? l.invfNegativeCashWarning : ''}',
         ),
         duration: Duration(seconds: negativeCash ? 8 : 4),
       ),
@@ -412,6 +411,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   // ---- UI ----
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
@@ -430,24 +430,21 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     final canImport = accountId != null && active.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Importar compras e vendas')),
+      appBar: AppBar(title: Text(l.invfImportTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
         children: [
           FormCard(
             children: [
-              Text(
-                'Formatos: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido no telemóvel e nunca sai daqui. Reconhece compras, vendas e dividendos; o resto (depósitos, impostos…) é ignorado.',
-                style: tt.bodyMedium,
-              ),
-              const FieldLabel('Plataforma'),
+              Text(l.invfImportIntro, style: tt.bodyMedium),
+              FieldLabel(l.invfPlatform),
               DropdownButtonFormField<int>(
                 key: ValueKey('acc-$accountId-${s.investAccounts.length}'),
                 initialValue: accountId,
                 isExpanded: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   prefixIcon: Icon(Icons.account_balance_outlined),
-                  hintText: 'Escolher plataforma',
+                  hintText: l.invfChoosePlatformHint,
                 ),
                 items: [
                   for (final a in s.investAccounts)
@@ -455,9 +452,9 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                       value: a.id,
                       child: Text('${a.emoji} ${a.name}'.trim()),
                     ),
-                  const DropdownMenuItem(
+                  DropdownMenuItem(
                     value: -1,
-                    child: Text('➕  Nova plataforma…'),
+                    child: Text(l.invfNewPlatformItem),
                   ),
                 ],
                 onChanged: (v) async {
@@ -480,15 +477,13 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                 onPressed: busy ? null : _pick,
                 icon: const Icon(Icons.upload_file),
                 label: Text(
-                  filename == null
-                      ? 'Escolher ficheiro'
-                      : 'Escolher outro ficheiro',
+                  filename == null ? l.invfChooseFile : l.invfChooseOtherFile,
                 ),
               ),
               if (filename != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text('Ficheiro: $filename'),
+                  child: Text(l.invfFileName(filename ?? '')),
                 ),
               if (error != null)
                 Padding(
@@ -530,14 +525,11 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             // moeda e câmbio
             FormCard(
               children: [
-                Text('Moeda e câmbio', style: tt.titleMedium),
+                Text(l.invfCurrencyAndRate, style: tt.titleMedium),
                 const SizedBox(height: 4),
-                Text(
-                  'Linhas sem moeda indicada usam a moeda abaixo. Para moedas diferentes de $baseCcy indica o câmbio médio; podes afinar cada operação depois.',
-                  style: tt.bodySmall,
-                ),
+                Text(l.invfCurrencyIntro(baseCcy), style: tt.bodySmall),
                 if (!trades.any((t) => t.currency.isNotEmpty)) ...[
-                  const FieldLabel('Moeda das operações'),
+                  FieldLabel(l.invfTransactionCurrency),
                   DropdownButtonFormField<String>(
                     initialValue: defaultCcy,
                     decoration: const InputDecoration(
@@ -547,7 +539,9 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                       for (final c in kCurrencies)
                         DropdownMenuItem(
                           value: c,
-                          child: Text(c == baseCcy ? '$c · moeda de base' : c),
+                          child: Text(
+                            c == baseCcy ? l.invfBaseCurrencyOption(c) : c,
+                          ),
                         ),
                     ],
                     onChanged: (v) => setState(() {
@@ -557,7 +551,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                   ),
                 ],
                 for (final c in need) ...[
-                  FieldLabel('Câmbio: 1 $baseSym = ? $c'),
+                  FieldLabel(l.invfFxLabel(baseSym, c)),
                   TextField(
                     controller: rateCtrls[c],
                     keyboardType: const TextInputType.numberWithOptions(
@@ -567,7 +561,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                       hintText: '1,0850',
                       prefixIcon: const Icon(Icons.currency_exchange),
                       suffixIcon: IconButton(
-                        tooltip: 'Câmbio de mercado atual (internet)',
+                        tooltip: l.invfLiveFxTooltip,
                         icon: const Icon(Icons.sync),
                         onPressed: () => _liveRate(s, c),
                       ),
@@ -577,10 +571,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                 if (need.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'Todas as operações estão em $baseCcy.',
-                      style: tt.bodySmall,
-                    ),
+                    child: Text(l.invfAllInBase(baseCcy), style: tt.bodySmall),
                   ),
               ],
             ),
@@ -589,16 +580,13 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             // ativos
             FormCard(
               children: [
-                Text('Ativos encontrados', style: tt.titleMedium),
+                Text(l.invfAssetsFound, style: tt.titleMedium),
                 const SizedBox(height: 4),
-                Text(
-                  'Liga cada um a um ativo teu, cria um novo ou ignora.',
-                  style: tt.bodySmall,
-                ),
+                Text(l.invfAssetsHint, style: tt.bodySmall),
                 for (final e in g.entries) ...[
                   const SizedBox(height: 14),
                   Text(
-                    '${_label(e.value)}  ·  ${e.value.length} ${e.value.length == 1 ? 'operação' : 'operações'}',
+                    l.invfTradeCountLabel(_label(e.value), e.value.length),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -622,9 +610,9 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                       prefixIcon: Icon(Icons.pie_chart_outline),
                     ),
                     items: [
-                      const DropdownMenuItem(
+                      DropdownMenuItem(
                         value: 0,
-                        child: Text('➕  Criar ativo novo'),
+                        child: Text(l.invfCreateNewAsset),
                       ),
                       for (final h in s.holdings.where(
                         (h) => !h.archived && h.accountId == accountId,
@@ -636,7 +624,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      const DropdownMenuItem(value: -1, child: Text('Ignorar')),
+                      DropdownMenuItem(value: -1, child: Text(l.invfIgnore)),
                     ],
                     onChanged: (v) => setState(() {
                       choice[e.key] = v ?? 0;
@@ -651,15 +639,14 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             // operações
             FormCard(
               children: [
-                Text('Operações', style: tt.titleMedium),
+                Text(l.invfOperations, style: tt.titleMedium),
                 const SizedBox(height: 4),
                 Text(
                   [
-                    if (nBuy > 0) '$nBuy ${nBuy == 1 ? 'compra' : 'compras'}',
-                    if (nSell > 0) '$nSell ${nSell == 1 ? 'venda' : 'vendas'}',
-                    if (nDiv > 0)
-                      '$nDiv ${nDiv == 1 ? 'dividendo' : 'dividendos'}',
-                    if (dups > 0) '$dups já existentes (ignoradas)',
+                    if (nBuy > 0) l.invfBuysCount(nBuy),
+                    if (nSell > 0) l.invfSellsCount(nSell),
+                    if (nDiv > 0) l.invfDividendsCount(nDiv),
+                    if (dups > 0) l.invfDuplicatesIgnored(dups),
                   ].join(' · '),
                   style: tt.bodySmall,
                 ),
@@ -669,9 +656,12 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                     child: Callout(
                       icon: Icons.warning_amber_rounded,
                       color: Colors.orange.shade700,
-                      title: 'Falta o câmbio',
-                      body:
-                          'Indica o câmbio de ${missingRate.isEmpty ? 'todas as moedas' : missingRate.join(', ')} para importar essas operações.',
+                      title: l.invfMissingRate,
+                      body: l.invfMissingRateBody(
+                        missingRate.isEmpty
+                            ? l.invfAllCurrencies
+                            : missingRate.join(', '),
+                      ),
                     ),
                   ),
                 if (b.missingQty > 0)
@@ -680,8 +670,8 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                     child: Callout(
                       icon: Icons.warning_amber_rounded,
                       color: Colors.orange.shade700,
-                      title: '${b.missingQty} operações sem quantidade',
-                      body: 'O ficheiro só tem o valor pago. Escolhe a coluna que traz a quantidade e o preço (ex.: o comentário) em "Colunas do ficheiro".',
+                      title: l.invfMissingQtyTitle(b.missingQty),
+                      body: l.invfMissingQtyBody,
                     ),
                   ),
                 const SizedBox(height: 6),
@@ -702,12 +692,12 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                                   : excluded.add(trades.indexOf(e.t)),
                             ),
                       title: Text(
-                        '${e.op.type.label} · ${_label(groups[e.key]!)}',
+                        '${_opTypeLabel(l, e.op.type)} · ${_label(groups[e.key]!)}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
-                        '${fmtDate(e.op.date)}${e.op.type == OpType.dividend ? '' : ' · ${fmtQty(e.op.quantity)} un. × ${fmtPrice(e.t.price).replaceAll(baseSym, '').trim()} ${_ccyOf(e.t)}'}${e.dup ? ' · já existe' : ''}',
+                        '${fmtDate(e.op.date)}${e.op.type == OpType.dividend ? '' : l.invfTradeQtyPart(fmtQty(e.op.quantity), fmtPrice(e.t.price).replaceAll(baseSym, '').trim(), _ccyOf(e.t))}${e.dup ? l.invfAlreadyExists : ''}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -720,10 +710,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                     ),
                   ),
                 if (b.ops.length > 300)
-                  Text(
-                    'A mostrar as primeiras 300 de ${b.ops.length}.',
-                    style: tt.bodySmall,
-                  ),
+                  Text(l.invfShowingFirst(b.ops.length), style: tt.bodySmall),
               ],
             ),
           ],
@@ -740,8 +727,8 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                     onPressed: canImport ? () => _import(s) : null,
                     child: Text(
                       accountId == null
-                          ? 'Escolhe a plataforma'
-                          : 'Importar ${active.length} ${active.length == 1 ? 'operação' : 'operações'}',
+                          ? l.invfChoosePlatformShort
+                          : l.invfImportCount(active.length),
                     ),
                   ),
                 ),
@@ -751,12 +738,16 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   }
 
   Widget _mappingCard(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final t = table!;
     final headers = mapping.headerRow >= 0 && mapping.headerRow < t.length
         ? t[mapping.headerRow]
         : (t.isEmpty
               ? <String>[]
-              : List.generate(t.first.length, (i) => 'Coluna ${i + 1}'));
+              : List.generate(
+                  t.first.length,
+                  (i) => l.invfColumnNumber(i + 1),
+                ));
     return FormCard(
       children: [
         InkWell(
@@ -765,7 +756,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             children: [
               Expanded(
                 child: Text(
-                  'Colunas do ficheiro',
+                  l.invfFileColumns,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
@@ -777,15 +768,13 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              mapping.usable
-                  ? 'Reconhecidas automaticamente. Toca para ajustar.'
-                  : 'Indica que coluna é cada coisa.',
+              mapping.usable ? l.invfAutoRecognized : l.invfIndicateColumns,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         if (mappingOpen) ...[
           if (sheets.length > 1) ...[
-            const FieldLabel('Folha do Excel'),
+            FieldLabel(l.invfExcelSheet),
             DropdownButtonFormField<String>(
               key: ValueKey('sheet-$sheet'),
               initialValue: sheet,
@@ -795,7 +784,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                   DropdownMenuItem(
                     value: n,
                     child: Text(
-                      '$n  ·  ${sheets[n]!.length} linhas',
+                      l.invfSheetRows(n, sheets[n]!.length),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -810,18 +799,24 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
               },
             ),
           ],
-          const FieldLabel('Linha dos títulos das colunas'),
+          FieldLabel(l.invfHeaderRow),
           DropdownButtonFormField<int>(
             key: ValueKey('hdr-${mapping.headerRow}-$sheet'),
             initialValue: mapping.headerRow,
             isExpanded: true,
             items: [
-              const DropdownMenuItem(value: -1, child: Text('Sem títulos')),
+              DropdownMenuItem(value: -1, child: Text(l.invfNoHeaders)),
               for (var i = 0; i < t.length && i < 30; i++)
                 DropdownMenuItem(
                   value: i,
                   child: Text(
-                    'Linha ${i + 1}: ${t[i].where((c) => c.trim().isNotEmpty).take(4).join(' · ')}',
+                    l.invfHeaderRowItem(
+                      i + 1,
+                      t[i]
+                          .where((c) => c.trim().isNotEmpty)
+                          .take(4)
+                          .join(' · '),
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -833,23 +828,26 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
               _reparse();
             },
           ),
-          for (final (f, label) in TradeMapping.fields) ...[
-            FieldLabel(label, optional: !{'date', 'quantity'}.contains(f)),
+          for (final (f, _) in TradeMapping.fields) ...[
+            FieldLabel(
+              _fieldLabel(l, f),
+              optional: !{'date', 'quantity'}.contains(f),
+            ),
             DropdownButtonFormField<int?>(
               key: ValueKey('map-$f-${mapping.get_(f)}'),
               initialValue: mapping.get_(f),
               isExpanded: true,
               items: [
-                const DropdownMenuItem<int?>(
+                DropdownMenuItem<int?>(
                   value: null,
-                  child: Text('— não existe —'),
+                  child: Text(l.invfNotExists),
                 ),
                 for (var i = 0; i < headers.length; i++)
                   DropdownMenuItem<int?>(
                     value: i,
                     child: Text(
                       headers[i].trim().isEmpty
-                          ? 'Coluna ${i + 1}'
+                          ? l.invfColumnNumber(i + 1)
                           : headers[i].trim(),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -866,10 +864,8 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     );
   }
 
-  static const _requiredNote =
-      'Preciso, no mínimo, da data, da quantidade e do preço (ou do valor total).';
-
   Widget _validationCard(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final r = report;
@@ -883,11 +879,10 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
               ? headers[c].trim()
               : 'coluna ${c + 1}');
     final missing = [
-      if (mapping.date == null) 'Data',
+      if (mapping.date == null) l.invfDate,
       if (mapping.quantity == null && mapping.comment == null)
-        'Quantidade (ou o comentário que a traz)',
-      if (mapping.price == null && mapping.total == null)
-        'Preço ou Valor total',
+        l.invfQuantityOrComment,
+      if (mapping.price == null && mapping.total == null) l.invfPriceOrTotal,
     ];
     Widget row(IconData icon, Color color, String text) => Padding(
       padding: const EdgeInsets.only(top: 6),
@@ -903,21 +898,21 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     final ok = Colors.green.shade700, warn = Colors.orange.shade800;
     return FormCard(
       children: [
-        Text('Validação do ficheiro', style: tt.titleMedium),
+        Text(l.invfFileValidation, style: tt.titleMedium),
         const SizedBox(height: 4),
         if (r == null) ...[
-          Text(_requiredNote, style: tt.bodySmall),
+          Text(l.invfRequiredNote, style: tt.bodySmall),
           for (final m in missing)
-            row(Icons.error_outline, cs.error, 'Falta escolher a coluna: $m'),
+            row(Icons.error_outline, cs.error, l.invfMissingColumn(m)),
         ] else ...[
           Text(
-            '${r.dataRows} linhas com dados · ${r.trades.length} operações reconhecidas'
-            '${r.skipped.isEmpty ? '' : ' · ${r.skipped.length} com problemas'}'
-            '${r.ignoredByUser == 0 ? '' : ' · ${r.ignoredByUser} ignoradas (não são compras/vendas)'}',
+            '${l.invfValidationSummary(r.dataRows, r.trades.length)}'
+            '${r.skipped.isEmpty ? '' : l.invfWithProblems(r.skipped.length)}'
+            '${r.ignoredByUser == 0 ? '' : l.invfIgnoredByUser(r.ignoredByUser)}',
             style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           for (final m in missing)
-            row(Icons.error_outline, cs.error, 'Falta escolher a coluna: $m'),
+            row(Icons.error_outline, cs.error, l.invfMissingColumn(m)),
           const SizedBox(height: 6),
           for (final (f, label) in TradeMapping.fields)
             if (mapping.get_(f) != null && r.columns[f] != null)
@@ -931,37 +926,55 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                             ? Icons.error_outline
                             : Icons.warning_amber_rounded),
                   all ? ok : (c.ok == 0 ? cs.error : warn),
-                  '${label.split(' (').first}${colName(mapping.get_(f)).toLowerCase() == label.split(' (').first.toLowerCase() ? '' : ' (${colName(mapping.get_(f))})'}: ${c.ok} de ${c.total} válidas',
+                  (colName(mapping.get_(f)).toLowerCase() ==
+                          label.split(' (').first.toLowerCase()
+                      ? l.invfColumnValid(
+                          _fieldLabel(l, f).split(' (').first,
+                          c.ok,
+                          c.total,
+                        )
+                      : l.invfColumnValidNamed(
+                          _fieldLabel(l, f).split(' (').first,
+                          colName(mapping.get_(f)),
+                          c.ok,
+                          c.total,
+                        )),
                 );
               }(),
           if (r.unknownTypes.isNotEmpty) ...[
             const SizedBox(height: 14),
-            Text('Tipos que não reconheci', style: tt.titleSmall),
-            Text(
-              'Diz-me o que são para os importar (ou ignora).',
-              style: tt.bodySmall,
-            ),
+            Text(l.invfUnknownTypes, style: tt.titleSmall),
+            Text(l.invfUnknownTypesHint, style: tt.bodySmall),
             for (final e in r.unknownTypes.entries) ...[
               const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      '“${e.key.isEmpty ? '(vazio)' : e.key}” · ${e.value} ${e.value == 1 ? 'linha' : 'linhas'}',
+                      l.invfUnknownTypeRows(
+                        e.key.isEmpty ? l.invfEmpty : e.key,
+                        e.value,
+                      ),
                       style: tt.bodyMedium,
                     ),
                   ),
                   DropdownButton<String>(
-                    hint: const Text('Escolher'),
+                    hint: Text(l.invfChoose),
                     value: typeOverrides[typeKey(e.key)],
-                    items: const [
-                      DropdownMenuItem(value: 'buy', child: Text('Compra')),
-                      DropdownMenuItem(value: 'sell', child: Text('Venda')),
+                    items: [
+                      DropdownMenuItem(value: 'buy', child: Text(l.invfOpBuy)),
+                      DropdownMenuItem(
+                        value: 'sell',
+                        child: Text(l.invfOpSell),
+                      ),
                       DropdownMenuItem(
                         value: 'dividend',
-                        child: Text('Dividendo'),
+                        child: Text(l.invfOpDividend),
                       ),
-                      DropdownMenuItem(value: 'ignore', child: Text('Ignorar')),
+                      DropdownMenuItem(
+                        value: 'ignore',
+                        child: Text(l.invfIgnore),
+                      ),
                     ],
                     onChanged: (v) {
                       if (v == null) return;
@@ -984,7 +997,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                   tilePadding: EdgeInsets.zero,
                   childrenPadding: EdgeInsets.zero,
                   title: Text(
-                    '${r.skipped.length} ${r.skipped.length == 1 ? 'linha não importada' : 'linhas não importadas'}',
+                    l.invfSkippedRows(r.skipped.length),
                     style: tt.titleSmall?.copyWith(color: warn),
                   ),
                   children: [
@@ -993,7 +1006,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         title: Text(
-                          'Linha ${s.row}: ${s.reason}',
+                          l.invfRowReason(s.row, s.reason),
                           style: TextStyle(color: warn),
                         ),
                         subtitle: Text(
@@ -1006,7 +1019,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: Text(
-                          '… e mais ${r.skipped.length - 40}',
+                          l.invfAndMore(r.skipped.length - 40),
                           style: tt.bodySmall,
                         ),
                       ),
@@ -1015,13 +1028,34 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
               ),
             ),
           ] else if (r.trades.isNotEmpty)
-            row(
-              Icons.check_circle_outline,
-              ok,
-              'Todas as linhas foram lidas sem problemas.',
-            ),
+            row(Icons.check_circle_outline, ok, l.invfAllRowsOk),
         ],
       ],
     );
   }
 }
+
+String _fieldLabel(AppLocalizations l, String f) => switch (f) {
+  'date' => l.invfFieldDate,
+  'type' => l.invfFieldType,
+  'name' => l.invfFieldName,
+  'category' => l.invfFieldCategory,
+  'comment' => l.invfFieldComment,
+  'symbol' => l.invfFieldSymbol,
+  'isin' => l.invfFieldIsin,
+  'quantity' => l.invfFieldQuantity,
+  'price' => l.invfFieldPrice,
+  'total' => l.invfFieldTotal,
+  'fee' => l.invfFieldFee,
+  'currency' => l.invfFieldCurrency,
+  'rate' => l.invfFieldRate,
+  _ => f,
+};
+
+String _opTypeLabel(AppLocalizations l, OpType t) => switch (t) {
+  OpType.initial => l.invfOpInitial,
+  OpType.buy => l.invfOpBuy,
+  OpType.sell => l.invfOpSell,
+  OpType.dividend => l.invfOpDividend,
+  OpType.cash => l.invfOpCash,
+};

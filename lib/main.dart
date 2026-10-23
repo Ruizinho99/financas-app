@@ -6,12 +6,14 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'db/database.dart';
+import 'l10n/app_localizations.dart';
 import 'invest/invest_screen.dart';
 import 'notify/notifications.dart';
 import 'onboarding/onboarding_screen.dart';
 import 'screens/month_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
+import 'util/format.dart';
 import 'state/app_state.dart';
 import 'update/update_checker.dart';
 import 'update/update_notifications.dart';
@@ -24,7 +26,10 @@ Future<void> _checkUpdates(Db db) async {
       db: db,
       service: UpdateService(),
       currentVersion: await UpdateChecker.installedVersion(),
-      notify: UpdateNotifications.show,
+      notify: (tag) => UpdateNotifications.show(
+        tag,
+        appLanguage: db.setting('app_language') ?? 'system',
+      ),
     );
     await checker.check();
   } catch (_) {
@@ -48,6 +53,7 @@ Future<void> _arranque(AppState s) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT');
+  await initializeDateFormatting('en');
   await Receipts.init();
   final db = await Db.open();
   // ao abrir: verifica se há versão nova (no máximo uma vez por dia) e avisa com uma notificação
@@ -166,14 +172,25 @@ class FinancasApp extends StatelessWidget {
     }
 
     return MaterialApp(
-      title: 'Finanças',
+      onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appName,
       debugShowCheckedModeBanner: false,
       theme: theme(Brightness.light),
       darkTheme: theme(Brightness.dark),
       themeMode: st.themeMode,
-      locale: const Locale('pt', 'PT'),
-      supportedLocales: const [Locale('pt', 'PT')],
+      // 'system' segue o telemóvel; se não for português nem inglês, usa português
+      locale: switch (st.appLanguage) {
+        'pt' => const Locale('pt', 'PT'),
+        'en' => const Locale('en'),
+        _ => null,
+      },
+      supportedLocales: const [Locale('pt', 'PT'), Locale('en')],
+      // os formatos de datas e valores seguem o idioma escolhido
+      builder: (context, child) {
+        setFormatLocale(Localizations.localeOf(context).languageCode);
+        return child!;
+      },
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -205,6 +222,7 @@ class _HomeShellState extends State<HomeShell> {
           .where((t) => t.categoryId == null && !t.isTransfer)
           .length,
     );
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       body: IndexedStack(index: index, children: pages),
       bottomNavigationBar: NavigationBar(
@@ -222,21 +240,21 @@ class _HomeShellState extends State<HomeShell> {
               label: Text('$pending'),
               child: const Icon(Icons.calendar_month),
             ),
-            label: 'Mês',
+            label: l.morNavMonth,
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long),
-            label: 'Movimentos',
+            label: l.transactions,
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.account_balance_outlined),
             selectedIcon: Icon(Icons.account_balance),
-            label: 'Carteira',
+            label: l.morNavPortfolio,
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.more_horiz),
-            label: 'Mais',
+            label: l.morMoreTitle,
           ),
         ],
       ),

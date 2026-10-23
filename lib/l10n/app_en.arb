@@ -1,0 +1,3652 @@
+{
+  "@@locale": "en",
+  "anCompareOn": "Comparing with the previous period",
+  "anCompareOff": "Compare with the previous period",
+  "anModeMonth": "Month",
+  "anModeYear": "Year",
+  "anModeYtd": "YTD",
+  "anModeCustom": "Custom",
+  "anYtdLabel": "YTD {year} · 1 Jan – today",
+  "@anYtdLabel": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "anPickRange": "Choose date range",
+  "anApply": "Apply",
+  "anTabOverview": "Overview",
+  "anTabSpend": "Spending",
+  "anTabSave": "Save",
+  "anTabTrend": "Trend",
+  "anNoDataPeriod": "No transactions in this period (or the filters match nothing).",
+  "anExpenses": "Expenses",
+  "anSamePeriodPrev": "Same days of the previous period: {amount}",
+  "@anSamePeriodPrev": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevPeriodAmount": "Previous period: {amount}",
+  "@anPrevPeriodAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevPeriod": "Previous period",
+  "anOngoingToday": "Period in progress: amounts up to today (day {day}).",
+  "@anOngoingToday": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "anIncomes": "Income",
+  "anBalance": "Balance",
+  "anInvested": "Invested",
+  "anOfIncome": "{percent} of income",
+  "@anOfIncome": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anSavingsRate": "Savings rate",
+  "anPpVsPrev": "{sign}{pp} pp vs previous",
+  "@anPpVsPrev": {
+    "placeholders": {
+      "sign": {
+        "type": "String"
+      },
+      "pp": {
+        "type": "int"
+      }
+    }
+  },
+  "anIncomeExpected": "Expected income: net salary set in Budget.",
+  "anIncomeFromSalary": "No categorised income: using the net salary set in Budget.",
+  "anRateOngoing": "Period in progress: the savings rate will keep changing until the end.",
+  "anRateExcellent": "You are saving more than 20% of what you earn. Excellent.",
+  "anRateOk": "You are saving {percent}. A good goal is 20%.",
+  "@anRateOk": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anRateNegative": "You are spending more than you earn in this period.",
+  "anPace": "Spending pace",
+  "anAvgPerDay": "Average per day",
+  "anAvgValue": "Average amount",
+  "anDayOf": "Day {day} of {total}",
+  "@anDayOf": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "anOfMonth": "{percent} of the month",
+  "@anOfMonth": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anOfSpending": "{percent} of spending",
+  "@anOfSpending": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anProjected": "At the current pace, the month closes at {amount}",
+  "@anProjected": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevMonthSpent": "Last month you spent {amount}.",
+  "@anPrevMonthSpent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anAboveBudget": "That is {amount} above the budget of {budget}.",
+  "@anAboveBudget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "budget": {
+        "type": "String"
+      }
+    }
+  },
+  "anWithinBudget": "Within the budget of {budget}, with {margin} to spare.",
+  "@anWithinBudget": {
+    "placeholders": {
+      "budget": {
+        "type": "String"
+      },
+      "margin": {
+        "type": "String"
+      }
+    }
+  },
+  "anMandVsOpt": "Mandatory vs optional",
+  "anMandVsOptSub": "What you have to pay vs where you have room to save",
+  "anMandatory": "Mandatory",
+  "anOptional": "Optional",
+  "anNoCategory": "No category",
+  "anTotal": "Total",
+  "anNoSpendPeriod": "No spending in this period.",
+  "anPctOfIncome": "As % of income: mandatory {mand}, optional {opt}, left over {left}.",
+  "@anPctOfIncome": {
+    "placeholders": {
+      "mand": {
+        "type": "String"
+      },
+      "opt": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "anBudgetSub": "Limits and goals set",
+  "anBudgetSubFiltered": "Limits and goals set (not affected by filters)",
+  "anGoalReached": "Goal reached 🎉",
+  "anGoalLeft": "{amount} left to the goal ({percent})",
+  "@anGoalLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimit": "You went over the limit by {amount}",
+  "@anOverLimit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNearLimit": "Close to the limit: {amount} left",
+  "@anNearLimit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anLeftUsed": "{amount} left ({percent} used)",
+  "@anLeftUsed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anWhereSave": "Where can I save?",
+  "anFoundUpTo": "We found up to {amount} a month of room.",
+  "@anFoundUpTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoSpendPeriodFilter": "No spending in this period (or the filters match nothing).",
+  "anCategories": "Categories",
+  "anSubcategories": "Subcategories",
+  "anMerchants": "Merchants",
+  "anAccounts": "Accounts",
+  "anWhereMoneyGoes": "Where the money goes",
+  "anSubDetail": "Detail by subcategory",
+  "anWhereMostSpend": "Where you spend the most",
+  "anSpendByAccount": "Spending by account",
+  "anTapRowHint": "Tap a row to see its transactions",
+  "anOthers": "Others",
+  "anShowLess": "Show less",
+  "anSeeAllCount": "See all ({count})",
+  "@anSeeAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWdMon": "Mon",
+  "anWdTue": "Tue",
+  "anWdWed": "Wed",
+  "anWdThu": "Thu",
+  "anWdFri": "Fri",
+  "anWdSat": "Sat",
+  "anWdSun": "Sun",
+  "anDayMon": "on Mondays",
+  "anDayTue": "on Tuesdays",
+  "anDayWed": "on Wednesdays",
+  "anDayThu": "on Thursdays",
+  "anDayFri": "on Fridays",
+  "anDaySat": "on Saturdays",
+  "anDaySun": "on Sundays",
+  "anSpendMostOn": "You spend the most {day}: {amount} in {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@anSpendMostOn": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWhichDays": "Which days you spend the most",
+  "anLargestSpends": "Largest expenses",
+  "anLargestSub": "The ones that weighed most in this period",
+  "anMonthByMonth": "Month by month",
+  "anTxCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@anTxCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWhereFrom": "Where it comes from",
+  "anPerMonthCap": "Per month",
+  "anGeneralCat": "{name} (general)",
+  "@anGeneralCat": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "anAnalyseOnly": "Analyse only this one",
+  "anAndMore": "… and {count} more",
+  "@anAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anNoAccount": "No account",
+  "anNotEnoughTrend": "Not enough data to show the trend yet.",
+  "anLastMonths": "Last {count} months · the dashed line is the average ({avg})",
+  "@anLastMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "anSpendByMonth": "Spending by month",
+  "anBestMonth": "Best month: {month}",
+  "@anBestMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "anBestMonthBody": "You spent {amount}, {diff} below average.",
+  "@anBestMonthBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "anWorstMonth": "Most expensive month: {month}",
+  "@anWorstMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "anWorstMonthBody": "You spent {amount}, {diff} above average.",
+  "@anWorstMonthBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncomeVsSpend": "Income vs spending",
+  "anIncomeVsSpendSub": "If the spending line rises above the income line, you are spending more than you earn",
+  "anMonth": "Month",
+  "anSavingsShort": "Rate",
+  "anTrendByCategory": "Trend by category",
+  "anPickCategoryHint": "Choose a category to see it month by month",
+  "anChooseCategory": "Choose a category",
+  "anNone": "— none —",
+  "anAvgMonthsWithSpend": "Average in months with spending: {amount}.",
+  "@anAvgMonthsWithSpend": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoSpendToAnalyse": "No spending in this period to analyse.",
+  "anSavingPotential": "Saving potential",
+  "anPerMonth": "per month",
+  "anUpToYear": "That is up to {amount} a year, from the suggestions below alone.",
+  "@anUpToYear": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoObviousMargins": "We found no obvious room in this period. Try another range or the simulator.",
+  "anWhatIfCut": "What if you cut optional spending?",
+  "anOptionalThisPeriod": "Optional spending this period: {amount}",
+  "@anOptionalThisPeriod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anCut": "Cut",
+  "anSaveMonthly": "You save per month",
+  "anSaveYearly": "You save per year",
+  "anSuggestions": "Suggestions",
+  "anSuggestionsSub": "Sorted by how much they save",
+  "anRecurringPayments": "Recurring payments",
+  "anRecOptional": "Optional: {monthly}/month ({yearly}/year)",
+  "@anRecOptional": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "yearly": {
+        "type": "String"
+      }
+    }
+  },
+  "anRecMandatory": "Mandatory: {monthly}/month",
+  "@anRecMandatory": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "anMonthsLast": "{count} months · last {date}",
+  "@anMonthsLast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anAmountPerMonth": "{amount}/month",
+  "@anAmountPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anAmountPerYear": "{amount}/year",
+  "@anAmountPerYear": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anCancelAdvice": "Cancelling what you no longer use is the easiest way to save.",
+  "anFrequentSmall": "Frequent small purchases",
+  "anSmallSub": "Low-value purchases that repeat often",
+  "anPurchasesAvg": "{count, plural, =0{{count} purchases} =1{1 purchase} other{{count} purchases}} · average {avg}",
+  "@anPurchasesAvg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "anMandatoryTag": "mandatory",
+  "anOptionalTag": "optional",
+  "anTypeAll": "All",
+  "anCategory": "Category",
+  "anCategoriesCount": "{count} categories",
+  "@anCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anAccount": "Account",
+  "anAccountsCount": "{count} accounts",
+  "@anAccountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anFilters": "Filters",
+  "anClearAll": "Clear all",
+  "anClear": "Clear",
+  "anExpenseType": "Expense type",
+  "anSearch": "Search",
+  "anSearchHint": "Name, note, category…",
+  "anTxAmount": "Transaction amount",
+  "anMinAmount": "Minimum ({sym})",
+  "@anMinAmount": {
+    "placeholders": {
+      "sym": {
+        "type": "String"
+      }
+    }
+  },
+  "anMaxAmount": "Maximum ({sym})",
+  "@anMaxAmount": {
+    "placeholders": {
+      "sym": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoCategoriesYet": "No categories yet.",
+  "anApplyFilters": "Apply filters",
+  "anStable": "stable",
+  "anNew": "new",
+  "anUpToPerMonth": "up to {amount}/month",
+  "@anUpToPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimitTitle": "{name} over limit",
+  "@anOverLimitTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimitDetail": "You spent {spent} against a limit of {target}.",
+  "@anOverLimitDetail": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncreaseTitle": "{name} up {percent}",
+  "@anIncreaseTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncreaseDetail": "{delta} more than in the previous period ({prev} → {cur}).",
+  "@anIncreaseDetail": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      },
+      "prev": {
+        "type": "String"
+      },
+      "cur": {
+        "type": "String"
+      }
+    }
+  },
+  "anTopOptionalTitle": "{name}: {percent} of spending",
+  "@anTopOptionalTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anTopOptionalDetail": "This is optional spending. Cutting 10% would save {amount} a month.",
+  "@anTopOptionalDetail": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anSmallDetail": "{count, plural, =0{{count} purchases} =1{1 purchase} other{{count} purchases}} at {places, plural, =0{{places} places} =1{1 place} other{{places} places}} add up to {total} ({examples}). Cutting a third would save {saving} a month.",
+  "@anSmallDetail": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "places": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "examples": {
+        "type": "String"
+      },
+      "saving": {
+        "type": "String"
+      }
+    }
+  },
+  "anRecurringTitle": "{count, plural, =0{{count} optional recurring payments} =1{1 optional recurring payment} other{{count} optional recurring payments}}",
+  "@anRecurringTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anRecurringDetail": "Together they come to {monthly} a month ({yearly} a year). Check whether you still need all of them.",
+  "@anRecurringDetail": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "yearly": {
+        "type": "String"
+      }
+    }
+  },
+  "anUnclassifiedSpend": "Spending without category",
+  "anUnclassifiedDetail": "{amount} to classify. The more you classify, the more accurate the suggestions.",
+  "@anUnclassifiedDetail": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpCopySalaryTooltip": "Copy salary to all months",
+  "bpNetSalary": "Net salary",
+  "bpSet": "Set",
+  "bpSpecificThisMonth": "Specific amount for this month",
+  "bpAllocatedSummary": "Allocated {amount} ({percent})",
+  "@bpAllocatedSummary": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnallocatedLeft": "Unallocated {amount}",
+  "@bpUnallocatedLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpOverAllocated": "Over by {amount}",
+  "@bpOverAllocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpIncomeThisMonth": "Income received this month: {amount}",
+  "@bpIncomeThisMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDefineSalaryHint": "Set your net salary to split it across categories.",
+  "bpNoCategoriesBudget": "You have no categories yet. Create the first one below (e.g. Housing) and set a budget for each.",
+  "bpCategories": "Categories",
+  "bpNewCategory": "New category",
+  "bpBudgetLimit": "Limit",
+  "bpBudgetGoal": "Goal",
+  "bpSpentOfTarget": "{spent} of {target} · {type}",
+  "@bpSpentOfTarget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentNoBudget": "Spent: {spent} · no budget",
+  "@bpSpentNoBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentSetBudget": "Spent: {spent} · set a budget",
+  "@bpSpentSetBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryInMonth": "Mandatory in {month}",
+  "@bpMandatoryInMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpInheritedFromParent": "Inherited from the parent category",
+  "bpOnlyThisMonthHint": "This month only; for several months use “Periods”",
+  "bpCategoryBudgetOptional": "Category budget (optional)",
+  "bpSumOfSubcategories": "Sum of subcategories",
+  "bpBudgetDescPercent": "{type}: {percent}% of salary ({amount})",
+  "@bpBudgetDescPercent": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpBudgetDescValue": "{type}: {amount}",
+  "@bpBudgetDescValue": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSubcategory": "Subcategory",
+  "bpPeriods": "Periods",
+  "bpEdit": "Edit",
+  "bpBudgetEditorTitle": "Budget · {name}",
+  "@bpBudgetEditorTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpHasBudget": "Has a budget",
+  "bpLimitHint": "Limit: you want to spend at most this amount.",
+  "bpGoalHint": "Goal: you want to reach at least this amount (e.g. savings).",
+  "bpValueWithCurrency": "Amount ({currency})",
+  "@bpValueWithCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPercentOfSalary": "% of salary",
+  "bpMonthlyAmount": "Monthly amount",
+  "bpPercentage": "Percentage",
+  "bpSave": "Save",
+  "bpNetSalaryMonthly": "Monthly net salary",
+  "bpOnlyThisMonth": "Only for this month",
+  "bpSalaryDefaultHint": "Off: becomes the default amount for every month",
+  "bpUseBaseSalary": "Use base amount",
+  "bpCopyPreviousPlan": "Copy plan from previous month",
+  "bpCopiedPlanItems": "{count, plural, =0{Copied {count} expenses from {month}.} =1{Copied 1 expense from {month}.} other{Copied {count} expenses from {month}.}}",
+  "@bpCopiedPlanItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryPlanned": "Planned mandatory",
+  "bpOptionalPlanned": "Planned optional",
+  "bpExceedsSalaryBy": "Exceeds salary by",
+  "bpUnplanned": "Unplanned",
+  "bpSetMonthSalaryHint": "Set the salary for this month to see what is left.",
+  "bpNoPlanCopyHint": "No planned expenses yet. Use the copy icon to bring in the plan from the previous month.",
+  "bpNoPlanHint": "No planned expenses yet. Add mandatory ones (rent, electricity…) and optional ones (leisure, subscriptions…).",
+  "bpMandatoryItems": "Mandatory",
+  "bpOptionalItems": "Optional",
+  "bpPlannedExpense": "Planned expense",
+  "bpCategoryAlreadyPlannedEdit": "This category is already planned for this month. Edit the existing line.",
+  "bpCategoryAlreadyPlanned": "This category is already planned for this month.",
+  "bpSpentOver": "Spent {spent} · over by {over}",
+  "@bpSpentOver": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentLeft": "Spent {spent} · {left} left",
+  "@bpSpentLeft": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPlannedAmount": "Planned amount ({currency})",
+  "@bpPlannedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryType": "Mandatory",
+  "bpOptionalType": "Optional",
+  "bpGoal": "Goal",
+  "bpNoGoalsHint": "You have no goals yet.\nCreate one (e.g. holidays) and transfers to its subcategory count towards it.",
+  "bpGoalReachedAmount": "Reached · {amount}",
+  "@bpGoalReachedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpGoalProgress": "{saved} of {target} · {remaining} to go",
+  "@bpGoalProgress": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNewGoal": "New goal",
+  "bpEditGoal": "Edit goal",
+  "bpName": "Name",
+  "bpGoalNameHint": "E.g. Summer holiday",
+  "bpGoalAmount": "Goal amount ({currency})",
+  "@bpGoalAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPreviousAmountKept": "If you change it, the previous amount stays in the history.",
+  "bpDeadlineOptional": "Deadline (optional)",
+  "bpNoDeadline": "No deadline",
+  "bpRemoveDeadline": "Remove deadline",
+  "bpDescriptionOptional": "Description (optional)",
+  "bpCategoryWhere": "Category it goes in",
+  "bpChooseCategory": "Choose category",
+  "bpGoalCategoryHint": "The goal becomes a subcategory of this category. Transactions in that subcategory count as savings.",
+  "bpEnterName": "Enter a name.",
+  "bpEnterGoalAmount": "Enter the goal amount.",
+  "bpChooseGoalCategory": "Choose the category the goal goes in.",
+  "bpGoalDeleted": "Goal deleted.",
+  "bpDeleteGoalQuestion": "Delete the goal “{name}”? Transactions stay, but are no longer linked to it.",
+  "@bpDeleteGoalQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAlreadyHave": "You have",
+  "bpExceeded": "Over",
+  "bpRemaining": "To go",
+  "bpGoalPercentDeadline": "{percent}% · {deadline}",
+  "@bpGoalPercentDeadline": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNoDeadlineLower": "no deadline",
+  "bpDeadlineDate": "deadline {date}",
+  "@bpDeadlineDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkTransaction": "Link transaction",
+  "bpChangeAmount": "Change amount",
+  "bpAmountHistory": "Amount history",
+  "bpNoGoalEntriesHint": "Nothing yet. Transfers to the goal subcategory count automatically; link payments made from another category with “Link transaction”.",
+  "bpEntrySubtitle": "{date} · {kind}",
+  "@bpEntrySubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkedManual": "linked",
+  "bpLinkedByCategory": "by category",
+  "bpUnlink": "Unlink",
+  "bpStatusReached": "Goal reached.",
+  "bpStatusOnTrack": "At the current pace you will make it in time: you save {monthly}/month and need {needed}/month.",
+  "@bpStatusOnTrack": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "needed": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusBehind": "To make it in time you need {needed}/month; you are saving {monthly}/month.",
+  "@bpStatusBehind": {
+    "placeholders": {
+      "needed": {
+        "type": "String"
+      },
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusEta": "At the current pace ({monthly}/month) you will reach it by {date}.",
+  "@bpStatusEta": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusNoRecent": "No recent transactions. {amount} to go.",
+  "@bpStatusNoRecent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeGoalAmountTitle": "Change goal amount",
+  "bpNewAmount": "New amount ({currency})",
+  "@bpNewAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeAmountHint": "The previous amount stays in the history. Linked transactions stay linked.",
+  "bpSearchTransaction": "Search transaction",
+  "bpNoTransactionsToLink": "No transactions to link.",
+  "bpTxnLinkSubtitle": "{date} · {amount} · {left} unlinked",
+  "@bpTxnLinkSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAmountForGoal": "Amount for “{goal}” ({currency})",
+  "@bpAmountForGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnlinkedHint": "Unlinked: {left}. You can split the transaction across several goals.",
+  "@bpUnlinkedHint": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLink": "Link",
+  "bpMonday": "Monday",
+  "bpTuesday": "Tuesday",
+  "bpWednesday": "Wednesday",
+  "bpThursday": "Thursday",
+  "bpFriday": "Friday",
+  "bpSaturday": "Saturday",
+  "bpSunday": "Sunday",
+  "bpJanuary": "January",
+  "bpFebruary": "February",
+  "bpMarch": "March",
+  "bpApril": "April",
+  "bpMay": "May",
+  "bpJune": "June",
+  "bpJuly": "July",
+  "bpAugust": "August",
+  "bpSeptember": "September",
+  "bpOctober": "October",
+  "bpNovember": "November",
+  "bpDecember": "December",
+  "bpFreqMonthly": "Monthly",
+  "bpFreqWeekly": "Weekly",
+  "bpFreqYearly": "Yearly",
+  "bpWhenMonthly": "day {day}",
+  "@bpWhenMonthly": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "bpWhenYearly": "{month} {day}",
+  "@bpWhenYearly": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "bpNoRecurringHint": "No recurring transactions yet.\n\nRecord your salary, rent or a subscription here: the transaction is created automatically on the right date.",
+  "bpRecurringTitle": "Recurring transactions",
+  "bpNew": "New",
+  "bpPaused": "paused",
+  "bpEnded": "ended",
+  "bpNextDate": "next {date}",
+  "@bpNextDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpEditRecurring": "Edit recurring",
+  "bpNewRecurring": "New recurring",
+  "bpEnterDescription": "Enter a description.",
+  "bpEnterAmount": "Enter an amount.",
+  "bpEndBeforeStart": "The end date is before the start date.",
+  "bpDeleteRecurringQuestion": "Delete “{description}”? Transactions already recorded stay.",
+  "@bpDeleteRecurringQuestion": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "bpExpenseType": "Expense",
+  "bpIncomeType": "Income",
+  "bpDescription": "Description",
+  "bpDescriptionHint": "E.g. Salary, Rent, Netflix",
+  "bpCategory": "Category",
+  "bpAccount": "Account",
+  "bpNoAccount": "No account",
+  "bpFrequency": "Frequency",
+  "bpDayOfWeek": "Day of the week",
+  "bpDayOfMonth": "Day of the month",
+  "bpShortMonthHint": "In shorter months, it moves to the last day of the month.",
+  "bpStart": "Start",
+  "bpPastStartHint": "If the start date has already passed, the transactions since then are created when you open the app.",
+  "bpEndOptional": "End (optional)",
+  "bpNoEndDate": "No end date",
+  "bpRemoveEndDate": "Remove end date",
+  "bpActive": "Active",
+  "bpActiveHint": "Turn off to pause, without deleting",
+  "appName": "Finances",
+  "appearanceTitle": "Appearance",
+  "languageTitle": "Language",
+  "languageSystem": "Automatic",
+  "languagePortuguese": "Português",
+  "languageEnglish": "English",
+  "onboardingStart": "Get started",
+  "onboardingSkip": "Skip",
+  "monthPrevious": "Previous month",
+  "monthNext": "Next month",
+  "pickDayOfMonth": "Pick a day of the month",
+  "transaction": "Transaction",
+  "transactions": "Transactions",
+  "startHere": "Start here",
+  "monthAppearsHint": "The month appears as soon as you have transactions",
+  "importStatement": "Import a statement",
+  "addTransaction": "Add a transaction",
+  "spent": "Spent",
+  "canStillSpend": "You can still spend {amount}",
+  "@canStillSpend": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyAverage": "Average {amount} per day",
+  "@dailyAverage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "income": "Income",
+  "saved": "Saved",
+  "sentToInvest": "Sent to invest",
+  "whereSpendMost": "Where you spend the most",
+  "seeAnalysis": "See analysis",
+  "classifyHint": "One card per name; remembered for next time",
+  "budget": "Budget",
+  "analysis": "Analysis",
+  "backToThisMonth": "Back to this month",
+  "goals": "Goals",
+  "seeAll": "See all",
+  "deliveriesToDistribute": "Deliveries to distribute",
+  "distribute": "Distribute",
+  "deliveriesHint": "Bank transfers you have not split across assets yet.",
+  "planning": "Planning",
+  "seePlan": "See plan",
+  "planned": "Planned",
+  "actualSpent": "Actual spending",
+  "leftAfterPlan": "Left from salary after the plan: {amount}",
+  "@leftAfterPlan": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reached": "Reached",
+  "missingAmount": "{amount} to go",
+  "@missingAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "categorize": "Categorize",
+  "delete": "Delete",
+  "deleteTransactionsQuestion": "Delete {count} transactions?",
+  "@deleteTransactionsQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "search": "Search…",
+  "noCategory": "No category",
+  "allAccounts": "All accounts",
+  "accountFallback": "Account",
+  "allMonths": "All months",
+  "noTransactionsHint": "No transactions.\nImport a statement (icon at the top) or add one by hand.",
+  "reversalDeleted": "Cancels an expense that was deleted ({amount})",
+  "@reversalDeleted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reversalOf": "Cancels {name} ({amount})",
+  "@reversalOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reversedLeft": "Cancelled {done} · left {left}",
+  "@reversedLeft": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "goalFallback": "Goal",
+  "goalsSplit": "Goals: {parts}",
+  "@goalsSplit": {
+    "placeholders": {
+      "parts": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "monthStartTitle": "Start of the month",
+  "monthStartSubtitle": "Fixed day or payday",
+  "monthModeCalendar": "Calendar",
+  "monthModeFixed": "Fixed day",
+  "monthModeSalary": "Salary",
+  "monthStartDayLabel": "Day the month starts",
+  "monthNamedByEnd": "A month is named after the month it ends in: 25 Aug – 24 Sep is September.",
+  "monthCalendarHint": "The month runs from the 1st to the last day, like the calendar.",
+  "salaryCategoryLabel": "Salary category",
+  "salaryCategoryChoose": "Choose category",
+  "salaryCategoryHint": "The month starts on the day a positive transaction arrives in this category.",
+  "salaryDatesFound": "Paydays found: {count}",
+  "@salaryDatesFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "salaryNoneFound": "No salaries in this category yet. Until then, the month is the calendar month.",
+  "thisMonthIs": "This month: {range}",
+  "@thisMonthIs": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "dayOfMonthItem": "Day {day}",
+  "@dayOfMonthItem": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "frmReceipt": "Receipt",
+  "frmViewReceipt": "View receipt",
+  "frmTakePhoto": "Take photo",
+  "frmChooseFromGallery": "Choose from gallery",
+  "frmChooseFile": "Choose file (PDF or image)",
+  "frmRemoveReceipt": "Remove receipt",
+  "frmReceiptAttachError": "Couldn't attach the receipt: {error}",
+  "@frmReceiptAttachError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReceiptFileNotFound": "Receipt file not found.",
+  "frmEnterValidAmount": "Enter a valid amount.",
+  "frmAllocatedToGoals": "You already have {amount} allocated to goals. Reduce the allocations first.",
+  "@frmAllocatedToGoals": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransferTo": "Transfer to {name}",
+  "@frmTransferTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransfer": "Transfer",
+  "frmExpense": "Expense",
+  "frmIncome": "Income",
+  "frmReversedGone": "The reversed expense no longer exists.",
+  "frmEnterReversedAmount": "Enter how much of the expense is reversed.",
+  "frmReversalTooBig": "A reversal can't be larger than the income.",
+  "frmOnlyLeftToReverse": "Only {amount} is left to reverse on this expense.",
+  "@frmOnlyLeftToReverse": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReversalHelp": "You can still reverse {amount} of this expense. The reversed part doesn't count as spending or income in Analysis.",
+  "@frmReversalHelp": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSearchExpense": "Search expense",
+  "frmNoReversal": "Doesn't reverse any expense",
+  "frmToReverseSubtitle": "{date} · {amount} · {left} left to reverse",
+  "@frmToReverseSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoExpenseToReverse": "No expense to reverse.",
+  "frmInvestPlatform": "Investment platform",
+  "frmNone": "None",
+  "frmExpenseGone": "Expense no longer exists",
+  "frmSaveToSplit": "Save the transaction to split it across goals.",
+  "frmChangeAmount": "Change amount",
+  "frmUnlink": "Unlink",
+  "frmToAllocate": "To allocate: {amount}",
+  "@frmToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSplitByGoals": "Split by goals",
+  "frmSplitByGoal": "Split by goal",
+  "frmAllocate": "Allocate",
+  "frmSave": "Save",
+  "frmAccount": "Account",
+  "frmFromAccount": "From account",
+  "frmDestinationAccount": "Destination account",
+  "frmSelectAccount": "Select an account",
+  "frmSelectDestinationAccount": "Select the destination account",
+  "frmToAccount": "To account",
+  "frmTakePhotoOrChoose": "Take a photo or choose a file",
+  "frmEditTransaction": "Edit transaction",
+  "frmNewTransaction": "New transaction",
+  "frmImportStatementTip": "Import statement",
+  "frmDeleteThisTransaction": "Delete this transaction?",
+  "frmCalculator": "Calculator",
+  "frmCategory": "Category",
+  "frmChooseCategory": "Choose category",
+  "frmReversesExpense": "Reverses an expense (refund, return)",
+  "frmReversedAmount": "Reversed amount ({currency})",
+  "@frmReversedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDescriptionOptional": "Description (optional)",
+  "frmToday": "Today",
+  "frmYesterday": "Yesterday",
+  "frmOtherDate": "Other date",
+  "frmToInvestOptional": "To invest (optional)",
+  "frmOutgoing": "Outgoing",
+  "frmIncoming": "Incoming",
+  "frmNotCountedNote": "Doesn't count as expense or income in Analysis.",
+  "frmMoreOptions": "More options (account, receipt)",
+  "frmAmountCurrency": "Amount ({currency})",
+  "@frmAmountCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOnlyLeftToAllocate": "Only {amount} is left to allocate.",
+  "@frmOnlyLeftToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOptional": " (optional)",
+  "frmCalcHint": "E.g.: 12.50+3*2",
+  "frmUse": "Use",
+  "frmWholeFile": "Whole file",
+  "frmPeriodToImport": "Period to import",
+  "frmFileDataRange": "The file has data from {from} to {to}. Choose only the range you want to import.",
+  "@frmFileDataRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "frmFrom": "From",
+  "frmUntil": "Until",
+  "frmInRangeOfTotal": "{inRange} of {total} in the period",
+  "@frmInRangeOfTotal": {
+    "placeholders": {
+      "inRange": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmTotalInFile": "{total} in the file",
+  "@frmTotalInFile": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmSelectCategory": "Select a category",
+  "frmNewCategory": "➕  New category…",
+  "frmNoCategoryItem": "✖️  No category",
+  "frmHideEndedFuture": "🙈  Hide ended and upcoming",
+  "frmShowEndedFuture": "👁  Show ended and upcoming",
+  "frmEnded": "  · ended",
+  "frmUpcoming": "  · upcoming",
+  "frmSelectSubcategory": "Select a subcategory",
+  "frmSubcategory": "Subcategory",
+  "frmNewSubcategory": "➕  New subcategory…",
+  "frmNoSubcategory": "— No subcategory —",
+  "frmChoose": "Choose",
+  "frmChooseEmoji": "Choose emoji",
+  "frmOrUseKeyboardEmoji": "Or use another emoji from the keyboard",
+  "frmRemove": "Remove",
+  "frmChooseColor": "Choose color",
+  "frmHue": "Hue",
+  "frmSaturation": "Saturation",
+  "frmBrightness": "Brightness",
+  "frmHex": "Hex",
+  "frmMandatoryTitle": "Mandatory · {name}",
+  "@frmMandatoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMandatoryExplain": "The months below count as mandatory spending in this category. In other months it's optional.",
+  "frmNoPeriodDefined": "No period defined.",
+  "frmFromMonth": "From {month}",
+  "@frmFromMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmClose": "Close",
+  "frmAddPeriod": "Add period",
+  "frmAdd": "Add",
+  "frmPickAnyDayOfMonth": "Pick any day of the month",
+  "frmNewPeriod": "New period",
+  "frmSinceMonth": "Since {month}",
+  "@frmSinceMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoEndDate": "No end date",
+  "frmUntilMonth": "Until {month}",
+  "@frmUntilMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMainCategories": "Main",
+  "frmOnlyName": "Only {name}",
+  "@frmOnlyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoSubcategories": "This category has no subcategories.",
+  "frmSearchCategory": "Search category",
+  "frmNoCategoriesYet": "You don't have any categories yet. Create the first one.",
+  "frmNoCategoryFound": "No category found.",
+  "frmNewCategoryTitle": "New category",
+  "frmChooseMonth": "Choose month",
+  "frmEnterName": "Enter a name",
+  "frmMainCategoryExists": "A main category with this name already exists",
+  "frmSubcategoryExists": "This subcategory already exists in {parent}",
+  "@frmSubcategoryExists": {
+    "placeholders": {
+      "parent": {
+        "type": "String"
+      }
+    }
+  },
+  "frmThisCategory": "this category",
+  "frmRepeatedName": "Repeated name",
+  "frmRemoveSubQuestion": "Remove “{name}”? {count, plural, =0{The {count} transactions will} =1{The transaction will} other{The {count} transactions will}} be left without a category (only after you save).",
+  "@frmRemoveSubQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmEditCategory": "Edit category",
+  "frmEditSubcategory": "Edit subcategory",
+  "frmNewSubcategoryTitle": "New subcategory",
+  "frmEditCategoryHint": "Edit the details and subcategories",
+  "frmEditSubcategoryHint": "Edit the details of this subcategory",
+  "frmCreateSubsIn": "Create subcategories inside {name}",
+  "@frmCreateSubsIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmCreateCategoryHint": "Create a category and its subcategories",
+  "frmSubcategoryName": "Subcategory name",
+  "frmName": "Name",
+  "frmParentCategory": "Parent category",
+  "frmNoneMainCategory": "None (main category)",
+  "frmHasSubsLock": "It has subcategories, so it can't be a subcategory.",
+  "frmSubcategoryOf": "Subcategory of ",
+  "frmCreatingSubcategoryOf": "Creating a subcategory of ",
+  "frmMoreSubsOf": "More subcategories of {name}",
+  "@frmMoreSubsOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSubcategories": "Subcategories",
+  "frmRemoveSubcategory": "Remove subcategory",
+  "frmAddSubcategory": "Add subcategory",
+  "frmOptions": "Options",
+  "frmType": "Type",
+  "frmOnlyInPeriod": "Only exists for a period",
+  "frmOnlyInPeriodHint": "E.g.: “Holidays 2027”. Outside the period it stops showing in the choices.",
+  "frmSince": "Since",
+  "frmSetEnd": "Set end",
+  "frmMandatoryIn": "Mandatory in…",
+  "frmOptionalAllMonths": "Optional in all months",
+  "frmPeriodsDefined": "{count, plural, =0{{count} periods set} =1{1 period set} other{{count} periods set}}",
+  "@frmPeriodsDefined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmKindOptional": "Optional expense",
+  "frmKindMandatory": "Mandatory expense",
+  "frmKindIncome": "Income",
+  "frmKindInvestment": "Investment",
+  "frmKindBoth": "Expenses and income",
+  "frmKindOptionalHelp": "Spending you can cut (leisure, restaurants…).",
+  "frmKindMandatoryHelp": "Fixed monthly spending (rent, insurance…). You can then pick only some months.",
+  "frmKindIncomeHelp": "Money coming in (e.g. salary). Doesn't count as an expense.",
+  "frmKindInvestmentHelp": "Money you put to work. Doesn't count as spending; it shows as invested.",
+  "frmKindBothHelp": "Accepts spending and income (e.g. sales, refunds). Spending counts as an expense and income as income.",
+  "frmAccounts": "Accounts",
+  "frmNewAccount": "New account",
+  "frmEditAccount": "Edit account",
+  "frmAccountNameHint": "E.g.: Current account",
+  "frmOpeningBalanceCurrency": "Opening balance ({currency})",
+  "@frmOpeningBalanceCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOpeningBalanceHelp": "How much you had in the account before the transactions recorded here.",
+  "frmNewAccountItem": "New account…",
+  "frmNoAccount": "No account",
+  "frmNoAccountsYet": "You don't have any accounts yet.\nCreate one to see where each transaction comes from and to record transfers between accounts.",
+  "frmAccountSubtitle": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}} · balance {balance}",
+  "@frmAccountSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDeleteAccountQuestion": "Delete the account “{name}”? {count, plural, =0{The {count} transactions will} =1{The transaction will} other{The {count} transactions will}} be left without an account.",
+  "@frmDeleteAccountQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmAccountDeleted": "Account deleted.",
+  "frmEdit": "Edit",
+  "frmBalance": "Balance",
+  "frmOpeningBalanceLine": "Opening balance {amount} · {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@frmOpeningBalanceLine": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmThisMonth": "This month",
+  "frmMonthBalance": "Month balance",
+  "frmGoalsFedByAccount": "Goals fed by this account",
+  "frmNoGoalFunded": "No goal receives money from this account yet.",
+  "frmNoTransactionsInAccount": "No transactions in this account.",
+  "frmObWelcome": "Welcome",
+  "frmObFirstAccount": "First account",
+  "frmObSalary": "Salary",
+  "frmObDone": "Done",
+  "frmObEnterAmount1250": "Enter an amount, for example 1250.00",
+  "frmObEnterAmount1500": "Enter an amount, for example 1500.00",
+  "frmObWelcomeTitle": "Welcome to Finances",
+  "frmObWelcomeText": "Record the money that comes in and goes out, and see where it goes. Your data stays only on this phone, with no accounts or sharing.",
+  "frmObAccountTitle": "What's your main account?",
+  "frmObAccountText": "You can add more accounts later. If you don't want to now, leave it blank.",
+  "frmObAccountName": "Account name",
+  "frmObSalaryTitle": "How much do you get per month?",
+  "frmObSalaryText": "Net salary. It's used for planning and to see how much you can still spend. You can change it or leave it blank.",
+  "frmObSalaryField": "Monthly net salary ({currency})",
+  "@frmObSalaryField": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmObReadyTitle": "You're all set",
+  "frmObReadyText": "Add transactions by hand or import a statement. You can change everything later on the dedicated screens.",
+  "frmBack": "Back",
+  "frmFinish": "Finish",
+  "frmNext": "Next",
+  "frmAll": "All",
+  "frmExpenses": "Expenses",
+  "frmTransfers": "Transfers",
+  "frmTransactionsCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@frmTransactionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmInvestmentOf": "Investment · {name}",
+  "@frmInvestmentOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOfAmount": "of {amount}",
+  "@frmOfAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoIncomeDefined": "no income set",
+  "frmSetSalaryToSpend": "Set your salary in Budget to see how much you can still spend.",
+  "frmOverPlanned": "You're {amount} over plan",
+  "@frmOverPlanned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmIncomeExpected": "Income (expected)",
+  "frmPercentOfIncome": "{percent}% of income",
+  "@frmPercentOfIncome": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "frmToClassify": "{count} to classify",
+  "@frmToClassify": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmDeliveriesCount": "{count, plural, =0{{count} deliveries} =1{1 delivery} other{{count} deliveries}} · {total}",
+  "@frmDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSetSalaryLeft": "Set your salary in Budget to see what's left.",
+  "frmPlanExceeds": "The plan exceeds the salary by {amount}",
+  "@frmPlanExceeds": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSavedOfTarget": "{saved} of {target}{deadline}",
+  "@frmSavedOfTarget": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "frmUntilDate": " · until {date}",
+  "@frmUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "impImportTitle": "Import Statement",
+  "impFormatsInfo": "Supported formats: PDF (with text), CSV and Excel (.xlsx). The file is read only on the phone and never leaves it.",
+  "impChooseFile": "Choose file",
+  "impChooseOtherFile": "Choose another file",
+  "impFileName": "File: {name}",
+  "@impFileName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impPdfNoRows": "No transactions found in this PDF. It may be a scanned (image) PDF or a different format. Try exporting CSV/Excel from your online banking.",
+  "impCsvNoRows": "Couldn't read any transactions. Adjust the columns below.",
+  "impReadError": "Error reading the file: {error}",
+  "@impReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "impStatementAccount": "Account for this statement",
+  "impPickAccountOptional": "Select an account (optional)",
+  "impTxnCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@impTxnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impIncomeExpense": "Income {income}   ·   Expenses {expense}",
+  "@impIncomeExpense": {
+    "placeholders": {
+      "income": {
+        "type": "String"
+      },
+      "expense": {
+        "type": "String"
+      }
+    }
+  },
+  "impInvertSigns": "Invert signs",
+  "impInvertSignsHint": "Use this if expenses show as positive",
+  "impImportButton": "{count, plural, =0{Import {count} transactions} =1{Import 1 transaction} other{Import {count} transactions}}",
+  "@impImportButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impImportDone": "{added, plural, =0{{added} imported} =1{1 imported} other{{added} imported}}, {duplicates, plural, =0{{duplicates} duplicates skipped} =1{1 duplicate skipped} other{{duplicates} duplicates skipped}}. {unclassified, plural, =0{{unclassified} groups to classify.} =1{1 group to classify.} other{{unclassified} groups to classify.}}",
+  "@impImportDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      },
+      "unclassified": {
+        "type": "int"
+      }
+    }
+  },
+  "impClassifiedOf": "Classified: {classified} of {total, plural, =0{{total} groups} =1{1 group} other{{total} groups}}",
+  "@impClassifiedOf": {
+    "placeholders": {
+      "classified": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "impGroupsExplain": "Transactions with the same name are grouped together. Choose the category and subcategory for each group (or leave it unclassified). Rules you already saved are filled in.",
+  "impTransfersCount": "{count, plural, =0{{count} transfers between accounts} =1{1 transfer between accounts} other{{count} transfers between accounts}}",
+  "@impTransfersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impTransfersHint": "They don't need a category and are kept out of expenses and income.",
+  "impOriginal": "Original: {description}",
+  "@impOriginal": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "impActiveOfTotal": "{active} of {total, plural, =0{{total} transactions} =1{1 transaction} other{{total} transactions}}",
+  "@impActiveOfTotal": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "impRememberedRule": " · remembered rule",
+  "impNameOrGroup": "Name or group (optional)",
+  "impNameHint": "E.g.: Gym, Arminda Restaurant…",
+  "impJoinsGroup": "Joins the group “{name}” ({count, plural, =0{{count} titles} =1{1 title} other{{count} titles}})",
+  "@impJoinsGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impRememberNameCategory": "Remember name and category for the future",
+  "impViewTransactions": "View transactions",
+  "impAccountsInStatement": "Accounts in this statement",
+  "impAccountsDetected": "{count, plural, =0{{count} accounts detected} =1{1 account detected} other{{count} accounts detected}}. Choose the one that matches each in the app.",
+  "@impAccountsDetected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAccountTxns": "{name}  ·  {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@impAccountTxns": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impCreateAccount": "➕  Create account “{name}”",
+  "@impCreateAccount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impNoAccount": "No account",
+  "impDetectTransfers": "Detect transfers between these accounts",
+  "impDetectTransfersHint": "An outflow from one account and an inflow to another of the same amount don't count as expense or income.",
+  "impSkippedTitle": "{count, plural, =0{{count} lines look like transactions but were not recognized} =1{1 line looks like transactions but was not recognized} other{{count} lines look like transactions but were not recognized}}",
+  "@impSkippedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impSkippedSub": "Read: {count}. Tap to see the skipped lines.",
+  "@impSkippedSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAndMore": "… and {count} more",
+  "@impAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impSkippedHelp": "If this is a statement from your bank, export it as CSV/Excel from online banking, or send me an example (with the data hidden) so I can adjust the reader.",
+  "impYearForDates": "Year for dates without a year",
+  "impYearHint": "Only affects dates written as dd-mm",
+  "impFileColumns": "File columns",
+  "impHeaderRow": "Header row",
+  "impDate": "Date",
+  "impDescription": "Description",
+  "impAmountSigned": "Amount (signed)",
+  "impDebitOut": "Debit (outflows)",
+  "impCreditIn": "Credit (inflows)",
+  "impBalanceOptional": "Balance (optional)",
+  "impDoNotUse": "— don't use —",
+  "impColumnN": "Column {n}",
+  "@impColumnN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impClassifyTitle": "Classify",
+  "impClassifySubtitle": "Review and categorize your imported transactions",
+  "impSort": "Sort",
+  "impSortCount": "Most transactions",
+  "impSortTotal": "Highest amount",
+  "impSortRecent": "Most recent",
+  "impSortName": "Name (A-Z)",
+  "impGroups": "Groups",
+  "impRules": "Remembered rules",
+  "impSearchGroups": "Search groups or merchants…",
+  "impToClassifyChip": "To classify ({count})",
+  "@impToClassifyChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAll": "All",
+  "impApplyRules": "Apply rules",
+  "impClassifiedByRules": "{count, plural, =0{{count} transactions classified by the rules.} =1{1 transaction classified by the rules.} other{{count} transactions classified by the rules.}}",
+  "@impClassifiedByRules": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAllClassified": "All classified! 🎉",
+  "impNoTransactionsYet": "No transactions yet.",
+  "impClassifiedCount": "{count, plural, =0{{count} transactions classified.} =1{1 transaction classified.} other{{count} transactions classified.}}",
+  "@impClassifiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impSelectAll": "Select all",
+  "impApplyTo": "Apply to {count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@impApplyTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impTxnCountDate": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}} · {date}",
+  "@impTxnCountDate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "impGroupChip": "Group · {count, plural, =0{{count} titles} =1{1 title} other{{count} titles}}",
+  "@impGroupChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impRemembered": "Remembered",
+  "impSelectedCount": "{count, plural, =0{{count} selected} =1{1 selected} other{{count} selected}}",
+  "@impSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impChooseCategory": "Choose a category",
+  "impMoveTo": "Move to {category}",
+  "@impMoveTo": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "impRememberForFuture": "Remember for future",
+  "impWhatIsThis": "What is this?",
+  "impRememberHelp": "Saves a rule: the next time a transaction with this title appears, the app immediately applies the name and category you chose.",
+  "impOk": "OK",
+  "impNameAndNotes": "Name and notes",
+  "impForgetRule": "Forget rule",
+  "impForgetRuleQuestion": "Forget the rule for “{key}”? Transactions already classified stay that way.",
+  "@impForgetRuleQuestion": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "impForget": "Forget",
+  "impJoinGroup": "Join group",
+  "impManageGroup": "Manage group",
+  "impJoinAGroup": "Join a group",
+  "impFriendlyName": "Friendly name (optional)",
+  "impExampleGym": "E.g.: Gym",
+  "impRuleDescription": "Rule description (optional)",
+  "impNoteAllTx": "Note on all transactions (optional)",
+  "impNameSavedHint": "The name and description are saved with the rule for future imports.",
+  "impSave": "Save",
+  "impNoRules": "No rules yet. When you move transactions with “Remember”, the rules show up here.",
+  "impEquals": "Equals",
+  "impContains": "Contains",
+  "impRule": "Rule",
+  "impNewRule": "New rule",
+  "impEditRule": "Edit rule",
+  "impTextToRecognize": "Text to match (UPPERCASE)",
+  "impExactName": "Exact name match",
+  "impExactNameOff": "Off: containing the text is enough",
+  "impDescriptionOptional": "Description (optional)",
+  "impNewGroup": "New group",
+  "impName": "Name",
+  "impExampleRestaurant": "E.g.: Arminda Restaurant",
+  "impCreate": "Create",
+  "impGroupsEmpty": "You don't have any groups yet.\n\nA group joins different titles that are the same thing, for example “TRANS RESTAURANTE ARMINDA” and “MB WAY RESTAURANTE ARMINDA” → “Restaurante Arminda”, with a single category.",
+  "impDeleteGroup": "Delete group",
+  "impGroupDeleted": "Group deleted.",
+  "impDeleteGroupQuestion": "Delete the group “{name}”? The titles keep the name and category they had in the group, but are no longer grouped together.",
+  "@impDeleteGroupQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impJoinTitles": "Join titles",
+  "impGroupName": "Group name",
+  "impGroupSaved": "Group saved.",
+  "impGroupExists": "A group named “{name}” already exists.",
+  "@impGroupExists": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impTitlesInGroup": "Titles in this group ({count})",
+  "@impTitlesInGroup": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impGroupAnyTitle": "Any transaction with one of these titles gets the group's name and category, now and in future imports.",
+  "impGroupEmptyHint": "Still empty. Use “Join titles”.",
+  "impRemoveFromGroup": "Remove from group",
+  "impSearchTitles": "Search titles",
+  "impNoTitlesFound": "No titles found.",
+  "impAlreadyInGroup": " · already in “{name}”",
+  "@impAlreadyInGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impOrAnyTitle": "Or: any title containing…",
+  "impJoin": "Join",
+  "impTitleLabel": "Title: {title}",
+  "@impTitleLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "impTitlesList": "{count} titles: {list}",
+  "@impTitlesList": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "impExistingGroup": "Existing group",
+  "impOr": "or",
+  "impExistsJoins": "Already exists: will join “{name}”",
+  "@impExistsJoins": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impTitleCount": "{count, plural, =0{{count} titles} =1{1 title} other{{count} titles}}",
+  "@impTitleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invAdd": "Add",
+  "invRecordOperation": "Record operation",
+  "invRecordOperationHint": "Buy, sell, dividend or what you already had",
+  "invImportFromFile": "Import from a file",
+  "invImportFileHint": "PDF, CSV or Excel from your broker",
+  "invNewHolding": "New asset",
+  "invNewHoldingHint": "ETF, stock, crypto, fund…",
+  "invNewAccount": "New platform",
+  "invNewAccountHint": "XTB, Trade Republic, exchange…",
+  "invTitle": "Investments",
+  "invImportTrades": "Import buys and sells",
+  "invRefreshPrices": "Update prices",
+  "invImportCardHint": "Pick a PDF, CSV or Excel file from your broker",
+  "invMyPortfolio": "My portfolio",
+  "invTotalValue": "Total value",
+  "invInvested": "Invested",
+  "invCurrentValue": "Current value",
+  "invGainLoss": "Gain / loss",
+  "invUnallocated": "Unallocated",
+  "invUnallocatedStandby": "Unallocated (standby)",
+  "invRealizedGain": "Realized gain",
+  "invDividends": "Dividends",
+  "invPricesUpdated": "{count, plural, =0{{count} prices updated.} =1{1 price updated.} other{{count} prices updated.}}",
+  "@invPricesUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invPricesFailed": "Failed: {details}",
+  "@invPricesFailed": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoAutoPrices": "No asset with an automatic price.",
+  "invPricesUpdatedAgo": "Prices updated {ago}",
+  "@invPricesUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoPricesYet": "No prices yet. Tap refresh.",
+  "invPricesManual": "Prices set by hand for each asset.",
+  "invUnpricedNote": "Assets without a price count at cost, so the total is not skewed.",
+  "invWhereMoneyIs": "Where the money is",
+  "invByAsset": "By asset",
+  "invByPlatform": "By platform",
+  "invByType": "By type",
+  "invTotal": "Total",
+  "invCashToAllocate": "Cash to allocate",
+  "invCashSubtitle": "Sent to the platforms and not invested yet (standby)",
+  "invNegativeCashHint": "Negative: a transfer or a cash adjustment is missing",
+  "invAllocate": "Allocate",
+  "invAdjust": "Adjust",
+  "invPlatforms": "Platforms",
+  "invAssetsCount": "{count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
+  "@invAssetsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invAccountLine": "Unallocated {cash} · {count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
+  "@invAccountLine": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invIntroTitle": "Track what you've invested",
+  "invIntroSubtitle": "Where your money is, what it is worth and what is still unallocated",
+  "invStep1Title": "1. Create a platform",
+  "invStep1Desc": "XTB, Trade Republic, a crypto exchange…",
+  "invStep2Title": "2. Link bank transfers",
+  "invStep2Desc": "Mark which ones were money sent to the platform. They stop counting as expenses.",
+  "invStep3Title": "3. Say what you already had",
+  "invStep3Desc": "Quantity and average purchase price of what you invested before using the app.",
+  "invStep4Title": "4. Allocate the money",
+  "invStep4Desc": "Record purchases. What is left stays unallocated (standby).",
+  "invStep5Title": "5. Update prices",
+  "invStep5Desc": "With free APIs (Yahoo Finance and CoinGecko), only when you ask.",
+  "invCreateFirstPlatform": "Create the first platform",
+  "invImportFromFileButton": "Import buys and sells from a file",
+  "invTopAssetWeight": "{label} makes up {share} of the portfolio.",
+  "@invTopAssetWeight": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "invKindEtf": "ETF",
+  "invKindStock": "Stock",
+  "invKindCrypto": "Crypto",
+  "invKindFund": "Fund",
+  "invKindBond": "Bond",
+  "invKindOther": "Other",
+  "invProviderManual": "Manual",
+  "invProviderYahoo": "Yahoo Finance",
+  "invProviderCoingecko": "CoinGecko",
+  "invOpInitial": "Opening position",
+  "invOpBuy": "Buy",
+  "invOpSell": "Sell",
+  "invOpDividend": "Dividend",
+  "invOpCash": "Cash adjustment",
+  "invAddToAccount": "Add to {name}",
+  "@invAddToAccount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invDeleteAccountConfirm": "Delete the platform “{name}” with its assets and transactions? Bank transactions stay (they are no longer linked).",
+  "@invDeleteAccountConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invSummary": "Summary",
+  "invCashAccountSubtitle": "What is on the platform and not invested yet",
+  "invBankDepositsNet": "Bank transfers in (net)",
+  "invCashAdjustments": "Cash adjustments",
+  "invSales": "Sales",
+  "invPurchases": "Purchases",
+  "invNegativeAccountCash": "The amount is negative: you spent more than the recorded money. Link the bank transfer or adjust the cash that was already there.",
+  "invAllocateMoney": "Allocate money",
+  "invBankTransfers": "Bank transfers",
+  "invMarkTransfersFor": "Mark which were money sent to {name}",
+  "@invMarkTransfersFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invLinkedCount": "{count, plural, =0{{count} linked · not counted as expenses} =1{1 linked · not counted as an expense} other{{count} linked · not counted as expenses}}",
+  "@invLinkedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invLinkBankTransfers": "Link bank transfers",
+  "invSuggestedMatches": "{count, plural, =0{{count} transactions look like they belong to this platform} =1{1 transaction looks like it belongs to this platform} other{{count} transactions look like they belong to this platform}}",
+  "@invSuggestedMatches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invSuggestedBody": "They have “{name}” in the name. Tap to review and link.",
+  "@invSuggestedBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invUnlink": "Unlink",
+  "invDeliveryLower": "deposit",
+  "invWithdrawalLower": "withdrawal",
+  "invAndMore": "… and {count} more",
+  "@invAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invRememberedTitles": "Titles remembered for future imports",
+  "invAssets": "Assets",
+  "invNew": "New",
+  "invNoAssetsYet": "No assets yet. Create one (e.g. the ETF or stock you bought) and record the position you already had or a purchase.",
+  "invHistory": "History",
+  "invTapToEdit": "Tap to edit",
+  "invEdit": "Edit",
+  "invHoldingDeleted": "Asset deleted.",
+  "invHoldingDeletedShort": "Asset deleted",
+  "invAccountDeleted": "Platform deleted.",
+  "invTransferDeleted": "Transfer deleted.",
+  "invTransfersTitle": "Transfers to invest",
+  "invTapToAssignWithAmount": "Tap one to say which purchases used it. To invest: {amount}",
+  "@invTapToAssignWithAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invTapToAssign": "Tap one to say which purchases used it",
+  "invSeeAll": "See all ({count})",
+  "@invSeeAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invNoTransfersYet": "You have not linked any bank transfers to a platform yet.",
+  "invNothingAssigned": "Nothing assigned yet · tap to choose the purchases",
+  "invAllocationSummary": "Invested {allocated} · {holdText}",
+  "@invAllocationSummary": {
+    "placeholders": {
+      "allocated": {
+        "type": "String"
+      },
+      "holdText": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHoldLower": "on hold {amount}",
+  "@invOnHoldLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedLower": "{amount} more than the transfer",
+  "@invOverAllocatedLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invInvestedAmount": "Invested {amount}",
+  "@invInvestedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHold": "On hold {amount}",
+  "@invOnHold": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invMoreThanAmount": "{amount} over",
+  "@invMoreThanAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invUseTransfer": "Use this transfer",
+  "invPlatformDefault": "Platform",
+  "invThePlatform": "the platform",
+  "invTransferTo": "{amount} to {name}",
+  "@invTransferTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedNote": "The chosen purchases add up to more than the transfer. Some money must have come in before; you can continue.",
+  "invHoldRemainder": "{amount} of this transfer is on hold, not invested yet.",
+  "@invHoldRemainder": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSuggest": "Suggest",
+  "invClearAll": "Clear (all on hold)",
+  "invSaveAllOnHold": "Save (all on hold)",
+  "invSave": "Save",
+  "invBuysOnPlatform": "Purchases on this platform",
+  "invMarkBuysHint": "Mark the ones paid with this transfer.",
+  "invNoBuysYet": "No purchases recorded on this platform yet.",
+  "invUsedElsewhere": "used in another transfer",
+  "invUnits": "{qty} units",
+  "@invUnits": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invSetPrice": "Set price",
+  "invSetPriceManual": "Set by hand",
+  "invPricePerUnit": "Price per unit ({currency})",
+  "@invPricePerUnit": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invFxRate": "Exchange rate: 1 {base} = ? {currency}",
+  "@invFxRate": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrentPrice": "Current price",
+  "invNoPrice": "No price",
+  "invCurrencyChip": "Currency: {currency} · {mode}",
+  "@invCurrencyChip": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrencyChosen": "chosen",
+  "invCurrencyAuto": "automatic",
+  "invUpdatedAgo": "Updated {ago} · {date}",
+  "@invUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "invRefreshPrice": "Refresh price",
+  "invPriceUpdated": "Price updated.",
+  "invRefreshFailedReason": "Could not update: {reason}",
+  "@invRefreshFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "invErrorWord": "error",
+  "invDeleteHoldingConfirm": "Delete the asset “{name}” and its transactions?",
+  "@invDeleteHoldingConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invMyPosition": "My position",
+  "invNoPositionYet": "No position yet. Record the quantity and average price of what you already had, or a purchase.",
+  "invQuantity": "Quantity",
+  "invAvgCost": "Average purchase price",
+  "invGainIn": "Gain in {currency}",
+  "@invGainIn": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invPriceOnly": "price only",
+  "invSetPriceToSeePl": "Set the current price to see the gain or loss.",
+  "invBuy": "Buy",
+  "invSell": "Sell",
+  "invOperations": "Transactions",
+  "invFeeLabel": "fee {amount}",
+  "@invFeeLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTitle": "Investment plan",
+  "invPlanCardDesc": "When a transfer comes into a platform, the Portfolio shows how much goes to each asset. The app does not record purchases.",
+  "invNoPlan": "No plan",
+  "invMissingPercent": "{pct}% left to allocate",
+  "@invMissingPercent": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanOf": "Plan for {name}",
+  "@invPlanOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanEditorHint": "Percentage of each transfer for each asset. You can leave part of it unallocated.",
+  "invPlanNoAssets": "This platform has no assets yet. Add assets in the Portfolio.",
+  "invPlanOver": "Over 100% by {pct}%.",
+  "@invPlanOver": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTotal": "Total: {pct}%",
+  "@invPlanTotal": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invSumOver100": "The total cannot exceed 100%.",
+  "invInvalidValue": "Invalid value.",
+  "invSavePlan": "Save plan",
+  "invRemovePlan": "Remove plan",
+  "invPendingDeliveries": "Transfers to allocate ({count})",
+  "@invPendingDeliveries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invUndistributed": "To allocate: {amount}",
+  "@invUndistributed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSeen": "Seen",
+  "invAvgShort": "avg",
+  "invNoPriceShort": "no price",
+  "invClosedPosition": "Closed position",
+  "invfAccountNewTitle": "New platform",
+  "invfAccountEditTitle": "Edit platform",
+  "invfName": "Name",
+  "invfAccountNameHint": "e.g. XTB, Trade Republic",
+  "invfNoteOptional": "Note (optional)",
+  "invfNote": "Note",
+  "invfSave": "Save",
+  "invfSaveChanges": "Save changes",
+  "invfEnterName": "Enter a name",
+  "invfAccountNameTaken": "A platform with this name already exists",
+  "invfSearchIn": "Search in {provider}",
+  "@invfSearchIn": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCryptoSearchHint": "e.g. bitcoin",
+  "invfSymbolSearchHint": "e.g. VWCE, Apple, S&P 500",
+  "invfSearchFailed": "Couldn’t search.",
+  "invfNothingFound": "Nothing found.",
+  "invfClose": "Close",
+  "invfHoldingNewTitle": "New asset",
+  "invfHoldingEditTitle": "Edit asset",
+  "invfHoldingNameHint": "e.g. Vanguard FTSE All-World",
+  "invfPlatform": "Platform",
+  "invfType": "Type",
+  "invfAssetCurrency": "Asset currency",
+  "invfAutoCurrency": "Automatic (from the price)",
+  "invfBaseCurrencyOption": "{ccy} · base currency",
+  "@invfBaseCurrencyOption": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCurrencyAutoHint": "Uses the currency the asset is quoted in ({ccy}). You can pick another one manually.",
+  "@invfCurrencyAutoHint": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfDetectedOnPrice": "detected when fetching the price",
+  "invfUsdHint": "For stocks or ETFs in dollars, choose USD: purchase prices stay in the asset’s currency, with the exchange rate of each purchase.",
+  "invfForeignCcyHint": "Purchases and average price stay in {ccy}; the portfolio value and gain are converted to the base currency at the market rate (updated in “Update prices”).",
+  "@invfForeignCcyHint": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPriceWithCcy": "Price ({ccy})",
+  "@invfPriceWithCcy": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAvgPriceWithCcy": "Average price ({ccy})",
+  "@invfAvgPriceWithCcy": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfYahooHint": "Free, no key needed. ETFs, stocks and exchange rates (e.g. VWCE.DE, AAPL, BTC-EUR). Converts to euros.",
+  "invfCoingeckoHint": "Free, no key needed. Cryptocurrencies, by id (e.g. bitcoin, ethereum).",
+  "invfManualHint": "You set the price whenever you like. Nothing is sent to the internet.",
+  "invfCoingeckoId": "CoinGecko id",
+  "invfNewPlatformItem": "➕  New platform…",
+  "invfSymbol": "Symbol",
+  "invfPrice": "Price",
+  "invfSearchTooltip": "Search",
+  "invfCurrentPriceOptional": "Current price ({ccy}, optional)",
+  "@invfCurrentPriceOptional": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFxLabel": "Exchange rate: 1 {base} = ? {ccy}",
+  "@invfFxLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFxRateLabel": "Exchange rate (1 {base} = ? {ccy})",
+  "@invfFxRateLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAvgFxLabel": "Average exchange rate (1 {base} = ? {ccy})",
+  "@invfAvgFxLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLiveFxTooltip": "Current market exchange rate (internet)",
+  "invfFxFetchFailed": "Couldn’t get the exchange rate: {message}",
+  "@invfFxFetchFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPriceFetchFailed": "Couldn’t get the price: {message}",
+  "@invfPriceFetchFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "invfSymbolRequired": "Enter the symbol (or use search)",
+  "invfFxOrSyncRequired": "Enter the exchange rate, or use the sync button for the market rate.",
+  "invfCurrencyPickerHint": "The value is converted to {base} at the market rate, updated in “Update prices”. Transactions already recorded keep the values they have.",
+  "@invfCurrencyPickerHint": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfOpNewTitle": "New transaction",
+  "invfOpEditTitle": "Edit · {type}",
+  "@invfOpEditTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "invfOpInitial": "Opening position",
+  "invfOpBuy": "Buy",
+  "invfOpSell": "Sell",
+  "invfOpDividend": "Dividend",
+  "invfOpCash": "Cash adjustment",
+  "invfOpAlreadyHeld": "Already held",
+  "invfOpCashChip": "Cash",
+  "invfPlatformLower": "platform",
+  "invfTotalToPay": "Total to pay: {amount}",
+  "@invfTotalToPay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfTotalToPayFee": "Total to pay: {amount} (incl. {fee} fee)",
+  "@invfTotalToPayFee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "invfNoAllocationHint": "No allocation: nothing is deducted from unallocated cash. You can record the bank transfer whenever you like.",
+  "invfNotEnoughUnallocated": "You don’t have {amount} unallocated on this platform yet (you have {cash}). Record the bank transfer later, or turn off “Deduct from unallocated cash” in More options.",
+  "@invfNotEnoughUnallocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "invfUnallocatedChange": "Unallocated cash: {before} → {after}.",
+  "@invfUnallocatedChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfUnallocatedChangeTitle": "Unallocated cash: {before} → {after}",
+  "@invfUnallocatedChangeTitle": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfBalanceChange": "{before} → {after}.",
+  "@invfBalanceChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfYouReceive": "You receive {amount}",
+  "@invfYouReceive": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfRealizedGain": "Realized gain: {gain} (average price {avg}).",
+  "@invfRealizedGain": {
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPositionCost": "Position cost: {amount}",
+  "@invfPositionCost": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfInitialHint": "Position you already held before using the app. Sets the average purchase price and doesn’t touch unallocated cash.",
+  "invfDividendIn": "{amount} added to unallocated cash",
+  "@invfDividendIn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCashHint": "Use this for cash that was already on the platform before you started using the app.",
+  "invfValueWithCcy": "Amount ({base})",
+  "@invfValueWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfReceivedWithCcy": "Amount received ({base})",
+  "@invfReceivedWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFeeWithCcy": "Fee ({base})",
+  "@invfFeeWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfQuantity": "Quantity",
+  "invfUnitsEquals": "= {qty} units",
+  "@invfUnitsEquals": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCashIn": "Money in",
+  "invfCashOut": "Money out",
+  "invfDate": "Date",
+  "invfHolding": "Asset",
+  "invfNewAssetItem": "➕  New asset…",
+  "invfChoosePlatformHint": "Choose platform",
+  "invfChoosePlatformShort": "Choose the platform",
+  "invfChoosePlatform": "Choose the platform.",
+  "invfChooseAsset": "Choose the asset (or create one).",
+  "invfEnterValidAmounts": "Enter valid amounts.",
+  "invfFxRequired": "Enter the exchange rate (1 {base} = ? {ccy}).",
+  "@invfFxRequired": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfEnterQtyPrice": "Enter the quantity and price.",
+  "invfOnlyHaveUnits": "You only have {qty} units to sell.",
+  "@invfOnlyHaveUnits": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invfMoreOptionsTrade": "More options (fee, note…)",
+  "invfDeductUnallocated": "Deduct from unallocated cash",
+  "invfDeductHint": "Turn off if you haven’t recorded the bank transfer to the platform yet, or if this transaction is already counted elsewhere.",
+  "invfUseTotalInstead": "Enter the total amount instead of the quantity",
+  "invfAssetCurrencyChange": "Asset currency: {ccy} · change",
+  "@invfAssetCurrencyChange": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfHasInitialTitle": "This asset already has an opening position",
+  "invfHasInitialBody": "It’s loaded here. Saving replaces the previous one.",
+  "invfDeleteOp": "Delete transaction",
+  "invfLinkTitle": "Link to {name}",
+  "@invfLinkTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLinkButton": "Link",
+  "invfLinkCount": "Link {count} ({amount} to the platform)",
+  "@invfLinkCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLinkHint": "Choose the bank transactions that were money sent to (or received from) this platform. They stop counting as expenses.",
+  "invfSearchTransactions": "Search transactions",
+  "invfNoTransactionsToLink": "No transactions to link.",
+  "invfLooksLikeThis": " · looks like this platform",
+  "invfRememberTitles": "Remember these titles",
+  "invfRememberHint": "In future imports, transactions with the same title are linked automatically.",
+  "invfImportTitle": "Import buys and sells",
+  "invfImportIntro": "Formats: PDF (with text), CSV and Excel (.xlsx). The file is read on your phone and never leaves it. Recognizes buys, sells and dividends; everything else (deposits, taxes…) is ignored.",
+  "invfChooseFile": "Choose file",
+  "invfChooseOtherFile": "Choose another file",
+  "invfFileName": "File: {name}",
+  "@invfFileName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfReadError": "Error reading the file: {error}",
+  "@invfReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "invfExcelNoData": "The Excel file has no data.",
+  "invfPdfNotFound": "I couldn’t find any buys or sells in this PDF. It may be scanned (an image) or use a different format. If your broker allows it, export it as CSV or Excel.",
+  "invfNotFoundTrades": "I couldn’t find any buys or sells. Indicate below which column is which.",
+  "invfNotFoundWithColumns": "I couldn’t find any buys or sells with these columns.",
+  "invfCurrencyAndRate": "Currency and exchange rate",
+  "invfCurrencyIntro": "Rows without a currency use the currency below. For currencies other than {base}, enter the average exchange rate; you can adjust each transaction later.",
+  "@invfCurrencyIntro": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfTransactionCurrency": "Transaction currency",
+  "invfAllInBase": "All transactions are in {base}.",
+  "@invfAllInBase": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAssetsFound": "Assets found",
+  "invfAssetsHint": "Link each one to one of your assets, create a new one, or ignore it.",
+  "invfTradeCountLabel": "{name}  ·  {count, plural, =0{{count} transactions} =1{{count} transaction} other{{count} transactions}}",
+  "@invfTradeCountLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfCreateNewAsset": "➕  Create new asset",
+  "invfIgnore": "Ignore",
+  "invfOperations": "Transactions",
+  "invfBuysCount": "{count, plural, =0{{count} buys} =1{{count} buy} other{{count} buys}}",
+  "@invfBuysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfSellsCount": "{count, plural, =0{{count} sales} =1{{count} sale} other{{count} sales}}",
+  "@invfSellsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfDividendsCount": "{count, plural, =0{{count} dividends} =1{{count} dividend} other{{count} dividends}}",
+  "@invfDividendsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfDuplicatesIgnored": "{count} already existing (skipped)",
+  "@invfDuplicatesIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfMissingRate": "Exchange rate missing",
+  "invfMissingRateBody": "Enter the exchange rate for {currencies} to import these transactions.",
+  "@invfMissingRateBody": {
+    "placeholders": {
+      "currencies": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAllCurrencies": "all currencies",
+  "invfMissingQtyTitle": "{count, plural, =0{{count} transactions without quantity} =1{1 transaction without quantity} other{{count} transactions without quantity}}",
+  "@invfMissingQtyTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfMissingQtyBody": "The file only has the amount paid. Choose the column that has the quantity and price (e.g. the comment) under “File columns”.",
+  "invfShowingFirst": "Showing the first 300 of {total}.",
+  "@invfShowingFirst": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfAlreadyExists": " · already exists",
+  "invfTradeQtyPart": " · {qty} units × {price} {ccy}",
+  "@invfTradeQtyPart": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfImportCount": "Import {count, plural, =0{0 transactions} =1{1 transaction} other{{count} transactions}}",
+  "@invfImportCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfFileColumns": "File columns",
+  "invfAutoRecognized": "Recognized automatically. Tap to adjust.",
+  "invfIndicateColumns": "Indicate which column is which.",
+  "invfExcelSheet": "Excel sheet",
+  "invfSheetRows": "{name}  ·  {count, plural, =0{{count} rows} =1{1 row} other{{count} rows}}",
+  "@invfSheetRows": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfHeaderRow": "Column headers row",
+  "invfNoHeaders": "No headers",
+  "invfHeaderRowItem": "Row {n}: {text}",
+  "@invfHeaderRowItem": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "invfNotExists": "— none —",
+  "invfColumnNumber": "Column {n}",
+  "@invfColumnNumber": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnNumberLower": "column {n}",
+  "@invfColumnNumberLower": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "invfFileValidation": "File validation",
+  "invfRequiredNote": "I need at least the date, the quantity and the price (or the total amount).",
+  "invfQuantityOrComment": "Quantity (or the comment that has it)",
+  "invfPriceOrTotal": "Price or total amount",
+  "invfMissingColumn": "Choose the column for: {name}",
+  "@invfMissingColumn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfValidationSummary": "{dataRows, plural, =0{0 rows with data} =1{1 row with data} other{{dataRows} rows with data}} · {recognized, plural, =0{0 transactions recognized} =1{1 transaction recognized} other{{recognized} transactions recognized}}",
+  "@invfValidationSummary": {
+    "placeholders": {
+      "dataRows": {
+        "type": "int"
+      },
+      "recognized": {
+        "type": "int"
+      }
+    }
+  },
+  "invfWithProblems": " · {count} with problems",
+  "@invfWithProblems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfIgnoredByUser": " · {count} ignored (not buys or sells)",
+  "@invfIgnoredByUser": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnValid": "{label}: {ok} of {total} valid",
+  "@invfColumnValid": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnValidNamed": "{label} ({column}): {ok} of {total} valid",
+  "@invfColumnValidNamed": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "column": {
+        "type": "String"
+      },
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfUnknownTypes": "Types I didn’t recognize",
+  "invfUnknownTypesHint": "Tell me what they are so I can import them (or ignore them).",
+  "invfUnknownTypeRows": "“{type}” · {count, plural, =0{{count} rows} =1{1 row} other{{count} rows}}",
+  "@invfUnknownTypeRows": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfEmpty": "(empty)",
+  "invfChoose": "Choose",
+  "invfSkippedRows": "{count, plural, =0{{count} rows not imported} =1{1 row not imported} other{{count} rows not imported}}",
+  "@invfSkippedRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfRowReason": "Row {row}: {reason}",
+  "@invfRowReason": {
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAndMore": "… and {count} more",
+  "@invfAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfAllRowsOk": "All rows were read without problems.",
+  "invfImportedOps": "{count, plural, =0{{count} transactions imported} =1{1 transaction imported} other{{count} transactions imported}}",
+  "@invfImportedOps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfImportedHoldings": " and {count, plural, =0{{count} assets created} =1{1 asset created} other{{count} assets created}}",
+  "@invfImportedHoldings": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfUpdatePrices": ". Update prices in the Portfolio.",
+  "invfNegativeCashWarning": " Unallocated cash went negative: link the bank transfers to this platform or adjust the cash.",
+  "invfFieldDate": "Date",
+  "invfFieldType": "Type (buy / sell)",
+  "invfFieldName": "Asset name",
+  "invfFieldCategory": "Category (ETF, stock…)",
+  "invfFieldComment": "Comment (e.g. OPEN BUY 0.5 @ 100)",
+  "invfFieldSymbol": "Symbol",
+  "invfFieldIsin": "ISIN",
+  "invfFieldQuantity": "Quantity",
+  "invfFieldPrice": "Price per unit",
+  "invfFieldTotal": "Total amount",
+  "invfFieldFee": "Fee",
+  "invfFieldCurrency": "Currency",
+  "invfFieldRate": "Exchange rate (units of currency per 1 base currency)",
+  "invfKindEtf": "ETF",
+  "invfKindStock": "Stock",
+  "invfKindCrypto": "Crypto",
+  "invfKindFund": "Fund",
+  "invfKindBond": "Bond",
+  "invfKindOther": "Other",
+  "morMoreTitle": "More",
+  "morBudgetSubtitle": "Salary and limits per category",
+  "morPlanningSubtitle": "Salary and planned expenses per month",
+  "morGoalsSubtitle": "Save for a holiday, a car…",
+  "morAnalysisSubtitle": "Where you spend and where you can save",
+  "morClassifyTitle": "Classify transactions",
+  "morClassifySubtitle": "One card per name",
+  "morUpdatesTitle": "Updates",
+  "morUpdatesSubtitle": "Look for and install a new version",
+  "morAppearanceSubtitle": "Dark mode and colors",
+  "morAccountsTitle": "Accounts",
+  "morAccountsCount": "{count, plural, =0{{count} accounts} =1{1 account} other{{count} accounts}}",
+  "@morAccountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morRecurringTitle": "Recurring transactions",
+  "morRecurringCount": "{count, plural, =0{{count} recurring} =1{1 recurring} other{{count} recurring}} · salary, rent, subscriptions",
+  "@morRecurringCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morCategoriesTitle": "Categories and subcategories",
+  "morCategoriesCount": "{count, plural, =0{{count} categories} =1{1 category} other{{count} categories}}",
+  "@morCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morGroupsTitle": "Security groups",
+  "morGroupsCount": "{count, plural, =0{{count} groups} =1{1 group} other{{count} groups}}",
+  "@morGroupsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morRulesTitle": "Saved rules",
+  "morRulesCount": "{count, plural, =0{{count} rules} =1{1 rule} other{{count} rules}}",
+  "@morRulesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morImportTitle": "Import statement",
+  "morImportSubtitle": "PDF, CSV or Excel",
+  "morImportsHistoryTitle": "Import history",
+  "morExportTitle": "Export transactions (CSV)",
+  "morBackupTitle": "Backup",
+  "morBackupSubtitle": "Save or restore to Google Drive or a file",
+  "morWipeTransactionsTitle": "Delete all transactions",
+  "morWipeTransactionsConfirm": "Delete ALL transactions, rules and salaries? Categories are kept. This cannot be undone.",
+  "morWipeAllTitle": "Delete everything, including categories",
+  "morWipeAllConfirm": "Delete EVERYTHING: transactions, categories, budgets, rules, salaries and investments? This cannot be undone.",
+  "morPrivacyNote": "All data stays only on this phone. The internet is only used if you tap “Update prices” in Portfolio (only the asset symbol is sent).",
+  "morImportsTitle": "Imports",
+  "morNoImports": "No imports yet.",
+  "morUndoImport": "Undo import",
+  "morImportItemSubtitle": "{count, plural, =0{{date} · {count} transactions} =1{{date} · 1 transaction} other{{date} · {count} transactions}}",
+  "@morImportItemSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "morRemoveImportQuestion": "{count, plural, =0{Remove the {count} transactions from this import?} =1{Remove the transaction from this import?} other{Remove the {count} transactions from this import?}}",
+  "@morRemoveImportQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morCategoriesScreenTitle": "Categories",
+  "morNewCategory": "Category",
+  "morIncomeKind": "Income",
+  "morInvestmentKind": "Investment",
+  "morBothKinds": "Expenses and income",
+  "morFromStart": "from the start",
+  "morFromMonth": "from {month}",
+  "@morFromMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "morOpenEnded": "onwards",
+  "morToMonth": "to {month}",
+  "@morToMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "morEnded": "ended",
+  "morFuture": "upcoming",
+  "morTxnCount": "{count, plural, =0{{count} transactions} =1{1 transaction} other{{count} transactions}}",
+  "@morTxnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morMandatoryPeriods": "{count, plural, =0{Required in {count} periods} =1{Required in 1 period} other{Required in {count} periods}}",
+  "@morMandatoryPeriods": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morNewSubcategory": "New subcategory",
+  "morDuplicateNextYear": "Duplicate for next year",
+  "morReactivate": "Reactivate",
+  "morArchive": "Archive",
+  "morCreatedCategory": "Created “{name}”.",
+  "@morCreatedCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "morDeleteCategoryQuestion": "Delete “{name}”? {count, plural, =0{{count} transactions are left} =1{The transaction is left} other{{count} transactions are left}} without a category{subs}.",
+  "@morDeleteCategoryQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "subs": {
+        "type": "String"
+      }
+    }
+  },
+  "morSubcategoriesDeleted": " and its subcategories are deleted",
+  "morThemeTitle": "Theme",
+  "morThemeSystem": "System",
+  "morThemeLight": "Light",
+  "morThemeDark": "Dark",
+  "morAmoledTitle": "Pure black (AMOLED)",
+  "morAmoledSubtitle": "In dark mode, a fully black background",
+  "morBaseCurrencyTitle": "Base currency",
+  "morBaseCurrencyHint": "It is the currency of your transactions, budgets and portfolio. Assets in other currencies (USD, GBP…) are converted to it.",
+  "morBaseCurrencyChanged": "Base currency: {code}. Values already recorded are not converted; update the prices in Portfolio.",
+  "@morBaseCurrencyChanged": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "morMainColor": "Main color",
+  "morMainColorHint": "Sets the color of the navigation bar, buttons and charts.",
+  "morIncomeColor": "Income color",
+  "morExpenseColor": "Expense color",
+  "morPreview": "Preview",
+  "morSamplePlace": "Groceries",
+  "morSampleCategory": "Category › Subcategory",
+  "morSampleSalary": "Salary",
+  "morResetAppearance": "Reset appearance",
+  "morEmojiHint": "Each category and subcategory has its own emoji, which you choose when creating or editing it.",
+  "morBackupDescription": "Saves all your data (transactions, categories, budgets, portfolio…) to a file. Receipt photos are not included.",
+  "morBackupDriveHint": "There is no need to connect an account in the app: when saving, choose “Google Drive” (or another folder) on the Android screen. To restore, pick the file, from the phone or from Drive.",
+  "morLastBackup": "Last backup: {date} ({ago})",
+  "@morLastBackup": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "morSaveBackup": "Save backup (Google Drive or file)",
+  "morRestoreFromFile": "Restore from a file",
+  "morBackupSaved": "Backup saved.",
+  "morDataRestored": "Data restored.",
+  "morRestoreConfirm": "This replaces ALL the data on this phone with the backup “{name}”. It cannot be undone. Continue?",
+  "@morRestoreConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "morRestore": "Restore",
+  "morCouldNotFinish": "Could not finish: {error}",
+  "@morCouldNotFinish": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "morInstalledVersion": "Installed version",
+  "morUpdateDescription": "Looks on GitHub for a newer version and installs it over this one, without losing data. The internet is only used when you tap the button.",
+  "morChecking": "Checking…",
+  "morCheckUpdates": "Check for updates",
+  "morNewVersion": "There is a new version: {version}",
+  "@morNewVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpToDate": "You already have the latest version",
+  "morDownloadInstall": "Download and install",
+  "morDownloadInstallSize": "Download and install ({mb} MB)",
+  "@morDownloadInstallSize": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "morDownloadingPercent": "Downloading… {percent}%",
+  "@morDownloadingPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "morDownloading": "Downloading…",
+  "morOpenReleasePage": "Open the release page",
+  "morWhatsNew": "What’s new",
+  "morInstallerError": "Could not open the installer ({message}). If Android asked for permission to install apps from this source, turn it on and tap \"Download and install\" again.",
+  "@morInstallerError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpdateAvailableTitle": "Update available",
+  "morUpdateAvailableBody": "Finanças {version} is available. Open More › Updates to install it.",
+  "@morUpdateAvailableBody": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpdateChannelName": "Updates",
+  "morUpdateChannelDescription": "Notice when a new version comes out",
+  "morRecurringNotifBody": "{count, plural, =0{{count} recurring transactions recorded} =1{1 recurring transaction recorded} other{{count} recurring transactions recorded}}",
+  "@morRecurringNotifBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morAllocationTitle": "Investment delivery",
+  "morAllocationBody": "{account}{deliveries}: {details}",
+  "@morAllocationBody": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "deliveries": {
+        "type": "String"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "morDeliveriesCount": "{count, plural, =0{({count} deliveries)} =1{(1 delivery)} other{({count} deliveries)}}",
+  "@morDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morUndistributed": "{amount} to distribute",
+  "@morUndistributed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "morAlertsChannelName": "Alerts",
+  "morAlertsChannelDescription": "Recurring transactions and investment deliveries",
+  "morAssetFallback": "Asset",
+  "morNavMonth": "Month",
+  "morNavPortfolio": "Portfolio"
+}

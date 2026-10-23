@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -56,9 +57,10 @@ class Spend {
   final Categoria? cat;
   final bool mandatory;
   final int amount; // cêntimos gastos, depois das anulações
-  Spend(this.t, this.cat, this.mandatory, [int? cents])
-    : amount = cents ?? -t.amount;
-  String get month => monthKey(t.date);
+  final String month; // mês da app a que pertence (AAAA-MM)
+  Spend(this.t, this.cat, this.mandatory, [int? cents, String? month])
+    : amount = cents ?? -t.amount,
+      month = month ?? monthKey(t.date);
 }
 
 /// Uma fatia de gastos (categoria, subcategoria, comerciante ou conta).
@@ -222,8 +224,9 @@ class Analytics {
         continue; // investir não é gastar
       final spent = -s.effectiveAmount(t);
       if (spent <= 0) continue; // despesa anulada por completo
-      final mand = c != null && s.isMandatory(c, monthKey(t.date));
-      if (_matches(t, c, mand)) out.add(Spend(t, c, mand, spent));
+      final mk = s.monthKeyOf(t.date);
+      final mand = c != null && s.isMandatory(c, mk);
+      if (_matches(t, c, mand)) out.add(Spend(t, c, mand, spent, mk));
     }
     return out;
   }
@@ -359,7 +362,8 @@ class Analytics {
   /// Período anterior completo (sem o corte dos "mesmos dias"), para o salário esperado.
   late final Period? _previousFull = previous == null
       ? null
-      : previousPeriod(period, today: DateTime(1900));
+      : (s.previousMonthOf(period, today: DateTime(1900)) ??
+            previousPeriod(period, today: DateTime(1900)));
 
   late final int incomeReceived = _income(period);
   late final bool incomeFromSalary =
@@ -413,6 +417,54 @@ class Analytics {
       );
     },
   );
+
+  /// Igual a [byCategory], com os textos traduzidos.
+  List<Slice> byCategoryL(AppLocalizations l) => _slices(
+    (e) => e.cat == null ? _none : '${e.cat!.parentId ?? e.cat!.id}',
+    (k, l2, prev) {
+      final root = k == _none ? null : s.cat(int.parse(k));
+      return Slice(
+        key: k,
+        label: root?.name ?? l.anNoCategory,
+        emoji: root?.emoji ?? '',
+        amount: _sum(l2),
+        prev: prev,
+        items: l2,
+        categoryId: root?.id,
+      );
+    },
+  );
+
+  /// Igual a [bySubcategory], com os textos traduzidos.
+  List<Slice> bySubcategoryL(AppLocalizations l) =>
+      _slices((e) => e.cat == null ? _none : '${e.cat!.id}', (k, l2, prev) {
+        final c = k == _none ? null : s.cat(int.parse(k));
+        final parent = s.cat(c?.parentId);
+        return Slice(
+          key: k,
+          label: c?.name ?? l.anNoCategory,
+          subtitle: parent?.name,
+          emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
+          amount: _sum(l2),
+          prev: prev,
+          items: l2,
+          categoryId: c?.id,
+        );
+      });
+
+  /// Igual a [byAccount], com os textos traduzidos.
+  List<Slice> byAccountL(AppLocalizations l) =>
+      _slices((e) => '${e.t.accountId ?? _none}', (k, l2, prev) {
+        final a = k == _none ? null : s.account(int.parse(k));
+        return Slice(
+          key: k,
+          label: a?.name ?? l.anNoAccount,
+          emoji: a?.emoji ?? '',
+          amount: _sum(l2),
+          prev: prev,
+          items: l2,
+        );
+      });
 
   /// Por subcategoria (ou categoria, quando o movimento não tem subcategoria).
   List<Slice> bySubcategory() =>
@@ -482,24 +534,26 @@ class Analytics {
   // ---------- evolução ----------
   /// Pontos mensais dos últimos [n] meses até ao fim do período, com os mesmos filtros.
   List<MonthPoint> monthly(int n) {
-    final last = DateTime(
+    final lastDay = DateTime(
       period.end.year,
       period.end.month,
       period.end.day - 1,
     );
-    final first = DateTime(last.year, last.month - (n - 1));
-    final all = _spends(
-      Period(
-        DateTime(first.year, first.month),
-        DateTime(last.year, last.month + 1),
-      ),
-    );
+    final lastKey = period.cycleKey ?? s.monthKeyOf(lastDay);
+    final ly = int.parse(lastKey.substring(0, 4)),
+        lm = int.parse(lastKey.substring(5, 7));
+    final first = DateTime(ly, lm - (n - 1));
+    final spans = [
+      for (var i = 0; i < n; i++)
+        s.periodOfMonth(monthKey(DateTime(first.year, first.month + i))),
+    ];
+    final all = _spends(Period(spans.first.start, spans.last.end));
     final out = <MonthPoint>[];
     for (var i = 0; i < n; i++) {
       final m = DateTime(first.year, first.month + i);
       final mk = monthKey(m);
       final l = all.where((e) => e.month == mk);
-      final inc = _income(Period.month(m));
+      final inc = _income(spans[i]);
       out.add(
         MonthPoint(
           m,
@@ -561,6 +615,138 @@ class Analytics {
   /// Pequenas compras que se repetem muito (cafés, snacks…).
   List<Slice> frequentSmall() =>
       byMerchant().where((e) => e.count >= 6 && e.avg <= 2500).toList();
+
+  /// Igual a [insights], com os textos traduzidos.
+  List<Insight> insightsL(AppLocalizations l) {
+    final out = <Insight>[];
+    final usedCategories = <int>{};
+
+    // 1) orçamentos de limite ultrapassados
+    final own = s.totalsByCategory(period);
+    for (final c in s.roots.where((c) => !c.isIncome)) {
+      final target = s.targetIn(c, period);
+      final spentC = s.rollup(c, own);
+      final limitLike = c.budgetType == BudgetType.limit;
+      if (target > 0 && limitLike && spentC > target) {
+        usedCategories.add(c.id);
+        out.add(
+          Insight(
+            InsightKind.overBudget,
+            l.anOverLimitTitle(
+              '${c.emoji.isEmpty ? '' : '${c.emoji} '}${c.name}',
+            ),
+            l.anOverLimitDetail(fmtMoney(spentC), fmtMoney(target)),
+            monthlySaving: perMonth(spentC - target),
+            categoryId: c.id,
+          ),
+        );
+      }
+    }
+
+    // 2) categorias que subiram muito face ao período anterior
+    if (previous != null) {
+      for (final sl in byCategoryL(l)) {
+        if (sl.categoryId == null || usedCategories.contains(sl.categoryId))
+          continue;
+        final delta = sl.amount - sl.prev;
+        if (sl.prev > 0 && delta >= 2000 && delta >= sl.prev * 0.25) {
+          usedCategories.add(sl.categoryId!);
+          out.add(
+            Insight(
+              InsightKind.increase,
+              l.anIncreaseTitle(
+                '${sl.emoji.isEmpty ? '' : '${sl.emoji} '}${sl.label}',
+                fmtPercent(delta / sl.prev),
+              ),
+              l.anIncreaseDetail(
+                fmtMoney(delta),
+                fmtMoney(sl.prev),
+                fmtMoney(sl.amount),
+              ),
+              monthlySaving: perMonth(delta),
+              categoryId: sl.categoryId,
+            ),
+          );
+        }
+      }
+    }
+
+    // 3) as maiores despesas opcionais: cortar 10% já se nota
+    final opt = byCategoryL(l)
+        .where(
+          (e) =>
+              e.categoryId != null &&
+              !usedCategories.contains(e.categoryId) &&
+              e.items.every((x) => !x.mandatory),
+        )
+        .take(3);
+    for (final sl in opt) {
+      if (spent == 0 || sl.amount < spent * 0.05) continue;
+      usedCategories.add(sl.categoryId!);
+      out.add(
+        Insight(
+          InsightKind.topOptional,
+          l.anTopOptionalTitle(
+            '${sl.emoji.isEmpty ? '' : '${sl.emoji} '}${sl.label}',
+            fmtPercent(sl.amount / spent),
+          ),
+          l.anTopOptionalDetail(fmtMoney(perMonth((sl.amount * 0.1).round()))),
+          monthlySaving: perMonth((sl.amount * 0.1).round()),
+          categoryId: sl.categoryId,
+        ),
+      );
+    }
+
+    // 4) pequenas compras frequentes
+    final small = frequentSmall();
+    if (small.isNotEmpty) {
+      final total = small.fold(0, (a, e) => a + e.amount);
+      final n = small.fold(0, (a, e) => a + e.count);
+      out.add(
+        Insight(
+          InsightKind.smallFrequent,
+          l.anFrequentSmall,
+          l.anSmallDetail(
+            n,
+            small.length,
+            fmtMoney(total),
+            small.take(3).map((e) => e.label).join(', '),
+            fmtMoney(perMonth((total / 3).round())),
+          ),
+          monthlySaving: perMonth((total / 3).round()),
+        ),
+      );
+    }
+
+    // 5) pagamentos recorrentes opcionais (subscrições, ginásio…) – informativo
+    final rec = recurring().where((e) => !e.mandatory).toList();
+    if (rec.isNotEmpty) {
+      final monthly = rec.fold(0, (a, e) => a + e.monthly);
+      out.add(
+        Insight(
+          InsightKind.recurring,
+          l.anRecurringTitle(rec.length),
+          l.anRecurringDetail(fmtMoney(monthly), fmtMoney(monthly * 12)),
+        ),
+      );
+    }
+
+    // 6) sem categoria
+    if (unclassifiedTotal > 0) {
+      out.add(
+        Insight(
+          InsightKind.unclassified,
+          l.anUnclassifiedSpend,
+          l.anUnclassifiedDetail(fmtMoney(unclassifiedTotal)),
+        ),
+      );
+    }
+
+    out.sort(
+      (a, b) => (b.monthlySaving ?? -1).compareTo(a.monthlySaving ?? -1),
+    );
+    return out;
+  }
 
   /// Sugestões concretas, da maior para a menor poupança potencial.
   List<Insight> insights() {
@@ -697,17 +883,25 @@ class Analytics {
   /// Projeção até ao fim do mês corrente (só faz sentido quando o período é o mês atual).
   Projection? projection() {
     final start = period.start, end = period.end;
-    final isMonth = start.day == 1 && end.day == 1 && period.monthCount == 1;
+    final isMonth =
+        period.cycleKey != null ||
+        (start.day == 1 && end.day == 1 && period.monthCount == 1);
     if (!isMonth || !period.contains(today)) return null;
     final totalDays = DateTime.utc(
       end.year,
       end.month,
       end.day,
     ).difference(DateTime.utc(start.year, start.month, start.day)).inDays;
-    final elapsed = math.min(totalDays, math.max(1, today.day));
+    final sinceStart = DateTime.utc(
+      today.year,
+      today.month,
+      today.day,
+    ).difference(DateTime.utc(start.year, start.month, start.day)).inDays;
+    final elapsed = math.min(totalDays, math.max(1, sinceStart + 1));
     final projected = (spent / elapsed * totalDays).round();
-    final salary = s.salaryFor(monthKey(start));
-    final budget = s.totalAllocated(salary, monthKey(start));
+    final mk = period.cycleKey ?? monthKey(start);
+    final salary = s.salaryFor(mk);
+    final budget = s.totalAllocated(salary, mk);
     return Projection(
       elapsed,
       totalDays,

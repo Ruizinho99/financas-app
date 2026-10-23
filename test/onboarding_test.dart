@@ -1,6 +1,7 @@
 import 'package:financas/db/database.dart';
 import 'package:financas/onboarding/onboarding_screen.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -16,7 +17,12 @@ Future<void> _pump(WidgetTester tester, AppState s) async {
   await tester.pumpWidget(
     ChangeNotifierProvider<AppState>.value(
       value: s,
-      child: const MaterialApp(home: OnboardingGate(child: Text('APP'))),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('pt', 'PT'),
+        home: OnboardingGate(child: Text('APP')),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -36,7 +42,7 @@ void main() {
   });
 
   testWidgets(
-    'concluir cria a conta, o salário e as categorias e grava a flag',
+    'concluir cria a conta e o salário, sem categorias, e grava a flag',
     (tester) async {
       final s = AppState(Db.memory());
       await _pump(tester, s);
@@ -59,9 +65,6 @@ void main() {
       );
       await tester.tap(find.text('Seguinte'));
       await tester.pumpAndSettle();
-      // passo das categorias (a base está vazia): tudo marcado por omissão
-      await tester.tap(find.text('Seguinte'));
-      await tester.pumpAndSettle();
       await tester.tap(find.text('Concluir'));
       await tester.pumpAndSettle();
 
@@ -69,11 +72,8 @@ void main() {
       expect(s.accounts.map((a) => a.name), ['Conta teste']);
       expect(s.accounts.single.openingCents, 10000);
       expect(s.defaultSalary, 150000);
-      expect(
-        s.roots.map((c) => c.name).toList(),
-        kCategoriasBase.map((g) => g.nome).toList(),
-      );
-      expect(s.roots.last.isIncome, isTrue);
+      // a app não cria categorias por omissão: o utilizador cria as suas
+      expect(s.categories, isEmpty);
       expect(s.db.setting(kOnboardingKey), '1');
     },
   );

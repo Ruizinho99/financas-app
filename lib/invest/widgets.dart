@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import 'invest.dart';
@@ -73,6 +74,7 @@ class PositionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final h = p.holding;
@@ -99,8 +101,8 @@ class PositionRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     p.open
-                        ? '${fmtQty(p.qty)} un. · médio ${fmtPriceIn(h.foreign ? p.avgCostOrig : p.avgCost, h.currency)}${p.priced ? ' → ${fmtPriceIn(p.priceOrig ?? p.price!, h.currency)}' : ' · sem preço'}'
-                        : 'Posição fechada',
+                        ? '${l.invUnits(fmtQty(p.qty))} · ${l.invAvgShort} ${fmtPriceIn(h.foreign ? p.avgCostOrig : p.avgCost, h.currency)}${p.priced ? ' → ${fmtPriceIn(p.priceOrig ?? p.price!, h.currency)}' : ' · ${l.invNoPriceShort}'}'
+                        : l.invClosedPosition,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
@@ -143,6 +145,7 @@ class OpTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final currency = currencyCode ?? baseCcy;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
@@ -155,7 +158,7 @@ class OpTile extends StatelessWidget {
     };
     final detail = switch (op.type) {
       OpType.buy || OpType.sell || OpType.initial =>
-        '${fmtQty(op.quantity)} un. × ${op.fx == null || currency == baseCcy ? fmtPrice(op.price) : '${fmtPriceIn(op.price, currency)} (1 $baseSym = ${fmtNum(1 / op.fx!, 4)} $currency)'}${op.fee > 0 ? ' · comissão ${fmtMoney(op.fee)}' : ''}',
+        '${l.invUnits(fmtQty(op.quantity))} × ${op.fx == null || currency == baseCcy ? fmtPrice(op.price) : '${fmtPriceIn(op.price, currency)} (1 $baseSym = ${fmtNum(1 / op.fx!, 4)} $currency)'}${op.fee > 0 ? ' · ${l.invFeeLabel(fmtMoney(op.fee))}' : ''}',
       _ => op.note,
     };
     return ListTile(
@@ -168,7 +171,7 @@ class OpTile extends StatelessWidget {
         child: Icon(icon, size: 18, color: cs.primary),
       ),
       title: Text(
-        '${op.type.label}${holdingName == null ? '' : ' · $holdingName'}',
+        '${op.type.labelL(l)}${holdingName == null ? '' : ' · $holdingName'}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),

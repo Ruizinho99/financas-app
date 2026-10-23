@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/widgets.dart';
+import '../l10n/app_localizations.dart';
 import '../screens/transactions_screen.dart' show confirm;
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -26,13 +27,14 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final acc = s.investAccount(widget.accountId);
     if (acc == null)
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Plataforma apagada.')),
+        body: Center(child: Text(l.invAccountDeleted)),
       );
     final pf = s.portfolio;
     final sums = pf.accounts.where((a) => a.account.id == acc.id);
@@ -75,7 +77,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                   )
                 : IconButton(
-                    tooltip: 'Atualizar preços',
+                    tooltip: l.invRefreshPrices,
                     icon: const Icon(Icons.sync),
                     onPressed: () async {
                       setState(() => refreshing = true);
@@ -86,25 +88,22 @@ class _AccountScreenState extends State<AccountScreen> {
                       messenger.showSnackBar(
                         SnackBar(
                           content: Text(
-                            '${r.updated} preços atualizados.${r.failed.isEmpty ? '' : ' Falhou: ${r.failed.keys.join(', ')}'}',
+                            '${l.invPricesUpdated(r.updated)}${r.failed.isEmpty ? '' : ' ${l.invPricesFailed(r.failed.keys.join(', '))}'}',
                           ),
                         ),
                       );
                     },
                   ),
           IconButton(
-            tooltip: 'Editar',
+            tooltip: l.invEdit,
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => showInvestAccountEditor(context, edit: acc),
           ),
           IconButton(
-            tooltip: 'Apagar',
+            tooltip: l.delete,
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
-              if (await confirm(
-                context,
-                'Apagar a plataforma “${acc.name}” com os seus ativos e operações? Os movimentos do banco ficam (deixam de estar associados).',
-              )) {
+              if (await confirm(context, l.invDeleteAccountConfirm(acc.name))) {
                 s.deleteInvestAccount(acc.id);
                 if (context.mounted) Navigator.pop(context);
               }
@@ -125,7 +124,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Adicionar a ${acc.name}',
+                      l.invAddToAccount(acc.name),
                       style: Theme.of(ctx).textTheme.titleLarge,
                     ),
                   ),
@@ -134,8 +133,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     in <(IconData, String, String?, VoidCallback)>[
                       (
                         Icons.edit_note,
-                        'Registar operação',
-                        'Compra, venda, dividendo ou o que já tinhas',
+                        l.invRecordOperation,
+                        l.invRecordOperationHint,
                         () => showOpForm(
                           context,
                           type: OpType.buy,
@@ -144,8 +143,8 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       (
                         Icons.upload_file,
-                        'Importar de um ficheiro',
-                        'PDF, CSV ou Excel da corretora',
+                        l.invImportFromFile,
+                        l.invImportFileHint,
                         () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -156,8 +155,8 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                       (
                         Icons.pie_chart_outline,
-                        'Novo ativo',
-                        'ETF, ação, cripto, fundo…',
+                        l.invNewHolding,
+                        l.invNewHoldingHint,
                         () => showHoldingEditor(context, accountId: acc.id),
                       ),
                     ])
@@ -176,22 +175,22 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
         icon: const Icon(Icons.add),
-        label: const Text('Adicionar'),
+        label: Text(l.invAdd),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
         children: [
           SectionCard(
-            title: 'Resumo',
+            title: l.invSummary,
             child: Wrap(
               spacing: 28,
               runSpacing: 12,
               children: [
-                Stat('Valor total', fmtMoney(sum.total)),
-                Stat('Investido', fmtMoney(sum.costBasis)),
-                Stat('Valor atual', fmtMoney(sum.investedValue)),
+                Stat(l.invTotalValue, fmtMoney(sum.total)),
+                Stat(l.invInvested, fmtMoney(sum.costBasis)),
+                Stat(l.invCurrentValue, fmtMoney(sum.investedValue)),
                 Stat(
-                  'Ganho / perda',
+                  l.invGainLoss,
                   fmtSignedMoney(sum.pl),
                   color: plColor(context, sum.pl),
                   extra: sum.costBasis > 0
@@ -210,8 +209,8 @@ class _AccountScreenState extends State<AccountScreen> {
 
           // ----- dinheiro por alocar -----
           SectionCard(
-            title: 'Dinheiro por alocar',
-            subtitle: 'O que está na plataforma e ainda não foi investido',
+            title: l.invCashToAllocate,
+            subtitle: l.invCashAccountSubtitle,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -223,18 +222,18 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _line('Entregas do banco (líquidas)', sum.depositedCents),
+                _line(l.invBankDepositsNet, sum.depositedCents),
                 if (by(OpType.cash) != 0)
-                  _line('Acertos de dinheiro', by(OpType.cash)),
-                if (by(OpType.sell) != 0) _line('Vendas', by(OpType.sell)),
+                  _line(l.invCashAdjustments, by(OpType.cash)),
+                if (by(OpType.sell) != 0) _line(l.invSales, by(OpType.sell)),
                 if (by(OpType.dividend) != 0)
-                  _line('Dividendos', by(OpType.dividend)),
-                if (by(OpType.buy) != 0) _line('Compras', -by(OpType.buy)),
+                  _line(l.invDividends, by(OpType.dividend)),
+                if (by(OpType.buy) != 0) _line(l.invPurchases, -by(OpType.buy)),
                 if (sum.cashCents < 0)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      'O valor está negativo: gastaste mais do que o dinheiro registado. Associa a transferência do banco ou acerta o dinheiro que já lá estava.',
+                      l.invNegativeAccountCash,
                       style: tt.bodySmall?.copyWith(
                         color: Colors.orange.shade700,
                       ),
@@ -257,7 +256,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           prefillCents: sum.cashCents,
                         ),
                         icon: const Icon(Icons.add_shopping_cart, size: 18),
-                        label: const Text('Alocar dinheiro'),
+                        label: Text(l.invAllocateMoney),
                       ),
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
@@ -269,7 +268,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         accountId: acc.id,
                       ),
                       icon: const Icon(Icons.tune, size: 18),
-                      label: const Text('Acertar'),
+                      label: Text(l.invAdjust),
                     ),
                   ],
                 ),
@@ -279,10 +278,10 @@ class _AccountScreenState extends State<AccountScreen> {
 
           // ----- transferências do banco -----
           SectionCard(
-            title: 'Transferências do banco',
+            title: l.invBankTransfers,
             subtitle: linked.isEmpty
-                ? 'Marca quais foram dinheiro enviado para ${acc.name}'
-                : '${linked.length} associadas · não contam como despesa',
+                ? l.invMarkTransfersFor(acc.name)
+                : l.invLinkedCount(linked.length),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -290,10 +289,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   Callout(
                     icon: Icons.lightbulb_outline,
                     color: cs.primary,
-                    title:
-                        '$suggestions ${suggestions == 1 ? 'movimento parece' : 'movimentos parecem'} ser desta plataforma',
-                    body:
-                        'Têm “${acc.name}” no nome. Toca para rever e associar.',
+                    title: l.invSuggestedMatches(suggestions),
+                    body: l.invSuggestedBody(acc.name),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -311,14 +308,14 @@ class _AccountScreenState extends State<AccountScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                      '${fmtDate(t.date)} · ${t.amount < 0 ? 'entrega' : 'levantamento'}',
+                      '${fmtDate(t.date)} · ${t.amount < 0 ? l.invDeliveryLower : l.invWithdrawalLower}',
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         MoneyText(t.amount, colored: false),
                         IconButton(
-                          tooltip: 'Desassociar',
+                          tooltip: l.invUnlink,
                           icon: const Icon(Icons.link_off, size: 20),
                           onPressed: () => s.unlinkTransfers([t.id]),
                         ),
@@ -329,14 +326,14 @@ class _AccountScreenState extends State<AccountScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
-                      '… e mais ${linked.length - 8}',
+                      l.invAndMore(linked.length - 8),
                       style: tt.bodySmall,
                     ),
                   ),
                 if (patterns.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
-                    'Títulos lembrados para as próximas importações',
+                    l.invRememberedTitles,
                     style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
                   const SizedBox(height: 6),
@@ -364,7 +361,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.add_link, size: 20),
-                  label: const Text('Associar transferências do banco'),
+                  label: Text(l.invLinkBankTransfers),
                 ),
               ],
             ),
@@ -372,16 +369,14 @@ class _AccountScreenState extends State<AccountScreen> {
 
           // ----- ativos -----
           SectionCard(
-            title: 'Ativos',
+            title: l.invAssets,
             trailing: TextButton.icon(
               onPressed: () => showHoldingEditor(context, accountId: acc.id),
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Novo'),
+              label: Text(l.invNew),
             ),
             child: holdings.isEmpty
-                ? const Text(
-                    'Ainda sem ativos. Cria um (ex.: o ETF ou a ação que compraste) e regista a posição que já tinhas ou uma compra.',
-                  )
+                ? Text(l.invNoAssetsYet)
                 : Column(
                     children: [
                       for (final h in holdings)
@@ -401,8 +396,8 @@ class _AccountScreenState extends State<AccountScreen> {
           // ----- histórico -----
           if (ops.isNotEmpty)
             SectionCard(
-              title: 'Histórico',
-              subtitle: 'Toca para editar',
+              title: l.invHistory,
+              subtitle: l.invTapToEdit,
               child: Column(
                 children: [
                   for (final o in ops.take(30))
@@ -416,7 +411,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     Padding(
                       padding: const EdgeInsets.all(8),
                       child: Text(
-                        '… e mais ${ops.length - 30}',
+                        l.invAndMore(ops.length - 30),
                         style: tt.bodySmall,
                       ),
                     ),

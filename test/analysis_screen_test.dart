@@ -1,6 +1,7 @@
 import 'package:financas/screens/analysis_screen.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:financas/db/database.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +24,9 @@ Future<void> _pump(
     ChangeNotifierProvider<AppState>.value(
       value: s,
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('pt', 'PT'),
         theme: ThemeData(
           useMaterial3: true,
           colorSchemeSeed: const Color(0xFF2E7D6B),

@@ -7,6 +7,7 @@ import '../analysis/overview_tab.dart';
 import '../analysis/save_tab.dart';
 import '../analysis/spend_tab.dart';
 import '../analysis/trend_tab.dart';
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 
@@ -25,10 +26,12 @@ class _AnalysisScreenState extends State<AnalysisScreen>
     with SingleTickerProviderStateMixin {
   late final TabController tabs = TabController(length: 4, vsync: this);
   _Mode mode = _Mode.month;
-  late DateTime month = DateTime(
-    (widget.initialMonth ?? DateTime.now()).year,
-    (widget.initialMonth ?? DateTime.now()).month,
-  );
+  late DateTime month = widget.initialMonth != null
+      ? DateTime(widget.initialMonth!.year, widget.initialMonth!.month)
+      : _keyToMonth(context.read<AppState>().currentMonthKey);
+
+  static DateTime _keyToMonth(String k) =>
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
   late int year = month.year;
   late DateTime customFrom = month;
   late DateTime customTo = DateTime(month.year, month.month + 1, 0);
@@ -42,16 +45,16 @@ class _AnalysisScreenState extends State<AnalysisScreen>
   }
 
   Period get period => switch (mode) {
-    _Mode.month => Period.month(month),
+    _Mode.month => context.read<AppState>().periodOfMonth(monthKey(month)),
     _Mode.year => Period.year(year),
     _Mode.ytd => Period.ytd(),
     _Mode.custom => Period.custom(customFrom, customTo),
   };
 
-  String get periodLabel => switch (mode) {
+  String periodLabel(AppLocalizations l) => switch (mode) {
     _Mode.month => fmtMonth(month),
     _Mode.year => '$year',
-    _Mode.ytd => 'YTD ${DateTime.now().year} · 1 jan – hoje',
+    _Mode.ytd => l.anYtdLabel('${DateTime.now().year}'),
     _Mode.custom =>
       customFrom.isAfter(customTo)
           ? '${fmtDate(customTo)} – ${fmtDate(customFrom)}'
@@ -71,9 +74,12 @@ class _AnalysisScreenState extends State<AnalysisScreen>
       s,
       p,
       filter,
-      previous: compare ? previousPeriod(p, today: DateTime.now()) : null,
+      previous: compare
+          ? (s.previousMonthOf(p) ?? previousPeriod(p, today: DateTime.now()))
+          : null,
     );
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     Widget chev(int dir) => IconButton(
       icon: Icon(dir < 0 ? Icons.chevron_left : Icons.chevron_right),
@@ -86,12 +92,10 @@ class _AnalysisScreenState extends State<AnalysisScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Análise'),
+        title: Text(l.analysis),
         actions: [
           IconButton(
-            tooltip: compare
-                ? 'A comparar com o período anterior'
-                : 'Comparar com o período anterior',
+            tooltip: compare ? l.anCompareOn : l.anCompareOff,
             isSelected: compare,
             icon: const Icon(Icons.compare_arrows),
             selectedIcon: Icon(Icons.compare_arrows, color: cs.primary),
@@ -111,13 +115,22 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                     width: double.infinity,
                     child: SegmentedButton<_Mode>(
                       showSelectedIcon: false,
-                      segments: const [
-                        ButtonSegment(value: _Mode.month, label: Text('Mês')),
-                        ButtonSegment(value: _Mode.year, label: Text('Ano')),
-                        ButtonSegment(value: _Mode.ytd, label: Text('YTD')),
+                      segments: [
+                        ButtonSegment(
+                          value: _Mode.month,
+                          label: Text(l.anModeMonth),
+                        ),
+                        ButtonSegment(
+                          value: _Mode.year,
+                          label: Text(l.anModeYear),
+                        ),
+                        ButtonSegment(
+                          value: _Mode.ytd,
+                          label: Text(l.anModeYtd),
+                        ),
                         ButtonSegment(
                           value: _Mode.custom,
-                          label: Text('Custom'),
+                          label: Text(l.anModeCustom),
                         ),
                       ],
                       selected: {mode},
@@ -131,7 +144,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                     children: [
                       chev(-1),
                       Text(
-                        periodLabel,
+                        periodLabel(l),
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       chev(1),
@@ -141,7 +154,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Text(
-                      periodLabel,
+                      periodLabel(l),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   )
@@ -150,7 +163,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.date_range),
-                      label: Text(periodLabel),
+                      label: Text(periodLabel(l)),
                       onPressed: () async {
                         final r = await showDateRangePicker(
                           context: context,
@@ -164,8 +177,8 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                                 ? customFrom
                                 : customTo,
                           ),
-                          helpText: 'Escolhe o intervalo',
-                          saveText: 'Aplicar',
+                          helpText: l.anPickRange,
+                          saveText: l.anApply,
                         );
                         if (r != null)
                           setState(() {
@@ -191,11 +204,11 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                   controller: tabs,
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
-                  tabs: const [
-                    Tab(text: 'Visão geral'),
-                    Tab(text: 'Gastos'),
-                    Tab(text: 'Poupar'),
-                    Tab(text: 'Evolução'),
+                  tabs: [
+                    Tab(text: l.anTabOverview),
+                    Tab(text: l.anTabSpend),
+                    Tab(text: l.anTabSave),
+                    Tab(text: l.anTabTrend),
                   ],
                 ),
               ),
@@ -207,7 +220,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
           children: [
             OverviewTab(
               a: a,
-              periodLabel: periodLabel,
+              periodLabel: periodLabel(l),
               compare: compare,
               onSavings: () => tabs.animateTo(2),
             ),

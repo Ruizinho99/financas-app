@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/widgets.dart';
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -17,6 +18,7 @@ Future<int?> showInvestAccountEditor(
   BuildContext context, {
   InvestAccount? edit,
 }) {
+  final l = AppLocalizations.of(context)!;
   final s = context.read<AppState>();
   final name = TextEditingController(text: edit?.name ?? '');
   final note = TextEditingController(text: edit?.note ?? '');
@@ -26,7 +28,9 @@ Future<int?> showInvestAccountEditor(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: Text(edit == null ? 'Nova plataforma' : 'Editar plataforma'),
+        title: Text(
+          edit == null ? l.invfAccountNewTitle : l.invfAccountEditTitle,
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -65,8 +69,8 @@ Future<int?> showInvestAccountEditor(
                       autofocus: edit == null,
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
-                        labelText: 'Nome',
-                        hintText: 'Ex.: XTB, Trade Republic',
+                        labelText: l.invfName,
+                        hintText: l.invfAccountNameHint,
                         errorText: error,
                       ),
                     ),
@@ -76,7 +80,7 @@ Future<int?> showInvestAccountEditor(
               const SizedBox(height: 12),
               TextField(
                 controller: note,
-                decoration: const InputDecoration(labelText: 'Nota (opcional)'),
+                decoration: InputDecoration(labelText: l.invfNoteOptional),
                 maxLines: 2,
               ),
             ],
@@ -85,20 +89,20 @@ Future<int?> showInvestAccountEditor(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
               final n = name.text.trim();
               if (n.isEmpty) {
-                set(() => error = 'Indica um nome');
+                set(() => error = l.invfEnterName);
                 return;
               }
               if (s.investAccounts.any(
                 (a) =>
                     a.id != edit?.id && a.name.toLowerCase() == n.toLowerCase(),
               )) {
-                set(() => error = 'Já existe uma plataforma com este nome');
+                set(() => error = l.invfAccountNameTaken);
                 return;
               }
               if (edit == null) {
@@ -113,7 +117,7 @@ Future<int?> showInvestAccountEditor(
                 Navigator.pop(ctx, edit.id);
               }
             },
-            child: const Text('Guardar'),
+            child: Text(l.invfSave),
           ),
         ],
       ),
@@ -130,6 +134,7 @@ Future<SymbolHit?> showSymbolSearch(
   PriceProvider provider, {
   String initial = '',
 }) {
+  final l = AppLocalizations.of(context)!;
   final s = context.read<AppState>();
   final ctrl = TextEditingController(text: initial);
   List<SymbolHit>? hits;
@@ -146,7 +151,7 @@ Future<SymbolHit?> showSymbolSearch(
     } on PriceException catch (e) {
       set(() => error = e.message);
     } catch (_) {
-      set(() => error = 'Não foi possível pesquisar.');
+      set(() => error = l.invfSearchFailed);
     }
     set(() => loading = false);
   }
@@ -155,7 +160,7 @@ Future<SymbolHit?> showSymbolSearch(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: Text('Procurar em ${provider.label}'),
+        title: Text(l.invfSearchIn(provider.label)),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -168,8 +173,8 @@ Future<SymbolHit?> showSymbolSearch(
                 onSubmitted: (_) => run(set),
                 decoration: InputDecoration(
                   hintText: provider == PriceProvider.coingecko
-                      ? 'Ex.: bitcoin'
-                      : 'Ex.: VWCE, Apple, S&P 500',
+                      ? l.invfCryptoSearchHint
+                      : l.invfSymbolSearchHint,
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () => run(set),
@@ -191,9 +196,9 @@ Future<SymbolHit?> showSymbolSearch(
                   ),
                 ),
               if (hits != null && hits!.isEmpty && !loading)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(8),
-                  child: Text('Nada encontrado.'),
+                  child: Text(l.invfNothingFound),
                 ),
               if (hits != null && hits!.isNotEmpty)
                 Flexible(
@@ -223,7 +228,7 @@ Future<SymbolHit?> showSymbolSearch(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Fechar'),
+            child: Text(l.invfClose),
           ),
         ],
       ),
@@ -237,6 +242,7 @@ Future<int?> showHoldingEditor(
   Holding? edit,
   int? accountId,
 }) {
+  final l = AppLocalizations.of(context)!;
   final s = context.read<AppState>();
   final name = TextEditingController(text: edit?.name ?? '');
   final symbol = TextEditingController(text: edit?.symbol ?? '');
@@ -263,7 +269,9 @@ Future<int?> showHoldingEditor(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: Text(edit == null ? 'Novo ativo' : 'Editar ativo'),
+        title: Text(
+          edit == null ? l.invfHoldingNewTitle : l.invfHoldingEditTitle,
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -274,8 +282,8 @@ Future<int?> showHoldingEditor(
                 autofocus: edit == null,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
-                  labelText: 'Nome',
-                  hintText: 'Ex.: Vanguard FTSE All-World',
+                  labelText: l.invfName,
+                  hintText: l.invfHoldingNameHint,
                   errorText: error,
                 ),
               ),
@@ -284,7 +292,7 @@ Future<int?> showHoldingEditor(
                 DropdownButtonFormField<int>(
                   initialValue: acc,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Plataforma'),
+                  decoration: InputDecoration(labelText: l.invfPlatform),
                   items: [
                     for (final a in s.investAccounts)
                       DropdownMenuItem(
@@ -295,7 +303,7 @@ Future<int?> showHoldingEditor(
                   onChanged: (v) => set(() => acc = v),
                 ),
               if (s.investAccounts.length > 1) const SizedBox(height: 12),
-              Text('Tipo', style: Theme.of(ctx).textTheme.labelLarge),
+              Text(l.invfType, style: Theme.of(ctx).textTheme.labelLarge),
               const SizedBox(height: 6),
               Wrap(
                 spacing: 8,
@@ -303,7 +311,7 @@ Future<int?> showHoldingEditor(
                 children: [
                   for (final k in HoldingKind.values)
                     ChoiceChip(
-                      label: Text('${k.emoji} ${k.label}'),
+                      label: Text('${k.emoji} ${_kindLabel(l, k)}'),
                       selected: kind == k,
                       onSelected: (_) => set(() => kind = k),
                     ),
@@ -316,17 +324,19 @@ Future<int?> showHoldingEditor(
                     ? 'AUTO'
                     : (kCurrencies.contains(currency) ? currency : null),
                 isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Moeda do ativo'),
+                decoration: InputDecoration(labelText: l.invfAssetCurrency),
                 items: [
                   if (provider != PriceProvider.manual)
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: 'AUTO',
-                      child: Text('Automática (a do preço)'),
+                      child: Text(l.invfAutoCurrency),
                     ),
                   for (final c in kCurrencies)
                     DropdownMenuItem(
                       value: c,
-                      child: Text(c == baseCcy ? '$c · moeda de base' : c),
+                      child: Text(
+                        c == baseCcy ? l.invfBaseCurrencyOption(c) : c,
+                      ),
                     ),
                 ],
                 onChanged: (v) => set(() {
@@ -341,14 +351,18 @@ Future<int?> showHoldingEditor(
               const SizedBox(height: 4),
               Text(
                 provider != PriceProvider.manual && !manualCcy
-                    ? 'Usa a moeda em que o ativo cota (${currency == baseCcy && edit?.lastPrice == null ? 'detetada ao obter o preço' : currency}). Podes escolher outra à mão.'
+                    ? l.invfCurrencyAutoHint(
+                        currency == baseCcy && edit?.lastPrice == null
+                            ? l.invfDetectedOnPrice
+                            : currency,
+                      )
                     : currency == baseCcy
-                    ? 'Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.'
-                    : 'Compras e preço médio ficam em $currency; o valor e o ganho da carteira são convertidos para a moeda de base ao câmbio de mercado (atualizado em "Atualizar preços").',
+                    ? l.invfUsdHint
+                    : l.invfForeignCcyHint(currency),
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
               const SizedBox(height: 14),
-              Text('Preço', style: Theme.of(ctx).textTheme.labelLarge),
+              Text(l.invfPrice, style: Theme.of(ctx).textTheme.labelLarge),
               const SizedBox(height: 6),
               SegmentedButton<PriceProvider>(
                 showSelectedIcon: false,
@@ -371,9 +385,9 @@ Future<int?> showHoldingEditor(
               ),
               const SizedBox(height: 6),
               Text(switch (provider) {
-                PriceProvider.yahoo => 'Gratuito, sem chave. ETFs, ações e câmbios (ex.: VWCE.DE, AAPL, BTC-EUR). Converte para euros.',
-                PriceProvider.coingecko => 'Gratuito, sem chave. Criptomoedas, pelo id (ex.: bitcoin, ethereum).',
-                PriceProvider.manual => 'Tu defines o preço quando quiseres. Nada é enviado para a internet.',
+                PriceProvider.yahoo => l.invfYahooHint,
+                PriceProvider.coingecko => l.invfCoingeckoHint,
+                PriceProvider.manual => l.invfManualHint,
               }, style: Theme.of(ctx).textTheme.bodySmall),
               const SizedBox(height: 12),
               if (provider != PriceProvider.manual)
@@ -382,10 +396,10 @@ Future<int?> showHoldingEditor(
                   autocorrect: false,
                   decoration: InputDecoration(
                     labelText: provider == PriceProvider.coingecko
-                        ? 'Id no CoinGecko'
-                        : 'Símbolo',
+                        ? l.invfCoingeckoId
+                        : l.invfSymbol,
                     suffixIcon: IconButton(
-                      tooltip: 'Procurar',
+                      tooltip: l.invfSearchTooltip,
                       icon: const Icon(Icons.search),
                       onPressed: () async {
                         final h = await showSymbolSearch(
@@ -410,7 +424,7 @@ Future<int?> showHoldingEditor(
                     decimal: true,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Preço atual ($currency, opcional)',
+                    labelText: l.invfCurrentPriceOptional(currency),
                     prefixText: currency == baseCcy ? '$baseSym ' : null,
                   ),
                 ),
@@ -422,9 +436,9 @@ Future<int?> showHoldingEditor(
                       decimal: true,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Câmbio: 1 $baseSym = ? $currency',
+                      labelText: l.invfFxLabel(baseSym, currency),
                       suffixIcon: IconButton(
-                        tooltip: 'Câmbio de mercado atual (internet)',
+                        tooltip: l.invfLiveFxTooltip,
                         icon: const Icon(Icons.sync),
                         onPressed: () async {
                           try {
@@ -436,10 +450,7 @@ Future<int?> showHoldingEditor(
                                     .replaceAll('.', ','),
                               );
                           } on PriceException catch (e) {
-                            set(
-                              () => error =
-                                  'Não consegui obter o câmbio: ${e.message}',
-                            );
+                            set(() => error = l.invfFxFetchFailed(e.message));
                           }
                         },
                       ),
@@ -453,18 +464,18 @@ Future<int?> showHoldingEditor(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () async {
               final n = name.text.trim();
               if (n.isEmpty || acc == null) {
-                set(() => error = 'Indica um nome');
+                set(() => error = l.invfEnterName);
                 return;
               }
               if (provider != PriceProvider.manual &&
                   symbol.text.trim().isEmpty) {
-                set(() => error = 'Indica o símbolo (ou usa a pesquisa)');
+                set(() => error = l.invfSymbolRequired);
                 return;
               }
               final manual = provider == PriceProvider.manual
@@ -478,9 +489,7 @@ Future<int?> showHoldingEditor(
                   manual != null &&
                   currency != baseCcy &&
                   fx == null) {
-                set(
-                  () => error = 'Indica o câmbio, ou usa o botão de sincronizar para o câmbio de mercado.',
-                );
+                set(() => error = l.invfFxOrSyncRequired);
                 return;
               }
               final base = (edit ?? Holding(id: 0, accountId: acc!, name: n))
@@ -526,14 +535,14 @@ Future<int?> showHoldingEditor(
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Não consegui obter o preço: ${r.failed.values.first}',
+                        l.invfPriceFetchFailed(r.failed.values.first),
                       ),
                     ),
                   );
                 }
               }
             },
-            child: const Text('Guardar'),
+            child: Text(l.invfSave),
           ),
         ],
       ),
@@ -543,13 +552,14 @@ Future<int?> showHoldingEditor(
 
 /// Escolher só a moeda do ativo (manual ou automática) e atualizar o câmbio de mercado.
 Future<void> showCurrencyPicker(BuildContext context, Holding h) async {
+  final l = AppLocalizations.of(context)!;
   final s = context.read<AppState>();
   var value = h.canAutoPrice && !h.currencyManual ? 'AUTO' : h.currency;
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: const Text('Moeda do ativo'),
+        title: Text(l.invfAssetCurrency),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,21 +569,21 @@ Future<void> showCurrencyPicker(BuildContext context, Holding h) async {
               isExpanded: true,
               items: [
                 if (h.canAutoPrice)
-                  const DropdownMenuItem(
+                  DropdownMenuItem(
                     value: 'AUTO',
-                    child: Text('Automática (a do preço)'),
+                    child: Text(l.invfAutoCurrency),
                   ),
                 for (final c in kCurrencies)
                   DropdownMenuItem(
                     value: c,
-                    child: Text(c == baseCcy ? '$c · moeda de base' : c),
+                    child: Text(c == baseCcy ? l.invfBaseCurrencyOption(c) : c),
                   ),
               ],
               onChanged: (v) => set(() => value = v ?? value),
             ),
             const SizedBox(height: 10),
             Text(
-              'O valor é convertido para $baseCcy ao câmbio de mercado, atualizado em "Atualizar preços". As operações já registadas mantêm os valores que lá estão.',
+              l.invfCurrencyPickerHint(baseCcy),
               style: Theme.of(ctx).textTheme.bodySmall,
             ),
           ],
@@ -581,11 +591,11 @@ Future<void> showCurrencyPicker(BuildContext context, Holding h) async {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Guardar'),
+            child: Text(l.invfSave),
           ),
         ],
       ),
@@ -608,11 +618,7 @@ Future<void> showCurrencyPicker(BuildContext context, Holding h) async {
     final r = await s.refreshPrices(holdingId: h.id);
     if (context.mounted && r.failed.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Não consegui obter o câmbio: ${r.failed.values.first}',
-          ),
-        ),
+        SnackBar(content: Text(l.invfFxFetchFailed(r.failed.values.first))),
       );
     }
   }
@@ -850,45 +856,47 @@ class _OpFormScreenState extends State<OpFormScreen> {
   }
 
   Future<void> _liveFx(AppState s) async {
+    final l = AppLocalizations.of(context)!;
     try {
       final fx = await s.prices.fxRate(ccy, baseCcy);
       if (mounted && fx > 0) setState(() => fxCtrl.text = _num(1 / fx));
     } on PriceException catch (e) {
       if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Não consegui obter o câmbio: ${e.message}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.invfFxFetchFailed(e.message))));
     }
   }
 
   void _save(AppState s) {
+    final l = AppLocalizations.of(context)!;
     if (accountId == null) {
-      setState(() => error = 'Escolhe a plataforma.');
+      setState(() => error = l.invfChoosePlatform);
       return;
     }
     if (usesHolding && holdingId == null) {
-      setState(() => error = 'Escolhe o ativo (ou cria um).');
+      setState(() => error = l.invfChooseAsset);
       return;
     }
     final amt = amountCents;
     if (amt == null ||
         (type != OpType.cash && amt <= 0) ||
         (type == OpType.cash && amt == 0)) {
-      setState(() => error = 'Indica valores válidos.');
+      setState(() => error = l.invfEnterValidAmounts);
       return;
     }
     if (foreignTrade && eurPerUnit == null) {
-      setState(() => error = 'Indica o câmbio (1 $baseSym = ? $ccy).');
+      setState(() => error = l.invfFxRequired(baseSym, ccy));
       return;
     }
     if (tradeLike && ((qty ?? 0) <= 0 || (price ?? 0) <= 0)) {
-      setState(() => error = 'Indica a quantidade e o preço.');
+      setState(() => error = l.invfEnterQtyPrice);
       return;
     }
     if (type == OpType.sell) {
       final pos = _position(s);
       if (pos != null && qty! > pos + 1e-9) {
-        setState(() => error = 'Só tens ${fmtQty(pos)} unidades para vender.');
+        setState(() => error = l.invfOnlyHaveUnits(fmtQty(pos)));
         return;
       }
     }
@@ -963,6 +971,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
@@ -981,9 +990,10 @@ class _OpFormScreenState extends State<OpFormScreen> {
             return Callout(
               icon: Icons.link_off,
               color: cs.primary,
-              title:
-                  'Total a pagar: ${fmtMoney(amt)}${fee > 0 ? ' (com ${fmtMoney(fee)} de comissão)' : ''}',
-              body: 'Sem alocação: não desconta do dinheiro por alocar. Podes registar a transferência do banco quando quiseres.',
+              title: (fee > 0
+                  ? l.invfTotalToPayFee(fmtMoney(amt), fmtMoney(fee))
+                  : l.invfTotalToPay(fmtMoney(amt))),
+              body: l.invfNoAllocationHint,
             );
           }
           return Callout(
@@ -991,11 +1001,12 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 ? Icons.warning_amber_rounded
                 : Icons.account_balance_wallet_outlined,
             color: after < 0 ? Colors.orange.shade700 : cs.primary,
-            title:
-                'Total a pagar: ${fmtMoney(amt)}${fee > 0 ? ' (com ${fmtMoney(fee)} de comissão)' : ''}',
+            title: (fee > 0
+                ? l.invfTotalToPayFee(fmtMoney(amt), fmtMoney(fee))
+                : l.invfTotalToPay(fmtMoney(amt))),
             body: after < 0
-                ? 'Ainda não tens ${fmtMoney(amt)} por alocar nesta plataforma (tens ${fmtMoney(cash)}). Regista a transferência do banco depois, ou desliga "Descontar do dinheiro por alocar" em Mais opções.'
-                : 'Dinheiro por alocar: ${fmtMoney(cash)} → ${fmtMoney(after)}.',
+                ? l.invfNotEnoughUnallocated(fmtMoney(amt), fmtMoney(cash))
+                : l.invfUnallocatedChange(fmtMoney(cash), fmtMoney(after)),
           );
         case OpType.sell:
           final pos = s.portfolio.positions.where(
@@ -1008,44 +1019,46 @@ class _OpFormScreenState extends State<OpFormScreen> {
           return Callout(
             icon: Icons.south_west,
             color: cs.primary,
-            title: 'Recebes ${fmtMoney(amt)}',
+            title: l.invfYouReceive(fmtMoney(amt)),
             body: [
-              'Dinheiro por alocar: ${fmtMoney(cash)} → ${fmtMoney(cash + amt)}.',
+              l.invfUnallocatedChange(fmtMoney(cash), fmtMoney(cash + amt)),
               if (realized != null)
-                'Ganho realizado: ${fmtSignedMoney(realized)} (preço médio ${fmtPrice(avg!)}).',
+                l.invfRealizedGain(fmtSignedMoney(realized), fmtPrice(avg!)),
             ].join(' '),
           );
         case OpType.initial:
           return Callout(
             icon: Icons.history,
             color: cs.primary,
-            title: 'Custo da posição: ${fmtMoney(amt)}',
-            body: 'Posição que já tinhas antes de usar a app. Define o preço médio de compra e não mexe no dinheiro por alocar.',
+            title: l.invfPositionCost(fmtMoney(amt)),
+            body: l.invfInitialHint,
           );
         case OpType.dividend:
           return Callout(
             icon: Icons.payments_outlined,
             color: cs.primary,
-            title: 'Entram ${fmtMoney(amt)} no dinheiro por alocar',
-            body: '${fmtMoney(cash)} → ${fmtMoney(cash + amt)}.',
+            title: l.invfDividendIn(fmtMoney(amt)),
+            body: l.invfBalanceChange(fmtMoney(cash), fmtMoney(cash + amt)),
           );
         case OpType.cash:
           return Callout(
             icon: Icons.account_balance_wallet_outlined,
             color: cs.primary,
-            title:
-                'Dinheiro por alocar: ${fmtMoney(cash)} → ${fmtMoney(cash + amt)}',
-            body: 'Usa isto para dinheiro que já estava na plataforma antes de começares a usar a app.',
+            title: l.invfUnallocatedChangeTitle(
+              fmtMoney(cash),
+              fmtMoney(cash + amt),
+            ),
+            body: l.invfCashHint,
           );
       }
     }
 
     final typeLabels = <OpType, String>{
-      OpType.buy: 'Compra',
-      OpType.sell: 'Venda',
-      OpType.dividend: 'Dividendo',
-      OpType.initial: 'Já tinha',
-      OpType.cash: 'Dinheiro',
+      OpType.buy: l.invfOpBuy,
+      OpType.sell: l.invfOpSell,
+      OpType.dividend: l.invfOpDividend,
+      OpType.initial: l.invfOpAlreadyHeld,
+      OpType.cash: l.invfOpCashChip,
     };
 
     void switchType(OpType t) {
@@ -1072,8 +1085,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
     }
 
     final priceLabel = type == OpType.initial
-        ? 'Preço médio ($ccyLabel)'
-        : 'Preço ($ccyLabel)';
+        ? l.invfAvgPriceWithCcy(ccyLabel)
+        : l.invfPriceWithCcy(ccyLabel);
     _extrasOpen ??=
         feeCtrl.text.isNotEmpty ||
         noteCtrl.text.isNotEmpty ||
@@ -1083,7 +1096,9 @@ class _OpFormScreenState extends State<OpFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.edit == null ? 'Nova operação' : 'Editar · ${type.label}',
+          widget.edit == null
+              ? l.invfOpNewTitle
+              : l.invfOpEditTitle(_opTypeLabel(l, type)),
         ),
       ),
       body: ListView(
@@ -1110,8 +1125,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 DropdownButtonFormField<int>(
                   initialValue: accountId,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Plataforma',
+                  decoration: InputDecoration(
+                    labelText: l.invfPlatform,
                     prefixIcon: Icon(Icons.account_balance_outlined),
                   ),
                   items: [
@@ -1135,8 +1150,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   key: ValueKey('h-$accountId-${holdings.length}-$holdingId'),
                   initialValue: holdingId,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Ativo',
+                  decoration: InputDecoration(
+                    labelText: l.invfHolding,
                     prefixIcon: Icon(Icons.pie_chart_outline),
                   ),
                   items: [
@@ -1148,9 +1163,9 @@ class _OpFormScreenState extends State<OpFormScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    const DropdownMenuItem(
+                    DropdownMenuItem(
                       value: -1,
-                      child: Text('➕  Novo ativo…'),
+                      child: Text(l.invfNewAssetItem),
                     ),
                   ],
                   onChanged: (v) async {
@@ -1204,8 +1219,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
                                   const TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
-                              decoration: const InputDecoration(
-                                labelText: 'Quantidade',
+                              decoration: InputDecoration(
+                                labelText: l.invfQuantity,
                                 hintText: '0',
                               ),
                             )
@@ -1216,9 +1231,9 @@ class _OpFormScreenState extends State<OpFormScreen> {
                                     decimal: true,
                                   ),
                               decoration: InputDecoration(
-                                labelText: 'Valor ($baseSym)',
+                                labelText: l.invfValueWithCcy(baseSym),
                                 prefixText: '$baseSym  ',
-                                hintText: '0,00',
+                                hintText: zeroHint,
                               ),
                             ),
                     ),
@@ -1233,7 +1248,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                           labelText: priceLabel,
                           prefixText: ccy == baseCcy ? '$baseSym  ' : null,
                           suffixText: ccy == baseCcy ? null : ccy,
-                          hintText: '0,00',
+                          hintText: zeroHint,
                         ),
                       ),
                     ),
@@ -1248,12 +1263,12 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     ),
                     decoration: InputDecoration(
                       labelText: type == OpType.initial
-                          ? 'Câmbio médio (1 $baseSym = ? $ccy)'
-                          : 'Câmbio (1 $baseSym = ? $ccy)',
+                          ? l.invfAvgFxLabel(baseSym, ccy)
+                          : l.invfFxRateLabel(baseSym, ccy),
                       prefixIcon: const Icon(Icons.currency_exchange),
                       hintText: '1,0850',
                       suffixIcon: IconButton(
-                        tooltip: 'Câmbio atual (internet)',
+                        tooltip: l.invfLiveFxTooltip,
                         icon: const Icon(Icons.sync),
                         onPressed: () => _liveFx(s),
                       ),
@@ -1265,7 +1280,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       [
-                        if (!byQty && qty != null) '= ${fmtQty(qty!)} unidades',
+                        if (!byQty && qty != null)
+                          l.invfUnitsEquals(fmtQty(qty!)),
                         if (byQty && total != null)
                           '= ${fmtMoney((total! * 100).round())}',
                       ].join(' '),
@@ -1278,15 +1294,15 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   const SizedBox(height: 14),
                   SegmentedButton<bool>(
                     showSelectedIcon: false,
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: true,
-                        label: Text('Entrada'),
+                        label: Text(l.invfCashIn),
                         icon: Icon(Icons.south_west),
                       ),
                       ButtonSegment(
                         value: false,
-                        label: Text('Saída'),
+                        label: Text(l.invfCashOut),
                         icon: Icon(Icons.north_east),
                       ),
                     ],
@@ -1302,17 +1318,17 @@ class _OpFormScreenState extends State<OpFormScreen> {
                   ),
                   decoration: InputDecoration(
                     labelText: type == OpType.dividend
-                        ? 'Valor recebido ($baseSym)'
-                        : 'Valor ($baseSym)',
+                        ? l.invfReceivedWithCcy(baseSym)
+                        : l.invfValueWithCcy(baseSym),
                     prefixText: '$baseSym  ',
-                    hintText: '0,00',
+                    hintText: zeroHint,
                   ),
                 ),
               ],
               const SizedBox(height: 14),
               TileField(
                 icon: Icons.event,
-                title: 'Data',
+                title: l.invfDate,
                 text: fmtDate(date),
                 onTap: () async {
                   final d = await showDatePicker(
@@ -1339,7 +1355,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     childrenPadding: EdgeInsets.zero,
                     initiallyExpanded: _extrasOpen!,
                     title: Text(
-                      tradeLike ? 'Mais opções (comissão, nota…)' : 'Nota',
+                      tradeLike ? l.invfMoreOptionsTrade : l.invfNote,
                       style: tt.titleSmall,
                     ),
                     children: [
@@ -1350,27 +1366,23 @@ class _OpFormScreenState extends State<OpFormScreen> {
                             decimal: true,
                           ),
                           decoration: InputDecoration(
-                            labelText: 'Comissão ($baseSym)',
+                            labelText: l.invfFeeWithCcy(baseSym),
                             prefixText: '$baseSym  ',
-                            hintText: '0,00',
+                            hintText: zeroHint,
                           ),
                         ),
                       if (_affectsCash)
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('Descontar do dinheiro por alocar'),
-                          subtitle: const Text(
-                            'Desliga se ainda não registaste a transferência do banco para a plataforma, ou se esta operação já está contada noutro lado.',
-                          ),
+                          title: Text(l.invfDeductUnallocated),
+                          subtitle: Text(l.invfDeductHint),
                           value: allocate,
                           onChanged: (v) => setState(() => allocate = v),
                         ),
                       if (tradeLike) ...[
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text(
-                            'Indicar o valor total em vez da quantidade',
-                          ),
+                          title: Text(l.invfUseTotalInstead),
                           value: !byQty,
                           onChanged: (v) => setState(() {
                             final q = qty, t = total;
@@ -1391,7 +1403,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                                 size: 16,
                               ),
                               label: Text(
-                                'Moeda do ativo: ${_holding!.currency} · alterar',
+                                l.invfAssetCurrencyChange(_holding!.currency),
                               ),
                               onPressed: () async {
                                 await showCurrencyPicker(context, _holding!);
@@ -1404,8 +1416,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: noteCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Nota',
+                        decoration: InputDecoration(
+                          labelText: l.invfNote,
                           prefixIcon: Icon(Icons.notes),
                         ),
                       ),
@@ -1421,9 +1433,8 @@ class _OpFormScreenState extends State<OpFormScreen> {
                 Callout(
                   icon: Icons.history,
                   color: cs.primary,
-                  title: 'Este ativo já tem uma posição inicial',
-                  body:
-                      'Está carregada aqui. Ao guardar, substitui a anterior.',
+                  title: l.invfHasInitialTitle,
+                  body: l.invfHasInitialBody,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -1436,7 +1447,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => _save(s),
-                child: Text(_edit == null ? 'Guardar' : 'Guardar alterações'),
+                child: Text(_edit == null ? l.invfSave : l.invfSaveChanges),
               ),
               if (_edit != null)
                 TextButton.icon(
@@ -1445,7 +1456,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     Navigator.pop(context, true);
                   },
                   icon: const Icon(Icons.delete_outline),
-                  label: const Text('Apagar operação'),
+                  label: Text(l.invfDeleteOp),
                 ),
             ],
           ),
@@ -1492,6 +1503,7 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     final acc = s.investAccount(widget.accountId);
     final name = (acc?.name ?? '').toLowerCase();
@@ -1521,7 +1533,9 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
         .fold(0, (a, t) => a - t.amount);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Associar a ${acc?.name ?? 'plataforma'}')),
+      appBar: AppBar(
+        title: Text(l.invfLinkTitle(acc?.name ?? l.invfPlatformLower)),
+      ),
       body: Column(
         children: [
           Padding(
@@ -1530,14 +1544,14 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Escolhe os movimentos do banco que foram dinheiro enviado para (ou recebido de) esta plataforma. Deixam de contar como despesa.',
+                  l.invfLinkHint,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 10),
                 TextField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     prefixIcon: Icon(Icons.search),
-                    hintText: 'Pesquisar movimentos',
+                    hintText: l.invfSearchTransactions,
                   ),
                   onChanged: (v) => setState(() => q = v),
                 ),
@@ -1546,11 +1560,11 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
           ),
           Expanded(
             child: shown.isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
                       padding: EdgeInsets.all(32),
                       child: Text(
-                        'Não há movimentos por associar.',
+                        l.invfNoTransactionsToLink,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -1571,7 +1585,7 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         subtitle: Text(
-                          '${fmtDate(t.date)}${mentions(t) ? ' · parece desta plataforma' : ''}',
+                          '${fmtDate(t.date)}${mentions(t) ? l.invfLooksLikeThis : ''}',
                         ),
                         secondary: MoneyText(t.amount),
                       );
@@ -1596,10 +1610,8 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     dense: true,
-                    title: const Text('Lembrar estes títulos'),
-                    subtitle: const Text(
-                      'Nas próximas importações, movimentos com o mesmo título são associados sozinhos.',
-                    ),
+                    title: Text(l.invfRememberTitles),
+                    subtitle: Text(l.invfRememberHint),
                     value: remember,
                     onChanged: (v) => setState(() => remember = v),
                   ),
@@ -1619,8 +1631,11 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
                             },
                       child: Text(
                         selected.isEmpty
-                            ? 'Associar'
-                            : 'Associar ${selected.length} (${fmtSignedMoney(total)} para a plataforma)',
+                            ? l.invfLinkButton
+                            : l.invfLinkCount(
+                                selected.length,
+                                fmtSignedMoney(total),
+                              ),
                       ),
                     ),
                   ),
@@ -1633,3 +1648,20 @@ class _LinkTransfersScreenState extends State<LinkTransfersScreen> {
     );
   }
 }
+
+String _kindLabel(AppLocalizations l, HoldingKind k) => switch (k) {
+  HoldingKind.etf => l.invfKindEtf,
+  HoldingKind.stock => l.invfKindStock,
+  HoldingKind.crypto => l.invfKindCrypto,
+  HoldingKind.fund => l.invfKindFund,
+  HoldingKind.bond => l.invfKindBond,
+  HoldingKind.other => l.invfKindOther,
+};
+
+String _opTypeLabel(AppLocalizations l, OpType t) => switch (t) {
+  OpType.initial => l.invfOpInitial,
+  OpType.buy => l.invfOpBuy,
+  OpType.sell => l.invfOpSell,
+  OpType.dividend => l.invfOpDividend,
+  OpType.cash => l.invfOpCash,
+};

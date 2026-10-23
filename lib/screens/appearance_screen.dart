@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../invest/invest.dart' show kCurrencies;
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -28,28 +29,41 @@ class AppearanceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Aparência')),
+      appBar: AppBar(title: Text(l.appearanceTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Tema', style: Theme.of(context).textTheme.titleMedium),
+          Text(l.languageTitle, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          SegmentedButton<String>(
+            segments: [
+              ButtonSegment(value: 'system', label: Text(l.languageSystem)),
+              ButtonSegment(value: 'pt', label: Text(l.languagePortuguese)),
+              ButtonSegment(value: 'en', label: Text(l.languageEnglish)),
+            ],
+            selected: {s.appLanguage},
+            onSelectionChanged: (v) => s.setAppLanguage(v.first),
+          ),
+          const SizedBox(height: 24),
+          Text(l.morThemeTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           SegmentedButton<ThemeMode>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: ThemeMode.system,
-                label: Text('Sistema'),
+                label: Text(l.morThemeSystem),
                 icon: Icon(Icons.brightness_auto),
               ),
               ButtonSegment(
                 value: ThemeMode.light,
-                label: Text('Claro'),
+                label: Text(l.morThemeLight),
                 icon: Icon(Icons.light_mode),
               ),
               ButtonSegment(
                 value: ThemeMode.dark,
-                label: Text('Escuro'),
+                label: Text(l.morThemeDark),
                 icon: Icon(Icons.dark_mode),
               ),
             ],
@@ -58,17 +72,18 @@ class AppearanceScreen extends StatelessWidget {
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Preto total (AMOLED)'),
-            subtitle: const Text('No modo escuro, fundo totalmente preto'),
+            title: Text(l.morAmoledTitle),
+            subtitle: Text(l.morAmoledSubtitle),
             value: s.amoled,
             onChanged: (v) => s.setAppearance(amoledBlack: v),
           ),
           const Divider(height: 32),
-          Text('Moeda de base', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          const Text(
-            'É a moeda dos teus movimentos, orçamentos e carteira. Os ativos noutras moedas (USD, GBP…) são convertidos para esta.',
+          Text(
+            l.morBaseCurrencyTitle,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
+          const SizedBox(height: 4),
+          Text(l.morBaseCurrencyHint),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: kCurrencies.contains(s.baseCurrency)
@@ -85,18 +100,14 @@ class AppearanceScreen extends StatelessWidget {
               if (c == null) return;
               s.setBaseCurrency(c);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Moeda de base: $c. Os valores já registados não são convertidos; atualiza os preços da Carteira.',
-                  ),
-                ),
+                SnackBar(content: Text(l.morBaseCurrencyChanged(c))),
               );
             },
           ),
           const Divider(height: 32),
-          Text('Cor principal', style: Theme.of(context).textTheme.titleMedium),
+          Text(l.morMainColor, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 4),
-          const Text('Define a cor da barra de navegação, botões e gráficos.'),
+          Text(l.morMainColorHint),
           const SizedBox(height: 12),
           ColorChoice(
             color: s.seedColor,
@@ -105,7 +116,7 @@ class AppearanceScreen extends StatelessWidget {
           ),
           const Divider(height: 32),
           Text(
-            'Cor das receitas',
+            l.morIncomeColor,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
@@ -122,7 +133,7 @@ class AppearanceScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Cor das despesas',
+            l.morExpenseColor,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
@@ -138,21 +149,18 @@ class AppearanceScreen extends StatelessWidget {
             onChanged: (c) => s.setAppearance(expense: c),
           ),
           const Divider(height: 32),
-          Text(
-            'Pré-visualização',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(l.morPreview, style: Theme.of(context).textTheme.titleMedium),
           Card(
             child: ListTile(
               leading: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
-              title: const Text('Supermercado'),
-              subtitle: const Text('Categoria › Subcategoria'),
+              title: Text(l.morSamplePlace),
+              subtitle: Text(l.morSampleCategory),
               trailing: const MoneyText(-4530),
             ),
           ),
           Card(
             child: ListTile(
-              title: const Text('Salário'),
+              title: Text(l.morSampleSalary),
               trailing: const MoneyText(150000),
             ),
           ),
@@ -160,13 +168,10 @@ class AppearanceScreen extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: s.resetAppearance,
             icon: const Icon(Icons.restart_alt),
-            label: const Text('Repor aparência original'),
+            label: Text(l.morResetAppearance),
           ),
           const SizedBox(height: 4),
-          Text(
-            'Cada categoria e subcategoria tem um emoji próprio, que escolhes ao criar ou editar.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text(l.morEmojiHint, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );

@@ -1,0 +1,315 @@
+{
+  "@@locale": "pt",
+  "morMoreTitle": "Mais",
+  "morBudgetSubtitle": "Salário e limites por categoria",
+  "morPlanningSubtitle": "Salário e despesas planeadas por mês",
+  "morGoalsSubtitle": "Poupar para férias, um carro…",
+  "morAnalysisSubtitle": "Onde gastas e onde podes poupar",
+  "morClassifyTitle": "Classificar movimentos",
+  "morClassifySubtitle": "Um cartão por nome",
+  "morUpdatesTitle": "Atualizações",
+  "morUpdatesSubtitle": "Procurar e instalar uma versão nova",
+  "morAppearanceSubtitle": "Modo escuro e cores",
+  "morAccountsTitle": "Contas",
+  "morAccountsCount": "{count, plural, =0{{count} contas} =1{1 conta} other{{count} contas}}",
+  "@morAccountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morRecurringTitle": "Movimentos recorrentes",
+  "morRecurringCount": "{count, plural, =0{{count} recorrentes} =1{1 recorrente} other{{count} recorrentes}} · salário, renda, subscrições",
+  "@morRecurringCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morCategoriesTitle": "Categorias e subcategorias",
+  "morCategoriesCount": "{count, plural, =0{{count} categorias} =1{1 categoria} other{{count} categorias}}",
+  "@morCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morGroupsTitle": "Grupos de títulos",
+  "morGroupsCount": "{count, plural, =0{{count} grupos} =1{1 grupo} other{{count} grupos}}",
+  "@morGroupsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morRulesTitle": "Regras memorizadas",
+  "morRulesCount": "{count, plural, =0{{count} regras} =1{1 regra} other{{count} regras}}",
+  "@morRulesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morImportTitle": "Importar extrato",
+  "morImportSubtitle": "PDF, CSV ou Excel",
+  "morImportsHistoryTitle": "Histórico de importações",
+  "morExportTitle": "Exportar movimentos (CSV)",
+  "morBackupTitle": "Cópia de segurança",
+  "morBackupSubtitle": "Guardar ou restaurar no Google Drive ou num ficheiro",
+  "morWipeTransactionsTitle": "Apagar todos os movimentos",
+  "morWipeTransactionsConfirm": "Apagar TODOS os movimentos, regras e salários? As categorias mantêm-se. Não é possível desfazer.",
+  "morWipeAllTitle": "Apagar tudo, incluindo categorias",
+  "morWipeAllConfirm": "Apagar TUDO: movimentos, categorias, orçamentos, regras, salários e investimentos? Não é possível desfazer.",
+  "morPrivacyNote": "Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).",
+  "morImportsTitle": "Importações",
+  "morNoImports": "Ainda sem importações.",
+  "morUndoImport": "Desfazer importação",
+  "morImportItemSubtitle": "{count, plural, =0{{date} · {count} movimentos} =1{{date} · 1 movimento} other{{date} · {count} movimentos}}",
+  "@morImportItemSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "morRemoveImportQuestion": "{count, plural, =0{Remover os {count} movimentos desta importação?} =1{Remover o movimento desta importação?} other{Remover os {count} movimentos desta importação?}}",
+  "@morRemoveImportQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morCategoriesScreenTitle": "Categorias",
+  "morNewCategory": "Categoria",
+  "morIncomeKind": "Rendimento",
+  "morInvestmentKind": "Investimento",
+  "morBothKinds": "Despesas e receitas",
+  "morFromStart": "desde sempre",
+  "morFromMonth": "de {month}",
+  "@morFromMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "morOpenEnded": "em diante",
+  "morToMonth": "a {month}",
+  "@morToMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "morEnded": "terminada",
+  "morFuture": "futura",
+  "morTxnCount": "{count, plural, =0{{count} mov.} =1{1 mov.} other{{count} mov.}}",
+  "@morTxnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morMandatoryPeriods": "Obrigatória em {count} período(s)",
+  "@morMandatoryPeriods": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morNewSubcategory": "Nova subcategoria",
+  "morDuplicateNextYear": "Duplicar para o ano seguinte",
+  "morReactivate": "Reativar",
+  "morArchive": "Arquivar",
+  "morCreatedCategory": "Criada “{name}”.",
+  "@morCreatedCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "morDeleteCategoryQuestion": "Apagar “{name}”? {count, plural, =0{Os {count} movimentos ficam} =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria{subs}.",
+  "@morDeleteCategoryQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "subs": {
+        "type": "String"
+      }
+    }
+  },
+  "morSubcategoriesDeleted": " e as subcategorias são apagadas",
+  "morThemeTitle": "Tema",
+  "morThemeSystem": "Sistema",
+  "morThemeLight": "Claro",
+  "morThemeDark": "Escuro",
+  "morAmoledTitle": "Preto total (AMOLED)",
+  "morAmoledSubtitle": "No modo escuro, fundo totalmente preto",
+  "morBaseCurrencyTitle": "Moeda de base",
+  "morBaseCurrencyHint": "É a moeda dos teus movimentos, orçamentos e carteira. Os ativos noutras moedas (USD, GBP…) são convertidos para esta.",
+  "morBaseCurrencyChanged": "Moeda de base: {code}. Os valores já registados não são convertidos; atualiza os preços da Carteira.",
+  "@morBaseCurrencyChanged": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "morMainColor": "Cor principal",
+  "morMainColorHint": "Define a cor da barra de navegação, botões e gráficos.",
+  "morIncomeColor": "Cor das receitas",
+  "morExpenseColor": "Cor das despesas",
+  "morPreview": "Pré-visualização",
+  "morSamplePlace": "Supermercado",
+  "morSampleCategory": "Categoria › Subcategoria",
+  "morSampleSalary": "Salário",
+  "morResetAppearance": "Repor aparência original",
+  "morEmojiHint": "Cada categoria e subcategoria tem um emoji próprio, que escolhes ao criar ou editar.",
+  "morBackupDescription": "Guarda todos os teus dados (movimentos, categorias, orçamentos, carteira…) num ficheiro. Não inclui as fotos dos recibos.",
+  "morBackupDriveHint": "Não precisas de ligar nenhuma conta na app: ao guardar, escolhe “Google Drive” (ou outra pasta) no ecrã do Android. Para restaurar, escolhe o ficheiro, do telemóvel ou do Drive.",
+  "morLastBackup": "Última cópia guardada: {date} ({ago})",
+  "@morLastBackup": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "morSaveBackup": "Guardar cópia (Google Drive ou ficheiro)",
+  "morRestoreFromFile": "Restaurar de um ficheiro",
+  "morBackupSaved": "Cópia guardada.",
+  "morDataRestored": "Dados restaurados.",
+  "morRestoreConfirm": "Isto substitui TODOS os dados deste telemóvel pelos da cópia “{name}”. Não dá para desfazer. Continuar?",
+  "@morRestoreConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "morRestore": "Restaurar",
+  "morCouldNotFinish": "Não consegui concluir: {error}",
+  "@morCouldNotFinish": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "morInstalledVersion": "Versão instalada",
+  "morUpdateDescription": "Procura no GitHub se há uma versão nova e instala-a por cima desta, sem perderes dados. A internet só é usada quando carregas no botão.",
+  "morChecking": "A procurar…",
+  "morCheckUpdates": "Procurar atualizações",
+  "morNewVersion": "Há uma versão nova: {version}",
+  "@morNewVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpToDate": "Já tens a versão mais recente",
+  "morDownloadInstall": "Descarregar e instalar",
+  "morDownloadInstallSize": "Descarregar e instalar ({mb} MB)",
+  "@morDownloadInstallSize": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "morDownloadingPercent": "A descarregar… {percent}%",
+  "@morDownloadingPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "morDownloading": "A descarregar…",
+  "morOpenReleasePage": "Abrir a página da versão",
+  "morWhatsNew": "O que mudou",
+  "morInstallerError": "Não consegui abrir o instalador ({message}). Se o Android pediu permissão para instalar apps desta origem, ativa-a e carrega outra vez em \"Descarregar e instalar\".",
+  "@morInstallerError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpdateAvailableTitle": "Atualização disponível",
+  "morUpdateAvailableBody": "Finanças {version} já está disponível. Abre Mais › Atualizações para instalar.",
+  "@morUpdateAvailableBody": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpdateChannelName": "Atualizações",
+  "morUpdateChannelDescription": "Aviso quando sai uma versão nova",
+  "morRecurringNotifBody": "{count, plural, =0{{count} movimentos recorrentes registados} =1{1 movimento recorrente registado} other{{count} movimentos recorrentes registados}}",
+  "@morRecurringNotifBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morAllocationTitle": "Entrega de investimento",
+  "morAllocationBody": "{account}{deliveries}: {details}",
+  "@morAllocationBody": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "deliveries": {
+        "type": "String"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "morDeliveriesCount": "{count, plural, =0{({count} entregas)} =1{(1 entrega)} other{({count} entregas)}}",
+  "@morDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morUndistributed": "{amount} por distribuir",
+  "@morUndistributed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "morAlertsChannelName": "Alertas",
+  "morAlertsChannelDescription": "Movimentos recorrentes e entregas de investimento",
+  "morAssetFallback": "Ativo",
+  "morNavMonth": "Mês",
+  "morNavPortfolio": "Carteira"
+}

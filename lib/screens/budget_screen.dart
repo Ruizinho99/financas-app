@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -14,13 +15,18 @@ class BudgetScreen extends StatefulWidget {
 }
 
 class _BudgetScreenState extends State<BudgetScreen> {
-  DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
+  // o mês da app em foco (nomeado pelo mês em que termina)
+  late DateTime month = _keyToMonth(context.read<AppState>().currentMonthKey);
+
+  static DateTime _keyToMonth(String k) =>
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
 
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
-    final period = Period.month(month);
+    final l = AppLocalizations.of(context)!;
     final key = monthKey(month);
+    final period = s.periodOfMonth(key);
     final salary = s.salaryFor(key);
     final own = s.totalsByCategory(period);
     final allocated = s.totalAllocated(salary, key);
@@ -45,10 +51,10 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Orçamento'),
+        title: Text(l.budget),
         actions: [
           IconButton(
-            tooltip: 'Copiar salário para todos os meses',
+            tooltip: l.bpCopySalaryTooltip,
             icon: const Icon(Icons.payments_outlined),
             onPressed: () => showSalaryEditor(context, s, key),
           ),
@@ -88,22 +94,19 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Salário líquido',
+                          l.bpNetSalary,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
                       TextButton.icon(
                         onPressed: () => showSalaryEditor(context, s, key),
                         icon: const Icon(Icons.edit, size: 18),
-                        label: Text(salary == 0 ? 'Definir' : fmtMoney(salary)),
+                        label: Text(salary == 0 ? l.bpSet : fmtMoney(salary)),
                       ),
                     ],
                   ),
                   if (s.salaries.containsKey(key))
-                    const Text(
-                      'Valor específico deste mês',
-                      style: TextStyle(fontSize: 12),
-                    ),
+                    Text(l.bpSpecificThisMonth, style: TextStyle(fontSize: 12)),
                   if (salary > 0) ...[
                     const SizedBox(height: 8),
                     BudgetBar(
@@ -114,42 +117,45 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Alocado ${fmtMoney(allocated)} (${fmtPercent(allocated / salary)})  ·  ${unallocated >= 0 ? 'Por alocar ${fmtMoney(unallocated)}' : 'Excedido em ${fmtMoney(-unallocated)}'}',
+                      '${l.bpAllocatedSummary(fmtMoney(allocated), fmtPercent(allocated / salary))}  ·  ${unallocated >= 0 ? l.bpUnallocatedLeft(fmtMoney(unallocated)) : l.bpOverAllocated(fmtMoney(-unallocated))}',
                       style: TextStyle(
                         color: unallocated < 0 ? Colors.red : null,
                       ),
                     ),
                     if (income > 0)
                       Text(
-                        'Rendimentos recebidos este mês: ${fmtMoney(income)}',
+                        l.bpIncomeThisMonth(fmtMoney(income)),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                   ] else
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8),
-                      child: Text(
-                        'Define o teu salário líquido para distribuir por categorias.',
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(l.bpDefineSalaryHint),
                     ),
                 ],
               ),
             ),
           ),
           if (expenseRoots.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Text(
-                'Ainda não tens categorias. Cria a primeira abaixo (ex.: Habitação) e define o orçamento de cada uma.',
-                textAlign: TextAlign.center,
-              ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(l.bpNoCategoriesBudget, textAlign: TextAlign.center),
             )
           else
-            _section(context, s, 'Categorias', expenseRoots, own, salary, key),
+            _section(
+              context,
+              s,
+              l.bpCategories,
+              expenseRoots,
+              own,
+              salary,
+              key,
+            ),
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: OutlinedButton.icon(
               icon: const Icon(Icons.add),
-              label: const Text('Nova categoria'),
+              label: Text(l.bpNewCategory),
               onPressed: () => showCategoryEditor(context),
             ),
           ),
@@ -221,6 +227,7 @@ class _CategoryBudgetTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final c = category;
     final kids = s
         .childrenOf(c.id)
@@ -255,13 +262,19 @@ class _CategoryBudgetTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${fmtMoney(spent)} de ${fmtMoney(target)} · ${type == BudgetType.limit ? 'Limite' : 'Objetivo'}',
+                      l.bpSpentOfTarget(
+                        fmtMoney(spent),
+                        fmtMoney(target),
+                        type == BudgetType.limit
+                            ? l.bpBudgetLimit
+                            : l.bpBudgetGoal,
+                      ),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 )
               : Text(
-                  'Gasto: ${fmtMoney(spent)} · sem orçamento',
+                  l.bpSpentNoBudget(fmtMoney(spent)),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
         ),
@@ -274,12 +287,17 @@ class _CategoryBudgetTile extends StatelessWidget {
                 return SwitchListTile(
                   dense: true,
                   title: Text(
-                    'Obrigatória em ${fmtMonth(DateTime(int.parse(month.substring(0, 4)), int.parse(month.substring(5, 7))))}',
+                    l.bpMandatoryInMonth(
+                      fmtMonth(
+                        DateTime(
+                          int.parse(month.substring(0, 4)),
+                          int.parse(month.substring(5, 7)),
+                        ),
+                      ),
+                    ),
                   ),
                   subtitle: Text(
-                    inherited
-                        ? 'Herdada da categoria-mãe'
-                        : 'Só este mês; para vários meses usa “Períodos”',
+                    inherited ? l.bpInheritedFromParent : l.bpOnlyThisMonthHint,
                   ),
                   value: direct || inherited,
                   onChanged: inherited
@@ -292,11 +310,11 @@ class _CategoryBudgetTile extends StatelessWidget {
             dense: true,
             title: Text(
               c.hasBudget
-                  ? _describe(c, salary)
-                  : 'Orçamento da categoria (opcional)',
+                  ? _describe(l, c, salary)
+                  : l.bpCategoryBudgetOptional,
             ),
             subtitle: kids.any((k) => k.hasBudget) && !c.hasBudget
-                ? const Text('Soma das subcategorias')
+                ? Text(l.bpSumOfSubcategories)
                 : null,
             trailing: const Icon(Icons.edit, size: 18),
             onTap: () => showBudgetEditor(context, c),
@@ -307,17 +325,17 @@ class _CategoryBudgetTile extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => showCategoryEditor(context, parentId: c.id),
                 icon: const Icon(Icons.add),
-                label: const Text('Subcategoria'),
+                label: Text(l.bpSubcategory),
               ),
               TextButton.icon(
                 onPressed: () => showMandatoryDialog(context, c),
                 icon: const Icon(Icons.event_repeat),
-                label: const Text('Períodos'),
+                label: Text(l.bpPeriods),
               ),
               TextButton.icon(
                 onPressed: () => showCategoryEditor(context, edit: c),
                 icon: const Icon(Icons.settings_outlined),
-                label: const Text('Editar'),
+                label: Text(l.bpEdit),
               ),
             ],
           ),
@@ -327,6 +345,7 @@ class _CategoryBudgetTile extends StatelessWidget {
   }
 
   Widget _subTile(BuildContext context, AppState s, Categoria k) {
+    final l = AppLocalizations.of(context)!;
     final spent = own[k.id] ?? 0;
     final t = k.monthlyTarget(salary);
     return ListTile(
@@ -347,23 +366,40 @@ class _CategoryBudgetTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${fmtMoney(spent)} de ${fmtMoney(t)} · ${k.budgetType == BudgetType.limit ? 'Limite' : 'Objetivo'}',
+                    l.bpSpentOfTarget(
+                      fmtMoney(spent),
+                      fmtMoney(t),
+                      k.budgetType == BudgetType.limit
+                          ? l.bpBudgetLimit
+                          : l.bpBudgetGoal,
+                    ),
                   ),
                 ],
               ),
             )
-          : Text('Gasto: ${fmtMoney(spent)} · definir orçamento'),
+          : Text(l.bpSpentSetBudget(fmtMoney(spent))),
       onTap: () => showBudgetEditor(context, k),
     );
   }
 
-  String _describe(Categoria c, int salary) =>
-      '${c.budgetType == BudgetType.limit ? 'Limite' : 'Objetivo'}: ${c.budgetPercent ? '${(c.budgetValue / 100).toStringAsFixed(1)}% do salário (${fmtMoney(c.monthlyTarget(salary))})' : fmtMoney(c.budgetValue)}';
+  String _describe(AppLocalizations l, Categoria c, int salary) {
+    final type = c.budgetType == BudgetType.limit
+        ? l.bpBudgetLimit
+        : l.bpBudgetGoal;
+    return c.budgetPercent
+        ? l.bpBudgetDescPercent(
+            type,
+            (c.budgetValue / 100).toStringAsFixed(1),
+            fmtMoney(c.monthlyTarget(salary)),
+          )
+        : l.bpBudgetDescValue(type, fmtMoney(c.budgetValue));
+  }
 }
 
 /// Define a alocação de uma categoria/subcategoria.
 Future<void> showBudgetEditor(BuildContext context, Categoria c) {
   final s = context.read<AppState>();
+  final l = AppLocalizations.of(context)!;
   var has = c.hasBudget;
   var type = c.budgetType;
   var percent = c.budgetPercent;
@@ -376,7 +412,7 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: Text('Orçamento · ${c.name}'),
+        title: Text(l.bpBudgetEditorTitle(c.name)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -384,22 +420,22 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Ter orçamento'),
+                title: Text(l.bpHasBudget),
                 value: has,
                 onChanged: (v) => set(() => has = v),
               ),
               if (has) ...[
                 SegmentedButton<BudgetType>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: BudgetType.limit,
-                      label: Text('Limite'),
-                      icon: Icon(Icons.vertical_align_top),
+                      label: Text(l.bpBudgetLimit),
+                      icon: const Icon(Icons.vertical_align_top),
                     ),
                     ButtonSegment(
                       value: BudgetType.goal,
-                      label: Text('Objetivo'),
-                      icon: Icon(Icons.flag_outlined),
+                      label: Text(l.bpBudgetGoal),
+                      icon: const Icon(Icons.flag_outlined),
                     ),
                   ],
                   selected: {type},
@@ -408,9 +444,7 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    type == BudgetType.limit
-                        ? 'Limite: queres gastar no máximo este valor.'
-                        : 'Objetivo: queres atingir pelo menos este valor (ex.: poupança).',
+                    type == BudgetType.limit ? l.bpLimitHint : l.bpGoalHint,
                     style: Theme.of(ctx).textTheme.bodySmall,
                   ),
                 ),
@@ -419,11 +453,11 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
                   segments: [
                     ButtonSegment(
                       value: false,
-                      label: Text('Valor ($baseSym)'),
+                      label: Text(l.bpValueWithCurrency(baseSym)),
                     ),
-                    const ButtonSegment(
+                    ButtonSegment(
                       value: true,
-                      label: Text('% do salário'),
+                      label: Text(l.bpPercentOfSalary),
                     ),
                   ],
                   selected: {percent},
@@ -435,7 +469,7 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
                     decimal: true,
                   ),
                   decoration: InputDecoration(
-                    labelText: percent ? 'Percentagem' : 'Valor mensal',
+                    labelText: percent ? l.bpPercentage : l.bpMonthlyAmount,
                     suffixText: percent ? '%' : baseSym,
                   ),
                 ),
@@ -446,7 +480,7 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -461,7 +495,7 @@ Future<void> showBudgetEditor(BuildContext context, Categoria c) {
               );
               Navigator.pop(ctx);
             },
-            child: const Text('Guardar'),
+            child: Text(l.bpSave),
           ),
         ],
       ),
@@ -475,6 +509,7 @@ Future<void> showSalaryEditor(
   AppState s,
   String key,
 ) async {
+  final l = AppLocalizations.of(context)!;
   final ctrl = TextEditingController(
     text: s.salaryFor(key) == 0
         ? ''
@@ -485,7 +520,7 @@ Future<void> showSalaryEditor(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: const Text('Salário líquido mensal'),
+        title: Text(l.bpNetSalaryMonthly),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -496,16 +531,14 @@ Future<void> showSalaryEditor(
                 decimal: true,
               ),
               decoration: InputDecoration(
-                labelText: 'Valor ($baseSym)',
+                labelText: l.bpValueWithCurrency(baseSym),
                 suffixText: baseSym,
               ),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Só para este mês'),
-              subtitle: const Text(
-                'Desligado: passa a ser o valor por omissão de todos os meses',
-              ),
+              title: Text(l.bpOnlyThisMonth),
+              subtitle: Text(l.bpSalaryDefaultHint),
               value: onlyThisMonth,
               onChanged: (v) => set(() => onlyThisMonth = v),
             ),
@@ -518,11 +551,11 @@ Future<void> showSalaryEditor(
                 s.setSalary(key, null);
                 Navigator.pop(ctx);
               },
-              child: const Text('Usar valor base'),
+              child: Text(l.bpUseBaseSalary),
             ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -536,7 +569,7 @@ Future<void> showSalaryEditor(
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Guardar'),
+            child: Text(l.bpSave),
           ),
         ],
       ),

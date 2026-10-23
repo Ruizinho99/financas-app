@@ -4,6 +4,7 @@ import 'package:financas/models.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:financas/widgets/category_picker.dart';
 import 'package:financas/widgets/common.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,9 @@ Widget _app(
 }) => ChangeNotifierProvider<AppState>.value(
   value: s,
   child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('pt', 'PT'),
     home: Builder(
       builder: (context) => Scaffold(
         body: Center(
@@ -406,6 +410,9 @@ void main() {
           ChangeNotifierProvider<AppState>.value(
             value: s,
             child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('pt', 'PT'),
               home: Scaffold(
                 body: Builder(
                   builder: (c) => TextButton(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../analysis/analytics.dart';
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -11,6 +12,7 @@ import 'transactions_screen.dart' show TransactionsScreen, confirm;
 
 /// Cria ou edita uma conta (nome, ícone e saldo inicial). Devolve o id.
 Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
+  final l = AppLocalizations.of(context)!;
   final s = context.read<AppState>();
   final name = TextEditingController(text: edit?.name ?? '');
   final opening = TextEditingController(
@@ -23,7 +25,7 @@ Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: Text(edit == null ? 'Nova conta' : 'Editar conta'),
+        title: Text(edit == null ? l.frmNewAccount : l.frmEditAccount),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -60,9 +62,9 @@ Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
                     controller: name,
                     autofocus: true,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Nome',
-                      hintText: 'Ex.: Conta à ordem',
+                    decoration: InputDecoration(
+                      labelText: l.frmName,
+                      hintText: l.frmAccountNameHint,
                     ),
                   ),
                 ),
@@ -75,9 +77,9 @@ Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
                 decimal: true,
               ),
               decoration: InputDecoration(
-                labelText: 'Saldo inicial ($baseSym)',
+                labelText: l.frmOpeningBalanceCurrency(baseSym),
                 prefixText: '$baseSym  ',
-                helperText: 'Quanto tinhas na conta antes dos movimentos registados aqui.',
+                helperText: l.frmOpeningBalanceHelp,
                 helperMaxLines: 2,
               ),
             ),
@@ -86,7 +88,7 @@ Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -110,7 +112,7 @@ Future<int?> showAccountEditor(BuildContext context, {Conta? edit}) {
                 Navigator.pop(ctx, edit.id);
               }
             },
-            child: const Text('Guardar'),
+            child: Text(l.frmSave),
           ),
         ],
       ),
@@ -123,7 +125,7 @@ Future<int?> pickAccount(
   BuildContext context, {
   int? selected,
   int? exclude,
-  String title = 'Conta',
+  String? title,
 }) {
   return showModalBottomSheet<int>(
     context: context,
@@ -131,6 +133,7 @@ Future<int?> pickAccount(
     isScrollControlled: true,
     builder: (ctx) {
       final s = ctx.watch<AppState>();
+      final l = AppLocalizations.of(ctx)!;
       return SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -139,7 +142,10 @@ Future<int?> pickAccount(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(title, style: Theme.of(ctx).textTheme.titleLarge),
+                child: Text(
+                  title ?? l.frmAccount,
+                  style: Theme.of(ctx).textTheme.titleLarge,
+                ),
               ),
             ),
             for (final a in s.accounts.where((a) => a.id != exclude))
@@ -155,7 +161,7 @@ Future<int?> pickAccount(
               ),
             ListTile(
               leading: const Icon(Icons.add_circle_outline),
-              title: const Text('Nova conta…'),
+              title: Text(l.frmNewAccountItem),
               onTap: () async {
                 final id = await showAccountEditor(ctx);
                 if (id != null && ctx.mounted) Navigator.pop(ctx, id);
@@ -164,7 +170,7 @@ Future<int?> pickAccount(
             if (selected != null)
               ListTile(
                 leading: const Icon(Icons.close),
-                title: const Text('Sem conta'),
+                title: Text(l.frmNoAccount),
                 onTap: () => Navigator.pop(ctx, -1),
               ),
             const SizedBox(height: 8),
@@ -181,21 +187,19 @@ class AccountsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Contas')),
+      appBar: AppBar(title: Text(l.frmAccounts)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showAccountEditor(context),
         icon: const Icon(Icons.add),
-        label: const Text('Conta'),
+        label: Text(l.frmAccount),
       ),
       body: s.accounts.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
                 padding: EdgeInsets.all(32),
-                child: Text(
-                  'Ainda não tens contas.\nCria uma para saberes de onde vem cada movimento e para registar transferências entre contas.',
-                  textAlign: TextAlign.center,
-                ),
+                child: Text(l.frmNoAccountsYet, textAlign: TextAlign.center),
               ),
             )
           : ListView(
@@ -217,7 +221,10 @@ class AccountsScreen extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
-                          '$count movimentos · saldo ${fmtMoney(s.accountBalance(a.id))}',
+                          l.frmAccountSubtitle(
+                            count,
+                            fmtMoney(s.accountBalance(a.id)),
+                          ),
                         ),
                         onTap: () => Navigator.push(
                           context,
@@ -227,12 +234,12 @@ class AccountsScreen extends StatelessWidget {
                           ),
                         ),
                         trailing: IconButton(
-                          tooltip: 'Apagar',
+                          tooltip: l.delete,
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () async {
                             if (await confirm(
                               context,
-                              'Apagar a conta “${a.name}”? Os $count movimentos ficam sem conta.',
+                              l.frmDeleteAccountQuestion(a.name, count),
                             ))
                               s.deleteAccount(a.id);
                           },
@@ -254,14 +261,15 @@ class AccountDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final a = s.account(accountId);
     if (a == null) {
-      return const Scaffold(body: Center(child: Text('Conta apagada.')));
+      return Scaffold(body: Center(child: Text(l.frmAccountDeleted)));
     }
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final now = DateTime.now();
-    final period = Period.month(now);
+    final period = s.periodOfMonth(s.currentMonthKey);
     final an = Analytics(
       s,
       period,
@@ -277,7 +285,7 @@ class AccountDetailScreen extends StatelessWidget {
         title: Text('${a.emoji} ${a.name}'.trim()),
         actions: [
           IconButton(
-            tooltip: 'Editar',
+            tooltip: l.frmEdit,
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => showAccountEditor(context, edit: a),
           ),
@@ -292,7 +300,7 @@ class AccountDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Saldo', style: tt.bodySmall),
+                  Text(l.frmBalance, style: tt.bodySmall),
                   Text(
                     fmtMoney(s.accountBalance(accountId)),
                     style: tt.headlineMedium?.copyWith(
@@ -301,27 +309,30 @@ class AccountDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Saldo inicial ${fmtMoney(a.openingCents)} · ${mine.length} movimentos',
+                    l.frmOpeningBalanceLine(
+                      fmtMoney(a.openingCents),
+                      mine.length,
+                    ),
                     style: tt.bodySmall,
                   ),
                   const Divider(height: 24),
-                  Text('Este mês', style: tt.titleSmall),
+                  Text(l.frmThisMonth, style: tt.titleSmall),
                   const SizedBox(height: 6),
                   Row(
                     children: [
                       Expanded(
-                        child: _Stat('Gasto', fmtMoney(an.spent), cs.error),
+                        child: _Stat(l.spent, fmtMoney(an.spent), cs.error),
                       ),
                       Expanded(
                         child: _Stat(
-                          'Receita',
+                          l.frmIncome,
                           fmtMoney(an.income),
                           cs.primary,
                         ),
                       ),
                       Expanded(
                         child: _Stat(
-                          'Saldo do mês',
+                          l.frmMonthBalance,
                           fmtMoney(an.income - an.spent),
                           null,
                         ),
@@ -333,15 +344,12 @@ class AccountDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text('Objetivos alimentados por esta conta', style: tt.titleSmall),
+          Text(l.frmGoalsFedByAccount, style: tt.titleSmall),
           const SizedBox(height: 4),
           if (contributions.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'Nenhum objetivo recebe dinheiro desta conta ainda.',
-                style: tt.bodySmall,
-              ),
+              child: Text(l.frmNoGoalFunded, style: tt.bodySmall),
             ),
           for (final e in contributions.entries)
             ListTile(
@@ -350,7 +358,7 @@ class AccountDetailScreen extends StatelessWidget {
               leading: const Text('🎯', style: TextStyle(fontSize: 20)),
               title: Text(
                 s.goals.where((g) => g.id == e.key).firstOrNull?.name ??
-                    'Objetivo',
+                    l.goalFallback,
               ),
               trailing: Text(fmtMoney(e.value), style: tt.titleSmall),
               onTap: () {
@@ -367,7 +375,7 @@ class AccountDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: Text('Movimentos', style: tt.titleSmall)),
+              Expanded(child: Text(l.transactions, style: tt.titleSmall)),
               TextButton(
                 onPressed: () => Navigator.push(
                   context,
@@ -375,14 +383,14 @@ class AccountDetailScreen extends StatelessWidget {
                     builder: (_) => TransactionsScreen(accountId: accountId),
                   ),
                 ),
-                child: const Text('Ver todos'),
+                child: Text(l.seeAll),
               ),
             ],
           ),
           if (recent.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('Sem movimentos nesta conta.', style: tt.bodySmall),
+              child: Text(l.frmNoTransactionsInAccount, style: tt.bodySmall),
             ),
           for (final t in recent)
             ListTile(

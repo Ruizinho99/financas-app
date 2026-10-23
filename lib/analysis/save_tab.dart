@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../util/format.dart';
 import 'analytics.dart';
 import 'widgets.dart';
@@ -32,18 +33,16 @@ class _SaveTabState extends State<SaveTab> {
     final a = widget.a;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
     if (a.spends.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(
-            'Sem despesas neste período para analisar.',
-            textAlign: TextAlign.center,
-          ),
+          padding: const EdgeInsets.all(32),
+          child: Text(l.anNoSpendToAnalyse, textAlign: TextAlign.center),
         ),
       );
     }
-    final insights = a.insights();
+    final insights = a.insightsL(l);
     final potential = insights.fold(0, (x, e) => x + (e.monthlySaving ?? 0));
     final rec = a.recurring();
     final small = a.frequentSmall();
@@ -66,7 +65,7 @@ class _SaveTabState extends State<SaveTab> {
                     Icon(Icons.savings_outlined, color: cs.primary),
                     const SizedBox(width: 8),
                     Text(
-                      'Potencial de poupança',
+                      l.anSavingPotential,
                       style: tt.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -93,20 +92,17 @@ class _SaveTabState extends State<SaveTab> {
                       const SizedBox(width: 6),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4),
-                        child: Text('por mês', style: tt.bodyMedium),
+                        child: Text(l.anPerMonth, style: tt.bodyMedium),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Isso são até ${fmtMoney(potential * 12)} por ano, só com as sugestões abaixo.',
+                    l.anUpToYear(fmtMoney(potential * 12)),
                     style: tt.bodySmall,
                   ),
                 ] else
-                  Text(
-                    'Neste período não encontrámos margens óbvias. Experimenta outro intervalo ou o simulador.',
-                    style: tt.bodyMedium,
-                  ),
+                  Text(l.anNoObviousMargins, style: tt.bodyMedium),
               ],
             ),
           ),
@@ -114,9 +110,8 @@ class _SaveTabState extends State<SaveTab> {
 
         // ----- simulador -----
         SectionCard(
-          title: 'E se cortasse nas opcionais?',
-          subtitle:
-              'Despesas opcionais neste período: ${fmtMoney(a.optionalTotal)}',
+          title: l.anWhatIfCut,
+          subtitle: l.anOptionalThisPeriod(fmtMoney(a.optionalTotal)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -125,7 +120,7 @@ class _SaveTabState extends State<SaveTab> {
                 runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text('Cortar', style: tt.bodyMedium),
+                  Text(l.anCut, style: tt.bodyMedium),
                   Text(
                     fmtPercent(cut),
                     style: tt.titleMedium?.copyWith(
@@ -157,18 +152,18 @@ class _SaveTabState extends State<SaveTab> {
                 runSpacing: 12,
                 children: [
                   Stat(
-                    'Poupas por mês',
+                    l.anSaveMonthly,
                     fmtMoney(sim.monthly),
                     color: Colors.green.shade500,
                   ),
                   Stat(
-                    'Poupas por ano',
+                    l.anSaveYearly,
                     fmtMoney(sim.yearly),
                     color: Colors.green.shade500,
                   ),
                   if (rate != null && sim.newRate != null)
                     Stat(
-                      'Taxa de poupança',
+                      l.anSavingsRate,
                       '${fmtPercent(rate)} → ${fmtPercent(sim.newRate!)}',
                     ),
                 ],
@@ -180,8 +175,8 @@ class _SaveTabState extends State<SaveTab> {
         // ----- sugestões -----
         if (insights.isNotEmpty)
           SectionCard(
-            title: 'Sugestões',
-            subtitle: 'Ordenadas pelo que mais poupa',
+            title: l.anSuggestions,
+            subtitle: l.anSuggestionsSub,
             child: Column(
               children: [
                 for (var i = 0; i < insights.length; i++) ...[
@@ -213,7 +208,7 @@ class _SaveTabState extends State<SaveTab> {
         // ----- recorrentes -----
         if (rec.isNotEmpty)
           SectionCard(
-            title: 'Pagamentos recorrentes',
+            title: l.anRecurringPayments,
             subtitle: () {
               final opt = rec.where((e) => !e.mandatory);
               final man = rec.where((e) => e.mandatory);
@@ -221,8 +216,8 @@ class _SaveTabState extends State<SaveTab> {
                   m = man.fold(0, (x, e) => x + e.monthly);
               return [
                 if (opt.isNotEmpty)
-                  'Opcionais: ${fmtMoney(o)}/mês (${fmtMoney(o * 12)}/ano)',
-                if (man.isNotEmpty) 'Obrigatórios: ${fmtMoney(m)}/mês',
+                  l.anRecOptional(fmtMoney(o), fmtMoney(o * 12)),
+                if (man.isNotEmpty) l.anRecMandatory(fmtMoney(m)),
               ].join(' · ');
             }(),
             child: Column(
@@ -248,7 +243,7 @@ class _SaveTabState extends State<SaveTab> {
                       spacing: 6,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text('${r.months} meses · último ${fmtDate(r.last)}'),
+                        Text(l.anMonthsLast(r.months, fmtDate(r.last))),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -260,7 +255,7 @@ class _SaveTabState extends State<SaveTab> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            r.mandatory ? 'obrigatória' : 'opcional',
+                            r.mandatory ? l.anMandatoryTag : l.anOptionalTag,
                             style: TextStyle(
                               fontSize: 11,
                               color: r.mandatory
@@ -277,16 +272,19 @@ class _SaveTabState extends State<SaveTab> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '${fmtMoney(r.monthly)}/mês',
+                          l.anAmountPerMonth(fmtMoney(r.monthly)),
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
-                        Text('${fmtMoney(r.yearly)}/ano', style: tt.bodySmall),
+                        Text(
+                          l.anAmountPerYear(fmtMoney(r.yearly)),
+                          style: tt.bodySmall,
+                        ),
                       ],
                     ),
                   ),
                 const SizedBox(height: 4),
                 Text(
-                  'Cancelar o que já não usas é a forma mais fácil de poupar.',
+                  l.anCancelAdvice,
                   style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
@@ -296,8 +294,8 @@ class _SaveTabState extends State<SaveTab> {
         // ----- pequenas compras -----
         if (small.isNotEmpty)
           SectionCard(
-            title: 'Pequenas compras frequentes',
-            subtitle: 'Compras de baixo valor que se repetem muito',
+            title: l.anFrequentSmall,
+            subtitle: l.anSmallSub,
             child: Column(
               children: [
                 for (final sl in small.take(8))
@@ -318,7 +316,7 @@ class _SaveTabState extends State<SaveTab> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                      '${sl.count} compras · média ${fmtMoney(sl.avg)}',
+                      l.anPurchasesAvg(sl.count, fmtMoney(sl.avg)),
                     ),
                     trailing: Text(
                       fmtMoney(sl.amount),

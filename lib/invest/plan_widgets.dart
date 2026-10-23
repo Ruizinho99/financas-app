@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import 'allocation_plan.dart';
@@ -17,6 +18,7 @@ class InvestPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final accounts = s.investAccounts.where((a) => !a.archived).toList();
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
@@ -27,12 +29,9 @@ class InvestPlanCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Plano de investimento', style: tt.titleMedium),
+            Text(l.invPlanTitle, style: tt.titleMedium),
             const SizedBox(height: 4),
-            Text(
-              'Quando entra uma transferência numa plataforma, a Carteira mostra quanto vai para cada ativo. A app não regista compras.',
-              style: tt.bodySmall,
-            ),
+            Text(l.invPlanCardDesc, style: tt.bodySmall),
             for (final a in accounts)
               Builder(
                 builder: (ctx) {
@@ -47,8 +46,8 @@ class InvestPlanCard extends StatelessWidget {
                     title: Text(a.name),
                     subtitle: Text(
                       lines.isEmpty
-                          ? 'Sem plano'
-                          : '${lines.length} ativos · ${_pct(sum)}%${sum < 10000 ? ' · faltam ${_pct(10000 - sum)}% por distribuir' : ''}',
+                          ? l.invNoPlan
+                          : '${l.invAssetsCount(lines.length)} · ${_pct(sum)}%${sum < 10000 ? ' · ${l.invMissingPercent(_pct(10000 - sum))}' : ''}',
                       style: sum > 10000 ? TextStyle(color: cs.error) : null,
                     ),
                     trailing: const Icon(Icons.chevron_right),
@@ -69,6 +68,7 @@ Future<void> showInvestPlanEditor(
   AppState s,
   InvestAccount a,
 ) {
+  final l = AppLocalizations.of(context)!;
   final holdings = s.holdings
       .where((h) => h.accountId == a.id && !h.archived)
       .toList();
@@ -110,21 +110,19 @@ Future<void> showInvestPlanEditor(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Plano de ${a.name}',
+                l.invPlanOf(a.name),
                 style: Theme.of(ctx).textTheme.titleLarge,
               ),
               const SizedBox(height: 6),
               Text(
-                'Percentagem de cada entrega para cada ativo. Podes deixar parte por distribuir.',
+                l.invPlanEditorHint,
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
               const SizedBox(height: 12),
               if (holdings.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    'Esta plataforma ainda não tem ativos. Adiciona ativos na Carteira.',
-                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(l.invPlanNoAssets),
                 ),
               for (final h in holdings)
                 Padding(
@@ -144,8 +142,8 @@ Future<void> showInvestPlanEditor(
               if (holdings.isNotEmpty)
                 Text(
                   t > 10000
-                      ? 'Passa ${_pct(t - 10000)}% dos 100%.'
-                      : 'Total: ${_pct(t)}%${t < 10000 ? ' · ${_pct(10000 - t)}% por distribuir' : ''}',
+                      ? l.invPlanOver(_pct(t - 10000))
+                      : '${l.invPlanTotal(_pct(t))}${t < 10000 ? ' · ${l.invMissingPercent(_pct(10000 - t))}' : ''}',
                   style: TextStyle(
                     color: t > 10000 ? Theme.of(ctx).colorScheme.error : null,
                   ),
@@ -162,14 +160,14 @@ Future<void> showInvestPlanEditor(
               FilledButton(
                 onPressed: () {
                   if (t > 10000) {
-                    set(() => error = 'A soma não pode passar 100%.');
+                    set(() => error = l.invSumOver100);
                     return;
                   }
                   final bp = <int, int>{};
                   for (final e in ctrls.entries) {
                     final v = bpOf(e.value.text);
                     if (v == null) {
-                      set(() => error = 'Valor inválido.');
+                      set(() => error = l.invInvalidValue);
                       return;
                     }
                     bp[e.key] = v;
@@ -177,7 +175,7 @@ Future<void> showInvestPlanEditor(
                   s.setInvestPlan(a.id, bp);
                   Navigator.pop(ctx);
                 },
-                child: const Text('Guardar plano'),
+                child: Text(l.invSavePlan),
               ),
               if (s.investPlan.containsKey(a.id))
                 TextButton(
@@ -185,7 +183,7 @@ Future<void> showInvestPlanEditor(
                     s.setInvestPlan(a.id, const {});
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Remover plano'),
+                  child: Text(l.invRemovePlan),
                 ),
             ],
           ),
@@ -205,6 +203,7 @@ class PendingAllocationsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final list = s.pendingAllocations;
     if (list.isEmpty) return const SizedBox.shrink();
     final tt = Theme.of(context).textTheme;
@@ -220,7 +219,7 @@ class PendingAllocationsCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Entregas para distribuir (${list.length})',
+                    l.invPendingDeliveries(list.length),
                     style: tt.titleMedium,
                   ),
                 ),
@@ -246,7 +245,8 @@ class PendingAllocationsCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          s.holding(part.holdingId)?.name ?? 'Ativo apagado',
+                          s.holding(part.holdingId)?.name ??
+                              l.invHoldingDeletedShort,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -259,7 +259,7 @@ class PendingAllocationsCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    'Por distribuir: ${fmtMoney(p.undistributed)}',
+                    l.invUndistributed(fmtMoney(p.undistributed)),
                     style: tt.bodySmall,
                   ),
                 ),
@@ -267,7 +267,7 @@ class PendingAllocationsCard extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   icon: const Icon(Icons.check),
-                  label: const Text('Visto'),
+                  label: Text(l.invSeen),
                   onPressed: () => s.dismissAllocation(p.txn.id),
                 ),
               ),

@@ -1,0 +1,626 @@
+{
+  "@@locale": "pt",
+  "anCompareOn": "A comparar com o período anterior",
+  "anCompareOff": "Comparar com o período anterior",
+  "anModeMonth": "Mês",
+  "anModeYear": "Ano",
+  "anModeYtd": "YTD",
+  "anModeCustom": "Custom",
+  "anYtdLabel": "YTD {year} · 1 jan – hoje",
+  "@anYtdLabel": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "anPickRange": "Escolhe o intervalo",
+  "anApply": "Aplicar",
+  "anTabOverview": "Visão geral",
+  "anTabSpend": "Gastos",
+  "anTabSave": "Poupar",
+  "anTabTrend": "Evolução",
+  "anNoDataPeriod": "Sem movimentos neste período (ou os filtros não encontram nada).",
+  "anExpenses": "Despesas",
+  "anSamePeriodPrev": "Mesmos dias do período anterior: {amount}",
+  "@anSamePeriodPrev": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevPeriodAmount": "Período anterior: {amount}",
+  "@anPrevPeriodAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevPeriod": "Período anterior",
+  "anOngoingToday": "Período em curso: valores até hoje (dia {day}).",
+  "@anOngoingToday": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "anIncomes": "Rendimentos",
+  "anBalance": "Saldo",
+  "anInvested": "Investido",
+  "anOfIncome": "{percent} dos rendimentos",
+  "@anOfIncome": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anSavingsRate": "Taxa de poupança",
+  "anPpVsPrev": "{sign}{pp} pp vs anterior",
+  "@anPpVsPrev": {
+    "placeholders": {
+      "sign": {
+        "type": "String"
+      },
+      "pp": {
+        "type": "int"
+      }
+    }
+  },
+  "anIncomeExpected": "Rendimento esperado: salário líquido definido no Orçamento.",
+  "anIncomeFromSalary": "Sem rendimentos categorizados: a usar o salário líquido definido no Orçamento.",
+  "anRateOngoing": "Período em curso: a taxa de poupança vai mudando até ao fim.",
+  "anRateExcellent": "Estás a poupar mais de 20% do que ganhas. Excelente.",
+  "anRateOk": "Poupas {percent}. Uma boa meta é 20%.",
+  "@anRateOk": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anRateNegative": "Estás a gastar mais do que ganhas neste período.",
+  "anPace": "Ritmo de gastos",
+  "anAvgPerDay": "Média por dia",
+  "anAvgValue": "Valor médio",
+  "anDayOf": "Dia {day} de {total}",
+  "@anDayOf": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "anOfMonth": "{percent} do mês",
+  "@anOfMonth": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anOfSpending": "{percent} das despesas",
+  "@anOfSpending": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anProjected": "Ao ritmo atual, o mês fecha em {amount}",
+  "@anProjected": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevMonthSpent": "No mês anterior gastaste {amount}.",
+  "@anPrevMonthSpent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anAboveBudget": "Isso são {amount} acima do orçamento de {budget}.",
+  "@anAboveBudget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "budget": {
+        "type": "String"
+      }
+    }
+  },
+  "anWithinBudget": "Dentro do orçamento de {budget}, com folga de {margin}.",
+  "@anWithinBudget": {
+    "placeholders": {
+      "budget": {
+        "type": "String"
+      },
+      "margin": {
+        "type": "String"
+      }
+    }
+  },
+  "anMandVsOpt": "Obrigatórias vs opcionais",
+  "anMandVsOptSub": "O que tens de pagar vs onde tens margem para poupar",
+  "anMandatory": "Obrigatórias",
+  "anOptional": "Opcionais",
+  "anNoCategory": "Sem categoria",
+  "anTotal": "Total",
+  "anNoSpendPeriod": "Sem despesas neste período.",
+  "anPctOfIncome": "Em % dos rendimentos: obrigatórias {mand}, opcionais {opt}, sobra {left}.",
+  "@anPctOfIncome": {
+    "placeholders": {
+      "mand": {
+        "type": "String"
+      },
+      "opt": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "anBudgetSub": "Limites e objetivos definidos",
+  "anBudgetSubFiltered": "Limites e objetivos definidos (não depende dos filtros)",
+  "anGoalReached": "Objetivo atingido 🎉",
+  "anGoalLeft": "Faltam {amount} para o objetivo ({percent})",
+  "@anGoalLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimit": "Excedeste o limite em {amount}",
+  "@anOverLimit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNearLimit": "Perto do limite: restam {amount}",
+  "@anNearLimit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anLeftUsed": "Restam {amount} ({percent} usado)",
+  "@anLeftUsed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anWhereSave": "Onde posso poupar?",
+  "anFoundUpTo": "Encontrámos até {amount} por mês de margem.",
+  "@anFoundUpTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoSpendPeriodFilter": "Sem despesas neste período (ou os filtros não encontram nada).",
+  "anCategories": "Categorias",
+  "anSubcategories": "Subcategorias",
+  "anMerchants": "Comerciantes",
+  "anAccounts": "Contas",
+  "anWhereMoneyGoes": "Para onde vai o dinheiro",
+  "anSubDetail": "Detalhe por subcategoria",
+  "anWhereMostSpend": "Onde mais gastas",
+  "anSpendByAccount": "Gastos por conta",
+  "anTapRowHint": "Toca numa linha para ver os movimentos",
+  "anOthers": "Outros",
+  "anShowLess": "Mostrar menos",
+  "anSeeAllCount": "Ver todos ({count})",
+  "@anSeeAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWdMon": "Seg",
+  "anWdTue": "Ter",
+  "anWdWed": "Qua",
+  "anWdThu": "Qui",
+  "anWdFri": "Sex",
+  "anWdSat": "Sáb",
+  "anWdSun": "Dom",
+  "anDayMon": "à segunda",
+  "anDayTue": "à terça",
+  "anDayWed": "à quarta",
+  "anDayThu": "à quinta",
+  "anDayFri": "à sexta",
+  "anDaySat": "ao sábado",
+  "anDaySun": "ao domingo",
+  "anSpendMostOn": "Gastas mais {day}: {amount} em {count} movimentos",
+  "@anSpendMostOn": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWhichDays": "Em que dias gastas mais",
+  "anLargestSpends": "Maiores despesas",
+  "anLargestSub": "As que mais pesaram neste período",
+  "anMonthByMonth": "Mês a mês",
+  "anTxCount": "{count, plural, =0{{count} movimentos} =1{1 movimento} other{{count} movimentos}}",
+  "@anTxCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWhereFrom": "De onde vem",
+  "anPerMonthCap": "Por mês",
+  "anGeneralCat": "{name} (geral)",
+  "@anGeneralCat": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "anAnalyseOnly": "Analisar só esta",
+  "anAndMore": "… e mais {count}",
+  "@anAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anNoAccount": "Sem conta",
+  "anNotEnoughTrend": "Ainda não há dados suficientes para mostrar a evolução.",
+  "anLastMonths": "Últimos {count} meses · a linha tracejada é a média ({avg})",
+  "@anLastMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "anSpendByMonth": "Despesas por mês",
+  "anBestMonth": "Melhor mês: {month}",
+  "@anBestMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "anBestMonthBody": "Gastaste {amount}, {diff} abaixo da média.",
+  "@anBestMonthBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "anWorstMonth": "Mês mais caro: {month}",
+  "@anWorstMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "anWorstMonthBody": "Gastaste {amount}, {diff} acima da média.",
+  "@anWorstMonthBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncomeVsSpend": "Rendimentos vs despesas",
+  "anIncomeVsSpendSub": "Se a linha das despesas passa a dos rendimentos, estás a gastar mais do que ganhas",
+  "anMonth": "Mês",
+  "anSavingsShort": "Poup.",
+  "anTrendByCategory": "Evolução por categoria",
+  "anPickCategoryHint": "Escolhe uma categoria para a ver mês a mês",
+  "anChooseCategory": "Escolher categoria",
+  "anNone": "— nenhuma —",
+  "anAvgMonthsWithSpend": "Média nos meses com gasto: {amount}.",
+  "@anAvgMonthsWithSpend": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoSpendToAnalyse": "Sem despesas neste período para analisar.",
+  "anSavingPotential": "Potencial de poupança",
+  "anPerMonth": "por mês",
+  "anUpToYear": "Isso são até {amount} por ano, só com as sugestões abaixo.",
+  "@anUpToYear": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoObviousMargins": "Neste período não encontrámos margens óbvias. Experimenta outro intervalo ou o simulador.",
+  "anWhatIfCut": "E se cortasse nas opcionais?",
+  "anOptionalThisPeriod": "Despesas opcionais neste período: {amount}",
+  "@anOptionalThisPeriod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anCut": "Cortar",
+  "anSaveMonthly": "Poupas por mês",
+  "anSaveYearly": "Poupas por ano",
+  "anSuggestions": "Sugestões",
+  "anSuggestionsSub": "Ordenadas pelo que mais poupa",
+  "anRecurringPayments": "Pagamentos recorrentes",
+  "anRecOptional": "Opcionais: {monthly}/mês ({yearly}/ano)",
+  "@anRecOptional": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "yearly": {
+        "type": "String"
+      }
+    }
+  },
+  "anRecMandatory": "Obrigatórios: {monthly}/mês",
+  "@anRecMandatory": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "anMonthsLast": "{count} meses · último {date}",
+  "@anMonthsLast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anAmountPerMonth": "{amount}/mês",
+  "@anAmountPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anAmountPerYear": "{amount}/ano",
+  "@anAmountPerYear": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anCancelAdvice": "Cancelar o que já não usas é a forma mais fácil de poupar.",
+  "anFrequentSmall": "Pequenas compras frequentes",
+  "anSmallSub": "Compras de baixo valor que se repetem muito",
+  "anPurchasesAvg": "{count, plural, =0{{count} compras} =1{1 compra} other{{count} compras}} · média {avg}",
+  "@anPurchasesAvg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "anMandatoryTag": "obrigatória",
+  "anOptionalTag": "opcional",
+  "anTypeAll": "Todas",
+  "anCategory": "Categoria",
+  "anCategoriesCount": "{count} categorias",
+  "@anCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anAccount": "Conta",
+  "anAccountsCount": "{count} contas",
+  "@anAccountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anFilters": "Filtros",
+  "anClearAll": "Limpar tudo",
+  "anClear": "Limpar",
+  "anExpenseType": "Tipo de despesa",
+  "anSearch": "Pesquisar",
+  "anSearchHint": "Nome, nota, categoria…",
+  "anTxAmount": "Valor do movimento",
+  "anMinAmount": "Mínimo ({sym})",
+  "@anMinAmount": {
+    "placeholders": {
+      "sym": {
+        "type": "String"
+      }
+    }
+  },
+  "anMaxAmount": "Máximo ({sym})",
+  "@anMaxAmount": {
+    "placeholders": {
+      "sym": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoCategoriesYet": "Ainda não há categorias.",
+  "anApplyFilters": "Aplicar filtros",
+  "anStable": "estável",
+  "anNew": "novo",
+  "anUpToPerMonth": "até {amount}/mês",
+  "@anUpToPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimitTitle": "{name} acima do limite",
+  "@anOverLimitTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimitDetail": "Gastaste {spent} para um limite de {target}.",
+  "@anOverLimitDetail": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncreaseTitle": "{name} subiu {percent}",
+  "@anIncreaseTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncreaseDetail": "Mais {delta} do que no período anterior ({prev} → {cur}).",
+  "@anIncreaseDetail": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      },
+      "prev": {
+        "type": "String"
+      },
+      "cur": {
+        "type": "String"
+      }
+    }
+  },
+  "anTopOptionalTitle": "{name}: {percent} das despesas",
+  "@anTopOptionalTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anTopOptionalDetail": "É uma despesa opcional. Cortar 10% poupava {amount} por mês.",
+  "@anTopOptionalDetail": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anSmallDetail": "{count, plural, =0{{count} compras} =1{1 compra} other{{count} compras}} em {places, plural, =0{{places} sítios} =1{1 sítio} other{{places} sítios}} somam {total} ({examples}). Reduzir um terço poupava {saving} por mês.",
+  "@anSmallDetail": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "places": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "examples": {
+        "type": "String"
+      },
+      "saving": {
+        "type": "String"
+      }
+    }
+  },
+  "anRecurringTitle": "{count, plural, =0{{count} pagamentos recorrentes opcionais} =1{1 pagamento recorrente opcional} other{{count} pagamentos recorrentes opcionais}}",
+  "@anRecurringTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anRecurringDetail": "Somam {monthly} por mês ({yearly} por ano). Vê se ainda precisas de todos.",
+  "@anRecurringDetail": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "yearly": {
+        "type": "String"
+      }
+    }
+  },
+  "anUnclassifiedSpend": "Despesas sem categoria",
+  "anUnclassifiedDetail": "{amount} por classificar. Quanto mais classificado, mais certeiras são as sugestões.",
+  "@anUnclassifiedDetail": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
+}

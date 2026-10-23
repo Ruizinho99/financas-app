@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:financas/screens/update_screen.dart';
 import 'package:financas/update/update_service.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -166,6 +167,9 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('pt', 'PT'),
           theme: ThemeData(useMaterial3: true),
           home: UpdateScreen(service: svc, currentVersion: current),
         ),

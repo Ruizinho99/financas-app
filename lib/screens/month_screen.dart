@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
+
 import '../analysis/analytics.dart';
 import '../analysis/widgets.dart';
 import '../goals/goals.dart';
@@ -26,30 +28,33 @@ class MonthScreen extends StatefulWidget {
 }
 
 class _MonthScreenState extends State<MonthScreen> {
-  late DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
+  // o mês da app em foco (ano e mês do nome, ex.: 25 ago–24 set é setembro)
+  late DateTime month = _keyToMonth(context.read<AppState>().currentMonthKey);
+
+  static DateTime _keyToMonth(String k) =>
+      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
 
   void _shift(int d) =>
       setState(() => month = DateTime(month.year, month.month + d));
 
-  bool get _isCurrent {
-    final n = DateTime.now();
-    return month.year == n.year && month.month == n.month;
-  }
+  bool get _isCurrent =>
+      monthKey(month) == context.read<AppState>().currentMonthKey;
 
   void _open(Widget w) =>
       Navigator.push(context, MaterialPageRoute(builder: (_) => w));
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    final p = Period.month(month);
+    final p = s.periodOfMonth(monthKey(month));
     final an = Analytics(
       s,
       p,
       const AnalysisFilter(),
-      previous: previousPeriod(p),
+      previous: s.previousMonthOf(p) ?? previousPeriod(p),
     );
     final pending = s.transactions
         .where((t) => t.categoryId == null && !t.isTransfer)
@@ -57,10 +62,11 @@ class _MonthScreenState extends State<MonthScreen> {
     final hasData = s.transactions.isNotEmpty;
     final ceiling = an.income;
     final over = ceiling > 0 && an.spent > ceiling;
-    final top = (an.byCategory()..sort((a, b) => b.amount.compareTo(a.amount)))
-        .where((e) => e.amount > 0)
-        .take(5)
-        .toList();
+    final top =
+        (an.byCategoryL(l)..sort((a, b) => b.amount.compareTo(a.amount)))
+            .where((e) => e.amount > 0)
+            .take(5)
+            .toList();
     final maxTop = top.isEmpty ? 1 : top.first.amount;
     final expenseColor = Color(s.expenseColor),
         incomeColor = Color(s.incomeColor);
@@ -69,7 +75,7 @@ class _MonthScreenState extends State<MonthScreen> {
       appBar: AppBar(
         centerTitle: true,
         leading: IconButton(
-          tooltip: 'Mês anterior',
+          tooltip: l.monthPrevious,
           icon: const Icon(Icons.chevron_left),
           onPressed: () => _shift(-1),
         ),
@@ -80,15 +86,31 @@ class _MonthScreenState extends State<MonthScreen> {
               initialDate: month,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
-              helpText: 'Escolhe um dia do mês',
+              helpText: l.pickDayOfMonth,
             );
-            if (d != null) setState(() => month = DateTime(d.year, d.month));
+            if (d != null) {
+              setState(
+                () =>
+                    month = _keyToMonth(context.read<AppState>().monthKeyOf(d)),
+              );
+            }
           },
-          child: Text(fmtMonth(month), style: tt.titleLarge),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(fmtMonth(month), style: tt.titleLarge),
+              // com um início de mês diferente do dia 1, mostra as datas do mês
+              if (s.customMonth)
+                Text(
+                  '${fmtDayMonth(p.start)} – ${fmtDayMonth(p.end.subtract(const Duration(days: 1)))}',
+                  style: tt.bodySmall,
+                ),
+            ],
+          ),
         ),
         actions: [
           IconButton(
-            tooltip: 'Mês seguinte',
+            tooltip: l.monthNext,
             icon: const Icon(Icons.chevron_right),
             onPressed: () => _shift(1),
           ),
@@ -97,28 +119,28 @@ class _MonthScreenState extends State<MonthScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showTxnEditor(context),
         icon: const Icon(Icons.add),
-        label: const Text('Movimento'),
+        label: Text(l.transaction),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
         children: [
           if (!hasData)
             SectionCard(
-              title: 'Começa por aqui',
-              subtitle: 'O mês aparece assim que tiveres movimentos',
+              title: l.startHere,
+              subtitle: l.monthAppearsHint,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   FilledButton.icon(
                     onPressed: () => _open(const ImportScreen()),
                     icon: const Icon(Icons.upload_file),
-                    label: const Text('Importar um extrato'),
+                    label: Text(l.importStatement),
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     onPressed: () => showTxnEditor(context),
                     icon: const Icon(Icons.add),
-                    label: const Text('Adicionar um movimento'),
+                    label: Text(l.addTransaction),
                   ),
                 ],
               ),
@@ -140,7 +162,7 @@ class _MonthScreenState extends State<MonthScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Gasto',
+                          l.spent,
                           style: tt.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -159,8 +181,8 @@ class _MonthScreenState extends State<MonthScreen> {
                         ),
                         Text(
                           ceiling > 0
-                              ? 'de ${fmtMoney(ceiling, short: true)}'
-                              : 'sem rendimento definido',
+                              ? l.frmOfAmount(fmtMoney(ceiling, short: true))
+                              : l.frmNoIncomeDefined,
                           style: tt.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -175,10 +197,10 @@ class _MonthScreenState extends State<MonthScreen> {
             Center(
               child: Text(
                 ceiling <= 0
-                    ? 'Define o salário no Orçamento para ver quanto ainda podes gastar.'
+                    ? l.frmSetSalaryToSpend
                     : (over
-                          ? 'Passaste ${fmtMoney(an.spent - ceiling)} do previsto'
-                          : 'Ainda podes gastar ${fmtMoney(ceiling - an.spent)}'),
+                          ? l.frmOverPlanned(fmtMoney(an.spent - ceiling))
+                          : l.canStillSpend(fmtMoney(ceiling - an.spent))),
                 style: tt.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: over ? expenseColor : null,
@@ -191,7 +213,7 @@ class _MonthScreenState extends State<MonthScreen> {
                 padding: const EdgeInsets.only(top: 2),
                 child: Center(
                   child: Text(
-                    'Média de ${fmtMoney(an.dailyAvg)} por dia',
+                    l.dailyAverage(fmtMoney(an.dailyAvg)),
                     style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 ),
@@ -204,8 +226,8 @@ class _MonthScreenState extends State<MonthScreen> {
                   child: _Stat(
                     label:
                         an.incomeFromSalary || (an.ongoing && s.salaryIn(p) > 0)
-                        ? 'Receitas (previstas)'
-                        : 'Receitas',
+                        ? l.frmIncomeExpected
+                        : l.income,
                     value: fmtMoney(an.income),
                     color: incomeColor,
                   ),
@@ -213,13 +235,13 @@ class _MonthScreenState extends State<MonthScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _Stat(
-                    label: 'Poupado',
+                    label: l.saved,
                     value:
                         '${an.balance >= 0 ? '+' : '−'}${fmtMoney(an.balance.abs())}',
                     color: an.balance >= 0 ? incomeColor : expenseColor,
                     note: an.savingsRate == null
                         ? null
-                        : '${(an.savingsRate! * 100).round()}% do rendimento',
+                        : l.frmPercentOfIncome((an.savingsRate! * 100).round()),
                   ),
                 ),
               ],
@@ -228,7 +250,7 @@ class _MonthScreenState extends State<MonthScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: _Stat(
-                  label: 'Enviado para investir',
+                  label: l.sentToInvest,
                   value: fmtMoney(an.invested),
                   color: cs.onSurface,
                   wide: true,
@@ -238,10 +260,10 @@ class _MonthScreenState extends State<MonthScreen> {
             // ----- onde gastas mais -----
             if (top.isNotEmpty)
               SectionCard(
-                title: 'Onde gastas mais',
+                title: l.whereSpendMost,
                 trailing: TextButton(
                   onPressed: () => _open(AnalysisScreen(initialMonth: month)),
-                  child: const Text('Ver análise'),
+                  child: Text(l.seeAnalysis),
                 ),
                 child: Column(
                   children: [
@@ -304,12 +326,10 @@ class _MonthScreenState extends State<MonthScreen> {
                   child: Icon(Icons.style, color: cs.onPrimary, size: 20),
                 ),
                 title: Text(
-                  '$pending por classificar',
+                  l.frmToClassify(pending),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                subtitle: const Text(
-                  'Um cartão por nome; memoriza para as próximas vezes',
-                ),
+                subtitle: Text(l.classifyHint),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => _open(const ClassifyScreen()),
               ),
@@ -323,7 +343,7 @@ class _MonthScreenState extends State<MonthScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _open(const BudgetScreen()),
                       icon: const Icon(Icons.savings_outlined, size: 18),
-                      label: const Text('Orçamento'),
+                      label: Text(l.budget),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -332,7 +352,7 @@ class _MonthScreenState extends State<MonthScreen> {
                       onPressed: () =>
                           _open(AnalysisScreen(initialMonth: month)),
                       icon: const Icon(Icons.insights_outlined, size: 18),
-                      label: const Text('Análise'),
+                      label: Text(l.analysis),
                     ),
                   ),
                 ],
@@ -343,13 +363,9 @@ class _MonthScreenState extends State<MonthScreen> {
             Align(
               alignment: Alignment.center,
               child: TextButton(
-                onPressed: () => setState(
-                  () => month = DateTime(
-                    DateTime.now().year,
-                    DateTime.now().month,
-                  ),
-                ),
-                child: const Text('Voltar a este mês'),
+                onPressed: () =>
+                    setState(() => month = _keyToMonth(s.currentMonthKey)),
+                child: Text(l.backToThisMonth),
               ),
             ),
         ],
@@ -370,6 +386,7 @@ class _CartoesMes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
@@ -388,10 +405,10 @@ class _CartoesMes extends StatelessWidget {
       children: [
         if (objetivos.isNotEmpty)
           SectionCard(
-            title: 'Objetivos',
+            title: l.goals,
             trailing: TextButton(
               onPressed: () => _abrir(context, const GoalsScreen()),
-              child: const Text('Ver todos'),
+              child: Text(l.seeAll),
             ),
             child: Column(
               children: [
@@ -409,15 +426,17 @@ class _CartoesMes extends StatelessWidget {
         if (planeadas.isNotEmpty) _cartaoPlaneamento(context, s, key),
         if (entregas.isNotEmpty)
           SectionCard(
-            title: 'Entregas para distribuir',
-            subtitle:
-                '${entregas.length} ${entregas.length == 1 ? 'entrega' : 'entregas'} · ${fmtMoney(entregasTotal)}',
+            title: l.deliveriesToDistribute,
+            subtitle: l.frmDeliveriesCount(
+              entregas.length,
+              fmtMoney(entregasTotal),
+            ),
             trailing: TextButton(
               onPressed: () => _abrir(context, const _EntregasScreen()),
-              child: const Text('Distribuir'),
+              child: Text(l.distribute),
             ),
             child: Text(
-              'Entregas do banco que ainda não repartiste pelos ativos.',
+              l.deliveriesHint,
               style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
@@ -426,6 +445,7 @@ class _CartoesMes extends StatelessWidget {
   }
 
   Widget _cartaoPlaneamento(BuildContext context, AppState s, String key) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final t = planTotals(s.salaryFor(key), s.planFor(key));
@@ -435,7 +455,7 @@ class _CartoesMes extends StatelessWidget {
         : (spent / t.planned).clamp(0.0, 1.0).toDouble();
     final sobra = t.left;
     return SectionCard(
-      title: 'Planeamento',
+      title: l.planning,
       trailing: TextButton(
         onPressed: () => Navigator.push(
           context,
@@ -443,7 +463,7 @@ class _CartoesMes extends StatelessWidget {
             builder: (_) => PlanningScreen(initialMonth: month),
           ),
         ),
-        child: const Text('Ver plano'),
+        child: Text(l.seePlan),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -452,7 +472,7 @@ class _CartoesMes extends StatelessWidget {
             children: [
               Expanded(
                 child: _Stat(
-                  label: 'Planeado',
+                  label: l.planned,
                   value: fmtMoney(t.planned),
                   color: cs.onSurface,
                 ),
@@ -460,7 +480,7 @@ class _CartoesMes extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _Stat(
-                  label: 'Gasto real',
+                  label: l.actualSpent,
                   value: fmtMoney(spent),
                   color: excede ? Color(s.expenseColor) : cs.onSurface,
                 ),
@@ -480,10 +500,10 @@ class _CartoesMes extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             t.salary <= 0
-                ? 'Define o salário no Orçamento para ver o que sobra.'
+                ? l.frmSetSalaryLeft
                 : (sobra < 0
-                      ? 'O plano excede o salário em ${fmtMoney(-sobra)}'
-                      : 'Sobra do salário, depois do plano: ${fmtMoney(sobra)}'),
+                      ? l.frmPlanExceeds(fmtMoney(-sobra))
+                      : l.leftAfterPlan(fmtMoney(sobra))),
             style: tt.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: sobra < 0 ? Color(s.expenseColor) : null,
@@ -510,6 +530,7 @@ class _LinhaObjetivo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final s = context.read<AppState>();
@@ -534,7 +555,7 @@ class _LinhaObjetivo extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  p.done ? 'Atingido' : 'Faltam ${fmtMoney(p.remaining)}',
+                  p.done ? l.reached : l.missingAmount(fmtMoney(p.remaining)),
                   style: tt.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: p.done ? Color(s.incomeColor) : null,
@@ -553,8 +574,11 @@ class _LinhaObjetivo extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${fmtMoney(p.saved)} de ${fmtMoney(p.target)}'
-              '${prazo == null ? '' : ' · até ${fmtDate(prazo!)}'}',
+              l.frmSavedOfTarget(
+                fmtMoney(p.saved),
+                fmtMoney(p.target),
+                prazo == null ? '' : l.frmUntilDate(fmtDate(prazo!)),
+              ),
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ],
@@ -568,13 +592,16 @@ class _LinhaObjetivo extends StatelessWidget {
 class _EntregasScreen extends StatelessWidget {
   const _EntregasScreen();
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Entregas para distribuir')),
-    body: ListView(
-      padding: const EdgeInsets.all(16),
-      children: const [PendingAllocationsCard()],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(title: Text(l.deliveriesToDistribute)),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: const [PendingAllocationsCard()],
+      ),
+    );
+  }
 }
 
 class _Stat extends StatelessWidget {

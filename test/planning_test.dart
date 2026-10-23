@@ -4,6 +4,7 @@ import 'package:financas/planning/planning.dart';
 import 'package:financas/screens/planning_screen.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:financas/util/format.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -112,7 +113,12 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<AppState>.value(
         value: s,
-        child: const MaterialApp(home: PlanningScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('pt', 'PT'),
+          home: PlanningScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

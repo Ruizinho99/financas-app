@@ -1,55 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models.dart';
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 
 /// Definição que marca a primeira utilização como concluída (ou saltada).
 const kOnboardingKey = 'onboarding_done';
-
-/// Conjunto base de categorias, oferecido só quando ainda não existe nenhuma.
-/// Não há outro conjunto por omissão no código: esta lista é a única fonte.
-const kCategoriasBase =
-    <({String nome, String emoji, bool receita, List<String> subs})>[
-      (
-        nome: 'Alimentação',
-        emoji: '🛒',
-        receita: false,
-        subs: ['Supermercado', 'Restaurantes e cafés'],
-      ),
-      (
-        nome: 'Casa',
-        emoji: '🏠',
-        receita: false,
-        subs: ['Renda ou prestação', 'Água, luz e gás', 'Internet e telemóvel'],
-      ),
-      (
-        nome: 'Transportes',
-        emoji: '🚗',
-        receita: false,
-        subs: ['Combustível', 'Transportes públicos', 'Carro'],
-      ),
-      (
-        nome: 'Saúde',
-        emoji: '💊',
-        receita: false,
-        subs: ['Farmácia', 'Consultas'],
-      ),
-      (nome: 'Lazer', emoji: '🎉', receita: false, subs: ['Saídas', 'Viagens']),
-      (
-        nome: 'Compras',
-        emoji: '🛍️',
-        receita: false,
-        subs: ['Roupa', 'Outras compras'],
-      ),
-      (
-        nome: 'Rendimentos',
-        emoji: '💰',
-        receita: true,
-        subs: ['Salário', 'Outros rendimentos'],
-      ),
-    ];
 
 /// Decide, ao abrir a app, se mostra a primeira utilização: só numa instalação nova (sem contas,
 /// sem movimentos e sem [kOnboardingKey]). Quem já tem dados marca-a como feita sem a mostrar,
@@ -88,7 +45,7 @@ class _OnboardingGateState extends State<OnboardingGate> {
   }
 }
 
-/// Passos: boas-vindas, primeira conta, salário (opcional), categorias base (se não houver) e fim.
+/// Passos: boas-vindas, primeira conta, salário (opcional) e fim.
 /// "Saltar" está sempre disponível e não cria nada.
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onDone;
@@ -103,15 +60,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _saldo = TextEditingController();
   final _salario = TextEditingController();
   int _passo = 0;
-  late final bool _pedirCategorias;
-  late final List<bool> _escolhidas;
   String? _erroSaldo, _erroSalario;
 
   @override
   void initState() {
     super.initState();
-    _pedirCategorias = context.read<AppState>().categories.isEmpty;
-    _escolhidas = List.filled(kCategoriasBase.length, true);
   }
 
   @override
@@ -123,16 +76,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  static const _numPassos = 4;
+
   /// Títulos dos passos visíveis, pela ordem em que aparecem.
-  List<String> get _titulos => [
-    'Bem-vindo',
-    'Primeira conta',
-    'Salário',
-    if (_pedirCategorias) 'Categorias',
-    'Pronto',
+  List<String> _titulos(AppLocalizations l) => [
+    l.frmObWelcome,
+    l.frmObFirstAccount,
+    l.frmObSalary,
+    l.frmObDone,
   ];
 
-  bool get _ultimo => _passo == _titulos.length - 1;
+  bool get _ultimo => _passo == _numPassos - 1;
 
   void _ir(int p) {
     setState(() => _passo = p);
@@ -145,17 +99,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   /// Valida o passo atual antes de avançar. Devolve falso se houver erro.
   bool _validar() {
-    final t = _titulos[_passo];
-    if (t == 'Primeira conta') {
+    final l = AppLocalizations.of(context)!;
+    if (_passo == 1) {
       final s = _saldo.text.trim();
       _erroSaldo = s.isEmpty || parseCents(s) != null
           ? null
-          : 'Escreve um valor, por exemplo 1250,00';
-    } else if (t == 'Salário') {
+          : l.frmObEnterAmount1250;
+    } else if (_passo == 2) {
       final s = _salario.text.trim();
       _erroSalario = s.isEmpty || parseCents(s) != null
           ? null
-          : 'Escreve um valor, por exemplo 1500,00';
+          : l.frmObEnterAmount1500;
     }
     setState(() {});
     return (_erroSaldo ?? _erroSalario) == null;
@@ -170,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  /// Cria a conta, o salário e as categorias escolhidas; depois marca a utilização como feita.
+  /// Cria a conta e o salário, se preenchidos; depois marca a utilização como feita.
   void _concluir() {
     final s = context.read<AppState>();
     final nome = _nomeConta.text.trim();
@@ -179,16 +133,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     final salario = parseCents(_salario.text.trim()) ?? 0;
     if (salario > 0) s.setDefaultSalary(salario);
-    if (_pedirCategorias) {
-      for (var i = 0; i < kCategoriasBase.length; i++) {
-        if (!_escolhidas[i]) continue;
-        final g = kCategoriasBase[i];
-        s.saveCategoryWithSubs(
-          Categoria(id: 0, name: g.nome, emoji: g.emoji, isIncome: g.receita),
-          [for (final sub in g.subs) (id: null, name: sub, emoji: '')],
-        );
-      }
-    }
     _terminar();
   }
 
@@ -199,29 +143,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    final titulos = _titulos;
+    final titulos = _titulos(l);
 
     final paginas = <Widget>[
       _Pagina(
         icone: Icons.savings_outlined,
-        titulo: 'Bem-vindo às Finanças',
-        texto:
-            'Regista o dinheiro que entra e sai e vê para onde ele vai. '
-            'Os teus dados ficam guardados só neste telemóvel, sem contas nem partilha.',
+        titulo: l.frmObWelcomeTitle,
+        texto: l.frmObWelcomeText,
       ),
       _Pagina(
         icone: Icons.account_balance_wallet_outlined,
-        titulo: 'Qual é a tua conta principal?',
-        texto: 'Podes adicionar mais contas depois. Se não quiseres agora, deixa em branco.',
+        titulo: l.frmObAccountTitle,
+        texto: l.frmObAccountText,
         filhos: [
           TextField(
             controller: _nomeConta,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Nome da conta',
-              hintText: 'Ex.: Conta à ordem',
+            decoration: InputDecoration(
+              labelText: l.frmObAccountName,
+              hintText: l.frmAccountNameHint,
             ),
           ),
           const SizedBox(height: 14),
@@ -230,8 +173,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (_) => setState(() => _erroSaldo = null),
             decoration: InputDecoration(
-              labelText: 'Saldo inicial ($baseSym)',
-              hintText: '0,00',
+              labelText: l.frmOpeningBalanceCurrency(baseSym),
+              hintText: zeroHint,
               errorText: _erroSaldo,
             ),
           ),
@@ -239,47 +182,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
       _Pagina(
         icone: Icons.payments_outlined,
-        titulo: 'Quanto recebes por mês?',
-        texto:
-            'Salário líquido. Serve para o planeamento e para ver quanto ainda podes gastar. '
-            'Podes mudar ou deixar em branco.',
+        titulo: l.frmObSalaryTitle,
+        texto: l.frmObSalaryText,
         filhos: [
           TextField(
             controller: _salario,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (_) => setState(() => _erroSalario = null),
             decoration: InputDecoration(
-              labelText: 'Salário líquido mensal ($baseSym)',
-              hintText: '0,00',
+              labelText: l.frmObSalaryField(baseSym),
+              hintText: zeroHint,
               errorText: _erroSalario,
             ),
           ),
         ],
       ),
-      if (_pedirCategorias)
-        _Pagina(
-          icone: Icons.category_outlined,
-          titulo: 'Começar com categorias base?',
-          texto: 'Podes escolher as que quiseres e editá-las depois. Não se perde nada.',
-          filhos: [
-            for (var i = 0; i < kCategoriasBase.length; i++)
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _escolhidas[i],
-                onChanged: (v) => setState(() => _escolhidas[i] = v ?? false),
-                title: Text(
-                  '${kCategoriasBase[i].emoji} ${kCategoriasBase[i].nome}',
-                ),
-                subtitle: Text(kCategoriasBase[i].subs.join(' · ')),
-              ),
-          ],
-        ),
       _Pagina(
         icone: Icons.check_circle_outline,
-        titulo: 'Está pronto',
-        texto:
-            'Adiciona movimentos à mão ou importa um extrato. '
-            'Podes mudar tudo depois nos ecrãs próprios.',
+        titulo: l.frmObReadyTitle,
+        texto: l.frmObReadyText,
       ),
     ];
 
@@ -288,7 +209,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         automaticallyImplyLeading: false,
         title: Text(titulos[_passo], style: tt.titleMedium),
         actions: [
-          TextButton(onPressed: _terminar, child: const Text('Saltar')),
+          TextButton(onPressed: _terminar, child: Text(l.onboardingSkip)),
         ],
       ),
       body: Column(
@@ -323,7 +244,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         _erroSaldo = _erroSalario = null;
                         _ir(_passo - 1);
                       },
-                      child: const Text('Voltar'),
+                      child: Text(l.frmBack),
                     ),
                   if (_passo > 0) const SizedBox(width: 10),
                   Expanded(
@@ -331,8 +252,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onPressed: _seguinte,
                       child: Text(
                         _passo == 0
-                            ? 'Começar'
-                            : (_ultimo ? 'Concluir' : 'Seguinte'),
+                            ? l.onboardingStart
+                            : (_ultimo ? l.frmFinish : l.frmNext),
                       ),
                     ),
                   ),

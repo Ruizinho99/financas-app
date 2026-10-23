@@ -1,0 +1,464 @@
+{
+  "@@locale": "en",
+  "invAdd": "Add",
+  "invRecordOperation": "Record operation",
+  "invRecordOperationHint": "Buy, sell, dividend or what you already had",
+  "invImportFromFile": "Import from a file",
+  "invImportFileHint": "PDF, CSV or Excel from your broker",
+  "invNewHolding": "New asset",
+  "invNewHoldingHint": "ETF, stock, crypto, fund…",
+  "invNewAccount": "New platform",
+  "invNewAccountHint": "XTB, Trade Republic, exchange…",
+  "invTitle": "Investments",
+  "invImportTrades": "Import buys and sells",
+  "invRefreshPrices": "Update prices",
+  "invImportCardHint": "Pick a PDF, CSV or Excel file from your broker",
+  "invMyPortfolio": "My portfolio",
+  "invTotalValue": "Total value",
+  "invInvested": "Invested",
+  "invCurrentValue": "Current value",
+  "invGainLoss": "Gain / loss",
+  "invUnallocated": "Unallocated",
+  "invUnallocatedStandby": "Unallocated (standby)",
+  "invRealizedGain": "Realized gain",
+  "invDividends": "Dividends",
+  "invPricesUpdated": "{count, plural, =0{{count} prices updated.} =1{1 price updated.} other{{count} prices updated.}}",
+  "@invPricesUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invPricesFailed": "Failed: {details}",
+  "@invPricesFailed": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoAutoPrices": "No asset with an automatic price.",
+  "invPricesUpdatedAgo": "Prices updated {ago}",
+  "@invPricesUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoPricesYet": "No prices yet. Tap refresh.",
+  "invPricesManual": "Prices set by hand for each asset.",
+  "invUnpricedNote": "Assets without a price count at cost, so the total is not skewed.",
+  "invWhereMoneyIs": "Where the money is",
+  "invByAsset": "By asset",
+  "invByPlatform": "By platform",
+  "invByType": "By type",
+  "invTotal": "Total",
+  "invCashToAllocate": "Cash to allocate",
+  "invCashSubtitle": "Sent to the platforms and not invested yet (standby)",
+  "invNegativeCashHint": "Negative: a transfer or a cash adjustment is missing",
+  "invAllocate": "Allocate",
+  "invAdjust": "Adjust",
+  "invPlatforms": "Platforms",
+  "invAssetsCount": "{count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
+  "@invAssetsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invAccountLine": "Unallocated {cash} · {count, plural, =0{{count} assets} =1{1 asset} other{{count} assets}}",
+  "@invAccountLine": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invIntroTitle": "Track what you've invested",
+  "invIntroSubtitle": "Where your money is, what it is worth and what is still unallocated",
+  "invStep1Title": "1. Create a platform",
+  "invStep1Desc": "XTB, Trade Republic, a crypto exchange…",
+  "invStep2Title": "2. Link bank transfers",
+  "invStep2Desc": "Mark which ones were money sent to the platform. They stop counting as expenses.",
+  "invStep3Title": "3. Say what you already had",
+  "invStep3Desc": "Quantity and average purchase price of what you invested before using the app.",
+  "invStep4Title": "4. Allocate the money",
+  "invStep4Desc": "Record purchases. What is left stays unallocated (standby).",
+  "invStep5Title": "5. Update prices",
+  "invStep5Desc": "With free APIs (Yahoo Finance and CoinGecko), only when you ask.",
+  "invCreateFirstPlatform": "Create the first platform",
+  "invImportFromFileButton": "Import buys and sells from a file",
+  "invTopAssetWeight": "{label} makes up {share} of the portfolio.",
+  "@invTopAssetWeight": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "invKindEtf": "ETF",
+  "invKindStock": "Stock",
+  "invKindCrypto": "Crypto",
+  "invKindFund": "Fund",
+  "invKindBond": "Bond",
+  "invKindOther": "Other",
+  "invProviderManual": "Manual",
+  "invProviderYahoo": "Yahoo Finance",
+  "invProviderCoingecko": "CoinGecko",
+  "invOpInitial": "Opening position",
+  "invOpBuy": "Buy",
+  "invOpSell": "Sell",
+  "invOpDividend": "Dividend",
+  "invOpCash": "Cash adjustment",
+  "invAddToAccount": "Add to {name}",
+  "@invAddToAccount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invDeleteAccountConfirm": "Delete the platform “{name}” with its assets and transactions? Bank transactions stay (they are no longer linked).",
+  "@invDeleteAccountConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invSummary": "Summary",
+  "invCashAccountSubtitle": "What is on the platform and not invested yet",
+  "invBankDepositsNet": "Bank transfers in (net)",
+  "invCashAdjustments": "Cash adjustments",
+  "invSales": "Sales",
+  "invPurchases": "Purchases",
+  "invNegativeAccountCash": "The amount is negative: you spent more than the recorded money. Link the bank transfer or adjust the cash that was already there.",
+  "invAllocateMoney": "Allocate money",
+  "invBankTransfers": "Bank transfers",
+  "invMarkTransfersFor": "Mark which were money sent to {name}",
+  "@invMarkTransfersFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invLinkedCount": "{count, plural, =0{{count} linked · not counted as expenses} =1{1 linked · not counted as an expense} other{{count} linked · not counted as expenses}}",
+  "@invLinkedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invLinkBankTransfers": "Link bank transfers",
+  "invSuggestedMatches": "{count, plural, =0{{count} transactions look like they belong to this platform} =1{1 transaction looks like it belongs to this platform} other{{count} transactions look like they belong to this platform}}",
+  "@invSuggestedMatches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invSuggestedBody": "They have “{name}” in the name. Tap to review and link.",
+  "@invSuggestedBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invUnlink": "Unlink",
+  "invDeliveryLower": "deposit",
+  "invWithdrawalLower": "withdrawal",
+  "invAndMore": "… and {count} more",
+  "@invAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invRememberedTitles": "Titles remembered for future imports",
+  "invAssets": "Assets",
+  "invNew": "New",
+  "invNoAssetsYet": "No assets yet. Create one (e.g. the ETF or stock you bought) and record the position you already had or a purchase.",
+  "invHistory": "History",
+  "invTapToEdit": "Tap to edit",
+  "invEdit": "Edit",
+  "invHoldingDeleted": "Asset deleted.",
+  "invHoldingDeletedShort": "Asset deleted",
+  "invAccountDeleted": "Platform deleted.",
+  "invTransferDeleted": "Transfer deleted.",
+  "invTransfersTitle": "Transfers to invest",
+  "invTapToAssignWithAmount": "Tap one to say which purchases used it. To invest: {amount}",
+  "@invTapToAssignWithAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invTapToAssign": "Tap one to say which purchases used it",
+  "invSeeAll": "See all ({count})",
+  "@invSeeAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invNoTransfersYet": "You have not linked any bank transfers to a platform yet.",
+  "invNothingAssigned": "Nothing assigned yet · tap to choose the purchases",
+  "invAllocationSummary": "Invested {allocated} · {holdText}",
+  "@invAllocationSummary": {
+    "placeholders": {
+      "allocated": {
+        "type": "String"
+      },
+      "holdText": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHoldLower": "on hold {amount}",
+  "@invOnHoldLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedLower": "{amount} more than the transfer",
+  "@invOverAllocatedLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invInvestedAmount": "Invested {amount}",
+  "@invInvestedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHold": "On hold {amount}",
+  "@invOnHold": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invMoreThanAmount": "{amount} over",
+  "@invMoreThanAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invUseTransfer": "Use this transfer",
+  "invPlatformDefault": "Platform",
+  "invThePlatform": "the platform",
+  "invTransferTo": "{amount} to {name}",
+  "@invTransferTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedNote": "The chosen purchases add up to more than the transfer. Some money must have come in before; you can continue.",
+  "invHoldRemainder": "{amount} of this transfer is on hold, not invested yet.",
+  "@invHoldRemainder": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSuggest": "Suggest",
+  "invClearAll": "Clear (all on hold)",
+  "invSaveAllOnHold": "Save (all on hold)",
+  "invSave": "Save",
+  "invBuysOnPlatform": "Purchases on this platform",
+  "invMarkBuysHint": "Mark the ones paid with this transfer.",
+  "invNoBuysYet": "No purchases recorded on this platform yet.",
+  "invUsedElsewhere": "used in another transfer",
+  "invUnits": "{qty} units",
+  "@invUnits": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invSetPrice": "Set price",
+  "invSetPriceManual": "Set by hand",
+  "invPricePerUnit": "Price per unit ({currency})",
+  "@invPricePerUnit": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invFxRate": "Exchange rate: 1 {base} = ? {currency}",
+  "@invFxRate": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrentPrice": "Current price",
+  "invNoPrice": "No price",
+  "invCurrencyChip": "Currency: {currency} · {mode}",
+  "@invCurrencyChip": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrencyChosen": "chosen",
+  "invCurrencyAuto": "automatic",
+  "invUpdatedAgo": "Updated {ago} · {date}",
+  "@invUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "invRefreshPrice": "Refresh price",
+  "invPriceUpdated": "Price updated.",
+  "invRefreshFailedReason": "Could not update: {reason}",
+  "@invRefreshFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "invErrorWord": "error",
+  "invDeleteHoldingConfirm": "Delete the asset “{name}” and its transactions?",
+  "@invDeleteHoldingConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invMyPosition": "My position",
+  "invNoPositionYet": "No position yet. Record the quantity and average price of what you already had, or a purchase.",
+  "invQuantity": "Quantity",
+  "invAvgCost": "Average purchase price",
+  "invGainIn": "Gain in {currency}",
+  "@invGainIn": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invPriceOnly": "price only",
+  "invSetPriceToSeePl": "Set the current price to see the gain or loss.",
+  "invBuy": "Buy",
+  "invSell": "Sell",
+  "invOperations": "Transactions",
+  "invFeeLabel": "fee {amount}",
+  "@invFeeLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTitle": "Investment plan",
+  "invPlanCardDesc": "When a transfer comes into a platform, the Portfolio shows how much goes to each asset. The app does not record purchases.",
+  "invNoPlan": "No plan",
+  "invMissingPercent": "{pct}% left to allocate",
+  "@invMissingPercent": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanOf": "Plan for {name}",
+  "@invPlanOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanEditorHint": "Percentage of each transfer for each asset. You can leave part of it unallocated.",
+  "invPlanNoAssets": "This platform has no assets yet. Add assets in the Portfolio.",
+  "invPlanOver": "Over 100% by {pct}%.",
+  "@invPlanOver": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTotal": "Total: {pct}%",
+  "@invPlanTotal": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invSumOver100": "The total cannot exceed 100%.",
+  "invInvalidValue": "Invalid value.",
+  "invSavePlan": "Save plan",
+  "invRemovePlan": "Remove plan",
+  "invPendingDeliveries": "Transfers to allocate ({count})",
+  "@invPendingDeliveries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invUndistributed": "To allocate: {amount}",
+  "@invUndistributed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSeen": "Seen",
+  "invAvgShort": "avg",
+  "invNoPriceShort": "no price",
+  "invClosedPosition": "Closed position"
+}

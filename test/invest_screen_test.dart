@@ -6,6 +6,7 @@ import 'package:financas/invest/invest.dart';
 import 'package:financas/invest/invest_screen.dart';
 import 'package:financas/main.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -29,6 +30,9 @@ Future<void> _pump(
     ChangeNotifierProvider<AppState>.value(
       value: s,
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('pt', 'PT'),
         theme: ThemeData(
           useMaterial3: true,
           colorSchemeSeed: const Color(0xFF2E7D6B),
@@ -330,6 +334,8 @@ void main() {
     'barra com 4 separadores: etiquetas numa só linha em 360 dp e todas visíveis',
     (tester) async {
       final d = buildInvestData();
+      // a app real segue o idioma do sistema: fixa o português para não mudar os formatos dos outros testes
+      d.s.setAppLanguage('pt');
       tester.view.physicalSize = const Size(360, 640) * 3;
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
