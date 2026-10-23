@@ -26,7 +26,10 @@ Future<void> _checkUpdates(Db db) async {
       db: db,
       service: UpdateService(),
       currentVersion: await UpdateChecker.installedVersion(),
-      notify: UpdateNotifications.show,
+      notify: (tag) => UpdateNotifications.show(
+        tag,
+        appLanguage: db.setting('app_language') ?? 'system',
+      ),
     );
     await checker.check();
   } catch (_) {
@@ -169,7 +172,7 @@ class FinancasApp extends StatelessWidget {
     }
 
     return MaterialApp(
-      title: 'Finanças',
+      onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appName,
       debugShowCheckedModeBanner: false,
       theme: theme(Brightness.light),
       darkTheme: theme(Brightness.dark),
@@ -219,6 +222,7 @@ class _HomeShellState extends State<HomeShell> {
           .where((t) => t.categoryId == null && !t.isTransfer)
           .length,
     );
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       body: IndexedStack(index: index, children: pages),
       bottomNavigationBar: NavigationBar(
@@ -236,21 +240,21 @@ class _HomeShellState extends State<HomeShell> {
               label: Text('$pending'),
               child: const Icon(Icons.calendar_month),
             ),
-            label: 'Mês',
+            label: l.morNavMonth,
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long),
-            label: 'Movimentos',
+            label: l.transactions,
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.account_balance_outlined),
             selectedIcon: Icon(Icons.account_balance),
-            label: 'Carteira',
+            label: l.morNavPortfolio,
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.more_horiz),
-            label: 'Mais',
+            label: l.morMoreTitle,
           ),
         ],
       ),

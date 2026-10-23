@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../update/update_notifications.dart';
 import '../util/format.dart';
@@ -17,7 +18,6 @@ const investAlertsNotifiedKey = 'invest_alerts_notified';
 const _recurringId = 301;
 const _allocationBaseId = 400; // um id por plataforma: 400 + id da conta
 const _channelId = 'alerts';
-const _channelName = 'Alertas';
 
 // ---------- Textos (funções puras) ----------
 
@@ -96,6 +96,22 @@ String allocationBody(AllocationAlert a) {
   return '${a.accountName}$quantas: $detalhe';
 }
 
+/// Versões dos textos acima com as traduções da interface (mesmos textos em português).
+String recurringTitleL(AppLocalizations l) => l.morRecurringTitle;
+
+String recurringBodyL(AppLocalizations l, int n) => l.morRecurringNotifBody(n);
+
+String allocationTitleL(AppLocalizations l) => l.morAllocationTitle;
+
+String allocationBodyL(AppLocalizations l, AllocationAlert a) {
+  final quantas = a.count > 1 ? ' ${l.morDeliveriesCount(a.count)}' : '';
+  final detalhe = [
+    for (final p in a.parts) '${p.name} ${fmtMoney(p.cents)}',
+    if (a.undistributed > 0) l.morUndistributed(fmtMoney(a.undistributed)),
+  ].join(', ');
+  return l.morAllocationBody(a.accountName, quantas, detalhe);
+}
+
 // ---------- Ids notificados ----------
 
 Set<int> parseNotifiedIds(String? raw) {
@@ -112,7 +128,12 @@ String encodeNotifiedIds(Set<int> ids) => (ids.toList()..sort()).join(',');
 // ---------- Envio ----------
 
 /// Notificação real, pelo mesmo plugin (e a mesma inicialização) das atualizações.
-Future<void> _sendSystem(int id, String title, String body) async {
+Future<void> _sendSystem(
+  int id,
+  String title,
+  String body,
+  AppLocalizations l,
+) async {
   await UpdateNotifications.init();
   final plugin = FlutterLocalNotificationsPlugin();
   final android = plugin
@@ -124,11 +145,11 @@ Future<void> _sendSystem(int id, String title, String body) async {
     id: id,
     title: title,
     body: body,
-    notificationDetails: const NotificationDetails(
+    notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
         _channelId,
-        _channelName,
-        channelDescription: 'Movimentos recorrentes e entregas de investimento',
+        l.morAlertsChannelName,
+        channelDescription: l.morAlertsChannelDescription,
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
       ),
@@ -143,10 +164,17 @@ Future<void> notifyStartup(
   required int recurringCreated,
   ShowNotification? show,
 }) async {
-  final send = show ?? _sendSystem;
+  final l = await notificationL10n(s.appLanguage);
+  final send =
+      show ??
+      ((int id, String title, String body) => _sendSystem(id, title, body, l));
   if (recurringCreated > 0) {
     try {
-      await send(_recurringId, recurringTitle, recurringBody(recurringCreated));
+      await send(
+        _recurringId,
+        recurringTitleL(l),
+        recurringBodyL(l, recurringCreated),
+      );
     } catch (_) {}
   }
 
@@ -162,14 +190,14 @@ Future<void> notifyStartup(
   final alerts = allocationAlerts(
     s.pendingAllocations,
     notified,
-    nameOf: (id) => s.holding(id)?.name ?? 'Ativo',
+    nameOf: (id) => s.holding(id)?.name ?? l.morAssetFallback,
   );
   for (final a in alerts) {
     try {
       await send(
         _allocationBaseId + a.accountId,
-        allocationTitle,
-        allocationBody(a),
+        allocationTitleL(l),
+        allocationBodyL(l, a),
       );
       // só fica marcada como notificada depois de o aviso sair
       notified.addAll(a.txnIds);

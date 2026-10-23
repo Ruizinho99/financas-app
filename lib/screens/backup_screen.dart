@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/form_kit.dart';
@@ -29,7 +30,9 @@ class _BackupScreenState extends State<BackupScreen> {
     } on FormatException catch (e) {
       error = e.message;
     } catch (e) {
-      error = 'Não consegui concluir: $e';
+      error = mounted
+          ? AppLocalizations.of(context)!.morCouldNotFinish('$e')
+          : '$e';
     }
     if (mounted) setState(() => busy = false);
   }
@@ -43,8 +46,9 @@ class _BackupScreenState extends State<BackupScreen> {
     if (path == null) return; // cancelado
     s.markBackup();
     if (mounted)
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Cópia guardada.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.morBackupSaved)),
+      );
   });
 
   Future<void> _restore(AppState s) => _run(() async {
@@ -55,14 +59,15 @@ class _BackupScreenState extends State<BackupScreen> {
     if (!mounted) return;
     if (!await confirm(
       context,
-      'Isto substitui TODOS os dados deste telemóvel pelos da cópia “${f.name}”. Não dá para desfazer. Continuar?',
-      ok: 'Restaurar',
+      AppLocalizations.of(context)!.morRestoreConfirm(f.name),
+      ok: AppLocalizations.of(context)!.morRestore,
     ))
       return;
     await s.restoreBackup(bytes);
     if (mounted)
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Dados restaurados.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.morDataRestored)),
+      );
   });
 
   @override
@@ -70,26 +75,27 @@ class _BackupScreenState extends State<BackupScreen> {
     final s = context.watch<AppState>();
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Cópia de segurança')),
+      appBar: AppBar(title: Text(l.morBackupTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         children: [
           FormCard(
             children: [
-              Text(
-                'Guarda todos os teus dados (movimentos, categorias, orçamentos, carteira…) num ficheiro. Não inclui as fotos dos recibos.',
-                style: tt.bodyMedium,
-              ),
+              Text(l.morBackupDescription, style: tt.bodyMedium),
               const SizedBox(height: 10),
               Text(
-                'Não precisas de ligar nenhuma conta na app: ao guardar, escolhe “Google Drive” (ou outra pasta) no ecrã do Android. Para restaurar, escolhe o ficheiro, do telemóvel ou do Drive.',
+                l.morBackupDriveHint,
                 style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
               if (s.lastBackup != null) ...[
                 const SizedBox(height: 10),
                 Text(
-                  'Última cópia guardada: ${fmtDate(s.lastBackup!)} (${fmtAgo(s.lastBackup!)})',
+                  l.morLastBackup(
+                    fmtDate(s.lastBackup!),
+                    fmtAgo(s.lastBackup!),
+                  ),
                   style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -97,13 +103,13 @@ class _BackupScreenState extends State<BackupScreen> {
               FilledButton.icon(
                 onPressed: busy ? null : () => _save(s),
                 icon: const Icon(Icons.cloud_upload_outlined),
-                label: const Text('Guardar cópia (Google Drive ou ficheiro)'),
+                label: Text(l.morSaveBackup),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: busy ? null : () => _restore(s),
                 icon: const Icon(Icons.cloud_download_outlined),
-                label: const Text('Restaurar de um ficheiro'),
+                label: Text(l.morRestoreFromFile),
               ),
               if (busy)
                 const Padding(
