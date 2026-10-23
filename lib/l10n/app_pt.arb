@@ -1,5 +1,1096 @@
 {
   "@@locale": "pt",
+  "anCompareOn": "A comparar com o período anterior",
+  "anCompareOff": "Comparar com o período anterior",
+  "anModeMonth": "Mês",
+  "anModeYear": "Ano",
+  "anModeYtd": "YTD",
+  "anModeCustom": "Custom",
+  "anYtdLabel": "YTD {year} · 1 jan – hoje",
+  "@anYtdLabel": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "anPickRange": "Escolhe o intervalo",
+  "anApply": "Aplicar",
+  "anTabOverview": "Visão geral",
+  "anTabSpend": "Gastos",
+  "anTabSave": "Poupar",
+  "anTabTrend": "Evolução",
+  "anNoDataPeriod": "Sem movimentos neste período (ou os filtros não encontram nada).",
+  "anExpenses": "Despesas",
+  "anSamePeriodPrev": "Mesmos dias do período anterior: {amount}",
+  "@anSamePeriodPrev": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevPeriodAmount": "Período anterior: {amount}",
+  "@anPrevPeriodAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevPeriod": "Período anterior",
+  "anOngoingToday": "Período em curso: valores até hoje (dia {day}).",
+  "@anOngoingToday": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "anIncomes": "Rendimentos",
+  "anBalance": "Saldo",
+  "anInvested": "Investido",
+  "anOfIncome": "{percent} dos rendimentos",
+  "@anOfIncome": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anSavingsRate": "Taxa de poupança",
+  "anPpVsPrev": "{sign}{pp} pp vs anterior",
+  "@anPpVsPrev": {
+    "placeholders": {
+      "sign": {
+        "type": "String"
+      },
+      "pp": {
+        "type": "int"
+      }
+    }
+  },
+  "anIncomeExpected": "Rendimento esperado: salário líquido definido no Orçamento.",
+  "anIncomeFromSalary": "Sem rendimentos categorizados: a usar o salário líquido definido no Orçamento.",
+  "anRateOngoing": "Período em curso: a taxa de poupança vai mudando até ao fim.",
+  "anRateExcellent": "Estás a poupar mais de 20% do que ganhas. Excelente.",
+  "anRateOk": "Poupas {percent}. Uma boa meta é 20%.",
+  "@anRateOk": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anRateNegative": "Estás a gastar mais do que ganhas neste período.",
+  "anPace": "Ritmo de gastos",
+  "anAvgPerDay": "Média por dia",
+  "anAvgValue": "Valor médio",
+  "anDayOf": "Dia {day} de {total}",
+  "@anDayOf": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "anOfMonth": "{percent} do mês",
+  "@anOfMonth": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anOfSpending": "{percent} das despesas",
+  "@anOfSpending": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anProjected": "Ao ritmo atual, o mês fecha em {amount}",
+  "@anProjected": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anPrevMonthSpent": "No mês anterior gastaste {amount}.",
+  "@anPrevMonthSpent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anAboveBudget": "Isso são {amount} acima do orçamento de {budget}.",
+  "@anAboveBudget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "budget": {
+        "type": "String"
+      }
+    }
+  },
+  "anWithinBudget": "Dentro do orçamento de {budget}, com folga de {margin}.",
+  "@anWithinBudget": {
+    "placeholders": {
+      "budget": {
+        "type": "String"
+      },
+      "margin": {
+        "type": "String"
+      }
+    }
+  },
+  "anMandVsOpt": "Obrigatórias vs opcionais",
+  "anMandVsOptSub": "O que tens de pagar vs onde tens margem para poupar",
+  "anMandatory": "Obrigatórias",
+  "anOptional": "Opcionais",
+  "anNoCategory": "Sem categoria",
+  "anTotal": "Total",
+  "anNoSpendPeriod": "Sem despesas neste período.",
+  "anPctOfIncome": "Em % dos rendimentos: obrigatórias {mand}, opcionais {opt}, sobra {left}.",
+  "@anPctOfIncome": {
+    "placeholders": {
+      "mand": {
+        "type": "String"
+      },
+      "opt": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "anBudgetSub": "Limites e objetivos definidos",
+  "anBudgetSubFiltered": "Limites e objetivos definidos (não depende dos filtros)",
+  "anGoalReached": "Objetivo atingido 🎉",
+  "anGoalLeft": "Faltam {amount} para o objetivo ({percent})",
+  "@anGoalLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimit": "Excedeste o limite em {amount}",
+  "@anOverLimit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNearLimit": "Perto do limite: restam {amount}",
+  "@anNearLimit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anLeftUsed": "Restam {amount} ({percent} usado)",
+  "@anLeftUsed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anWhereSave": "Onde posso poupar?",
+  "anFoundUpTo": "Encontrámos até {amount} por mês de margem.",
+  "@anFoundUpTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoSpendPeriodFilter": "Sem despesas neste período (ou os filtros não encontram nada).",
+  "anCategories": "Categorias",
+  "anSubcategories": "Subcategorias",
+  "anMerchants": "Comerciantes",
+  "anAccounts": "Contas",
+  "anWhereMoneyGoes": "Para onde vai o dinheiro",
+  "anSubDetail": "Detalhe por subcategoria",
+  "anWhereMostSpend": "Onde mais gastas",
+  "anSpendByAccount": "Gastos por conta",
+  "anTapRowHint": "Toca numa linha para ver os movimentos",
+  "anOthers": "Outros",
+  "anShowLess": "Mostrar menos",
+  "anSeeAllCount": "Ver todos ({count})",
+  "@anSeeAllCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWdMon": "Seg",
+  "anWdTue": "Ter",
+  "anWdWed": "Qua",
+  "anWdThu": "Qui",
+  "anWdFri": "Sex",
+  "anWdSat": "Sáb",
+  "anWdSun": "Dom",
+  "anDayMon": "à segunda",
+  "anDayTue": "à terça",
+  "anDayWed": "à quarta",
+  "anDayThu": "à quinta",
+  "anDayFri": "à sexta",
+  "anDaySat": "ao sábado",
+  "anDaySun": "ao domingo",
+  "anSpendMostOn": "Gastas mais {day}: {amount} em {count} movimentos",
+  "@anSpendMostOn": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWhichDays": "Em que dias gastas mais",
+  "anLargestSpends": "Maiores despesas",
+  "anLargestSub": "As que mais pesaram neste período",
+  "anMonthByMonth": "Mês a mês",
+  "anTxCount": "{count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@anTxCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anWhereFrom": "De onde vem",
+  "anPerMonthCap": "Por mês",
+  "anGeneralCat": "{name} (geral)",
+  "@anGeneralCat": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "anAnalyseOnly": "Analisar só esta",
+  "anAndMore": "… e mais {count}",
+  "@anAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anNoAccount": "Sem conta",
+  "anNotEnoughTrend": "Ainda não há dados suficientes para mostrar a evolução.",
+  "anLastMonths": "Últimos {count} meses · a linha tracejada é a média ({avg})",
+  "@anLastMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "anSpendByMonth": "Despesas por mês",
+  "anBestMonth": "Melhor mês: {month}",
+  "@anBestMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "anBestMonthBody": "Gastaste {amount}, {diff} abaixo da média.",
+  "@anBestMonthBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "anWorstMonth": "Mês mais caro: {month}",
+  "@anWorstMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "anWorstMonthBody": "Gastaste {amount}, {diff} acima da média.",
+  "@anWorstMonthBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncomeVsSpend": "Rendimentos vs despesas",
+  "anIncomeVsSpendSub": "Se a linha das despesas passa a dos rendimentos, estás a gastar mais do que ganhas",
+  "anMonth": "Mês",
+  "anSavingsShort": "Poup.",
+  "anTrendByCategory": "Evolução por categoria",
+  "anPickCategoryHint": "Escolhe uma categoria para a ver mês a mês",
+  "anChooseCategory": "Escolher categoria",
+  "anNone": "— nenhuma —",
+  "anAvgMonthsWithSpend": "Média nos meses com gasto: {amount}.",
+  "@anAvgMonthsWithSpend": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoSpendToAnalyse": "Sem despesas neste período para analisar.",
+  "anSavingPotential": "Potencial de poupança",
+  "anPerMonth": "por mês",
+  "anUpToYear": "Isso são até {amount} por ano, só com as sugestões abaixo.",
+  "@anUpToYear": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoObviousMargins": "Neste período não encontrámos margens óbvias. Experimenta outro intervalo ou o simulador.",
+  "anWhatIfCut": "E se cortasse nas opcionais?",
+  "anOptionalThisPeriod": "Despesas opcionais neste período: {amount}",
+  "@anOptionalThisPeriod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anCut": "Cortar",
+  "anSaveMonthly": "Poupas por mês",
+  "anSaveYearly": "Poupas por ano",
+  "anSuggestions": "Sugestões",
+  "anSuggestionsSub": "Ordenadas pelo que mais poupa",
+  "anRecurringPayments": "Pagamentos recorrentes",
+  "anRecOptional": "Opcionais: {monthly}/mês ({yearly}/ano)",
+  "@anRecOptional": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "yearly": {
+        "type": "String"
+      }
+    }
+  },
+  "anRecMandatory": "Obrigatórios: {monthly}/mês",
+  "@anRecMandatory": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "anMonthsLast": "{count} meses · último {date}",
+  "@anMonthsLast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anAmountPerMonth": "{amount}/mês",
+  "@anAmountPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anAmountPerYear": "{amount}/ano",
+  "@anAmountPerYear": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anCancelAdvice": "Cancelar o que já não usas é a forma mais fácil de poupar.",
+  "anFrequentSmall": "Pequenas compras frequentes",
+  "anSmallSub": "Compras de baixo valor que se repetem muito",
+  "anPurchasesAvg": "{count, plural, =1{1 compra} other{{count} compras}} · média {avg}",
+  "@anPurchasesAvg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "anMandatoryTag": "obrigatória",
+  "anOptionalTag": "opcional",
+  "anTypeAll": "Todas",
+  "anCategory": "Categoria",
+  "anCategoriesCount": "{count} categorias",
+  "@anCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anAccount": "Conta",
+  "anAccountsCount": "{count} contas",
+  "@anAccountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anFilters": "Filtros",
+  "anClearAll": "Limpar tudo",
+  "anClear": "Limpar",
+  "anExpenseType": "Tipo de despesa",
+  "anSearch": "Pesquisar",
+  "anSearchHint": "Nome, nota, categoria…",
+  "anTxAmount": "Valor do movimento",
+  "anMinAmount": "Mínimo ({sym})",
+  "@anMinAmount": {
+    "placeholders": {
+      "sym": {
+        "type": "String"
+      }
+    }
+  },
+  "anMaxAmount": "Máximo ({sym})",
+  "@anMaxAmount": {
+    "placeholders": {
+      "sym": {
+        "type": "String"
+      }
+    }
+  },
+  "anNoCategoriesYet": "Ainda não há categorias.",
+  "anApplyFilters": "Aplicar filtros",
+  "anStable": "estável",
+  "anNew": "novo",
+  "anUpToPerMonth": "até {amount}/mês",
+  "@anUpToPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimitTitle": "{name} acima do limite",
+  "@anOverLimitTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "anOverLimitDetail": "Gastaste {spent} para um limite de {target}.",
+  "@anOverLimitDetail": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncreaseTitle": "{name} subiu {percent}",
+  "@anIncreaseTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anIncreaseDetail": "Mais {delta} do que no período anterior ({prev} → {cur}).",
+  "@anIncreaseDetail": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      },
+      "prev": {
+        "type": "String"
+      },
+      "cur": {
+        "type": "String"
+      }
+    }
+  },
+  "anTopOptionalTitle": "{name}: {percent} das despesas",
+  "@anTopOptionalTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "anTopOptionalDetail": "É uma despesa opcional. Cortar 10% poupava {amount} por mês.",
+  "@anTopOptionalDetail": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "anSmallDetail": "{count, plural, =1{1 compra} other{{count} compras}} em {places, plural, =1{1 sítio} other{{places} sítios}} somam {total} ({examples}). Reduzir um terço poupava {saving} por mês.",
+  "@anSmallDetail": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "places": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      },
+      "examples": {
+        "type": "String"
+      },
+      "saving": {
+        "type": "String"
+      }
+    }
+  },
+  "anRecurringTitle": "{count, plural, =1{1 pagamento recorrente opcional} other{{count} pagamentos recorrentes opcionais}}",
+  "@anRecurringTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anRecurringDetail": "Somam {monthly} por mês ({yearly} por ano). Vê se ainda precisas de todos.",
+  "@anRecurringDetail": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "yearly": {
+        "type": "String"
+      }
+    }
+  },
+  "anUnclassifiedSpend": "Despesas sem categoria",
+  "anUnclassifiedDetail": "{amount} por classificar. Quanto mais classificado, mais certeiras são as sugestões.",
+  "@anUnclassifiedDetail": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpCopySalaryTooltip": "Copiar salário para todos os meses",
+  "bpNetSalary": "Salário líquido",
+  "bpSet": "Definir",
+  "bpSpecificThisMonth": "Valor específico deste mês",
+  "bpAllocatedSummary": "Alocado {amount} ({percent})",
+  "@bpAllocatedSummary": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnallocatedLeft": "Por alocar {amount}",
+  "@bpUnallocatedLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpOverAllocated": "Excedido em {amount}",
+  "@bpOverAllocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpIncomeThisMonth": "Rendimentos recebidos este mês: {amount}",
+  "@bpIncomeThisMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDefineSalaryHint": "Define o teu salário líquido para distribuir por categorias.",
+  "bpNoCategoriesBudget": "Ainda não tens categorias. Cria a primeira abaixo (ex.: Habitação) e define o orçamento de cada uma.",
+  "bpCategories": "Categorias",
+  "bpNewCategory": "Nova categoria",
+  "bpBudgetLimit": "Limite",
+  "bpBudgetGoal": "Objetivo",
+  "bpSpentOfTarget": "{spent} de {target} · {type}",
+  "@bpSpentOfTarget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentNoBudget": "Gasto: {spent} · sem orçamento",
+  "@bpSpentNoBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentSetBudget": "Gasto: {spent} · definir orçamento",
+  "@bpSpentSetBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryInMonth": "Obrigatória em {month}",
+  "@bpMandatoryInMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpInheritedFromParent": "Herdada da categoria-mãe",
+  "bpOnlyThisMonthHint": "Só este mês; para vários meses usa “Períodos”",
+  "bpCategoryBudgetOptional": "Orçamento da categoria (opcional)",
+  "bpSumOfSubcategories": "Soma das subcategorias",
+  "bpBudgetDescPercent": "{type}: {percent}% do salário ({amount})",
+  "@bpBudgetDescPercent": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpBudgetDescValue": "{type}: {amount}",
+  "@bpBudgetDescValue": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSubcategory": "Subcategoria",
+  "bpPeriods": "Períodos",
+  "bpEdit": "Editar",
+  "bpBudgetEditorTitle": "Orçamento · {name}",
+  "@bpBudgetEditorTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpHasBudget": "Ter orçamento",
+  "bpLimitHint": "Limite: queres gastar no máximo este valor.",
+  "bpGoalHint": "Objetivo: queres atingir pelo menos este valor (ex.: poupança).",
+  "bpValueWithCurrency": "Valor ({currency})",
+  "@bpValueWithCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPercentOfSalary": "% do salário",
+  "bpMonthlyAmount": "Valor mensal",
+  "bpPercentage": "Percentagem",
+  "bpSave": "Guardar",
+  "bpNetSalaryMonthly": "Salário líquido mensal",
+  "bpOnlyThisMonth": "Só para este mês",
+  "bpSalaryDefaultHint": "Desligado: passa a ser o valor por omissão de todos os meses",
+  "bpUseBaseSalary": "Usar valor base",
+  "bpCopyPreviousPlan": "Copiar o plano do mês anterior",
+  "bpCopiedPlanItems": "{count, plural, =1{Copiada 1 despesa de {month}.} other{Copiadas {count} despesas de {month}.}}",
+  "@bpCopiedPlanItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryPlanned": "Obrigatórias planeadas",
+  "bpOptionalPlanned": "Opcionais planeadas",
+  "bpExceedsSalaryBy": "Excede o salário em",
+  "bpUnplanned": "Por planear",
+  "bpSetMonthSalaryHint": "Define o salário deste mês para ver o que sobra.",
+  "bpNoPlanCopyHint": "Ainda sem despesas planeadas. Usa o ícone de copiar para trazer o plano do mês anterior.",
+  "bpNoPlanHint": "Ainda sem despesas planeadas. Acrescenta as obrigatórias (renda, luz…) e as opcionais (lazer, subscrições…).",
+  "bpMandatoryItems": "Obrigatórias",
+  "bpOptionalItems": "Opcionais",
+  "bpPlannedExpense": "Despesa planeada",
+  "bpCategoryAlreadyPlannedEdit": "Esta categoria já está planeada neste mês. Edita a linha existente.",
+  "bpCategoryAlreadyPlanned": "Esta categoria já está planeada neste mês.",
+  "bpSpentOver": "Gasto {spent} · passou {over}",
+  "@bpSpentOver": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentLeft": "Gasto {spent} · faltam {left}",
+  "@bpSpentLeft": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPlannedAmount": "Valor planeado ({currency})",
+  "@bpPlannedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryType": "Obrigatória",
+  "bpOptionalType": "Opcional",
+  "bpGoal": "Objetivo",
+  "bpNoGoalsHint": "Ainda não tens objetivos.\nCria um (ex.: férias) e as transferências para a sua subcategoria contam para ele.",
+  "bpGoalReachedAmount": "Atingido · {amount}",
+  "@bpGoalReachedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpGoalProgress": "{saved} de {target} · faltam {remaining}",
+  "@bpGoalProgress": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNewGoal": "Novo objetivo",
+  "bpEditGoal": "Editar objetivo",
+  "bpName": "Nome",
+  "bpGoalNameHint": "Ex.: Férias de verão",
+  "bpGoalAmount": "Valor do objetivo ({currency})",
+  "@bpGoalAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPreviousAmountKept": "Se o alterares, o valor anterior fica no histórico.",
+  "bpDeadlineOptional": "Prazo (opcional)",
+  "bpNoDeadline": "Sem prazo",
+  "bpRemoveDeadline": "Remover prazo",
+  "bpDescriptionOptional": "Descrição (opcional)",
+  "bpCategoryWhere": "Categoria onde fica",
+  "bpChooseCategory": "Escolher categoria",
+  "bpGoalCategoryHint": "O objetivo vira uma subcategoria desta categoria. Os movimentos nessa subcategoria contam como poupança.",
+  "bpEnterName": "Indica um nome.",
+  "bpEnterGoalAmount": "Indica o valor do objetivo.",
+  "bpChooseGoalCategory": "Escolhe a categoria onde fica o objetivo.",
+  "bpGoalDeleted": "Objetivo apagado.",
+  "bpDeleteGoalQuestion": "Apagar o objetivo “{name}”? Os movimentos ficam, mas deixam de estar associados a ele.",
+  "@bpDeleteGoalQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAlreadyHave": "Já tens",
+  "bpExceeded": "Excedido",
+  "bpRemaining": "Faltam",
+  "bpGoalPercentDeadline": "{percent}% · {deadline}",
+  "@bpGoalPercentDeadline": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNoDeadlineLower": "sem prazo",
+  "bpDeadlineDate": "prazo {date}",
+  "@bpDeadlineDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkTransaction": "Associar movimento",
+  "bpChangeAmount": "Alterar valor",
+  "bpAmountHistory": "Histórico do valor",
+  "bpNoGoalEntriesHint": "Ainda nada. Transferências na subcategoria do objetivo entram sozinhas; pagamentos feitos com outra categoria associas com “Associar movimento”.",
+  "bpEntrySubtitle": "{date} · {kind}",
+  "@bpEntrySubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkedManual": "associado",
+  "bpLinkedByCategory": "pela categoria",
+  "bpUnlink": "Desassociar",
+  "bpStatusReached": "Objetivo atingido.",
+  "bpStatusOnTrack": "No ritmo atual chegas a tempo: fazes {monthly}/mês e precisas de {needed}/mês.",
+  "@bpStatusOnTrack": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "needed": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusBehind": "Para chegar a tempo precisas de {needed}/mês; estás a fazer {monthly}/mês.",
+  "@bpStatusBehind": {
+    "placeholders": {
+      "needed": {
+        "type": "String"
+      },
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusEta": "No ritmo atual ({monthly}/mês) chegas a {date}.",
+  "@bpStatusEta": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusNoRecent": "Sem movimentos recentes. Faltam {amount}.",
+  "@bpStatusNoRecent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeGoalAmountTitle": "Alterar valor do objetivo",
+  "bpNewAmount": "Novo valor ({currency})",
+  "@bpNewAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeAmountHint": "O valor anterior fica no histórico. Os movimentos já associados mantêm-se.",
+  "bpSearchTransaction": "Procurar movimento",
+  "bpNoTransactionsToLink": "Nenhum movimento para associar.",
+  "bpTxnLinkSubtitle": "{date} · {amount} · por associar {left}",
+  "@bpTxnLinkSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAmountForGoal": "Valor para “{goal}” ({currency})",
+  "@bpAmountForGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnlinkedHint": "Por associar: {left}. Podes dividir o movimento por vários objetivos.",
+  "@bpUnlinkedHint": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLink": "Associar",
+  "bpMonday": "segunda-feira",
+  "bpTuesday": "terça-feira",
+  "bpWednesday": "quarta-feira",
+  "bpThursday": "quinta-feira",
+  "bpFriday": "sexta-feira",
+  "bpSaturday": "sábado",
+  "bpSunday": "domingo",
+  "bpJanuary": "janeiro",
+  "bpFebruary": "fevereiro",
+  "bpMarch": "março",
+  "bpApril": "abril",
+  "bpMay": "maio",
+  "bpJune": "junho",
+  "bpJuly": "julho",
+  "bpAugust": "agosto",
+  "bpSeptember": "setembro",
+  "bpOctober": "outubro",
+  "bpNovember": "novembro",
+  "bpDecember": "dezembro",
+  "bpFreqMonthly": "Mensal",
+  "bpFreqWeekly": "Semanal",
+  "bpFreqYearly": "Anual",
+  "bpWhenMonthly": "dia {day}",
+  "@bpWhenMonthly": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "bpWhenYearly": "{day} de {month}",
+  "@bpWhenYearly": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNoRecurringHint": "Ainda não há movimentos recorrentes.\n\nRegista aqui o salário, a renda ou uma subscrição: o movimento é criado sozinho na data certa.",
+  "bpRecurringTitle": "Movimentos recorrentes",
+  "bpNew": "Novo",
+  "bpPaused": "em pausa",
+  "bpEnded": "terminada",
+  "bpNextDate": "próxima {date}",
+  "@bpNextDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpEditRecurring": "Editar recorrente",
+  "bpNewRecurring": "Novo recorrente",
+  "bpEnterDescription": "Escreve uma descrição.",
+  "bpEnterAmount": "Indica um valor.",
+  "bpEndBeforeStart": "A data de fim é anterior à de início.",
+  "bpDeleteRecurringQuestion": "Apagar \"{description}\"? Os movimentos já registados ficam.",
+  "@bpDeleteRecurringQuestion": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "bpExpenseType": "Despesa",
+  "bpIncomeType": "Receita",
+  "bpDescription": "Descrição",
+  "bpDescriptionHint": "Ex.: Salário, Renda, Netflix",
+  "bpCategory": "Categoria",
+  "bpAccount": "Conta",
+  "bpNoAccount": "Sem conta",
+  "bpFrequency": "Frequência",
+  "bpDayOfWeek": "Dia da semana",
+  "bpDayOfMonth": "Dia do mês",
+  "bpShortMonthHint": "Em meses mais curtos, passa para o último dia do mês.",
+  "bpStart": "Início",
+  "bpPastStartHint": "Se a data de início já passou, os movimentos desde então são criados ao abrir a app.",
+  "bpEndOptional": "Fim (opcional)",
+  "bpNoEndDate": "Sem data de fim",
+  "bpRemoveEndDate": "Remover data de fim",
+  "bpActive": "Ativa",
+  "bpActiveHint": "Desativa para pausar, sem apagar",
   "appName": "Finanças",
   "appearanceTitle": "Aparência",
   "languageTitle": "Idioma",
@@ -168,5 +1259,1689 @@
         "type": "int"
       }
     }
-  }
+  },
+  "frmReceipt": "Recibo",
+  "frmViewReceipt": "Ver recibo",
+  "frmTakePhoto": "Tirar foto",
+  "frmChooseFromGallery": "Escolher da galeria",
+  "frmChooseFile": "Escolher ficheiro (PDF ou imagem)",
+  "frmRemoveReceipt": "Remover recibo",
+  "frmReceiptAttachError": "Não foi possível anexar o recibo: {error}",
+  "@frmReceiptAttachError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReceiptFileNotFound": "Ficheiro do recibo não encontrado.",
+  "frmEnterValidAmount": "Indica um montante válido.",
+  "frmAllocatedToGoals": "Já tens {amount} associado a objetivos. Reduz as associações primeiro.",
+  "@frmAllocatedToGoals": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransferTo": "Transferência para {name}",
+  "@frmTransferTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmTransfer": "Transferência",
+  "frmExpense": "Despesa",
+  "frmIncome": "Receita",
+  "frmReversedGone": "A despesa anulada já não existe.",
+  "frmEnterReversedAmount": "Indica quanto da despesa é anulado.",
+  "frmReversalTooBig": "A anulação não pode ser maior que a receita.",
+  "frmOnlyLeftToReverse": "Só faltam {amount} para anular nesta despesa.",
+  "@frmOnlyLeftToReverse": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmReversalHelp": "Ainda se pode anular {amount} desta despesa. A parte anulada não conta como gasto nem como receita na Análise.",
+  "@frmReversalHelp": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSearchExpense": "Procurar despesa",
+  "frmNoReversal": "Não anula nenhuma despesa",
+  "frmToReverseSubtitle": "{date} · {amount} · por anular {left}",
+  "@frmToReverseSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoExpenseToReverse": "Nenhuma despesa para anular.",
+  "frmInvestPlatform": "Plataforma de investimento",
+  "frmNone": "Nenhuma",
+  "frmExpenseGone": "Despesa já não existe",
+  "frmSaveToSplit": "Guarda o movimento para o dividir por objetivos.",
+  "frmChangeAmount": "Alterar valor",
+  "frmUnlink": "Desassociar",
+  "frmToAllocate": "Por associar: {amount}",
+  "@frmToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSplitByGoals": "Dividir por objetivos",
+  "frmSplitByGoal": "Dividir por objetivo",
+  "frmAllocate": "Associar",
+  "frmSave": "Guardar",
+  "frmAccount": "Conta",
+  "frmFromAccount": "Da conta",
+  "frmDestinationAccount": "Conta de destino",
+  "frmSelectAccount": "Seleciona uma conta",
+  "frmSelectDestinationAccount": "Seleciona a conta de destino",
+  "frmToAccount": "Para a conta",
+  "frmTakePhotoOrChoose": "Tira uma foto ou escolhe um ficheiro",
+  "frmEditTransaction": "Editar movimento",
+  "frmNewTransaction": "Novo movimento",
+  "frmImportStatementTip": "Importar extrato",
+  "frmDeleteThisTransaction": "Apagar este movimento?",
+  "frmCalculator": "Calculadora",
+  "frmCategory": "Categoria",
+  "frmChooseCategory": "Escolher categoria",
+  "frmReversesExpense": "Anula uma despesa (reembolso, devolução)",
+  "frmReversedAmount": "Valor anulado ({currency})",
+  "@frmReversedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDescriptionOptional": "Descrição (opcional)",
+  "frmToday": "Hoje",
+  "frmYesterday": "Ontem",
+  "frmOtherDate": "Outra data",
+  "frmToInvestOptional": "Para investir (opcional)",
+  "frmOutgoing": "Saída",
+  "frmIncoming": "Entrada",
+  "frmNotCountedNote": "Não conta como despesa nem receita na Análise.",
+  "frmMoreOptions": "Mais opções (conta, recibo)",
+  "frmAmountCurrency": "Valor ({currency})",
+  "@frmAmountCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOnlyLeftToAllocate": "Só faltam {amount} para associar.",
+  "@frmOnlyLeftToAllocate": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOptional": " (opcional)",
+  "frmCalcHint": "Ex.: 12,50+3*2",
+  "frmUse": "Usar",
+  "frmWholeFile": "Todo o ficheiro",
+  "frmPeriodToImport": "Período a importar",
+  "frmFileDataRange": "O ficheiro tem dados de {from} a {to}. Escolhe só o intervalo que queres importar.",
+  "@frmFileDataRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "frmFrom": "De",
+  "frmUntil": "Até",
+  "frmInRangeOfTotal": "{inRange} de {total} no período",
+  "@frmInRangeOfTotal": {
+    "placeholders": {
+      "inRange": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmTotalInFile": "{total} no ficheiro",
+  "@frmTotalInFile": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "frmSelectCategory": "Seleciona uma categoria",
+  "frmNewCategory": "➕  Nova categoria…",
+  "frmNoCategoryItem": "✖️  Sem categoria",
+  "frmHideEndedFuture": "🙈  Esconder terminadas e futuras",
+  "frmShowEndedFuture": "👁  Mostrar terminadas e futuras",
+  "frmEnded": "  · terminada",
+  "frmUpcoming": "  · futura",
+  "frmSelectSubcategory": "Seleciona uma subcategoria",
+  "frmSubcategory": "Subcategoria",
+  "frmNewSubcategory": "➕  Nova subcategoria…",
+  "frmNoSubcategory": "— Sem subcategoria —",
+  "frmChoose": "Escolher",
+  "frmChooseEmoji": "Escolher emoji",
+  "frmOrUseKeyboardEmoji": "Ou usa outro emoji do teclado",
+  "frmRemove": "Remover",
+  "frmChooseColor": "Escolher cor",
+  "frmHue": "Matiz",
+  "frmSaturation": "Saturação",
+  "frmBrightness": "Brilho",
+  "frmHex": "Hexadecimal",
+  "frmMandatoryTitle": "Obrigatória · {name}",
+  "@frmMandatoryTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMandatoryExplain": "Os meses abaixo contam como despesa obrigatória nesta categoria. Nos restantes meses é opcional.",
+  "frmNoPeriodDefined": "Nenhum período definido.",
+  "frmFromMonth": "A partir de {month}",
+  "@frmFromMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmClose": "Fechar",
+  "frmAddPeriod": "Adicionar período",
+  "frmAdd": "Adicionar",
+  "frmPickAnyDayOfMonth": "Escolhe qualquer dia do mês",
+  "frmNewPeriod": "Novo período",
+  "frmSinceMonth": "Desde {month}",
+  "@frmSinceMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoEndDate": "Sem data de fim",
+  "frmUntilMonth": "Até {month}",
+  "@frmUntilMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "frmMainCategories": "Principais",
+  "frmOnlyName": "Só {name}",
+  "@frmOnlyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoSubcategories": "Esta categoria não tem subcategorias.",
+  "frmSearchCategory": "Procurar categoria",
+  "frmNoCategoriesYet": "Ainda não tens categorias. Cria a primeira.",
+  "frmNoCategoryFound": "Nenhuma categoria encontrada.",
+  "frmNewCategoryTitle": "Nova categoria",
+  "frmChooseMonth": "Escolher mês",
+  "frmEnterName": "Indica um nome",
+  "frmMainCategoryExists": "Já existe uma categoria principal com este nome",
+  "frmSubcategoryExists": "Já existe esta subcategoria em {parent}",
+  "@frmSubcategoryExists": {
+    "placeholders": {
+      "parent": {
+        "type": "String"
+      }
+    }
+  },
+  "frmThisCategory": "esta categoria",
+  "frmRepeatedName": "Nome repetido",
+  "frmRemoveSubQuestion": "Remover “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria (só depois de guardares).",
+  "@frmRemoveSubQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmEditCategory": "Editar categoria",
+  "frmEditSubcategory": "Editar subcategoria",
+  "frmNewSubcategoryTitle": "Nova subcategoria",
+  "frmEditCategoryHint": "Altera os dados e as subcategorias",
+  "frmEditSubcategoryHint": "Altera os dados desta subcategoria",
+  "frmCreateSubsIn": "Cria subcategorias dentro de {name}",
+  "@frmCreateSubsIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmCreateCategoryHint": "Cria uma categoria e as suas subcategorias",
+  "frmSubcategoryName": "Nome da subcategoria",
+  "frmName": "Nome",
+  "frmParentCategory": "Categoria-mãe",
+  "frmNoneMainCategory": "Nenhuma (categoria principal)",
+  "frmHasSubsLock": "Tem subcategorias, por isso não pode ser uma subcategoria.",
+  "frmSubcategoryOf": "Subcategoria de ",
+  "frmCreatingSubcategoryOf": "A criar subcategoria de ",
+  "frmMoreSubsOf": "Mais subcategorias de {name}",
+  "@frmMoreSubsOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSubcategories": "Subcategorias",
+  "frmRemoveSubcategory": "Remover subcategoria",
+  "frmAddSubcategory": "Adicionar subcategoria",
+  "frmOptions": "Opções",
+  "frmType": "Tipo",
+  "frmOnlyInPeriod": "Só existe num período",
+  "frmOnlyInPeriodHint": "Ex.: “Férias 2027”. Fora do período deixa de aparecer nas escolhas.",
+  "frmSince": "Desde",
+  "frmSetEnd": "Definir fim",
+  "frmMandatoryIn": "Obrigatória em…",
+  "frmOptionalAllMonths": "Opcional em todos os meses",
+  "frmPeriodsDefined": "{count} período(s) definido(s)",
+  "@frmPeriodsDefined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmKindOptional": "Despesa opcional",
+  "frmKindMandatory": "Despesa obrigatória",
+  "frmKindIncome": "Rendimento",
+  "frmKindInvestment": "Investimento",
+  "frmKindBoth": "Despesas e receitas",
+  "frmKindOptionalHelp": "Gasto que podes cortar (lazer, restaurantes…).",
+  "frmKindMandatoryHelp": "Gasto fixo do mês (renda, seguros…). Depois podes escolher só alguns meses.",
+  "frmKindIncomeHelp": "Entradas de dinheiro (ex.: salário). Não conta como despesa.",
+  "frmKindInvestmentHelp": "Dinheiro que pões a render. Não conta como gasto; aparece como investido.",
+  "frmKindBothHelp": "Aceita gastos e entradas (ex.: vendas, reembolsos). Os gastos contam como despesa e as entradas como receita.",
+  "frmAccounts": "Contas",
+  "frmNewAccount": "Nova conta",
+  "frmEditAccount": "Editar conta",
+  "frmAccountNameHint": "Ex.: Conta à ordem",
+  "frmOpeningBalanceCurrency": "Saldo inicial ({currency})",
+  "@frmOpeningBalanceCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOpeningBalanceHelp": "Quanto tinhas na conta antes dos movimentos registados aqui.",
+  "frmNewAccountItem": "Nova conta…",
+  "frmNoAccount": "Sem conta",
+  "frmNoAccountsYet": "Ainda não tens contas.\nCria uma para saberes de onde vem cada movimento e para registar transferências entre contas.",
+  "frmAccountSubtitle": "{count, plural, =1{1 movimento} other{{count} movimentos}} · saldo {balance}",
+  "@frmAccountSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "frmDeleteAccountQuestion": "Apagar a conta “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem conta.",
+  "@frmDeleteAccountQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmAccountDeleted": "Conta apagada.",
+  "frmEdit": "Editar",
+  "frmBalance": "Saldo",
+  "frmOpeningBalanceLine": "Saldo inicial {amount} · {count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@frmOpeningBalanceLine": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmThisMonth": "Este mês",
+  "frmMonthBalance": "Saldo do mês",
+  "frmGoalsFedByAccount": "Objetivos alimentados por esta conta",
+  "frmNoGoalFunded": "Nenhum objetivo recebe dinheiro desta conta ainda.",
+  "frmNoTransactionsInAccount": "Sem movimentos nesta conta.",
+  "frmObWelcome": "Bem-vindo",
+  "frmObFirstAccount": "Primeira conta",
+  "frmObSalary": "Salário",
+  "frmObDone": "Pronto",
+  "frmObEnterAmount1250": "Escreve um valor, por exemplo 1250,00",
+  "frmObEnterAmount1500": "Escreve um valor, por exemplo 1500,00",
+  "frmObWelcomeTitle": "Bem-vindo às Finanças",
+  "frmObWelcomeText": "Regista o dinheiro que entra e sai e vê para onde ele vai. Os teus dados ficam guardados só neste telemóvel, sem contas nem partilha.",
+  "frmObAccountTitle": "Qual é a tua conta principal?",
+  "frmObAccountText": "Podes adicionar mais contas depois. Se não quiseres agora, deixa em branco.",
+  "frmObAccountName": "Nome da conta",
+  "frmObSalaryTitle": "Quanto recebes por mês?",
+  "frmObSalaryText": "Salário líquido. Serve para o planeamento e para ver quanto ainda podes gastar. Podes mudar ou deixar em branco.",
+  "frmObSalaryField": "Salário líquido mensal ({currency})",
+  "@frmObSalaryField": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "frmObReadyTitle": "Está pronto",
+  "frmObReadyText": "Adiciona movimentos à mão ou importa um extrato. Podes mudar tudo depois nos ecrãs próprios.",
+  "frmBack": "Voltar",
+  "frmFinish": "Concluir",
+  "frmNext": "Seguinte",
+  "frmAll": "Todos",
+  "frmExpenses": "Despesas",
+  "frmTransfers": "Transferências",
+  "frmTransactionsCount": "{count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@frmTransactionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmInvestmentOf": "Investimento · {name}",
+  "@frmInvestmentOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "frmOfAmount": "de {amount}",
+  "@frmOfAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmNoIncomeDefined": "sem rendimento definido",
+  "frmSetSalaryToSpend": "Define o salário no Orçamento para ver quanto ainda podes gastar.",
+  "frmOverPlanned": "Passaste {amount} do previsto",
+  "@frmOverPlanned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmIncomeExpected": "Receitas (previstas)",
+  "frmPercentOfIncome": "{percent}% do rendimento",
+  "@frmPercentOfIncome": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "frmToClassify": "{count} por classificar",
+  "@frmToClassify": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frmDeliveriesCount": "{count, plural, =1{1 entrega} other{{count} entregas}} · {total}",
+  "@frmDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSetSalaryLeft": "Define o salário no Orçamento para ver o que sobra.",
+  "frmPlanExceeds": "O plano excede o salário em {amount}",
+  "@frmPlanExceeds": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frmSavedOfTarget": "{saved} de {target}{deadline}",
+  "@frmSavedOfTarget": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "frmUntilDate": " · até {date}",
+  "@frmUntilDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "impImportTitle": "Importar extrato",
+  "impFormatsInfo": "Formatos suportados: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido apenas no telemóvel e nunca sai daqui.",
+  "impChooseFile": "Escolher ficheiro",
+  "impChooseOtherFile": "Escolher outro ficheiro",
+  "impFileName": "Ficheiro: {name}",
+  "@impFileName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impPdfNoRows": "Não encontrei movimentos neste PDF. Pode ser um PDF digitalizado (imagem) ou um formato diferente. Tenta exportar CSV/Excel no homebanking.",
+  "impCsvNoRows": "Não consegui ler movimentos. Ajusta as colunas abaixo.",
+  "impReadError": "Erro ao ler o ficheiro: {error}",
+  "@impReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "impStatementAccount": "Conta deste extrato",
+  "impPickAccountOptional": "Seleciona uma conta (opcional)",
+  "impTxnCount": "{count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@impTxnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impIncomeExpense": "Entradas {income}   ·   Saídas {expense}",
+  "@impIncomeExpense": {
+    "placeholders": {
+      "income": {
+        "type": "String"
+      },
+      "expense": {
+        "type": "String"
+      }
+    }
+  },
+  "impInvertSigns": "Inverter sinais",
+  "impInvertSignsHint": "Usa se as despesas aparecem como positivas",
+  "impImportButton": "{count, plural, =1{Importar 1 movimento} other{Importar {count} movimentos}}",
+  "@impImportButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impImportDone": "{added, plural, =1{1 importado} other{{added} importados}}, {duplicates, plural, =1{1 duplicado ignorado} other{{duplicates} duplicados ignorados}}. {unclassified, plural, =1{1 grupo por classificar.} other{{unclassified} grupos por classificar.}}",
+  "@impImportDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "duplicates": {
+        "type": "int"
+      },
+      "unclassified": {
+        "type": "int"
+      }
+    }
+  },
+  "impClassifiedOf": "Classificação: {classified} de {total, plural, =1{1 grupo} other{{total} grupos}}",
+  "@impClassifiedOf": {
+    "placeholders": {
+      "classified": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "impGroupsExplain": "Movimentos com o mesmo nome estão juntos. Escolhe a categoria e a subcategoria de cada grupo (ou deixa por classificar). As regras já memorizadas vêm preenchidas.",
+  "impTransfersCount": "{count, plural, =1{1 transferência entre contas} other{{count} transferências entre contas}}",
+  "@impTransfersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impTransfersHint": "Não precisam de categoria e ficam fora das despesas e receitas.",
+  "impOriginal": "Original: {description}",
+  "@impOriginal": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "impActiveOfTotal": "{active} de {total, plural, =1{1 movimento} other{{total} movimentos}}",
+  "@impActiveOfTotal": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "impRememberedRule": " · regra memorizada",
+  "impNameOrGroup": "Nome ou grupo (opcional)",
+  "impNameHint": "Ex.: Ginásio, Restaurante Arminda…",
+  "impJoinsGroup": "Junta-se ao grupo “{name}” ({count, plural, =1{1 título} other{{count} títulos}})",
+  "@impJoinsGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impRememberNameCategory": "Memorizar nome e categoria para o futuro",
+  "impViewTransactions": "Ver movimentos",
+  "impAccountsInStatement": "Contas neste extrato",
+  "impAccountsDetected": "{count, plural, =1{1 conta detetada} other{{count} contas detetadas}}. Escolhe a que corresponde a cada uma na app.",
+  "@impAccountsDetected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAccountTxns": "{name}  ·  {count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@impAccountTxns": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impCreateAccount": "➕  Criar conta “{name}”",
+  "@impCreateAccount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impNoAccount": "Sem conta",
+  "impDetectTransfers": "Detetar transferências entre estas contas",
+  "impDetectTransfersHint": "Saída numa conta e entrada noutra, do mesmo valor, não contam como despesa nem receita.",
+  "impSkippedTitle": "{count, plural, =1{1 linha parece movimentos mas não foi reconhecida} other{{count} linhas parecem movimentos mas não foram reconhecidas}}",
+  "@impSkippedTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impSkippedSub": "Lidos: {count}. Toca para ver as linhas ignoradas.",
+  "@impSkippedSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAndMore": "… e mais {count}",
+  "@impAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impSkippedHelp": "Se for um extrato do teu banco, exporta em CSV/Excel no homebanking ou envia-me um exemplo (com os dados tapados) para eu ajustar o leitor.",
+  "impYearForDates": "Ano das datas sem ano",
+  "impYearHint": "Só afeta datas escritas como dd-mm",
+  "impFileColumns": "Colunas do ficheiro",
+  "impHeaderRow": "Linha de cabeçalho",
+  "impDate": "Data",
+  "impDescription": "Descrição",
+  "impAmountSigned": "Montante (com sinal)",
+  "impDebitOut": "Débito (saídas)",
+  "impCreditIn": "Crédito (entradas)",
+  "impBalanceOptional": "Saldo (opcional)",
+  "impDoNotUse": "— não usar —",
+  "impColumnN": "Coluna {n}",
+  "@impColumnN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impClassifyTitle": "Classificar",
+  "impClassifySubtitle": "Revê e categoriza as tuas transações importadas",
+  "impSort": "Ordenar",
+  "impSortCount": "Mais movimentos",
+  "impSortTotal": "Maior valor",
+  "impSortRecent": "Mais recentes",
+  "impSortName": "Nome (A-Z)",
+  "impGroups": "Grupos",
+  "impRules": "Regras memorizadas",
+  "impSearchGroups": "Pesquisar grupos ou estabelecimentos…",
+  "impToClassifyChip": "Por classificar ({count})",
+  "@impToClassifyChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAll": "Todos",
+  "impApplyRules": "Aplicar regras",
+  "impClassifiedByRules": "{count, plural, =1{1 movimento classificado pelas regras.} other{{count} movimentos classificados pelas regras.}}",
+  "@impClassifiedByRules": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impAllClassified": "Tudo classificado! 🎉",
+  "impNoTransactionsYet": "Ainda não há movimentos.",
+  "impClassifiedCount": "{count, plural, =1{1 movimento classificado.} other{{count} movimentos classificados.}}",
+  "@impClassifiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impSelectAll": "Selecionar tudo",
+  "impApplyTo": "Aplicar a {count, plural, =1{1 movimento} other{{count} movimentos}}",
+  "@impApplyTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impTxnCountDate": "{count, plural, =1{1 movimento} other{{count} movimentos}} · {date}",
+  "@impTxnCountDate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "impGroupChip": "Grupo · {count, plural, =1{1 título} other{{count} títulos}}",
+  "@impGroupChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impRemembered": "Memorizado",
+  "impSelectedCount": "{count, plural, =1{1 selecionado} other{{count} selecionados}}",
+  "@impSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impChooseCategory": "Escolhe a categoria",
+  "impMoveTo": "Mover para {category}",
+  "@impMoveTo": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "impRememberForFuture": "Memorizar para futuros",
+  "impWhatIsThis": "O que é isto?",
+  "impRememberHelp": "Guarda uma regra: da próxima vez que aparecer um movimento com este título, a app aplica logo o nome e a categoria que escolheste.",
+  "impOk": "OK",
+  "impNameAndNotes": "Nome e notas",
+  "impForgetRule": "Esquecer regra",
+  "impForgetRuleQuestion": "Esquecer a regra para “{key}”? Os movimentos já classificados mantêm-se.",
+  "@impForgetRuleQuestion": {
+    "placeholders": {
+      "key": {
+        "type": "String"
+      }
+    }
+  },
+  "impForget": "Esquecer",
+  "impJoinGroup": "Juntar a grupo",
+  "impManageGroup": "Gerir grupo",
+  "impJoinAGroup": "Juntar a um grupo",
+  "impFriendlyName": "Nome amigável (opcional)",
+  "impExampleGym": "Ex.: Ginásio",
+  "impRuleDescription": "Descrição da regra (opcional)",
+  "impNoteAllTx": "Nota em todos os movimentos (opcional)",
+  "impNameSavedHint": "O nome e a descrição ficam guardados na regra, para as próximas importações.",
+  "impSave": "Guardar",
+  "impNoRules": "Sem regras. Ao mover movimentos com “Memorizar”, as regras aparecem aqui.",
+  "impEquals": "Igual a",
+  "impContains": "Contém",
+  "impRule": "Regra",
+  "impNewRule": "Nova regra",
+  "impEditRule": "Editar regra",
+  "impTextToRecognize": "Texto a reconhecer (MAIÚSCULAS)",
+  "impExactName": "Nome exatamente igual",
+  "impExactNameOff": "Desligado: basta conter o texto",
+  "impDescriptionOptional": "Descrição (opcional)",
+  "impNewGroup": "Novo grupo",
+  "impName": "Nome",
+  "impExampleRestaurant": "Ex.: Restaurante Arminda",
+  "impCreate": "Criar",
+  "impGroupsEmpty": "Ainda não tens grupos.\n\nUm grupo junta títulos diferentes que são a mesma coisa, por exemplo “TRANS RESTAURANTE ARMINDA” e “MB WAY RESTAURANTE ARMINDA” → “Restaurante Arminda”, com uma categoria só.",
+  "impDeleteGroup": "Apagar grupo",
+  "impGroupDeleted": "Grupo apagado.",
+  "impDeleteGroupQuestion": "Apagar o grupo “{name}”? Os títulos ficam com o nome e a categoria que tinham no grupo, mas deixam de estar juntos.",
+  "@impDeleteGroupQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impJoinTitles": "Juntar títulos",
+  "impGroupName": "Nome do grupo",
+  "impGroupSaved": "Grupo guardado.",
+  "impGroupExists": "Já existe um grupo chamado “{name}”.",
+  "@impGroupExists": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impTitlesInGroup": "Títulos neste grupo ({count})",
+  "@impTitlesInGroup": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impGroupAnyTitle": "Qualquer movimento com um destes títulos recebe o nome e a categoria do grupo, agora e nas próximas importações.",
+  "impGroupEmptyHint": "Ainda vazio. Usa “Juntar títulos”.",
+  "impRemoveFromGroup": "Tirar do grupo",
+  "impSearchTitles": "Pesquisar títulos",
+  "impNoTitlesFound": "Nenhum título encontrado.",
+  "impAlreadyInGroup": " · já está em “{name}”",
+  "@impAlreadyInGroup": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impOrAnyTitle": "Ou: qualquer título que contenha…",
+  "impJoin": "Juntar",
+  "impTitleLabel": "Título: {title}",
+  "@impTitleLabel": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "impTitlesList": "{count} títulos: {list}",
+  "@impTitlesList": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "impExistingGroup": "Grupo existente",
+  "impOr": "ou",
+  "impExistsJoins": "Já existe: vai juntar-se a “{name}”",
+  "@impExistsJoins": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impTitleCount": "{count, plural, =1{1 título} other{{count} títulos}}",
+  "@impTitleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invAdd": "Adicionar",
+  "invRecordOperation": "Registar operação",
+  "invRecordOperationHint": "Compra, venda, dividendo ou o que já tinhas",
+  "invImportFromFile": "Importar de um ficheiro",
+  "invImportFileHint": "PDF, CSV ou Excel da corretora",
+  "invNewHolding": "Novo ativo",
+  "invNewHoldingHint": "ETF, ação, cripto, fundo…",
+  "invNewAccount": "Nova plataforma",
+  "invNewAccountHint": "XTB, Trade Republic, exchange…",
+  "invTitle": "Investimentos",
+  "invImportTrades": "Importar compras e vendas",
+  "invRefreshPrices": "Atualizar preços",
+  "invImportCardHint": "Escolhe um ficheiro PDF, CSV ou Excel da tua corretora",
+  "invMyPortfolio": "A minha carteira",
+  "invTotalValue": "Valor total",
+  "invInvested": "Investido",
+  "invCurrentValue": "Valor atual",
+  "invGainLoss": "Ganho / perda",
+  "invUnallocated": "Por alocar",
+  "invUnallocatedStandby": "Por alocar (standby)",
+  "invRealizedGain": "Ganho realizado",
+  "invDividends": "Dividendos",
+  "invPricesUpdated": "{count, plural, =1{1 preço atualizado.} other{{count} preços atualizados.}}",
+  "@invPricesUpdated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invPricesFailed": "Falhou: {details}",
+  "@invPricesFailed": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoAutoPrices": "Nenhum ativo com preço automático.",
+  "invPricesUpdatedAgo": "Preços atualizados {ago}",
+  "@invPricesUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "invNoPricesYet": "Ainda sem preços. Carrega em atualizar.",
+  "invPricesManual": "Preços definidos à mão em cada ativo.",
+  "invUnpricedNote": "Ativos sem preço contam pelo custo, para não distorcer o total.",
+  "invWhereMoneyIs": "Onde está o dinheiro",
+  "invByAsset": "Por ativo",
+  "invByPlatform": "Por plataforma",
+  "invByType": "Por tipo",
+  "invTotal": "Total",
+  "invCashToAllocate": "Dinheiro por alocar",
+  "invCashSubtitle": "Enviado para as plataformas e ainda não investido (standby)",
+  "invNegativeCashHint": "Negativo: falta uma entrega ou um acerto de dinheiro",
+  "invAllocate": "Alocar",
+  "invAdjust": "Acertar",
+  "invPlatforms": "Plataformas",
+  "invAssetsCount": "{count, plural, =1{1 ativo} other{{count} ativos}}",
+  "@invAssetsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invAccountLine": "Por alocar {cash} · {count, plural, =1{1 ativo} other{{count} ativos}}",
+  "@invAccountLine": {
+    "placeholders": {
+      "cash": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invIntroTitle": "Acompanha o que tens investido",
+  "invIntroSubtitle": "Onde está o teu dinheiro, quanto vale e quanto está por alocar",
+  "invStep1Title": "1. Cria uma plataforma",
+  "invStep1Desc": "XTB, Trade Republic, uma exchange de cripto…",
+  "invStep2Title": "2. Associa as transferências do banco",
+  "invStep2Desc": "Marcas quais foram dinheiro enviado para a plataforma. Deixam de contar como despesa.",
+  "invStep3Title": "3. Diz o que já tinhas",
+  "invStep3Desc": "Quantidade e preço médio de compra do que investiste antes de usar a app.",
+  "invStep4Title": "4. Aloca o dinheiro",
+  "invStep4Desc": "Regista compras. O que sobra fica por alocar (standby).",
+  "invStep5Title": "5. Atualiza os preços",
+  "invStep5Desc": "Com APIs gratuitas (Yahoo Finance e CoinGecko), só quando tu pedires.",
+  "invCreateFirstPlatform": "Criar a primeira plataforma",
+  "invImportFromFileButton": "Importar compras e vendas de um ficheiro",
+  "invTopAssetWeight": "{label} pesa {share} da carteira.",
+  "@invTopAssetWeight": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "invKindEtf": "ETF",
+  "invKindStock": "Ação",
+  "invKindCrypto": "Cripto",
+  "invKindFund": "Fundo",
+  "invKindBond": "Obrigação",
+  "invKindOther": "Outro",
+  "invProviderManual": "Manual",
+  "invProviderYahoo": "Yahoo Finance",
+  "invProviderCoingecko": "CoinGecko",
+  "invOpInitial": "Posição inicial",
+  "invOpBuy": "Compra",
+  "invOpSell": "Venda",
+  "invOpDividend": "Dividendo",
+  "invOpCash": "Acerto de dinheiro",
+  "invAddToAccount": "Adicionar a {name}",
+  "@invAddToAccount": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invDeleteAccountConfirm": "Apagar a plataforma “{name}” com os seus ativos e operações? Os movimentos do banco ficam (deixam de estar associados).",
+  "@invDeleteAccountConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invSummary": "Resumo",
+  "invCashAccountSubtitle": "O que está na plataforma e ainda não foi investido",
+  "invBankDepositsNet": "Entregas do banco (líquidas)",
+  "invCashAdjustments": "Acertos de dinheiro",
+  "invSales": "Vendas",
+  "invPurchases": "Compras",
+  "invNegativeAccountCash": "O valor está negativo: gastaste mais do que o dinheiro registado. Associa a transferência do banco ou acerta o dinheiro que já lá estava.",
+  "invAllocateMoney": "Alocar dinheiro",
+  "invBankTransfers": "Transferências do banco",
+  "invMarkTransfersFor": "Marca quais foram dinheiro enviado para {name}",
+  "@invMarkTransfersFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invLinkedCount": "{count, plural, =1{1 associada · não conta como despesa} other{{count} associadas · não contam como despesa}}",
+  "@invLinkedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invLinkBankTransfers": "Associar transferências do banco",
+  "invSuggestedMatches": "{count, plural, =1{1 movimento parece ser desta plataforma} other{{count} movimentos parecem ser desta plataforma}}",
+  "@invSuggestedMatches": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invSuggestedBody": "Têm “{name}” no nome. Toca para rever e associar.",
+  "@invSuggestedBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invUnlink": "Desassociar",
+  "invDeliveryLower": "entrega",
+  "invWithdrawalLower": "levantamento",
+  "invAndMore": "… e mais {count}",
+  "@invAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invRememberedTitles": "Títulos lembrados para as próximas importações",
+  "invAssets": "Ativos",
+  "invNew": "Novo",
+  "invNoAssetsYet": "Ainda sem ativos. Cria um (ex.: o ETF ou a ação que compraste) e regista a posição que já tinhas ou uma compra.",
+  "invHistory": "Histórico",
+  "invTapToEdit": "Toca para editar",
+  "invEdit": "Editar",
+  "invHoldingDeleted": "Ativo apagado.",
+  "invHoldingDeletedShort": "Ativo apagado",
+  "invAccountDeleted": "Plataforma apagada.",
+  "invTransferDeleted": "Transferência apagada.",
+  "invTransfersTitle": "Transferências para investir",
+  "invTapToAssignWithAmount": "Toca numa para dizer em que compras foi usada. Por investir: {amount}",
+  "@invTapToAssignWithAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invTapToAssign": "Toca numa para dizer em que compras foi usada",
+  "invSeeAll": "Ver todas ({count})",
+  "@invSeeAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invNoTransfersYet": "Ainda não associaste transferências do banco a uma plataforma.",
+  "invNothingAssigned": "Nada associado ainda · toca para escolher as compras",
+  "invAllocationSummary": "Investido {allocated} · {holdText}",
+  "@invAllocationSummary": {
+    "placeholders": {
+      "allocated": {
+        "type": "String"
+      },
+      "holdText": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHoldLower": "em espera {amount}",
+  "@invOnHoldLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedLower": "mais {amount} do que a transferência",
+  "@invOverAllocatedLower": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invInvestedAmount": "Investido {amount}",
+  "@invInvestedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invOnHold": "Em espera {amount}",
+  "@invOnHold": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invMoreThanAmount": "Mais {amount}",
+  "@invMoreThanAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invUseTransfer": "Usar esta transferência",
+  "invPlatformDefault": "Plataforma",
+  "invThePlatform": "a plataforma",
+  "invTransferTo": "{amount} para {name}",
+  "@invTransferTo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invOverAllocatedNote": "As compras escolhidas somam mais do que a transferência. Deve ter entrado dinheiro de antes; podes continuar.",
+  "invHoldRemainder": "{amount} desta transferência ficou em espera, por investir.",
+  "@invHoldRemainder": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSuggest": "Sugerir",
+  "invClearAll": "Limpar (tudo em espera)",
+  "invSaveAllOnHold": "Guardar (tudo em espera)",
+  "invSave": "Guardar",
+  "invBuysOnPlatform": "Compras nesta plataforma",
+  "invMarkBuysHint": "Marca as que foram pagas com esta transferência.",
+  "invNoBuysYet": "Ainda não há compras registadas nesta plataforma.",
+  "invUsedElsewhere": "usada noutra transferência",
+  "invUnits": "{qty} un.",
+  "@invUnits": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invSetPrice": "Definir preço",
+  "invSetPriceManual": "Definir à mão",
+  "invPricePerUnit": "Preço por unidade ({currency})",
+  "@invPricePerUnit": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invFxRate": "Câmbio: 1 {base} = ? {currency}",
+  "@invFxRate": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrentPrice": "Preço atual",
+  "invNoPrice": "Sem preço",
+  "invCurrencyChip": "Moeda: {currency} · {mode}",
+  "@invCurrencyChip": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "invCurrencyChosen": "escolhida",
+  "invCurrencyAuto": "automática",
+  "invUpdatedAgo": "Atualizado {ago} · {date}",
+  "@invUpdatedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "invRefreshPrice": "Atualizar preço",
+  "invPriceUpdated": "Preço atualizado.",
+  "invRefreshFailedReason": "Não consegui atualizar: {reason}",
+  "@invRefreshFailedReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "invErrorWord": "erro",
+  "invDeleteHoldingConfirm": "Apagar o ativo “{name}” e as suas operações?",
+  "@invDeleteHoldingConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invMyPosition": "A minha posição",
+  "invNoPositionYet": "Ainda sem posição. Regista a quantidade e o preço médio do que já tinhas, ou uma compra.",
+  "invQuantity": "Quantidade",
+  "invAvgCost": "Preço médio de compra",
+  "invGainIn": "Ganho em {currency}",
+  "@invGainIn": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "invPriceOnly": "só o preço",
+  "invSetPriceToSeePl": "Define o preço atual para ver o ganho ou perda.",
+  "invBuy": "Comprar",
+  "invSell": "Vender",
+  "invOperations": "Operações",
+  "invFeeLabel": "comissão {amount}",
+  "@invFeeLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTitle": "Plano de investimento",
+  "invPlanCardDesc": "Quando entra uma transferência numa plataforma, a Carteira mostra quanto vai para cada ativo. A app não regista compras.",
+  "invNoPlan": "Sem plano",
+  "invMissingPercent": "faltam {pct}% por distribuir",
+  "@invMissingPercent": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanOf": "Plano de {name}",
+  "@invPlanOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanEditorHint": "Percentagem de cada entrega para cada ativo. Podes deixar parte por distribuir.",
+  "invPlanNoAssets": "Esta plataforma ainda não tem ativos. Adiciona ativos na Carteira.",
+  "invPlanOver": "Passa {pct}% dos 100%.",
+  "@invPlanOver": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invPlanTotal": "Total: {pct}%",
+  "@invPlanTotal": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "invSumOver100": "A soma não pode passar 100%.",
+  "invInvalidValue": "Valor inválido.",
+  "invSavePlan": "Guardar plano",
+  "invRemovePlan": "Remover plano",
+  "invPendingDeliveries": "Entregas para distribuir ({count})",
+  "@invPendingDeliveries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invUndistributed": "Por distribuir: {amount}",
+  "@invUndistributed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invSeen": "Visto",
+  "invAvgShort": "médio",
+  "invNoPriceShort": "sem preço",
+  "invClosedPosition": "Posição fechada",
+  "morMoreTitle": "Mais",
+  "morBudgetSubtitle": "Salário e limites por categoria",
+  "morPlanningSubtitle": "Salário e despesas planeadas por mês",
+  "morGoalsSubtitle": "Poupar para férias, um carro…",
+  "morAnalysisSubtitle": "Onde gastas e onde podes poupar",
+  "morClassifyTitle": "Classificar movimentos",
+  "morClassifySubtitle": "Um cartão por nome",
+  "morUpdatesTitle": "Atualizações",
+  "morUpdatesSubtitle": "Procurar e instalar uma versão nova",
+  "morAppearanceSubtitle": "Modo escuro e cores",
+  "morAccountsTitle": "Contas",
+  "morAccountsCount": "{count, plural, =1{1 conta} other{{count} contas}}",
+  "@morAccountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morRecurringTitle": "Movimentos recorrentes",
+  "morRecurringCount": "{count, plural, =1{1 recorrente} other{{count} recorrentes}} · salário, renda, subscrições",
+  "@morRecurringCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morCategoriesTitle": "Categorias e subcategorias",
+  "morCategoriesCount": "{count, plural, =1{1 categoria} other{{count} categorias}}",
+  "@morCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morGroupsTitle": "Grupos de títulos",
+  "morGroupsCount": "{count, plural, =1{1 grupo} other{{count} grupos}}",
+  "@morGroupsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morRulesTitle": "Regras memorizadas",
+  "morRulesCount": "{count, plural, =1{1 regra} other{{count} regras}}",
+  "@morRulesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morImportTitle": "Importar extrato",
+  "morImportSubtitle": "PDF, CSV ou Excel",
+  "morImportsHistoryTitle": "Histórico de importações",
+  "morExportTitle": "Exportar movimentos (CSV)",
+  "morBackupTitle": "Cópia de segurança",
+  "morBackupSubtitle": "Guardar ou restaurar no Google Drive ou num ficheiro",
+  "morWipeTransactionsTitle": "Apagar todos os movimentos",
+  "morWipeTransactionsConfirm": "Apagar TODOS os movimentos, regras e salários? As categorias mantêm-se. Não é possível desfazer.",
+  "morWipeAllTitle": "Apagar tudo, incluindo categorias",
+  "morWipeAllConfirm": "Apagar TUDO: movimentos, categorias, orçamentos, regras, salários e investimentos? Não é possível desfazer.",
+  "morPrivacyNote": "Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).",
+  "morImportsTitle": "Importações",
+  "morNoImports": "Ainda sem importações.",
+  "morUndoImport": "Desfazer importação",
+  "morImportItemSubtitle": "{count, plural, =1{{date} · 1 movimento} other{{date} · {count} movimentos}}",
+  "@morImportItemSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "morRemoveImportQuestion": "{count, plural, =1{Remover o movimento desta importação?} other{Remover os {count} movimentos desta importação?}}",
+  "@morRemoveImportQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morCategoriesScreenTitle": "Categorias",
+  "morNewCategory": "Categoria",
+  "morIncomeKind": "Rendimento",
+  "morInvestmentKind": "Investimento",
+  "morBothKinds": "Despesas e receitas",
+  "morFromStart": "desde sempre",
+  "morFromMonth": "de {month}",
+  "@morFromMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "morOpenEnded": "em diante",
+  "morToMonth": "a {month}",
+  "@morToMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "morEnded": "terminada",
+  "morFuture": "futura",
+  "morTxnCount": "{count, plural, =1{1 mov.} other{{count} mov.}}",
+  "@morTxnCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morMandatoryPeriods": "Obrigatória em {count} período(s)",
+  "@morMandatoryPeriods": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morNewSubcategory": "Nova subcategoria",
+  "morDuplicateNextYear": "Duplicar para o ano seguinte",
+  "morReactivate": "Reativar",
+  "morArchive": "Arquivar",
+  "morCreatedCategory": "Criada “{name}”.",
+  "@morCreatedCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "morDeleteCategoryQuestion": "Apagar “{name}”? {count, plural, =1{O movimento fica} other{Os {count} movimentos ficam}} sem categoria{subs}.",
+  "@morDeleteCategoryQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "subs": {
+        "type": "String"
+      }
+    }
+  },
+  "morSubcategoriesDeleted": " e as subcategorias são apagadas",
+  "morThemeTitle": "Tema",
+  "morThemeSystem": "Sistema",
+  "morThemeLight": "Claro",
+  "morThemeDark": "Escuro",
+  "morAmoledTitle": "Preto total (AMOLED)",
+  "morAmoledSubtitle": "No modo escuro, fundo totalmente preto",
+  "morBaseCurrencyTitle": "Moeda de base",
+  "morBaseCurrencyHint": "É a moeda dos teus movimentos, orçamentos e carteira. Os ativos noutras moedas (USD, GBP…) são convertidos para esta.",
+  "morBaseCurrencyChanged": "Moeda de base: {code}. Os valores já registados não são convertidos; atualiza os preços da Carteira.",
+  "@morBaseCurrencyChanged": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "morMainColor": "Cor principal",
+  "morMainColorHint": "Define a cor da barra de navegação, botões e gráficos.",
+  "morIncomeColor": "Cor das receitas",
+  "morExpenseColor": "Cor das despesas",
+  "morPreview": "Pré-visualização",
+  "morSamplePlace": "Supermercado",
+  "morSampleCategory": "Categoria › Subcategoria",
+  "morSampleSalary": "Salário",
+  "morResetAppearance": "Repor aparência original",
+  "morEmojiHint": "Cada categoria e subcategoria tem um emoji próprio, que escolhes ao criar ou editar.",
+  "morBackupDescription": "Guarda todos os teus dados (movimentos, categorias, orçamentos, carteira…) num ficheiro. Não inclui as fotos dos recibos.",
+  "morBackupDriveHint": "Não precisas de ligar nenhuma conta na app: ao guardar, escolhe “Google Drive” (ou outra pasta) no ecrã do Android. Para restaurar, escolhe o ficheiro, do telemóvel ou do Drive.",
+  "morLastBackup": "Última cópia guardada: {date} ({ago})",
+  "@morLastBackup": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "morSaveBackup": "Guardar cópia (Google Drive ou ficheiro)",
+  "morRestoreFromFile": "Restaurar de um ficheiro",
+  "morBackupSaved": "Cópia guardada.",
+  "morDataRestored": "Dados restaurados.",
+  "morRestoreConfirm": "Isto substitui TODOS os dados deste telemóvel pelos da cópia “{name}”. Não dá para desfazer. Continuar?",
+  "@morRestoreConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "morRestore": "Restaurar",
+  "morCouldNotFinish": "Não consegui concluir: {error}",
+  "@morCouldNotFinish": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "morInstalledVersion": "Versão instalada",
+  "morUpdateDescription": "Procura no GitHub se há uma versão nova e instala-a por cima desta, sem perderes dados. A internet só é usada quando carregas no botão.",
+  "morChecking": "A procurar…",
+  "morCheckUpdates": "Procurar atualizações",
+  "morNewVersion": "Há uma versão nova: {version}",
+  "@morNewVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpToDate": "Já tens a versão mais recente",
+  "morDownloadInstall": "Descarregar e instalar",
+  "morDownloadInstallSize": "Descarregar e instalar ({mb} MB)",
+  "@morDownloadInstallSize": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "morDownloadingPercent": "A descarregar… {percent}%",
+  "@morDownloadingPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "morDownloading": "A descarregar…",
+  "morOpenReleasePage": "Abrir a página da versão",
+  "morWhatsNew": "O que mudou",
+  "morInstallerError": "Não consegui abrir o instalador ({message}). Se o Android pediu permissão para instalar apps desta origem, ativa-a e carrega outra vez em \"Descarregar e instalar\".",
+  "@morInstallerError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpdateAvailableTitle": "Atualização disponível",
+  "morUpdateAvailableBody": "Finanças {version} já está disponível. Abre Mais › Atualizações para instalar.",
+  "@morUpdateAvailableBody": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "morUpdateChannelName": "Atualizações",
+  "morUpdateChannelDescription": "Aviso quando sai uma versão nova",
+  "morRecurringNotifBody": "{count, plural, =1{1 movimento recorrente registado} other{{count} movimentos recorrentes registados}}",
+  "@morRecurringNotifBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morAllocationTitle": "Entrega de investimento",
+  "morAllocationBody": "{account}{deliveries}: {details}",
+  "@morAllocationBody": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "deliveries": {
+        "type": "String"
+      },
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "morDeliveriesCount": "{count, plural, =1{(1 entrega)} other{({count} entregas)}}",
+  "@morDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morUndistributed": "{amount} por distribuir",
+  "@morUndistributed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "morAlertsChannelName": "Alertas",
+  "morAlertsChannelDescription": "Movimentos recorrentes e entregas de investimento",
+  "morAssetFallback": "Ativo",
+  "morNavMonth": "Mês",
+  "morNavPortfolio": "Carteira"
 }
