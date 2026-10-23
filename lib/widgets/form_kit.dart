@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../util/format.dart';
 
 /// Cartão grande e arredondado que agrupa os campos de um formulário.
@@ -31,6 +32,7 @@ class FieldLabel extends StatelessWidget {
   const FieldLabel(this.text, {super.key, this.optional = false});
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final style = Theme.of(context).textTheme.titleSmall
         ?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500);
@@ -43,7 +45,7 @@ class FieldLabel extends StatelessWidget {
             TextSpan(text: text),
             if (optional)
               TextSpan(
-                text: ' (opcional)',
+                text: l.frmOptional,
                 style: TextStyle(color: cs.primary),
               ),
           ],
@@ -283,6 +285,7 @@ class _ExprParser {
 
 /// Abre a calculadora; devolve o resultado em cêntimos ou null.
 Future<int?> showCalculator(BuildContext context, {String initial = ''}) {
+  final l = AppLocalizations.of(context)!;
   final ctrl = TextEditingController(text: initial);
   return showDialog<int>(
     context: context,
@@ -298,7 +301,7 @@ Future<int?> showCalculator(BuildContext context, {String initial = ''}) {
         }
 
         return AlertDialog(
-          title: const Text('Calculadora'),
+          title: Text(l.frmCalculator),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -306,7 +309,7 @@ Future<int?> showCalculator(BuildContext context, {String initial = ''}) {
                 controller: ctrl,
                 autofocus: true,
                 keyboardType: TextInputType.text,
-                decoration: const InputDecoration(hintText: 'Ex.: 12,50+3*2'),
+                decoration: InputDecoration(hintText: l.frmCalcHint),
                 onChanged: (_) => set(() {}),
               ),
               const SizedBox(height: 12),
@@ -330,13 +333,13 @@ Future<int?> showCalculator(BuildContext context, {String initial = ''}) {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: v == null
                   ? null
                   : () => Navigator.pop(ctx, (v * 100).round()),
-              child: const Text('Usar'),
+              child: Text(l.frmUse),
             ),
           ],
         );
@@ -377,6 +380,7 @@ class DateRangeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final f = from ?? min, t = to ?? max;
     final restricted = from != null || to != null;
@@ -384,16 +388,16 @@ class DateRangeCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Text('Período a importar', style: tt.titleMedium)),
+            Expanded(child: Text(l.frmPeriodToImport, style: tt.titleMedium)),
             if (restricted)
               TextButton(
                 onPressed: () => onChanged(null, null),
-                child: const Text('Todo o ficheiro'),
+                child: Text(l.frmWholeFile),
               ),
           ],
         ),
         Text(
-          'O ficheiro tem dados de ${fmtDate(min)} a ${fmtDate(max)}. Escolhe só o intervalo que queres importar.',
+          l.frmFileDataRange(fmtDate(min), fmtDate(max)),
           style: tt.bodySmall,
         ),
         const SizedBox(height: 12),
@@ -402,7 +406,7 @@ class DateRangeCard extends StatelessWidget {
             Expanded(
               child: TileField(
                 icon: Icons.event,
-                title: 'De',
+                title: l.frmFrom,
                 text: fmtDate(f),
                 onTap: () async {
                   final d = await _pick(context, f);
@@ -415,7 +419,7 @@ class DateRangeCard extends StatelessWidget {
             Expanded(
               child: TileField(
                 icon: Icons.event,
-                title: 'Até',
+                title: l.frmUntil,
                 text: fmtDate(t),
                 onTap: () async {
                   final d = await _pick(context, t);
@@ -428,7 +432,9 @@ class DateRangeCard extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          restricted ? '$inRange de $total no período' : '$total no ficheiro',
+          restricted
+              ? l.frmInRangeOfTotal(inRange, total)
+              : l.frmTotalInFile(total),
           style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],

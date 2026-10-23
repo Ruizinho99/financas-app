@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../screens/transactions_screen.dart' show confirm;
 import '../state/app_state.dart';
@@ -42,12 +43,12 @@ class _SubRow {
 enum _Kind { optional, mandatory, income, investment, both }
 
 extension on _Kind {
-  String get label => switch (this) {
-    _Kind.optional => 'Despesa opcional',
-    _Kind.mandatory => 'Despesa obrigatória',
-    _Kind.income => 'Rendimento',
-    _Kind.investment => 'Investimento',
-    _Kind.both => 'Despesas e receitas',
+  String labelL(AppLocalizations l) => switch (this) {
+    _Kind.optional => l.frmKindOptional,
+    _Kind.mandatory => l.frmKindMandatory,
+    _Kind.income => l.frmKindIncome,
+    _Kind.investment => l.frmKindInvestment,
+    _Kind.both => l.frmKindBoth,
   };
   IconData get icon => switch (this) {
     _Kind.optional => Icons.shopping_bag_outlined,
@@ -56,13 +57,12 @@ extension on _Kind {
     _Kind.investment => Icons.trending_up,
     _Kind.both => Icons.swap_vert,
   };
-  String get help => switch (this) {
-    _Kind.optional => 'Gasto que podes cortar (lazer, restaurantes…).',
-    _Kind.mandatory => 'Gasto fixo do mês (renda, seguros…). Depois podes escolher só alguns meses.',
-    _Kind.income =>
-      'Entradas de dinheiro (ex.: salário). Não conta como despesa.',
-    _Kind.investment => 'Dinheiro que pões a render. Não conta como gasto; aparece como investido.',
-    _Kind.both => 'Aceita gastos e entradas (ex.: vendas, reembolsos). Os gastos contam como despesa e as entradas como receita.',
+  String helpL(AppLocalizations l) => switch (this) {
+    _Kind.optional => l.frmKindOptionalHelp,
+    _Kind.mandatory => l.frmKindMandatoryHelp,
+    _Kind.income => l.frmKindIncomeHelp,
+    _Kind.investment => l.frmKindInvestmentHelp,
+    _Kind.both => l.frmKindBothHelp,
   };
 }
 
@@ -140,14 +140,15 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   }
 
   Future<void> _removeSub(_SubRow r) async {
+    final l = AppLocalizations.of(context)!;
     final s = context.read<AppState>();
     if (r.id != null) {
       final n = s.transactions.where((t) => t.categoryId == r.id).length;
       if (n > 0 &&
           !await confirm(
             context,
-            'Remover “${r.name.text.trim()}”? Os $n movimentos ficam sem categoria (só depois de guardares).',
-            ok: 'Remover',
+            l.frmRemoveSubQuestion(r.name.text.trim(), n),
+            ok: l.frmRemove,
           )) {
         return;
       }
@@ -163,6 +164,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   }
 
   bool _validate(AppState s) {
+    final l = AppLocalizations.of(context)!;
     var ok = true;
     String key(String v) => v.trim().toLowerCase();
     final main = name.text.trim();
@@ -170,12 +172,12 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
 
     nameError = null;
     if (main.isEmpty) {
-      nameError = 'Indica um nome';
+      nameError = l.frmEnterName;
       ok = false;
     } else if (s.categoryNameTaken(main, parent, excludeId: widget.edit?.id)) {
       nameError = parent == null
-          ? 'Já existe uma categoria principal com este nome'
-          : 'Já existe esta subcategoria em ${parentCat?.name ?? 'esta categoria'}';
+          ? l.frmMainCategoryExists
+          : l.frmSubcategoryExists(parentCat?.name ?? l.frmThisCategory);
       ok = false;
     }
 
@@ -195,7 +197,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       final n = r.name.text.trim();
       if (n.isEmpty) continue; // linhas vazias não são guardadas
       if (used.contains(key(n))) {
-        r.error = 'Nome repetido';
+        r.error = l.frmRepeatedName;
         ok = false;
       } else {
         used.add(key(n));
@@ -280,10 +282,11 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     double size = 48,
     String empty = '🙂',
   }) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
-      label: 'Escolher emoji',
+      label: l.frmChooseEmoji,
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,
@@ -344,8 +347,9 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     ValueChanged<String> onPick, {
     VoidCallback? onClear,
   }) {
+    final l = AppLocalizations.of(context)!;
     String txt(String? k) => k == null
-        ? 'Escolher mês'
+        ? l.frmChooseMonth
         : fmtMonth(
             DateTime(
               int.parse(k.substring(0, 4)),
@@ -366,7 +370,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
           initialDate: init,
           firstDate: DateTime(2000),
           lastDate: DateTime(2100),
-          helpText: 'Escolhe qualquer dia do mês',
+          helpText: l.frmPickAnyDayOfMonth,
         );
         if (d != null) onPick(monthKey(d));
       },
@@ -379,7 +383,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
               ? null
               : IconButton(
                   icon: const Icon(Icons.close, size: 20),
-                  tooltip: 'Remover',
+                  tooltip: l.frmRemove,
                   onPressed: onClear,
                 ),
         ),
@@ -391,6 +395,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final roots = s.roots.where((r) => r.id != widget.edit?.id).toList();
@@ -404,16 +409,16 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
 
     final title = isEdit
         ? (widget.edit!.parentId == null
-              ? 'Editar categoria'
-              : 'Editar subcategoria')
-        : (subMode ? 'Nova subcategoria' : 'Nova categoria');
+              ? l.frmEditCategory
+              : l.frmEditSubcategory)
+        : (subMode ? l.frmNewSubcategoryTitle : l.frmNewCategoryTitle);
     final subtitle = isEdit
         ? (widget.edit!.parentId == null
-              ? 'Altera os dados e as subcategorias'
-              : 'Altera os dados desta subcategoria')
+              ? l.frmEditCategoryHint
+              : l.frmEditSubcategoryHint)
         : (subMode
-              ? 'Cria subcategorias dentro de ${parentCat.name}'
-              : 'Cria uma categoria e as suas subcategorias');
+              ? l.frmCreateSubsIn(parentCat.name)
+              : l.frmCreateCategoryHint);
 
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -445,7 +450,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Fechar',
+                    tooltip: l.frmClose,
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -477,8 +482,8 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                             onChanged: (_) => setState(() => nameError = null),
                             decoration: InputDecoration(
                               labelText: subMode && !isEdit
-                                  ? 'Nome da subcategoria'
-                                  : 'Nome',
+                                  ? l.frmSubcategoryName
+                                  : l.frmName,
                               isDense: true,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 14,
@@ -495,21 +500,19 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                       initialValue: parent,
                       isExpanded: true,
                       decoration: InputDecoration(
-                        labelText: 'Categoria-mãe',
+                        labelText: l.frmParentCategory,
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 14,
                         ),
-                        helperText: lockParent
-                            ? 'Tem subcategorias, por isso não pode ser uma subcategoria.'
-                            : null,
+                        helperText: lockParent ? l.frmHasSubsLock : null,
                         helperMaxLines: 2,
                       ),
                       items: [
-                        const DropdownMenuItem(
+                        DropdownMenuItem(
                           value: null,
-                          child: Text('Nenhuma (categoria principal)'),
+                          child: Text(l.frmNoneMainCategory),
                         ),
                         for (final r in roots)
                           DropdownMenuItem(
@@ -553,8 +556,8 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                                   children: [
                                     TextSpan(
                                       text: isEdit
-                                          ? 'Subcategoria de '
-                                          : 'A criar subcategoria de ',
+                                          ? l.frmSubcategoryOf
+                                          : l.frmCreatingSubcategoryOf,
                                     ),
                                     TextSpan(
                                       text:
@@ -575,8 +578,8 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                     if (_showSubs) ...[
                       _section(
                         subMode
-                            ? 'Mais subcategorias de ${parentCat.name}'
-                            : 'Subcategorias',
+                            ? l.frmMoreSubsOf(parentCat.name)
+                            : l.frmSubcategories,
                       ),
                       for (final r in subs)
                         Padding(
@@ -608,7 +611,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                                       _addSub();
                                   },
                                   decoration: InputDecoration(
-                                    hintText: 'Nome da subcategoria',
+                                    hintText: l.frmSubcategoryName,
                                     isDense: true,
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 14,
@@ -622,7 +625,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                                 width: 48,
                                 height: 48,
                                 child: IconButton(
-                                  tooltip: 'Remover subcategoria',
+                                  tooltip: l.frmRemoveSubcategory,
                                   icon: const Icon(Icons.close),
                                   onPressed: () => _removeSub(r),
                                 ),
@@ -636,25 +639,28 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                         ),
                         onPressed: _addSub,
                         icon: const Icon(Icons.add, size: 20),
-                        label: const Text('Adicionar subcategoria'),
+                        label: Text(l.frmAddSubcategory),
                       ),
                     ],
                     // ----- opções -----
-                    _section('Opções'),
+                    _section(l.frmOptions),
                     if (!subMode)
                       DropdownButtonFormField<_Kind>(
                         key: ValueKey('kind-$kind'),
                         initialValue: kind,
                         isExpanded: true,
                         decoration: InputDecoration(
-                          labelText: 'Tipo',
+                          labelText: l.frmType,
                           prefixIcon: Icon(kind.icon),
-                          helperText: kind.help,
+                          helperText: kind.helpL(l),
                           helperMaxLines: 3,
                         ),
                         items: [
                           for (final k in _Kind.values)
-                            DropdownMenuItem(value: k, child: Text(k.label)),
+                            DropdownMenuItem(
+                              value: k,
+                              child: Text(k.labelL(l)),
+                            ),
                         ],
                         onChanged: (v) => setState(() => kind = v ?? kind),
                       ),
@@ -663,8 +669,8 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                       controller: desc,
                       maxLines: 2,
                       minLines: 1,
-                      decoration: const InputDecoration(
-                        labelText: 'Descrição (opcional)',
+                      decoration: InputDecoration(
+                        labelText: l.frmDescriptionOptional,
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 14,
@@ -675,10 +681,8 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       dense: true,
-                      title: const Text('Só existe num período'),
-                      subtitle: const Text(
-                        'Ex.: “Férias 2027”. Fora do período deixa de aparecer nas escolhas.',
-                      ),
+                      title: Text(l.frmOnlyInPeriod),
+                      subtitle: Text(l.frmOnlyInPeriodHint),
                       value: hasDates,
                       onChanged: (v) => setState(() {
                         hasDates = v;
@@ -689,7 +693,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                     if (hasDates) ...[
                       const SizedBox(height: 4),
                       _monthTile(
-                        'Desde',
+                        l.frmSince,
                         activeFrom,
                         (m) => setState(() => activeFrom = m),
                       ),
@@ -703,12 +707,12 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                                   activeFrom ?? monthKey(DateTime.now()),
                             ),
                             icon: const Icon(Icons.event_busy, size: 20),
-                            label: const Text('Definir fim'),
+                            label: Text(l.frmSetEnd),
                           ),
                         )
                       else
                         _monthTile(
-                          'Até',
+                          l.frmUntil,
                           activeTo,
                           (m) => setState(() => activeTo = m),
                           onClear: () => setState(() => activeTo = null),
@@ -720,12 +724,12 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                         contentPadding: EdgeInsets.zero,
                         dense: true,
                         leading: const Icon(Icons.event_repeat),
-                        title: const Text('Obrigatória em…'),
+                        title: Text(l.frmMandatoryIn),
                         subtitle: Text(() {
                           final n = s.rangesOf(widget.edit!.id).length;
                           return n == 0
-                              ? 'Opcional em todos os meses'
-                              : '$n período(s) definido(s)';
+                              ? l.frmOptionalAllMonths
+                              : l.frmPeriodsDefined(n);
                         }()),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () async {
@@ -756,7 +760,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                       minimumSize: const Size(88, 46),
                     ),
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancelar'),
+                    child: Text(l.cancel),
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
@@ -764,7 +768,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                       minimumSize: const Size(112, 46),
                     ),
                     onPressed: () => _save(s),
-                    child: const Text('Guardar'),
+                    child: Text(l.frmSave),
                   ),
                 ],
               ),
