@@ -1,0 +1,471 @@
+{
+  "@@locale": "pt",
+  "bpCopySalaryTooltip": "Copiar salário para todos os meses",
+  "bpNetSalary": "Salário líquido",
+  "bpSet": "Definir",
+  "bpSpecificThisMonth": "Valor específico deste mês",
+  "bpAllocatedSummary": "Alocado {amount} ({percent})",
+  "@bpAllocatedSummary": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnallocatedLeft": "Por alocar {amount}",
+  "@bpUnallocatedLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpOverAllocated": "Excedido em {amount}",
+  "@bpOverAllocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpIncomeThisMonth": "Rendimentos recebidos este mês: {amount}",
+  "@bpIncomeThisMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDefineSalaryHint": "Define o teu salário líquido para distribuir por categorias.",
+  "bpNoCategoriesBudget": "Ainda não tens categorias. Cria a primeira abaixo (ex.: Habitação) e define o orçamento de cada uma.",
+  "bpCategories": "Categorias",
+  "bpNewCategory": "Nova categoria",
+  "bpBudgetLimit": "Limite",
+  "bpBudgetGoal": "Objetivo",
+  "bpSpentOfTarget": "{spent} de {target} · {type}",
+  "@bpSpentOfTarget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentNoBudget": "Gasto: {spent} · sem orçamento",
+  "@bpSpentNoBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentSetBudget": "Gasto: {spent} · definir orçamento",
+  "@bpSpentSetBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryInMonth": "Obrigatória em {month}",
+  "@bpMandatoryInMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpInheritedFromParent": "Herdada da categoria-mãe",
+  "bpOnlyThisMonthHint": "Só este mês; para vários meses usa “Períodos”",
+  "bpCategoryBudgetOptional": "Orçamento da categoria (opcional)",
+  "bpSumOfSubcategories": "Soma das subcategorias",
+  "bpBudgetDescPercent": "{type}: {percent}% do salário ({amount})",
+  "@bpBudgetDescPercent": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpBudgetDescValue": "{type}: {amount}",
+  "@bpBudgetDescValue": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSubcategory": "Subcategoria",
+  "bpPeriods": "Períodos",
+  "bpEdit": "Editar",
+  "bpBudgetEditorTitle": "Orçamento · {name}",
+  "@bpBudgetEditorTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpHasBudget": "Ter orçamento",
+  "bpLimitHint": "Limite: queres gastar no máximo este valor.",
+  "bpGoalHint": "Objetivo: queres atingir pelo menos este valor (ex.: poupança).",
+  "bpValueWithCurrency": "Valor ({currency})",
+  "@bpValueWithCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPercentOfSalary": "% do salário",
+  "bpMonthlyAmount": "Valor mensal",
+  "bpPercentage": "Percentagem",
+  "bpSave": "Guardar",
+  "bpNetSalaryMonthly": "Salário líquido mensal",
+  "bpOnlyThisMonth": "Só para este mês",
+  "bpSalaryDefaultHint": "Desligado: passa a ser o valor por omissão de todos os meses",
+  "bpUseBaseSalary": "Usar valor base",
+  "bpCopyPreviousPlan": "Copiar o plano do mês anterior",
+  "bpCopiedPlanItems": "{count, plural, =1{Copiada 1 despesa de {month}.} other{Copiadas {count} despesas de {month}.}}",
+  "@bpCopiedPlanItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryPlanned": "Obrigatórias planeadas",
+  "bpOptionalPlanned": "Opcionais planeadas",
+  "bpExceedsSalaryBy": "Excede o salário em",
+  "bpUnplanned": "Por planear",
+  "bpSetMonthSalaryHint": "Define o salário deste mês para ver o que sobra.",
+  "bpNoPlanCopyHint": "Ainda sem despesas planeadas. Usa o ícone de copiar para trazer o plano do mês anterior.",
+  "bpNoPlanHint": "Ainda sem despesas planeadas. Acrescenta as obrigatórias (renda, luz…) e as opcionais (lazer, subscrições…).",
+  "bpMandatoryItems": "Obrigatórias",
+  "bpOptionalItems": "Opcionais",
+  "bpPlannedExpense": "Despesa planeada",
+  "bpCategoryAlreadyPlannedEdit": "Esta categoria já está planeada neste mês. Edita a linha existente.",
+  "bpCategoryAlreadyPlanned": "Esta categoria já está planeada neste mês.",
+  "bpSpentOver": "Gasto {spent} · passou {over}",
+  "@bpSpentOver": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentLeft": "Gasto {spent} · faltam {left}",
+  "@bpSpentLeft": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPlannedAmount": "Valor planeado ({currency})",
+  "@bpPlannedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryType": "Obrigatória",
+  "bpOptionalType": "Opcional",
+  "bpGoal": "Objetivo",
+  "bpNoGoalsHint": "Ainda não tens objetivos.\nCria um (ex.: férias) e as transferências para a sua subcategoria contam para ele.",
+  "bpGoalReachedAmount": "Atingido · {amount}",
+  "@bpGoalReachedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpGoalProgress": "{saved} de {target} · faltam {remaining}",
+  "@bpGoalProgress": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNewGoal": "Novo objetivo",
+  "bpEditGoal": "Editar objetivo",
+  "bpName": "Nome",
+  "bpGoalNameHint": "Ex.: Férias de verão",
+  "bpGoalAmount": "Valor do objetivo ({currency})",
+  "@bpGoalAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPreviousAmountKept": "Se o alterares, o valor anterior fica no histórico.",
+  "bpDeadlineOptional": "Prazo (opcional)",
+  "bpNoDeadline": "Sem prazo",
+  "bpRemoveDeadline": "Remover prazo",
+  "bpDescriptionOptional": "Descrição (opcional)",
+  "bpCategoryWhere": "Categoria onde fica",
+  "bpChooseCategory": "Escolher categoria",
+  "bpGoalCategoryHint": "O objetivo vira uma subcategoria desta categoria. Os movimentos nessa subcategoria contam como poupança.",
+  "bpEnterName": "Indica um nome.",
+  "bpEnterGoalAmount": "Indica o valor do objetivo.",
+  "bpChooseGoalCategory": "Escolhe a categoria onde fica o objetivo.",
+  "bpGoalDeleted": "Objetivo apagado.",
+  "bpDeleteGoalQuestion": "Apagar o objetivo “{name}”? Os movimentos ficam, mas deixam de estar associados a ele.",
+  "@bpDeleteGoalQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAlreadyHave": "Já tens",
+  "bpExceeded": "Excedido",
+  "bpRemaining": "Faltam",
+  "bpGoalPercentDeadline": "{percent}% · {deadline}",
+  "@bpGoalPercentDeadline": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNoDeadlineLower": "sem prazo",
+  "bpDeadlineDate": "prazo {date}",
+  "@bpDeadlineDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkTransaction": "Associar movimento",
+  "bpChangeAmount": "Alterar valor",
+  "bpAmountHistory": "Histórico do valor",
+  "bpNoGoalEntriesHint": "Ainda nada. Transferências na subcategoria do objetivo entram sozinhas; pagamentos feitos com outra categoria associas com “Associar movimento”.",
+  "bpEntrySubtitle": "{date} · {kind}",
+  "@bpEntrySubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkedManual": "associado",
+  "bpLinkedByCategory": "pela categoria",
+  "bpUnlink": "Desassociar",
+  "bpStatusReached": "Objetivo atingido.",
+  "bpStatusOnTrack": "No ritmo atual chegas a tempo: fazes {monthly}/mês e precisas de {needed}/mês.",
+  "@bpStatusOnTrack": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "needed": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusBehind": "Para chegar a tempo precisas de {needed}/mês; estás a fazer {monthly}/mês.",
+  "@bpStatusBehind": {
+    "placeholders": {
+      "needed": {
+        "type": "String"
+      },
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusEta": "No ritmo atual ({monthly}/mês) chegas a {date}.",
+  "@bpStatusEta": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusNoRecent": "Sem movimentos recentes. Faltam {amount}.",
+  "@bpStatusNoRecent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeGoalAmountTitle": "Alterar valor do objetivo",
+  "bpNewAmount": "Novo valor ({currency})",
+  "@bpNewAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeAmountHint": "O valor anterior fica no histórico. Os movimentos já associados mantêm-se.",
+  "bpSearchTransaction": "Procurar movimento",
+  "bpNoTransactionsToLink": "Nenhum movimento para associar.",
+  "bpTxnLinkSubtitle": "{date} · {amount} · por associar {left}",
+  "@bpTxnLinkSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAmountForGoal": "Valor para “{goal}” ({currency})",
+  "@bpAmountForGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnlinkedHint": "Por associar: {left}. Podes dividir o movimento por vários objetivos.",
+  "@bpUnlinkedHint": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLink": "Associar",
+  "bpMonday": "segunda-feira",
+  "bpTuesday": "terça-feira",
+  "bpWednesday": "quarta-feira",
+  "bpThursday": "quinta-feira",
+  "bpFriday": "sexta-feira",
+  "bpSaturday": "sábado",
+  "bpSunday": "domingo",
+  "bpJanuary": "janeiro",
+  "bpFebruary": "fevereiro",
+  "bpMarch": "março",
+  "bpApril": "abril",
+  "bpMay": "maio",
+  "bpJune": "junho",
+  "bpJuly": "julho",
+  "bpAugust": "agosto",
+  "bpSeptember": "setembro",
+  "bpOctober": "outubro",
+  "bpNovember": "novembro",
+  "bpDecember": "dezembro",
+  "bpFreqMonthly": "Mensal",
+  "bpFreqWeekly": "Semanal",
+  "bpFreqYearly": "Anual",
+  "bpWhenMonthly": "dia {day}",
+  "@bpWhenMonthly": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "bpWhenYearly": "{day} de {month}",
+  "@bpWhenYearly": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNoRecurringHint": "Ainda não há movimentos recorrentes.\n\nRegista aqui o salário, a renda ou uma subscrição: o movimento é criado sozinho na data certa.",
+  "bpRecurringTitle": "Movimentos recorrentes",
+  "bpNew": "Novo",
+  "bpPaused": "em pausa",
+  "bpEnded": "terminada",
+  "bpNextDate": "próxima {date}",
+  "@bpNextDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpEditRecurring": "Editar recorrente",
+  "bpNewRecurring": "Novo recorrente",
+  "bpEnterDescription": "Escreve uma descrição.",
+  "bpEnterAmount": "Indica um valor.",
+  "bpEndBeforeStart": "A data de fim é anterior à de início.",
+  "bpDeleteRecurringQuestion": "Apagar \"{description}\"? Os movimentos já registados ficam.",
+  "@bpDeleteRecurringQuestion": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "bpExpenseType": "Despesa",
+  "bpIncomeType": "Receita",
+  "bpDescription": "Descrição",
+  "bpDescriptionHint": "Ex.: Salário, Renda, Netflix",
+  "bpCategory": "Categoria",
+  "bpAccount": "Conta",
+  "bpNoAccount": "Sem conta",
+  "bpFrequency": "Frequência",
+  "bpDayOfWeek": "Dia da semana",
+  "bpDayOfMonth": "Dia do mês",
+  "bpShortMonthHint": "Em meses mais curtos, passa para o último dia do mês.",
+  "bpStart": "Início",
+  "bpPastStartHint": "Se a data de início já passou, os movimentos desde então são criados ao abrir a app.",
+  "bpEndOptional": "Fim (opcional)",
+  "bpNoEndDate": "Sem data de fim",
+  "bpRemoveEndDate": "Remover data de fim",
+  "bpActive": "Ativa",
+  "bpActiveHint": "Desativa para pausar, sem apagar"
+}

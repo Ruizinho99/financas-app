@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../planning/planning.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -30,6 +31,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final key = monthKey(month);
     final items = s.planFor(key);
     final salary = s.salaryFor(key);
@@ -44,18 +46,21 @@ class _PlanningScreenState extends State<PlanningScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Planeamento'),
+        title: Text(l.planning),
         actions: [
           if (canCopy)
             IconButton(
-              tooltip: 'Copiar o plano do mês anterior',
+              tooltip: l.bpCopyPreviousPlan,
               icon: const Icon(Icons.content_copy_outlined),
               onPressed: () {
                 final n = s.copyPlan(prevKey, key);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Copiadas $n despesas de ${fmtMonth(DateTime(month.year, month.month - 1))}.',
+                      l.bpCopiedPlanItems(
+                        n,
+                        fmtMonth(DateTime(month.year, month.month - 1)),
+                      ),
                     ),
                   ),
                 );
@@ -66,7 +71,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addItem(context, s, key),
         icon: const Icon(Icons.add),
-        label: const Text('Despesa planeada'),
+        label: Text(l.bpPlannedExpense),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
@@ -75,13 +80,13 @@ class _PlanningScreenState extends State<PlanningScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                tooltip: 'Mês anterior',
+                tooltip: l.monthPrevious,
                 icon: const Icon(Icons.chevron_left),
                 onPressed: () => _shift(-1),
               ),
               Text(fmtMonth(month), style: tt.titleMedium),
               IconButton(
-                tooltip: 'Mês seguinte',
+                tooltip: l.monthNext,
                 icon: const Icon(Icons.chevron_right),
                 onPressed: () => _shift(1),
               ),
@@ -95,24 +100,20 @@ class _PlanningScreenState extends State<PlanningScreen> {
                 children: [
                   _row(
                     context,
-                    'Salário líquido',
-                    salary == 0 ? 'Definir' : fmtMoney(salary),
+                    l.bpNetSalary,
+                    salary == 0 ? l.bpSet : fmtMoney(salary),
                     onTap: () => showSalaryEditor(context, s, key),
                   ),
                   _row(
                     context,
-                    'Obrigatórias planeadas',
+                    l.bpMandatoryPlanned,
                     fmtMoney(totals.mandatory),
                   ),
-                  _row(
-                    context,
-                    'Opcionais planeadas',
-                    fmtMoney(totals.optional),
-                  ),
+                  _row(context, l.bpOptionalPlanned, fmtMoney(totals.optional)),
                   const Divider(height: 22),
                   _row(
                     context,
-                    totals.left < 0 ? 'Excede o salário em' : 'Por planear',
+                    totals.left < 0 ? l.bpExceedsSalaryBy : l.bpUnplanned,
                     fmtMoney(totals.left.abs()),
                     bold: true,
                     color: totals.left < 0 ? cs.error : null,
@@ -120,10 +121,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
                   if (salary == 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        'Define o salário deste mês para ver o que sobra.',
-                        style: tt.bodySmall,
-                      ),
+                      child: Text(l.bpSetMonthSalaryHint, style: tt.bodySmall),
                     ),
                 ],
               ),
@@ -134,17 +132,15 @@ class _PlanningScreenState extends State<PlanningScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(
-                canCopy
-                    ? 'Ainda sem despesas planeadas. Usa o ícone de copiar para trazer o plano do mês anterior.'
-                    : 'Ainda sem despesas planeadas. Acrescenta as obrigatórias (renda, luz…) e as opcionais (lazer, subscrições…).',
+                canCopy ? l.bpNoPlanCopyHint : l.bpNoPlanHint,
                 textAlign: TextAlign.center,
                 style: tt.bodyMedium,
               ),
             ),
           if (mandatory.isNotEmpty)
-            ..._section(context, s, 'Obrigatórias', mandatory, key),
+            ..._section(context, s, l.bpMandatoryItems, mandatory, key),
           if (optional.isNotEmpty)
-            ..._section(context, s, 'Opcionais', optional, key),
+            ..._section(context, s, l.bpOptionalItems, optional, key),
         ],
       ),
     );
@@ -202,16 +198,13 @@ class _PlanningScreenState extends State<PlanningScreen> {
   }
 
   Future<void> _addItem(BuildContext context, AppState s, String key) async {
+    final l = AppLocalizations.of(context)!;
     final id = await chooseCategory(context, income: false);
     if (id == null || id == -1 || !context.mounted) return;
     if (s.planFor(key).any((p) => p.categoryId == id)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Esta categoria já está planeada neste mês. Edita a linha existente.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l.bpCategoryAlreadyPlannedEdit)));
       return;
     }
     final c = s.cat(id);
@@ -220,7 +213,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
       s,
       key,
       categoryId: id,
-      title: c == null ? 'Despesa planeada' : s.path(c.id),
+      title: c == null ? l.bpPlannedExpense : s.path(c.id),
     );
     if (added != null && context.mounted) {
       final ok = s.addPlanned(
@@ -230,11 +223,8 @@ class _PlanningScreenState extends State<PlanningScreen> {
         mandatory: added.mandatory,
       );
       if (!ok) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Esta categoria já está planeada neste mês.'),
-          ),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.bpCategoryAlreadyPlanned)));
       }
     }
   }
@@ -248,6 +238,7 @@ class _ItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final c = s.cat(item.categoryId);
     if (c == null) return const SizedBox.shrink();
     final spent = s.actualSpent(item.categoryId, month);
@@ -295,7 +286,7 @@ class _ItemTile extends StatelessWidget {
                   ),
                   Text(fmtMoney(item.cents)),
                   IconButton(
-                    tooltip: 'Apagar',
+                    tooltip: l.delete,
                     icon: const Icon(Icons.delete_outline),
                     onPressed: () => s.deletePlanned(item.id),
                   ),
@@ -311,8 +302,14 @@ class _ItemTile extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 over
-                    ? 'Gasto ${fmtMoney(spent)} · passou ${fmtMoney(spent - item.cents)}'
-                    : 'Gasto ${fmtMoney(spent)} · faltam ${fmtMoney(item.cents - spent)}',
+                    ? l.bpSpentOver(
+                        fmtMoney(spent),
+                        fmtMoney(spent - item.cents),
+                      )
+                    : l.bpSpentLeft(
+                        fmtMoney(spent),
+                        fmtMoney(item.cents - spent),
+                      ),
                 style: Theme.of(context).textTheme.bodySmall
                     ?.copyWith(color: over ? cs.error : null),
               ),
@@ -339,6 +336,7 @@ Future<_PlanValue?> showPlanItemEditor(
   required String title,
   PlannedItem? current,
 }) {
+  final l = AppLocalizations.of(context)!;
   final ctrl = TextEditingController(
     text: current == null
         ? ''
@@ -360,16 +358,16 @@ Future<_PlanValue?> showPlanItemEditor(
                 decimal: true,
               ),
               decoration: InputDecoration(
-                labelText: 'Valor planeado ($baseSym)',
+                labelText: l.bpPlannedAmount(baseSym),
                 prefixText: '$baseSym  ',
               ),
             ),
             const SizedBox(height: 12),
             SegmentedButton<bool>(
               showSelectedIcon: false,
-              segments: const [
-                ButtonSegment(value: true, label: Text('Obrigatória')),
-                ButtonSegment(value: false, label: Text('Opcional')),
+              segments: [
+                ButtonSegment(value: true, label: Text(l.bpMandatoryType)),
+                ButtonSegment(value: false, label: Text(l.bpOptionalType)),
               ],
               selected: {mandatory},
               onSelectionChanged: (v) => set(() => mandatory = v.first),
@@ -379,7 +377,7 @@ Future<_PlanValue?> showPlanItemEditor(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -387,7 +385,7 @@ Future<_PlanValue?> showPlanItemEditor(
               if (v <= 0) return;
               Navigator.pop(ctx, _PlanValue(v, mandatory));
             },
-            child: const Text('Guardar'),
+            child: Text(l.bpSave),
           ),
         ],
       ),

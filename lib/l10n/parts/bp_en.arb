@@ -1,0 +1,471 @@
+{
+  "@@locale": "en",
+  "bpCopySalaryTooltip": "Copy salary to all months",
+  "bpNetSalary": "Net salary",
+  "bpSet": "Set",
+  "bpSpecificThisMonth": "Specific amount for this month",
+  "bpAllocatedSummary": "Allocated {amount} ({percent})",
+  "@bpAllocatedSummary": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnallocatedLeft": "Unallocated {amount}",
+  "@bpUnallocatedLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpOverAllocated": "Over by {amount}",
+  "@bpOverAllocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpIncomeThisMonth": "Income received this month: {amount}",
+  "@bpIncomeThisMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDefineSalaryHint": "Set your net salary to split it across categories.",
+  "bpNoCategoriesBudget": "You have no categories yet. Create the first one below (e.g. Housing) and set a budget for each.",
+  "bpCategories": "Categories",
+  "bpNewCategory": "New category",
+  "bpBudgetLimit": "Limit",
+  "bpBudgetGoal": "Goal",
+  "bpSpentOfTarget": "{spent} of {target} · {type}",
+  "@bpSpentOfTarget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentNoBudget": "Spent: {spent} · no budget",
+  "@bpSpentNoBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentSetBudget": "Spent: {spent} · set a budget",
+  "@bpSpentSetBudget": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryInMonth": "Mandatory in {month}",
+  "@bpMandatoryInMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpInheritedFromParent": "Inherited from the parent category",
+  "bpOnlyThisMonthHint": "This month only; for several months use “Periods”",
+  "bpCategoryBudgetOptional": "Category budget (optional)",
+  "bpSumOfSubcategories": "Sum of subcategories",
+  "bpBudgetDescPercent": "{type}: {percent}% of salary ({amount})",
+  "@bpBudgetDescPercent": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpBudgetDescValue": "{type}: {amount}",
+  "@bpBudgetDescValue": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSubcategory": "Subcategory",
+  "bpPeriods": "Periods",
+  "bpEdit": "Edit",
+  "bpBudgetEditorTitle": "Budget · {name}",
+  "@bpBudgetEditorTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpHasBudget": "Has a budget",
+  "bpLimitHint": "Limit: you want to spend at most this amount.",
+  "bpGoalHint": "Goal: you want to reach at least this amount (e.g. savings).",
+  "bpValueWithCurrency": "Amount ({currency})",
+  "@bpValueWithCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPercentOfSalary": "% of salary",
+  "bpMonthlyAmount": "Monthly amount",
+  "bpPercentage": "Percentage",
+  "bpSave": "Save",
+  "bpNetSalaryMonthly": "Monthly net salary",
+  "bpOnlyThisMonth": "Only for this month",
+  "bpSalaryDefaultHint": "Off: becomes the default amount for every month",
+  "bpUseBaseSalary": "Use base amount",
+  "bpCopyPreviousPlan": "Copy plan from previous month",
+  "bpCopiedPlanItems": "{count, plural, =1{Copied 1 expense from {month}.} other{Copied {count} expenses from {month}.}}",
+  "@bpCopiedPlanItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryPlanned": "Planned mandatory",
+  "bpOptionalPlanned": "Planned optional",
+  "bpExceedsSalaryBy": "Exceeds salary by",
+  "bpUnplanned": "Unplanned",
+  "bpSetMonthSalaryHint": "Set the salary for this month to see what is left.",
+  "bpNoPlanCopyHint": "No planned expenses yet. Use the copy icon to bring in the plan from the previous month.",
+  "bpNoPlanHint": "No planned expenses yet. Add mandatory ones (rent, electricity…) and optional ones (leisure, subscriptions…).",
+  "bpMandatoryItems": "Mandatory",
+  "bpOptionalItems": "Optional",
+  "bpPlannedExpense": "Planned expense",
+  "bpCategoryAlreadyPlannedEdit": "This category is already planned for this month. Edit the existing line.",
+  "bpCategoryAlreadyPlanned": "This category is already planned for this month.",
+  "bpSpentOver": "Spent {spent} · over by {over}",
+  "@bpSpentOver": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "over": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSpentLeft": "Spent {spent} · {left} left",
+  "@bpSpentLeft": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPlannedAmount": "Planned amount ({currency})",
+  "@bpPlannedAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpMandatoryType": "Mandatory",
+  "bpOptionalType": "Optional",
+  "bpGoal": "Goal",
+  "bpNoGoalsHint": "You have no goals yet.\nCreate one (e.g. holidays) and transfers to its subcategory count towards it.",
+  "bpGoalReachedAmount": "Reached · {amount}",
+  "@bpGoalReachedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpGoalProgress": "{saved} of {target} · {remaining} to go",
+  "@bpGoalProgress": {
+    "placeholders": {
+      "saved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNewGoal": "New goal",
+  "bpEditGoal": "Edit goal",
+  "bpName": "Name",
+  "bpGoalNameHint": "E.g. Summer holiday",
+  "bpGoalAmount": "Goal amount ({currency})",
+  "@bpGoalAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPreviousAmountKept": "If you change it, the previous amount stays in the history.",
+  "bpDeadlineOptional": "Deadline (optional)",
+  "bpNoDeadline": "No deadline",
+  "bpRemoveDeadline": "Remove deadline",
+  "bpDescriptionOptional": "Description (optional)",
+  "bpCategoryWhere": "Category it goes in",
+  "bpChooseCategory": "Choose category",
+  "bpGoalCategoryHint": "The goal becomes a subcategory of this category. Transactions in that subcategory count as savings.",
+  "bpEnterName": "Enter a name.",
+  "bpEnterGoalAmount": "Enter the goal amount.",
+  "bpChooseGoalCategory": "Choose the category the goal goes in.",
+  "bpGoalDeleted": "Goal deleted.",
+  "bpDeleteGoalQuestion": "Delete the goal “{name}”? Transactions stay, but are no longer linked to it.",
+  "@bpDeleteGoalQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAlreadyHave": "You have",
+  "bpExceeded": "Over",
+  "bpRemaining": "To go",
+  "bpGoalPercentDeadline": "{percent}% · {deadline}",
+  "@bpGoalPercentDeadline": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "deadline": {
+        "type": "String"
+      }
+    }
+  },
+  "bpNoDeadlineLower": "no deadline",
+  "bpDeadlineDate": "deadline {date}",
+  "@bpDeadlineDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkTransaction": "Link transaction",
+  "bpChangeAmount": "Change amount",
+  "bpAmountHistory": "Amount history",
+  "bpNoGoalEntriesHint": "Nothing yet. Transfers to the goal subcategory count automatically; link payments made from another category with “Link transaction”.",
+  "bpEntrySubtitle": "{date} · {kind}",
+  "@bpEntrySubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLinkedManual": "linked",
+  "bpLinkedByCategory": "by category",
+  "bpUnlink": "Unlink",
+  "bpStatusReached": "Goal reached.",
+  "bpStatusOnTrack": "At the current pace you will make it in time: you save {monthly}/month and need {needed}/month.",
+  "@bpStatusOnTrack": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "needed": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusBehind": "To make it in time you need {needed}/month; you are saving {monthly}/month.",
+  "@bpStatusBehind": {
+    "placeholders": {
+      "needed": {
+        "type": "String"
+      },
+      "monthly": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusEta": "At the current pace ({monthly}/month) you will reach it by {date}.",
+  "@bpStatusEta": {
+    "placeholders": {
+      "monthly": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatusNoRecent": "No recent transactions. {amount} to go.",
+  "@bpStatusNoRecent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeGoalAmountTitle": "Change goal amount",
+  "bpNewAmount": "New amount ({currency})",
+  "@bpNewAmount": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpChangeAmountHint": "The previous amount stays in the history. Linked transactions stay linked.",
+  "bpSearchTransaction": "Search transaction",
+  "bpNoTransactionsToLink": "No transactions to link.",
+  "bpTxnLinkSubtitle": "{date} · {amount} · {left} unlinked",
+  "@bpTxnLinkSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAmountForGoal": "Amount for “{goal}” ({currency})",
+  "@bpAmountForGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnlinkedHint": "Unlinked: {left}. You can split the transaction across several goals.",
+  "@bpUnlinkedHint": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "bpLink": "Link",
+  "bpMonday": "Monday",
+  "bpTuesday": "Tuesday",
+  "bpWednesday": "Wednesday",
+  "bpThursday": "Thursday",
+  "bpFriday": "Friday",
+  "bpSaturday": "Saturday",
+  "bpSunday": "Sunday",
+  "bpJanuary": "January",
+  "bpFebruary": "February",
+  "bpMarch": "March",
+  "bpApril": "April",
+  "bpMay": "May",
+  "bpJune": "June",
+  "bpJuly": "July",
+  "bpAugust": "August",
+  "bpSeptember": "September",
+  "bpOctober": "October",
+  "bpNovember": "November",
+  "bpDecember": "December",
+  "bpFreqMonthly": "Monthly",
+  "bpFreqWeekly": "Weekly",
+  "bpFreqYearly": "Yearly",
+  "bpWhenMonthly": "day {day}",
+  "@bpWhenMonthly": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "bpWhenYearly": "{month} {day}",
+  "@bpWhenYearly": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "bpNoRecurringHint": "No recurring transactions yet.\n\nRecord your salary, rent or a subscription here: the transaction is created automatically on the right date.",
+  "bpRecurringTitle": "Recurring transactions",
+  "bpNew": "New",
+  "bpPaused": "paused",
+  "bpEnded": "ended",
+  "bpNextDate": "next {date}",
+  "@bpNextDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "bpEditRecurring": "Edit recurring",
+  "bpNewRecurring": "New recurring",
+  "bpEnterDescription": "Enter a description.",
+  "bpEnterAmount": "Enter an amount.",
+  "bpEndBeforeStart": "The end date is before the start date.",
+  "bpDeleteRecurringQuestion": "Delete “{description}”? Transactions already recorded stay.",
+  "@bpDeleteRecurringQuestion": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "bpExpenseType": "Expense",
+  "bpIncomeType": "Income",
+  "bpDescription": "Description",
+  "bpDescriptionHint": "E.g. Salary, Rent, Netflix",
+  "bpCategory": "Category",
+  "bpAccount": "Account",
+  "bpNoAccount": "No account",
+  "bpFrequency": "Frequency",
+  "bpDayOfWeek": "Day of the week",
+  "bpDayOfMonth": "Day of the month",
+  "bpShortMonthHint": "In shorter months, it moves to the last day of the month.",
+  "bpStart": "Start",
+  "bpPastStartHint": "If the start date has already passed, the transactions since then are created when you open the app.",
+  "bpEndOptional": "End (optional)",
+  "bpNoEndDate": "No end date",
+  "bpRemoveEndDate": "Remove end date",
+  "bpActive": "Active",
+  "bpActiveHint": "Turn off to pause, without deleting"
+}
