@@ -22,6 +22,8 @@ class _Envio {
 /// Estado com duas plataformas com plano e uma entrega cada, de hoje.
 AppState _estado({bool comEntregas = true}) {
   final s = AppState(Db.memory());
+  // estes testes esperam os textos em português
+  s.setAppLanguage('pt');
   final banco = s.addAccount('Banco');
   final xtb = s.addInvestAccount('XTB');
   final trading = s.addInvestAccount('Trading 212');
@@ -225,6 +227,7 @@ void main() {
       'movimentos recorrentes criados geram um aviso; sem criados não há aviso',
       () async {
         final s = AppState(Db.memory());
+        s.setAppLanguage('pt');
         final envio = _Envio();
         await notifyStartup(s, recurringCreated: 0, show: envio.call);
         expect(envio.enviadas, isEmpty);

@@ -3,6 +3,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/app_localizations.dart';
 import '../update/update_service.dart';
 import '../widgets/form_kit.dart';
 
@@ -73,8 +74,9 @@ class _UpdateScreenState extends State<UpdateScreen> {
       );
       if (mounted && res.type != ResultType.done) {
         setState(
-          () => error =
-              'Não consegui abrir o instalador (${res.message}). Se o Android pediu permissão para instalar apps desta origem, ativa-a e carrega outra vez em "Descarregar e instalar".',
+          () =>
+              error = AppLocalizations.of(context)!
+                  .morInstallerError(res.message),
         );
       }
     } on UpdateException catch (e) {
@@ -88,15 +90,16 @@ class _UpdateScreenState extends State<UpdateScreen> {
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final r = release;
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Atualizações')),
+      appBar: AppBar(title: Text(l.morUpdatesTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         children: [
           FormCard(
             children: [
               Text(
-                'Versão instalada',
+                l.morInstalledVersion,
                 style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
               Text(
@@ -104,10 +107,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 6),
-              Text(
-                'Procura no GitHub se há uma versão nova e instala-a por cima desta, sem perderes dados. A internet só é usada quando carregas no botão.',
-                style: tt.bodySmall,
-              ),
+              Text(l.morUpdateDescription, style: tt.bodySmall),
               const SizedBox(height: 14),
               FilledButton.icon(
                 onPressed: checking || downloading ? null : _check,
@@ -118,7 +118,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.system_update_alt),
-                label: Text(checking ? 'A procurar…' : 'Procurar atualizações'),
+                label: Text(checking ? l.morChecking : l.morCheckUpdates),
               ),
               if (error != null)
                 Padding(
@@ -142,9 +142,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        newer
-                            ? 'Há uma versão nova: ${r.version}'
-                            : 'Já tens a versão mais recente',
+                        newer ? l.morNewVersion(r.version) : l.morUpToDate,
                         style: tt.titleMedium,
                       ),
                     ),
@@ -169,8 +167,10 @@ class _UpdateScreenState extends State<UpdateScreen> {
                     const SizedBox(height: 6),
                     Text(
                       progress > 0
-                          ? 'A descarregar… ${(progress * 100).round()}%'
-                          : 'A descarregar…',
+                          ? l.morDownloadingPercent(
+                              (progress * 100).round().toString(),
+                            )
+                          : l.morDownloading,
                       style: tt.bodySmall,
                     ),
                   ] else
@@ -178,7 +178,11 @@ class _UpdateScreenState extends State<UpdateScreen> {
                       onPressed: r.apkUrl == null ? null : _install,
                       icon: const Icon(Icons.download),
                       label: Text(
-                        'Descarregar e instalar${r.apkSize > 0 ? ' (${(r.apkSize / 1048576).toStringAsFixed(0)} MB)' : ''}',
+                        r.apkSize > 0
+                            ? l.morDownloadInstallSize(
+                                (r.apkSize / 1048576).toStringAsFixed(0),
+                              )
+                            : l.morDownloadInstall,
                       ),
                     ),
                   const SizedBox(height: 8),
@@ -188,7 +192,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                       mode: LaunchMode.externalApplication,
                     ),
                     icon: const Icon(Icons.open_in_new, size: 18),
-                    label: const Text('Abrir a página da versão'),
+                    label: Text(l.morOpenReleasePage),
                   ),
                   if (r.notes.trim().isNotEmpty)
                     Material(
@@ -199,7 +203,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                         child: ExpansionTile(
                           tilePadding: EdgeInsets.zero,
                           childrenPadding: const EdgeInsets.only(bottom: 8),
-                          title: Text('O que mudou', style: tt.titleSmall),
+                          title: Text(l.morWhatsNew, style: tt.titleSmall),
                           children: [
                             Align(
                               alignment: Alignment.centerLeft,

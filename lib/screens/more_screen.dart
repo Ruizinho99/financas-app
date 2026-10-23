@@ -31,14 +31,15 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Mais')),
+      appBar: AppBar(title: Text(l.morMoreTitle)),
       body: ListView(
         children: [
           ListTile(
             leading: const Icon(Icons.savings_outlined),
-            title: const Text('Orçamento'),
-            subtitle: const Text('Salário e limites por categoria'),
+            title: Text(l.budget),
+            subtitle: Text(l.morBudgetSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BudgetScreen()),
@@ -55,8 +56,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.event_note_outlined),
-            title: const Text('Planeamento'),
-            subtitle: const Text('Salário e despesas planeadas por mês'),
+            title: Text(l.planning),
+            subtitle: Text(l.morPlanningSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const PlanningScreen()),
@@ -64,8 +65,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.flag_outlined),
-            title: const Text('Objetivos'),
-            subtitle: const Text('Poupar para férias, um carro…'),
+            title: Text(l.goals),
+            subtitle: Text(l.morGoalsSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const GoalsScreen()),
@@ -73,8 +74,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.insights_outlined),
-            title: const Text('Análise'),
-            subtitle: const Text('Onde gastas e onde podes poupar'),
+            title: Text(l.analysis),
+            subtitle: Text(l.morAnalysisSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AnalysisScreen()),
@@ -82,8 +83,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.style_outlined),
-            title: const Text('Classificar movimentos'),
-            subtitle: const Text('Um cartão por nome'),
+            title: Text(l.morClassifyTitle),
+            subtitle: Text(l.morClassifySubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ClassifyScreen()),
@@ -92,8 +93,8 @@ class MoreScreen extends StatelessWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.system_update_alt),
-            title: const Text('Atualizações'),
-            subtitle: const Text('Procurar e instalar uma versão nova'),
+            title: Text(l.morUpdatesTitle),
+            subtitle: Text(l.morUpdatesSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const UpdateScreen()),
@@ -101,8 +102,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
-            title: const Text('Aparência'),
-            subtitle: const Text('Modo escuro e cores'),
+            title: Text(l.appearanceTitle),
+            subtitle: Text(l.morAppearanceSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AppearanceScreen()),
@@ -110,8 +111,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.account_balance_wallet_outlined),
-            title: const Text('Contas'),
-            subtitle: Text('${s.accounts.length} contas'),
+            title: Text(l.morAccountsTitle),
+            subtitle: Text(l.morAccountsCount(s.accounts.length)),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AccountsScreen()),
@@ -119,10 +120,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.autorenew),
-            title: const Text('Movimentos recorrentes'),
-            subtitle: Text(
-              '${s.recurringRules.length} recorrentes · salário, renda, subscrições',
-            ),
+            title: Text(l.morRecurringTitle),
+            subtitle: Text(l.morRecurringCount(s.recurringRules.length)),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const RecurringScreen()),
@@ -130,8 +129,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.category_outlined),
-            title: const Text('Categorias e subcategorias'),
-            subtitle: Text('${s.categories.length} categorias'),
+            title: Text(l.morCategoriesTitle),
+            subtitle: Text(l.morCategoriesCount(s.categories.length)),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const CategoriesScreen()),
@@ -139,8 +138,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.hub_outlined),
-            title: const Text('Grupos de títulos'),
-            subtitle: Text('${s.groups.length} grupos'),
+            title: Text(l.morGroupsTitle),
+            subtitle: Text(l.morGroupsCount(s.groups.length)),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const GroupsScreen()),
@@ -148,8 +147,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.rule),
-            title: const Text('Regras memorizadas'),
-            subtitle: Text('${s.rules.length} regras'),
+            title: Text(l.morRulesTitle),
+            subtitle: Text(l.morRulesCount(s.rules.length)),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const RulesScreen()),
@@ -157,8 +156,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.upload_file),
-            title: const Text('Importar extrato'),
-            subtitle: const Text('PDF, CSV ou Excel'),
+            title: Text(l.morImportTitle),
+            subtitle: Text(l.morImportSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ImportScreen()),
@@ -166,7 +165,7 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.history),
-            title: const Text('Histórico de importações'),
+            title: Text(l.morImportsHistoryTitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ImportsScreen()),
@@ -175,7 +174,7 @@ class MoreScreen extends StatelessWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.file_download_outlined),
-            title: const Text('Exportar movimentos (CSV)'),
+            title: Text(l.morExportTitle),
             onTap: () async {
               final b = StringBuffer(
                 '﻿data;descricao;montante;categoria;nota\n',
@@ -195,10 +194,8 @@ class MoreScreen extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.backup_outlined),
-            title: const Text('Cópia de segurança'),
-            subtitle: const Text(
-              'Guardar ou restaurar no Google Drive ou num ficheiro',
-            ),
+            title: Text(l.morBackupTitle),
+            subtitle: Text(l.morBackupSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BackupScreen()),
@@ -209,38 +206,29 @@ class MoreScreen extends StatelessWidget {
               Icons.delete_forever_outlined,
               color: Colors.red,
             ),
-            title: const Text(
-              'Apagar todos os movimentos',
-              style: TextStyle(color: Colors.red),
+            title: Text(
+              l.morWipeTransactionsTitle,
+              style: const TextStyle(color: Colors.red),
             ),
             onTap: () async {
-              if (await confirm(
-                context,
-                'Apagar TODOS os movimentos, regras e salários? As categorias mantêm-se. Não é possível desfazer.',
-              ))
+              if (await confirm(context, l.morWipeTransactionsConfirm))
                 s.wipe();
             },
           ),
           ListTile(
             leading: const Icon(Icons.delete_sweep_outlined, color: Colors.red),
-            title: const Text(
-              'Apagar tudo, incluindo categorias',
-              style: TextStyle(color: Colors.red),
+            title: Text(
+              l.morWipeAllTitle,
+              style: const TextStyle(color: Colors.red),
             ),
             onTap: () async {
-              if (await confirm(
-                context,
-                'Apagar TUDO: movimentos, categorias, orçamentos, regras, salários e investimentos? Não é possível desfazer.',
-              ))
+              if (await confirm(context, l.morWipeAllConfirm))
                 s.wipe(categories: true);
             },
           ),
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).',
-              textAlign: TextAlign.center,
-            ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(l.morPrivacyNote, textAlign: TextAlign.center),
           ),
         ],
       ),
@@ -254,10 +242,11 @@ class ImportsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final list = s.db.imports();
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Importações')),
+      appBar: AppBar(title: Text(l.morImportsTitle)),
       body: list.isEmpty
-          ? const Center(child: Text('Ainda sem importações.'))
+          ? Center(child: Text(l.morNoImports))
           : ListView(
               children: [
                 for (final i in list)
@@ -265,15 +254,15 @@ class ImportsScreen extends StatelessWidget {
                     leading: const Icon(Icons.description_outlined),
                     title: Text(i.filename),
                     subtitle: Text(
-                      '${fmtDate(i.createdAt)} · ${i.count} movimentos',
+                      l.morImportItemSubtitle(i.count, fmtDate(i.createdAt)),
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      tooltip: 'Desfazer importação',
+                      tooltip: l.morUndoImport,
                       onPressed: () async {
                         if (await confirm(
                           context,
-                          'Remover os ${i.count} movimentos desta importação?',
+                          l.morRemoveImportQuestion(i.count),
                         ))
                           s.deleteImport(i.id);
                       },
@@ -290,12 +279,13 @@ class CategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Categorias')),
+      appBar: AppBar(title: Text(l.morCategoriesScreenTitle)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showCategoryEditor(context),
         icon: const Icon(Icons.add),
-        label: const Text('Categoria'),
+        label: Text(l.morNewCategory),
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 90),
@@ -311,6 +301,7 @@ class CategoriesScreen extends StatelessWidget {
   }
 
   Widget _tile(BuildContext context, AppState s, Categoria c, int depth) {
+    final l = AppLocalizations.of(context)!;
     final count = s.transactions.where((t) => t.categoryId == c.id).length;
     final now = s.currentMonthKey;
     final ended = c.activeTo != null && now.compareTo(c.activeTo!) > 0;
@@ -318,7 +309,7 @@ class CategoriesScreen extends StatelessWidget {
     String m(String k) => '${k.substring(5, 7)}/${k.substring(0, 4)}';
     final dates = !c.hasDates
         ? null
-        : '${c.activeFrom == null ? 'desde sempre' : 'de ${m(c.activeFrom!)}'} ${c.activeTo == null ? 'em diante' : 'a ${m(c.activeTo!)}'}${ended ? ' · terminada' : (future ? ' · futura' : '')}';
+        : '${c.activeFrom == null ? l.morFromStart : l.morFromMonth(m(c.activeFrom!))} ${c.activeTo == null ? l.morOpenEnded : l.morToMonth(m(c.activeTo!))}${ended ? ' · ${l.morEnded}' : (future ? ' · ${l.morFuture}' : '')}';
     return Opacity(
       opacity: (ended || c.archived) ? 0.55 : 1,
       child: ListTile(
@@ -333,13 +324,13 @@ class CategoriesScreen extends StatelessWidget {
         ),
         subtitle: Text(
           [
-            if (c.isIncome) 'Rendimento',
-            if (c.isInvestment) 'Investimento',
-            if (c.both) 'Despesas e receitas',
+            if (c.isIncome) l.morIncomeKind,
+            if (c.isInvestment) l.morInvestmentKind,
+            if (c.both) l.morBothKinds,
             if (dates != null) dates,
-            '$count mov.',
+            l.morTxnCount(count),
             if (s.rangesOf(c.id).isNotEmpty)
-              'Obrigatória em ${s.rangesOf(c.id).length} período(s)',
+              l.morMandatoryPeriods(s.rangesOf(c.id).length),
             if (c.description.isNotEmpty) c.description,
           ].join(' · '),
         ),
@@ -354,13 +345,19 @@ class CategoriesScreen extends StatelessWidget {
               final id = s.duplicateForNextYear(c);
               if (context.mounted)
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Criada “${s.cat(id)?.name}”.')),
+                  SnackBar(
+                    content: Text(l.morCreatedCategory('${s.cat(id)?.name}')),
+                  ),
                 );
             }
             if (v == 'delete') {
               if (await confirm(
                     context,
-                    'Apagar “${c.name}”? Os $count movimentos ficam sem categoria${depth == 0 ? ' e as subcategorias são apagadas' : ''}.',
+                    l.morDeleteCategoryQuestion(
+                      c.name,
+                      count,
+                      depth == 0 ? l.morSubcategoriesDeleted : '',
+                    ),
                   ) &&
                   context.mounted) {
                 s.deleteCategory(c.id);
@@ -369,21 +366,15 @@ class CategoriesScreen extends StatelessWidget {
           },
           itemBuilder: (_) => [
             if (depth == 0)
-              const PopupMenuItem(
-                value: 'sub',
-                child: Text('Nova subcategoria'),
-              ),
-            const PopupMenuItem(value: 'budget', child: Text('Orçamento')),
+              PopupMenuItem(value: 'sub', child: Text(l.morNewSubcategory)),
+            PopupMenuItem(value: 'budget', child: Text(l.budget)),
             if (c.hasDates)
-              const PopupMenuItem(
-                value: 'dup',
-                child: Text('Duplicar para o ano seguinte'),
-              ),
+              PopupMenuItem(value: 'dup', child: Text(l.morDuplicateNextYear)),
             PopupMenuItem(
               value: 'archive',
-              child: Text(c.archived ? 'Reativar' : 'Arquivar'),
+              child: Text(c.archived ? l.morReactivate : l.morArchive),
             ),
-            const PopupMenuItem(value: 'delete', child: Text('Apagar')),
+            PopupMenuItem(value: 'delete', child: Text(l.delete)),
           ],
         ),
       ),
