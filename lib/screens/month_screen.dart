@@ -618,7 +618,6 @@ class _Stat extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     return Container(
