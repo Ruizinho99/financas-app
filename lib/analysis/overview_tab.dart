@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -23,6 +24,7 @@ class OverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final rate = a.savingsRate;
@@ -34,13 +36,10 @@ class OverviewTab extends StatelessWidget {
     final mandColor = cs.primary, optColor = cs.tertiary;
 
     if (!hasData) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(
-            'Sem movimentos neste período (ou os filtros não encontram nada).',
-            textAlign: TextAlign.center,
-          ),
+          padding: const EdgeInsets.all(32),
+          child: Text(l.anNoDataPeriod, textAlign: TextAlign.center),
         ),
       );
     }
@@ -55,7 +54,7 @@ class OverviewTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Despesas',
+                l.anExpenses,
                 style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
               const SizedBox(height: 2),
@@ -87,7 +86,9 @@ class OverviewTab extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
-                    '${a.ongoing ? 'Mesmos dias do período anterior' : 'Período anterior'}: ${fmtMoney(a.prevSpent)}',
+                    a.ongoing
+                        ? l.anSamePeriodPrev(fmtMoney(a.prevSpent))
+                        : l.anPrevPeriodAmount(fmtMoney(a.prevSpent)),
                     style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 ),
@@ -95,7 +96,7 @@ class OverviewTab extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    'Período em curso: valores até hoje (dia ${a.today.day}).',
+                    l.anOngoingToday(a.today.day),
                     style: tt.bodySmall?.copyWith(
                       color: cs.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
@@ -108,7 +109,7 @@ class OverviewTab extends StatelessWidget {
                 runSpacing: 14,
                 children: [
                   Stat(
-                    'Rendimentos',
+                    l.anIncomes,
                     fmtMoney(a.income),
                     color: Colors.green.shade500,
                     extra: compare
@@ -120,7 +121,7 @@ class OverviewTab extends StatelessWidget {
                         : null,
                   ),
                   Stat(
-                    'Saldo',
+                    l.anBalance,
                     fmtMoney(a.balance),
                     color: a.balance >= 0
                         ? Colors.green.shade500
@@ -128,11 +129,11 @@ class OverviewTab extends StatelessWidget {
                   ),
                   if (a.invested != 0)
                     Stat(
-                      'Investido',
+                      l.anInvested,
                       fmtMoney(a.invested),
                       extra: a.income > 0
                           ? Text(
-                              '${fmtPercent(a.invested / a.income)} dos rendimentos',
+                              l.anOfIncome(fmtPercent(a.invested / a.income)),
                               style: tt.bodySmall?.copyWith(
                                 color: cs.onSurfaceVariant,
                               ),
@@ -141,11 +142,14 @@ class OverviewTab extends StatelessWidget {
                     ),
                   if (rate != null)
                     Stat(
-                      'Taxa de poupança',
+                      l.anSavingsRate,
                       fmtPercent(rate),
                       extra: compare && prevRate != null
                           ? Text(
-                              '${rate - prevRate >= 0 ? '+' : '−'}${((rate - prevRate).abs() * 100).round()} pp vs anterior',
+                              l.anPpVsPrev(
+                                rate - prevRate >= 0 ? '+' : '−',
+                                ((rate - prevRate).abs() * 100).round(),
+                              ),
                               style: tt.bodySmall?.copyWith(
                                 color: rate >= prevRate
                                     ? Colors.green.shade500
@@ -162,9 +166,7 @@ class OverviewTab extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Text(
-                    a.ongoing
-                        ? 'Rendimento esperado: salário líquido definido no Orçamento.'
-                        : 'Sem rendimentos categorizados: a usar o salário líquido definido no Orçamento.',
+                    a.ongoing ? l.anIncomeExpected : l.anIncomeFromSalary,
                     style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 ),
@@ -182,12 +184,12 @@ class OverviewTab extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   a.ongoing
-                      ? 'Período em curso: a taxa de poupança vai mudando até ao fim.'
+                      ? l.anRateOngoing
                       : (rate >= 0.2
-                            ? 'Estás a poupar mais de 20% do que ganhas. Excelente.'
+                            ? l.anRateExcellent
                             : (rate >= 0
-                                  ? 'Poupas ${fmtPercent(rate)}. Uma boa meta é 20%.'
-                                  : 'Estás a gastar mais do que ganhas neste período.')),
+                                  ? l.anRateOk(fmtPercent(rate))
+                                  : l.anRateNegative)),
                   style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
@@ -197,7 +199,7 @@ class OverviewTab extends StatelessWidget {
 
         // ----- ritmo e projeção -----
         SectionCard(
-          title: 'Ritmo de gastos',
+          title: l.anPace,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -205,9 +207,9 @@ class OverviewTab extends StatelessWidget {
                 spacing: 28,
                 runSpacing: 12,
                 children: [
-                  Stat('Média por dia', fmtMoney(a.dailyAvg)),
-                  Stat('Movimentos', '${a.count}'),
-                  Stat('Valor médio', fmtMoney(a.avgTicket)),
+                  Stat(l.anAvgPerDay, fmtMoney(a.dailyAvg)),
+                  Stat(l.transactions, '${a.count}'),
+                  Stat(l.anAvgValue, fmtMoney(a.avgTicket)),
                 ],
               ),
               if (pr != null) ...[
@@ -215,12 +217,12 @@ class OverviewTab extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Dia ${pr.elapsedDays} de ${pr.totalDays}',
+                      l.anDayOf(pr.elapsedDays, pr.totalDays),
                       style: tt.bodySmall,
                     ),
                     const Spacer(),
                     Text(
-                      '${fmtPercent(pr.elapsedDays / pr.totalDays)} do mês',
+                      l.anOfMonth(fmtPercent(pr.elapsedDays / pr.totalDays)),
                       style: tt.bodySmall,
                     ),
                   ],
@@ -237,15 +239,20 @@ class OverviewTab extends StatelessWidget {
                   color: pr.budget != null && pr.projected > pr.budget!
                       ? Colors.red.shade400
                       : cs.primary,
-                  title:
-                      'Ao ritmo atual, o mês fecha em ${fmtMoney(pr.projected)}',
+                  title: l.anProjected(fmtMoney(pr.projected)),
                   body: pr.budget == null
                       ? (a.prevSpent > 0
-                            ? 'No mês anterior gastaste ${fmtMoney(a.prevSpent)}.'
+                            ? l.anPrevMonthSpent(fmtMoney(a.prevSpent))
                             : null)
                       : (pr.projected > pr.budget!
-                            ? 'Isso são ${fmtMoney(pr.projected - pr.budget!)} acima do orçamento de ${fmtMoney(pr.budget!)}.'
-                            : 'Dentro do orçamento de ${fmtMoney(pr.budget!)}, com folga de ${fmtMoney(pr.budget! - pr.projected)}.'),
+                            ? l.anAboveBudget(
+                                fmtMoney(pr.projected - pr.budget!),
+                                fmtMoney(pr.budget!),
+                              )
+                            : l.anWithinBudget(
+                                fmtMoney(pr.budget!),
+                                fmtMoney(pr.budget! - pr.projected),
+                              )),
                 ),
               ],
             ],
@@ -254,35 +261,31 @@ class OverviewTab extends StatelessWidget {
 
         // ----- obrigatórias vs opcionais -----
         SectionCard(
-          title: 'Obrigatórias vs opcionais',
-          subtitle: 'O que tens de pagar vs onde tens margem para poupar',
+          title: l.anMandVsOpt,
+          subtitle: l.anMandVsOptSub,
           child: a.spent == 0
-              ? const Text('Sem despesas neste período.')
+              ? Text(l.anNoSpendPeriod)
               : Column(
                   children: [
                     Center(
                       child: Donut(
                         items: [
+                          DonutItem(l.anMandatory, a.mandatoryTotal, mandColor),
+                          DonutItem(l.anOptional, a.optionalTotal, optColor),
                           DonutItem(
-                            'Obrigatórias',
-                            a.mandatoryTotal,
-                            mandColor,
-                          ),
-                          DonutItem('Opcionais', a.optionalTotal, optColor),
-                          DonutItem(
-                            'Sem categoria',
+                            l.anNoCategory,
                             a.unclassifiedTotal,
                             Colors.blueGrey,
                           ),
                         ],
-                        centerTop: 'Total',
+                        centerTop: l.anTotal,
                         centerBottom: fmtMoney(a.spent, short: true),
                       ),
                     ),
                     const SizedBox(height: 16),
                     LegendRow(
                       color: mandColor,
-                      label: 'Obrigatórias',
+                      label: l.anMandatory,
                       value: fmtMoney(a.mandatoryTotal),
                       share: fmtPercent(a.mandatoryTotal / a.spent),
                       trailing: compare
@@ -294,7 +297,7 @@ class OverviewTab extends StatelessWidget {
                     ),
                     LegendRow(
                       color: optColor,
-                      label: 'Opcionais',
+                      label: l.anOptional,
                       value: fmtMoney(a.optionalTotal),
                       share: fmtPercent(a.optionalTotal / a.spent),
                       trailing: compare
@@ -307,7 +310,7 @@ class OverviewTab extends StatelessWidget {
                     if (a.unclassifiedTotal > 0)
                       LegendRow(
                         color: Colors.blueGrey,
-                        label: 'Sem categoria',
+                        label: l.anNoCategory,
                         value: fmtMoney(a.unclassifiedTotal),
                         share: fmtPercent(a.unclassifiedTotal / a.spent),
                       ),
@@ -315,7 +318,11 @@ class OverviewTab extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: Text(
-                          'Em % dos rendimentos: obrigatórias ${fmtPercent(a.mandatoryTotal / a.income)}, opcionais ${fmtPercent(a.optionalTotal / a.income)}, sobra ${fmtPercent(a.balance / a.income)}.',
+                          l.anPctOfIncome(
+                            fmtPercent(a.mandatoryTotal / a.income),
+                            fmtPercent(a.optionalTotal / a.income),
+                            fmtPercent(a.balance / a.income),
+                          ),
                           style: tt.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -328,9 +335,8 @@ class OverviewTab extends StatelessWidget {
         // ----- orçamento -----
         if (stats.isNotEmpty)
           SectionCard(
-            title: 'Orçamento',
-            subtitle:
-                'Limites e objetivos definidos${a.filter.isActive ? ' (não depende dos filtros)' : ''}',
+            title: l.budget,
+            subtitle: a.filter.isActive ? l.anBudgetSubFiltered : l.anBudgetSub,
             child: Column(
               children: [
                 for (final x in stats.take(6))
@@ -368,7 +374,7 @@ class OverviewTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _budgetNote(x),
+                          _budgetNote(l, x),
                           style: tt.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -398,14 +404,14 @@ class OverviewTab extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Onde posso poupar?',
+                            l.anWhereSave,
                             style: tt.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Encontrámos até ${fmtMoney(potential)} por mês de margem.',
+                            l.anFoundUpTo(fmtMoney(potential)),
                             style: tt.bodySmall,
                           ),
                         ],
@@ -421,15 +427,15 @@ class OverviewTab extends StatelessWidget {
     );
   }
 
-  String _budgetNote(CategoryStat x) {
+  String _budgetNote(AppLocalizations l, CategoryStat x) {
     final left = x.target - x.spent;
     if (x.category.budgetType == BudgetType.goal) {
       return x.ratio >= 1
-          ? 'Objetivo atingido 🎉'
-          : 'Faltam ${fmtMoney(left)} para o objetivo (${fmtPercent(x.ratio)})';
+          ? l.anGoalReached
+          : l.anGoalLeft(fmtMoney(left), fmtPercent(x.ratio));
     }
-    if (x.ratio > 1) return 'Excedeste o limite em ${fmtMoney(-left)}';
-    if (x.ratio >= 0.85) return 'Perto do limite: restam ${fmtMoney(left)}';
-    return 'Restam ${fmtMoney(left)} (${fmtPercent(x.ratio)} usado)';
+    if (x.ratio > 1) return l.anOverLimit(fmtMoney(-left));
+    if (x.ratio >= 0.85) return l.anNearLimit(fmtMoney(left));
+    return l.anLeftUsed(fmtMoney(left), fmtPercent(x.ratio));
   }
 }

@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import 'analytics.dart';
@@ -24,16 +25,14 @@ class _TrendTabState extends State<TrendTab> {
     final s = context.watch<AppState>();
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context)!;
     final n = a.period.monthCount.clamp(6, 24);
     final pts = a.monthly(n);
     if (pts.every((p) => p.spent == 0 && p.income == 0)) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(
-            'Ainda não há dados suficientes para mostrar a evolução.',
-            textAlign: TextAlign.center,
-          ),
+          padding: const EdgeInsets.all(32),
+          child: Text(l.anNotEnoughTrend, textAlign: TextAlign.center),
         ),
       );
     }
@@ -143,9 +142,8 @@ class _TrendTabState extends State<TrendTab> {
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
       children: [
         SectionCard(
-          title: 'Despesas por mês',
-          subtitle:
-              'Últimos $n meses · a linha tracejada é a média (${fmtMoney(avg)})',
+          title: l.anSpendByMonth,
+          subtitle: l.anLastMonths(n, fmtMoney(avg)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -189,9 +187,9 @@ class _TrendTabState extends State<TrendTab> {
                 spacing: 16,
                 runSpacing: 6,
                 children: [
-                  _dot(mand, 'Obrigatórias'),
-                  _dot(opt, 'Opcionais'),
-                  _dot(Colors.blueGrey, 'Sem categoria'),
+                  _dot(mand, l.anMandatory),
+                  _dot(opt, l.anOptional),
+                  _dot(Colors.blueGrey, l.anNoCategory),
                 ],
               ),
               if (best != null &&
@@ -201,24 +199,28 @@ class _TrendTabState extends State<TrendTab> {
                 Callout(
                   icon: Icons.thumb_up_alt_outlined,
                   color: Colors.green.shade500,
-                  title: 'Melhor mês: ${fmtMonth(best.month)}',
-                  body:
-                      'Gastaste ${fmtMoney(best.spent)}, ${fmtMoney(avg - best.spent)} abaixo da média.',
+                  title: l.anBestMonth(fmtMonth(best.month)),
+                  body: l.anBestMonthBody(
+                    fmtMoney(best.spent),
+                    fmtMoney(avg - best.spent),
+                  ),
                 ),
                 Callout(
                   icon: Icons.warning_amber_rounded,
                   color: Colors.orange.shade600,
-                  title: 'Mês mais caro: ${fmtMonth(worst.month)}',
-                  body:
-                      'Gastaste ${fmtMoney(worst.spent)}, ${fmtMoney(worst.spent - avg)} acima da média.',
+                  title: l.anWorstMonth(fmtMonth(worst.month)),
+                  body: l.anWorstMonthBody(
+                    fmtMoney(worst.spent),
+                    fmtMoney(worst.spent - avg),
+                  ),
                 ),
               ],
             ],
           ),
         ),
         SectionCard(
-          title: 'Rendimentos vs despesas',
-          subtitle: 'Se a linha das despesas passa a dos rendimentos, estás a gastar mais do que ganhas',
+          title: l.anIncomeVsSpend,
+          subtitle: l.anIncomeVsSpendSub,
           child: SizedBox(
             height: 180,
             child: LineChart(
@@ -299,16 +301,19 @@ class _TrendTabState extends State<TrendTab> {
           ),
         ),
         SectionCard(
-          title: 'Mês a mês',
+          title: l.anMonthByMonth,
           child: Column(
             children: [
               Row(
                 children: [
-                  Expanded(flex: 3, child: Text('Mês', style: tt.labelSmall)),
+                  Expanded(
+                    flex: 3,
+                    child: Text(l.anMonth, style: tt.labelSmall),
+                  ),
                   Expanded(
                     flex: 3,
                     child: Text(
-                      'Despesas',
+                      l.anExpenses,
                       style: tt.labelSmall,
                       textAlign: TextAlign.right,
                     ),
@@ -316,7 +321,7 @@ class _TrendTabState extends State<TrendTab> {
                   Expanded(
                     flex: 3,
                     child: Text(
-                      'Saldo',
+                      l.anBalance,
                       style: tt.labelSmall,
                       textAlign: TextAlign.right,
                     ),
@@ -324,7 +329,7 @@ class _TrendTabState extends State<TrendTab> {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'Poup.',
+                      l.anSavingsShort,
                       style: tt.labelSmall,
                       textAlign: TextAlign.right,
                     ),
@@ -375,23 +380,20 @@ class _TrendTabState extends State<TrendTab> {
           ),
         ),
         SectionCard(
-          title: 'Evolução por categoria',
-          subtitle: 'Escolhe uma categoria para a ver mês a mês',
+          title: l.anTrendByCategory,
+          subtitle: l.anPickCategoryHint,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DropdownButtonFormField<int?>(
                 initialValue: categoryId,
                 isExpanded: true,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.category_outlined),
-                  hintText: 'Escolher categoria',
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.category_outlined),
+                  hintText: l.anChooseCategory,
                 ),
                 items: [
-                  const DropdownMenuItem(
-                    value: null,
-                    child: Text('— nenhuma —'),
-                  ),
+                  DropdownMenuItem(value: null, child: Text(l.anNone)),
                   for (final r in roots)
                     DropdownMenuItem(
                       value: r.id,
@@ -432,7 +434,7 @@ class _TrendTabState extends State<TrendTab> {
                         ? 0
                         : (nz.reduce((x, y) => x + y) / nz.length).round();
                     return Text(
-                      'Média nos meses com gasto: ${fmtMoney(m)}.',
+                      l.anAvgMonthsWithSpend(fmtMoney(m)),
                       style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     );
                   },

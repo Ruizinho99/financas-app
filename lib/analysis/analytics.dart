@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -417,6 +418,54 @@ class Analytics {
     },
   );
 
+  /// Igual a [byCategory], com os textos traduzidos.
+  List<Slice> byCategoryL(AppLocalizations l) => _slices(
+    (e) => e.cat == null ? _none : '${e.cat!.parentId ?? e.cat!.id}',
+    (k, l2, prev) {
+      final root = k == _none ? null : s.cat(int.parse(k));
+      return Slice(
+        key: k,
+        label: root?.name ?? l.anNoCategory,
+        emoji: root?.emoji ?? '',
+        amount: _sum(l2),
+        prev: prev,
+        items: l2,
+        categoryId: root?.id,
+      );
+    },
+  );
+
+  /// Igual a [bySubcategory], com os textos traduzidos.
+  List<Slice> bySubcategoryL(AppLocalizations l) =>
+      _slices((e) => e.cat == null ? _none : '${e.cat!.id}', (k, l2, prev) {
+        final c = k == _none ? null : s.cat(int.parse(k));
+        final parent = s.cat(c?.parentId);
+        return Slice(
+          key: k,
+          label: c?.name ?? l.anNoCategory,
+          subtitle: parent?.name,
+          emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
+          amount: _sum(l2),
+          prev: prev,
+          items: l2,
+          categoryId: c?.id,
+        );
+      });
+
+  /// Igual a [byAccount], com os textos traduzidos.
+  List<Slice> byAccountL(AppLocalizations l) =>
+      _slices((e) => '${e.t.accountId ?? _none}', (k, l2, prev) {
+        final a = k == _none ? null : s.account(int.parse(k));
+        return Slice(
+          key: k,
+          label: a?.name ?? l.anNoAccount,
+          emoji: a?.emoji ?? '',
+          amount: _sum(l2),
+          prev: prev,
+          items: l2,
+        );
+      });
+
   /// Por subcategoria (ou categoria, quando o movimento não tem subcategoria).
   List<Slice> bySubcategory() =>
       _slices((e) => e.cat == null ? _none : '${e.cat!.id}', (k, l, prev) {
@@ -566,6 +615,138 @@ class Analytics {
   /// Pequenas compras que se repetem muito (cafés, snacks…).
   List<Slice> frequentSmall() =>
       byMerchant().where((e) => e.count >= 6 && e.avg <= 2500).toList();
+
+  /// Igual a [insights], com os textos traduzidos.
+  List<Insight> insightsL(AppLocalizations l) {
+    final out = <Insight>[];
+    final usedCategories = <int>{};
+
+    // 1) orçamentos de limite ultrapassados
+    final own = s.totalsByCategory(period);
+    for (final c in s.roots.where((c) => !c.isIncome)) {
+      final target = s.targetIn(c, period);
+      final spentC = s.rollup(c, own);
+      final limitLike = c.budgetType == BudgetType.limit;
+      if (target > 0 && limitLike && spentC > target) {
+        usedCategories.add(c.id);
+        out.add(
+          Insight(
+            InsightKind.overBudget,
+            l.anOverLimitTitle(
+              '${c.emoji.isEmpty ? '' : '${c.emoji} '}${c.name}',
+            ),
+            l.anOverLimitDetail(fmtMoney(spentC), fmtMoney(target)),
+            monthlySaving: perMonth(spentC - target),
+            categoryId: c.id,
+          ),
+        );
+      }
+    }
+
+    // 2) categorias que subiram muito face ao período anterior
+    if (previous != null) {
+      for (final sl in byCategoryL(l)) {
+        if (sl.categoryId == null || usedCategories.contains(sl.categoryId))
+          continue;
+        final delta = sl.amount - sl.prev;
+        if (sl.prev > 0 && delta >= 2000 && delta >= sl.prev * 0.25) {
+          usedCategories.add(sl.categoryId!);
+          out.add(
+            Insight(
+              InsightKind.increase,
+              l.anIncreaseTitle(
+                '${sl.emoji.isEmpty ? '' : '${sl.emoji} '}${sl.label}',
+                fmtPercent(delta / sl.prev),
+              ),
+              l.anIncreaseDetail(
+                fmtMoney(delta),
+                fmtMoney(sl.prev),
+                fmtMoney(sl.amount),
+              ),
+              monthlySaving: perMonth(delta),
+              categoryId: sl.categoryId,
+            ),
+          );
+        }
+      }
+    }
+
+    // 3) as maiores despesas opcionais: cortar 10% já se nota
+    final opt = byCategoryL(l)
+        .where(
+          (e) =>
+              e.categoryId != null &&
+              !usedCategories.contains(e.categoryId) &&
+              e.items.every((x) => !x.mandatory),
+        )
+        .take(3);
+    for (final sl in opt) {
+      if (spent == 0 || sl.amount < spent * 0.05) continue;
+      usedCategories.add(sl.categoryId!);
+      out.add(
+        Insight(
+          InsightKind.topOptional,
+          l.anTopOptionalTitle(
+            '${sl.emoji.isEmpty ? '' : '${sl.emoji} '}${sl.label}',
+            fmtPercent(sl.amount / spent),
+          ),
+          l.anTopOptionalDetail(fmtMoney(perMonth((sl.amount * 0.1).round()))),
+          monthlySaving: perMonth((sl.amount * 0.1).round()),
+          categoryId: sl.categoryId,
+        ),
+      );
+    }
+
+    // 4) pequenas compras frequentes
+    final small = frequentSmall();
+    if (small.isNotEmpty) {
+      final total = small.fold(0, (a, e) => a + e.amount);
+      final n = small.fold(0, (a, e) => a + e.count);
+      out.add(
+        Insight(
+          InsightKind.smallFrequent,
+          l.anFrequentSmall,
+          l.anSmallDetail(
+            n,
+            small.length,
+            fmtMoney(total),
+            small.take(3).map((e) => e.label).join(', '),
+            fmtMoney(perMonth((total / 3).round())),
+          ),
+          monthlySaving: perMonth((total / 3).round()),
+        ),
+      );
+    }
+
+    // 5) pagamentos recorrentes opcionais (subscrições, ginásio…) – informativo
+    final rec = recurring().where((e) => !e.mandatory).toList();
+    if (rec.isNotEmpty) {
+      final monthly = rec.fold(0, (a, e) => a + e.monthly);
+      out.add(
+        Insight(
+          InsightKind.recurring,
+          l.anRecurringTitle(rec.length),
+          l.anRecurringDetail(fmtMoney(monthly), fmtMoney(monthly * 12)),
+        ),
+      );
+    }
+
+    // 6) sem categoria
+    if (unclassifiedTotal > 0) {
+      out.add(
+        Insight(
+          InsightKind.unclassified,
+          l.anUnclassifiedSpend,
+          l.anUnclassifiedDetail(fmtMoney(unclassifiedTotal)),
+        ),
+      );
+    }
+
+    out.sort(
+      (a, b) => (b.monthlySaving ?? -1).compareTo(a.monthlySaving ?? -1),
+    );
+    return out;
+  }
 
   /// Sugestões concretas, da maior para a menor poupança potencial.
   List<Insight> insights() {

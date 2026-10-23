@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../util/format.dart';
 
 /// Paleta de 8 cores para gráficos, derivada da cor principal da app.
@@ -98,6 +99,7 @@ class DeltaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final delta = cur - prev;
     if (prev == 0 && cur == 0) return const SizedBox.shrink();
     // variações abaixo de 1% contam como "estável" (cinzento)
@@ -108,10 +110,10 @@ class DeltaChip extends StatelessWidget {
         ? Theme.of(context).colorScheme.onSurfaceVariant
         : (bad ? Colors.red.shade400 : Colors.green.shade500);
     final pct = stable
-        ? 'estável'
+        ? l.anStable
         : (prev > 0
               ? '${delta >= 0 ? '+' : '−'}${(delta.abs() / prev * 100).round()}%'
-              : 'novo');
+              : l.anNew);
     final text = showAmount && !stable
         ? '$pct · ${delta >= 0 ? '+' : '−'}${fmtMoney(delta.abs())}'
         : pct;
@@ -404,6 +406,7 @@ class SavingChip extends StatelessWidget {
   const SavingChip(this.monthly, {super.key});
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final c = Colors.green.shade500;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -412,7 +415,7 @@ class SavingChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        'até ${fmtMoney(monthly)}/mês',
+        l.anUpToPerMonth(fmtMoney(monthly)),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: c),
       ),
     );
