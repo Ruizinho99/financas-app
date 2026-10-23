@@ -161,6 +161,9 @@ String fmtAgo(DateTime at, [DateTime? now]) {
   return 'há $days ${days == 1 ? 'dia' : 'dias'}';
 }
 
+/// Exemplo de montante para campos vazios: "0,00" em português, "0.00" em inglês.
+String get zeroHint => formatLocale == 'en' ? '0.00' : '0,00';
+
 /// Texto de "sem categoria", no idioma da interface.
 String get noCategoryText =>
     formatLocale == 'en' ? 'No category' : 'Sem categoria';

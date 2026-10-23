@@ -324,7 +324,7 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
             style: tt.displaySmall?.copyWith(fontWeight: FontWeight.w800),
             onChanged: (_) => setState(() => error = null),
             decoration: InputDecoration(
-              hintText: '0,00',
+              hintText: zeroHint,
               prefixText: '$baseSym  ',
             ),
           ),

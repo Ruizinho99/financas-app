@@ -805,7 +805,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             style: tt.displaySmall?.copyWith(fontWeight: FontWeight.w800),
             onChanged: (_) => setState(() => error = null),
             decoration: InputDecoration(
-              hintText: '0,00',
+              hintText: zeroHint,
               prefixText: '$baseSym  ',
               prefixStyle: tt.headlineSmall?.copyWith(
                 color: cs.onSurfaceVariant,

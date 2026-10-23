@@ -1233,7 +1233,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                               decoration: InputDecoration(
                                 labelText: l.invfValueWithCcy(baseSym),
                                 prefixText: '$baseSym  ',
-                                hintText: '0,00',
+                                hintText: zeroHint,
                               ),
                             ),
                     ),
@@ -1248,7 +1248,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                           labelText: priceLabel,
                           prefixText: ccy == baseCcy ? '$baseSym  ' : null,
                           suffixText: ccy == baseCcy ? null : ccy,
-                          hintText: '0,00',
+                          hintText: zeroHint,
                         ),
                       ),
                     ),
@@ -1321,7 +1321,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                         ? l.invfReceivedWithCcy(baseSym)
                         : l.invfValueWithCcy(baseSym),
                     prefixText: '$baseSym  ',
-                    hintText: '0,00',
+                    hintText: zeroHint,
                   ),
                 ),
               ],
@@ -1368,7 +1368,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
                           decoration: InputDecoration(
                             labelText: l.invfFeeWithCcy(baseSym),
                             prefixText: '$baseSym  ',
-                            hintText: '0,00',
+                            hintText: zeroHint,
                           ),
                         ),
                       if (_affectsCash)

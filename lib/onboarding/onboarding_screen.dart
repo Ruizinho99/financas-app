@@ -174,7 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onChanged: (_) => setState(() => _erroSaldo = null),
             decoration: InputDecoration(
               labelText: l.frmOpeningBalanceCurrency(baseSym),
-              hintText: '0,00',
+              hintText: zeroHint,
               errorText: _erroSaldo,
             ),
           ),
@@ -191,7 +191,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onChanged: (_) => setState(() => _erroSalario = null),
             decoration: InputDecoration(
               labelText: l.frmObSalaryField(baseSym),
-              hintText: '0,00',
+              hintText: zeroHint,
               errorText: _erroSalario,
             ),
           ),
