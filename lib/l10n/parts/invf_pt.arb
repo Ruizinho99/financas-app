@@ -1,0 +1,708 @@
+{
+  "@@locale": "pt",
+  "invfAccountNewTitle": "Nova plataforma",
+  "invfAccountEditTitle": "Editar plataforma",
+  "invfName": "Nome",
+  "invfAccountNameHint": "Ex.: XTB, Trade Republic",
+  "invfNoteOptional": "Nota (opcional)",
+  "invfNote": "Nota",
+  "invfSave": "Guardar",
+  "invfSaveChanges": "Guardar alterações",
+  "invfEnterName": "Indica um nome",
+  "invfAccountNameTaken": "Já existe uma plataforma com este nome",
+  "invfSearchIn": "Procurar em {provider}",
+  "@invfSearchIn": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCryptoSearchHint": "Ex.: bitcoin",
+  "invfSymbolSearchHint": "Ex.: VWCE, Apple, S&P 500",
+  "invfSearchFailed": "Não foi possível pesquisar.",
+  "invfNothingFound": "Nada encontrado.",
+  "invfClose": "Fechar",
+  "invfHoldingNewTitle": "Novo ativo",
+  "invfHoldingEditTitle": "Editar ativo",
+  "invfHoldingNameHint": "Ex.: Vanguard FTSE All-World",
+  "invfPlatform": "Plataforma",
+  "invfType": "Tipo",
+  "invfAssetCurrency": "Moeda do ativo",
+  "invfAutoCurrency": "Automática (a do preço)",
+  "invfBaseCurrencyOption": "{ccy} · moeda de base",
+  "@invfBaseCurrencyOption": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCurrencyAutoHint": "Usa a moeda em que o ativo cota ({ccy}). Podes escolher outra à mão.",
+  "@invfCurrencyAutoHint": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfDetectedOnPrice": "detetada ao obter o preço",
+  "invfUsdHint": "Para ações ou ETFs em dólares, escolhe USD: os preços de compra ficam na moeda do ativo, com o câmbio de cada compra.",
+  "invfForeignCcyHint": "Compras e preço médio ficam em {ccy}; o valor e o ganho da carteira são convertidos para a moeda de base ao câmbio de mercado (atualizado em \"Atualizar preços\").",
+  "@invfForeignCcyHint": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPriceWithCcy": "Preço ({ccy})",
+  "@invfPriceWithCcy": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAvgPriceWithCcy": "Preço médio ({ccy})",
+  "@invfAvgPriceWithCcy": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfYahooHint": "Gratuito, sem chave. ETFs, ações e câmbios (ex.: VWCE.DE, AAPL, BTC-EUR). Converte para euros.",
+  "invfCoingeckoHint": "Gratuito, sem chave. Criptomoedas, pelo id (ex.: bitcoin, ethereum).",
+  "invfManualHint": "Tu defines o preço quando quiseres. Nada é enviado para a internet.",
+  "invfCoingeckoId": "Id no CoinGecko",
+  "invfNewPlatformItem": "➕  Nova plataforma…",
+  "invfSymbol": "Símbolo",
+  "invfPrice": "Preço",
+  "invfSearchTooltip": "Procurar",
+  "invfCurrentPriceOptional": "Preço atual ({ccy}, opcional)",
+  "@invfCurrentPriceOptional": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFxLabel": "Câmbio: 1 {base} = ? {ccy}",
+  "@invfFxLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFxRateLabel": "Câmbio (1 {base} = ? {ccy})",
+  "@invfFxRateLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAvgFxLabel": "Câmbio médio (1 {base} = ? {ccy})",
+  "@invfAvgFxLabel": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLiveFxTooltip": "Câmbio de mercado atual (internet)",
+  "invfFxFetchFailed": "Não consegui obter o câmbio: {message}",
+  "@invfFxFetchFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPriceFetchFailed": "Não consegui obter o preço: {message}",
+  "@invfPriceFetchFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "invfSymbolRequired": "Indica o símbolo (ou usa a pesquisa)",
+  "invfFxOrSyncRequired": "Indica o câmbio, ou usa o botão de sincronizar para o câmbio de mercado.",
+  "invfCurrencyPickerHint": "O valor é convertido para {base} ao câmbio de mercado, atualizado em \"Atualizar preços\". As operações já registadas mantêm os valores que lá estão.",
+  "@invfCurrencyPickerHint": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfOpNewTitle": "Nova operação",
+  "invfOpEditTitle": "Editar · {type}",
+  "@invfOpEditTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "invfOpInitial": "Posição inicial",
+  "invfOpBuy": "Compra",
+  "invfOpSell": "Venda",
+  "invfOpDividend": "Dividendo",
+  "invfOpCash": "Acerto de dinheiro",
+  "invfOpAlreadyHeld": "Já tinha",
+  "invfOpCashChip": "Dinheiro",
+  "invfPlatformLower": "plataforma",
+  "invfTotalToPay": "Total a pagar: {amount}",
+  "@invfTotalToPay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfTotalToPayFee": "Total a pagar: {amount} (com {fee} de comissão)",
+  "@invfTotalToPayFee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "invfNoAllocationHint": "Sem alocação: não desconta do dinheiro por alocar. Podes registar a transferência do banco quando quiseres.",
+  "invfNotEnoughUnallocated": "Ainda não tens {amount} por alocar nesta plataforma (tens {cash}). Regista a transferência do banco depois, ou desliga \"Descontar do dinheiro por alocar\" em Mais opções.",
+  "@invfNotEnoughUnallocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "cash": {
+        "type": "String"
+      }
+    }
+  },
+  "invfUnallocatedChange": "Dinheiro por alocar: {before} → {after}.",
+  "@invfUnallocatedChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfUnallocatedChangeTitle": "Dinheiro por alocar: {before} → {after}",
+  "@invfUnallocatedChangeTitle": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfBalanceChange": "{before} → {after}.",
+  "@invfBalanceChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "invfYouReceive": "Recebes {amount}",
+  "@invfYouReceive": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfRealizedGain": "Ganho realizado: {gain} (preço médio {avg}).",
+  "@invfRealizedGain": {
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      },
+      "avg": {
+        "type": "String"
+      }
+    }
+  },
+  "invfPositionCost": "Custo da posição: {amount}",
+  "@invfPositionCost": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfInitialHint": "Posição que já tinhas antes de usar a app. Define o preço médio de compra e não mexe no dinheiro por alocar.",
+  "invfDividendIn": "Entram {amount} no dinheiro por alocar",
+  "@invfDividendIn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCashHint": "Usa isto para dinheiro que já estava na plataforma antes de começares a usar a app.",
+  "invfValueWithCcy": "Valor ({base})",
+  "@invfValueWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfReceivedWithCcy": "Valor recebido ({base})",
+  "@invfReceivedWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfFeeWithCcy": "Comissão ({base})",
+  "@invfFeeWithCcy": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfQuantity": "Quantidade",
+  "invfUnitsEquals": "= {qty} unidades",
+  "@invfUnitsEquals": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invfCashIn": "Entrada",
+  "invfCashOut": "Saída",
+  "invfDate": "Data",
+  "invfHolding": "Ativo",
+  "invfNewAssetItem": "➕  Novo ativo…",
+  "invfChoosePlatformHint": "Escolher plataforma",
+  "invfChoosePlatformShort": "Escolhe a plataforma",
+  "invfChoosePlatform": "Escolhe a plataforma.",
+  "invfChooseAsset": "Escolhe o ativo (ou cria um).",
+  "invfEnterValidAmounts": "Indica valores válidos.",
+  "invfFxRequired": "Indica o câmbio (1 {base} = ? {ccy}).",
+  "@invfFxRequired": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfEnterQtyPrice": "Indica a quantidade e o preço.",
+  "invfOnlyHaveUnits": "Só tens {qty} unidades para vender.",
+  "@invfOnlyHaveUnits": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "invfMoreOptionsTrade": "Mais opções (comissão, nota…)",
+  "invfDeductUnallocated": "Descontar do dinheiro por alocar",
+  "invfDeductHint": "Desliga se ainda não registaste a transferência do banco para a plataforma, ou se esta operação já está contada noutro lado.",
+  "invfUseTotalInstead": "Indicar o valor total em vez da quantidade",
+  "invfAssetCurrencyChange": "Moeda do ativo: {ccy} · alterar",
+  "@invfAssetCurrencyChange": {
+    "placeholders": {
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfHasInitialTitle": "Este ativo já tem uma posição inicial",
+  "invfHasInitialBody": "Está carregada aqui. Ao guardar, substitui a anterior.",
+  "invfDeleteOp": "Apagar operação",
+  "invfLinkTitle": "Associar a {name}",
+  "@invfLinkTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLinkButton": "Associar",
+  "invfLinkCount": "Associar {count} ({amount} para a plataforma)",
+  "@invfLinkCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "invfLinkHint": "Escolhe os movimentos do banco que foram dinheiro enviado para (ou recebido de) esta plataforma. Deixam de contar como despesa.",
+  "invfSearchTransactions": "Pesquisar movimentos",
+  "invfNoTransactionsToLink": "Não há movimentos por associar.",
+  "invfLooksLikeThis": " · parece desta plataforma",
+  "invfRememberTitles": "Lembrar estes títulos",
+  "invfRememberHint": "Nas próximas importações, movimentos com o mesmo título são associados sozinhos.",
+  "invfImportTitle": "Importar compras e vendas",
+  "invfImportIntro": "Formatos: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido no telemóvel e nunca sai daqui. Reconhece compras, vendas e dividendos; o resto (depósitos, impostos…) é ignorado.",
+  "invfChooseFile": "Escolher ficheiro",
+  "invfChooseOtherFile": "Escolher outro ficheiro",
+  "invfFileName": "Ficheiro: {name}",
+  "@invfFileName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfReadError": "Erro ao ler o ficheiro: {error}",
+  "@invfReadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "invfExcelNoData": "O ficheiro Excel não tem dados.",
+  "invfPdfNotFound": "Não encontrei compras ou vendas neste PDF. Pode ser digitalizado (imagem) ou ter um formato diferente. Se a corretora permitir, exporta em CSV ou Excel.",
+  "invfNotFoundTrades": "Não encontrei compras ou vendas. Indica abaixo que coluna é cada coisa.",
+  "invfNotFoundWithColumns": "Não encontrei compras ou vendas com estas colunas.",
+  "invfCurrencyAndRate": "Moeda e câmbio",
+  "invfCurrencyIntro": "Linhas sem moeda indicada usam a moeda abaixo. Para moedas diferentes de {base} indica o câmbio médio; podes afinar cada operação depois.",
+  "@invfCurrencyIntro": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfTransactionCurrency": "Moeda das operações",
+  "invfAllInBase": "Todas as operações estão em {base}.",
+  "@invfAllInBase": {
+    "placeholders": {
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAssetsFound": "Ativos encontrados",
+  "invfAssetsHint": "Liga cada um a um ativo teu, cria um novo ou ignora.",
+  "invfTradeCountLabel": "{name}  ·  {count, plural, =0{{count} operações} =1{{count} operação} other{{count} operações}}",
+  "@invfTradeCountLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfCreateNewAsset": "➕  Criar ativo novo",
+  "invfIgnore": "Ignorar",
+  "invfOperations": "Operações",
+  "invfBuysCount": "{count, plural, =0{{count} compras} =1{{count} compra} other{{count} compras}}",
+  "@invfBuysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfSellsCount": "{count, plural, =0{{count} vendas} =1{{count} venda} other{{count} vendas}}",
+  "@invfSellsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfDividendsCount": "{count, plural, =0{{count} dividendos} =1{{count} dividendo} other{{count} dividendos}}",
+  "@invfDividendsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfDuplicatesIgnored": "{count} já existentes (ignoradas)",
+  "@invfDuplicatesIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfMissingRate": "Falta o câmbio",
+  "invfMissingRateBody": "Indica o câmbio de {currencies} para importar essas operações.",
+  "@invfMissingRateBody": {
+    "placeholders": {
+      "currencies": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAllCurrencies": "todas as moedas",
+  "invfMissingQtyTitle": "{count, plural, =0{{count} operações sem quantidade} =1{1 operação sem quantidade} other{{count} operações sem quantidade}}",
+  "@invfMissingQtyTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfMissingQtyBody": "O ficheiro só tem o valor pago. Escolhe a coluna que traz a quantidade e o preço (ex.: o comentário) em \"Colunas do ficheiro\".",
+  "invfShowingFirst": "A mostrar as primeiras 300 de {total}.",
+  "@invfShowingFirst": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfAlreadyExists": " · já existe",
+  "invfTradeQtyPart": " · {qty} un. × {price} {ccy}",
+  "@invfTradeQtyPart": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      },
+      "ccy": {
+        "type": "String"
+      }
+    }
+  },
+  "invfImportCount": "Importar {count, plural, =0{0 operações} =1{1 operação} other{{count} operações}}",
+  "@invfImportCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfFileColumns": "Colunas do ficheiro",
+  "invfAutoRecognized": "Reconhecidas automaticamente. Toca para ajustar.",
+  "invfIndicateColumns": "Indica que coluna é cada coisa.",
+  "invfExcelSheet": "Folha do Excel",
+  "invfSheetRows": "{name}  ·  {count, plural, =0{{count} linhas} =1{1 linha} other{{count} linhas}}",
+  "@invfSheetRows": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfHeaderRow": "Linha dos títulos das colunas",
+  "invfNoHeaders": "Sem títulos",
+  "invfHeaderRowItem": "Linha {n}: {text}",
+  "@invfHeaderRowItem": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "invfNotExists": "— não existe —",
+  "invfColumnNumber": "Coluna {n}",
+  "@invfColumnNumber": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnNumberLower": "coluna {n}",
+  "@invfColumnNumberLower": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "invfFileValidation": "Validação do ficheiro",
+  "invfRequiredNote": "Preciso, no mínimo, da data, da quantidade e do preço (ou do valor total).",
+  "invfQuantityOrComment": "Quantidade (ou o comentário que a traz)",
+  "invfPriceOrTotal": "Preço ou Valor total",
+  "invfMissingColumn": "Falta escolher a coluna: {name}",
+  "@invfMissingColumn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "invfValidationSummary": "{dataRows, plural, =0{0 linhas com dados} =1{1 linha com dados} other{{dataRows} linhas com dados}} · {recognized, plural, =0{0 operações reconhecidas} =1{1 operação reconhecida} other{{recognized} operações reconhecidas}}",
+  "@invfValidationSummary": {
+    "placeholders": {
+      "dataRows": {
+        "type": "int"
+      },
+      "recognized": {
+        "type": "int"
+      }
+    }
+  },
+  "invfWithProblems": " · {count} com problemas",
+  "@invfWithProblems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfIgnoredByUser": " · {count} ignoradas (não são compras/vendas)",
+  "@invfIgnoredByUser": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnValid": "{label}: {ok} de {total} válidas",
+  "@invfColumnValid": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfColumnValidNamed": "{label} ({column}): {ok} de {total} válidas",
+  "@invfColumnValidNamed": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "column": {
+        "type": "String"
+      },
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "invfUnknownTypes": "Tipos que não reconheci",
+  "invfUnknownTypesHint": "Diz-me o que são para os importar (ou ignora).",
+  "invfUnknownTypeRows": "“{type}” · {count, plural, =0{{count} linhas} =1{1 linha} other{{count} linhas}}",
+  "@invfUnknownTypeRows": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfEmpty": "(vazio)",
+  "invfChoose": "Escolher",
+  "invfSkippedRows": "{count, plural, =0{{count} linhas não importadas} =1{1 linha não importada} other{{count} linhas não importadas}}",
+  "@invfSkippedRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfRowReason": "Linha {row}: {reason}",
+  "@invfRowReason": {
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "invfAndMore": "… e mais {count}",
+  "@invfAndMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfAllRowsOk": "Todas as linhas foram lidas sem problemas.",
+  "invfImportedOps": "{count, plural, =0{{count} operações importadas} =1{1 operação importada} other{{count} operações importadas}}",
+  "@invfImportedOps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfImportedHoldings": " e {count, plural, =0{{count} ativos criados} =1{1 ativo criado} other{{count} ativos criados}}",
+  "@invfImportedHoldings": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "invfUpdatePrices": ". Atualiza os preços na Carteira.",
+  "invfNegativeCashWarning": " O dinheiro por alocar ficou negativo: associa as transferências do banco a esta plataforma ou acerta o dinheiro.",
+  "invfFieldDate": "Data",
+  "invfFieldType": "Tipo (compra / venda)",
+  "invfFieldName": "Nome do ativo",
+  "invfFieldCategory": "Categoria (ETF, ação…)",
+  "invfFieldComment": "Comentário (ex.: OPEN BUY 0.5 @ 100)",
+  "invfFieldSymbol": "Símbolo",
+  "invfFieldIsin": "ISIN",
+  "invfFieldQuantity": "Quantidade",
+  "invfFieldPrice": "Preço por unidade",
+  "invfFieldTotal": "Valor total",
+  "invfFieldFee": "Comissão",
+  "invfFieldCurrency": "Moeda",
+  "invfFieldRate": "Câmbio (unidades da moeda por 1 da moeda de base)",
+  "invfKindEtf": "ETF",
+  "invfKindStock": "Ação",
+  "invfKindCrypto": "Cripto",
+  "invfKindFund": "Fundo",
+  "invfKindBond": "Obrigação",
+  "invfKindOther": "Outro"
+}
