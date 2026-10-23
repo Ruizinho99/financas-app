@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../goals/goals.dart';
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -16,24 +17,22 @@ class GoalsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final list = s.goals.where((g) => !g.archived).toList();
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Objetivos')),
+      appBar: AppBar(title: Text(l.goals)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const GoalFormScreen()),
         ),
         icon: const Icon(Icons.add),
-        label: const Text('Objetivo'),
+        label: Text(l.bpGoal),
       ),
       body: list.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text(
-                  'Ainda não tens objetivos.\nCria um (ex.: férias) e as transferências para a sua subcategoria contam para ele.',
-                  textAlign: TextAlign.center,
-                ),
+                padding: const EdgeInsets.all(32),
+                child: Text(l.bpNoGoalsHint, textAlign: TextAlign.center),
               ),
             )
           : ListView(
@@ -69,6 +68,7 @@ class _GoalSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final p = s.goalProgressOf(g);
+    final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 6),
@@ -77,8 +77,12 @@ class _GoalSummary extends StatelessWidget {
         children: [
           Text(
             p.done
-                ? 'Atingido · ${fmtMoney(p.saved)}'
-                : '${fmtMoney(p.saved)} de ${fmtMoney(p.target)} · faltam ${fmtMoney(p.remaining)}',
+                ? l.bpGoalReachedAmount(fmtMoney(p.saved))
+                : l.bpGoalProgress(
+                    fmtMoney(p.saved),
+                    fmtMoney(p.target),
+                    fmtMoney(p.remaining),
+                  ),
           ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
@@ -140,20 +144,21 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
   }
 
   void _save(AppState s) {
+    final l = AppLocalizations.of(context)!;
     final n = name.text.trim();
     final cents = (parseCents(target.text) ?? 0).abs();
     if (n.isEmpty) {
-      setState(() => error = 'Indica um nome.');
+      setState(() => error = l.bpEnterName);
       return;
     }
     if (cents <= 0) {
-      setState(() => error = 'Indica o valor do objetivo.');
+      setState(() => error = l.bpEnterGoalAmount);
       return;
     }
     final e = widget.edit;
     if (e == null) {
       if (parentId == null) {
-        setState(() => error = 'Escolhe a categoria onde fica o objetivo.');
+        setState(() => error = l.bpChooseGoalCategory);
         return;
       }
       s.addGoal(
@@ -179,9 +184,10 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final parent = s.cat(parentId);
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.edit == null ? 'Novo objetivo' : 'Editar objetivo'),
+        title: Text(widget.edit == null ? l.bpNewGoal : l.bpEditGoal),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -190,8 +196,8 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
             controller: name,
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
-              labelText: 'Nome',
-              hintText: 'Ex.: Férias de verão',
+              labelText: l.bpName,
+              hintText: l.bpGoalNameHint,
               errorText: error,
             ),
           ),
@@ -200,18 +206,16 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
             controller: target,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              labelText: 'Valor do objetivo ($baseSym)',
+              labelText: l.bpGoalAmount(baseSym),
               prefixText: '$baseSym  ',
-              helperText: widget.edit == null
-                  ? null
-                  : 'Se o alterares, o valor anterior fica no histórico.',
+              helperText: widget.edit == null ? null : l.bpPreviousAmountKept,
             ),
           ),
           const SizedBox(height: 14),
           TileField(
             icon: Icons.event_outlined,
-            title: 'Prazo (opcional)',
-            text: endDate == null ? 'Sem prazo' : fmtDate(endDate!),
+            title: l.bpDeadlineOptional,
+            text: endDate == null ? l.bpNoDeadline : fmtDate(endDate!),
             isHint: endDate == null,
             onTap: _pickEnd,
           ),
@@ -220,24 +224,22 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
               alignment: Alignment.centerLeft,
               child: TextButton(
                 onPressed: () => setState(() => endDate = null),
-                child: const Text('Remover prazo'),
+                child: Text(l.bpRemoveDeadline),
               ),
             ),
           const SizedBox(height: 14),
           TextField(
             controller: desc,
             maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Descrição (opcional)',
-            ),
+            decoration: InputDecoration(labelText: l.bpDescriptionOptional),
           ),
           if (widget.edit == null) ...[
             const SizedBox(height: 14),
             TileField(
               icon: Icons.sell_outlined,
-              title: 'Categoria onde fica',
+              title: l.bpCategoryWhere,
               text: parent == null
-                  ? 'Escolher categoria'
+                  ? l.bpChooseCategory
                   : '${parent.emoji.isEmpty ? '' : '${parent.emoji} '}${s.path(parent.id)}',
               isHint: parent == null,
               onTap: () => _pickParent(s),
@@ -245,13 +247,13 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                'O objetivo vira uma subcategoria desta categoria. Os movimentos nessa subcategoria contam como poupança.',
+                l.bpGoalCategoryHint,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
           ],
           const SizedBox(height: 22),
-          FilledButton(onPressed: () => _save(s), child: const Text('Guardar')),
+          FilledButton(onPressed: () => _save(s), child: Text(l.bpSave)),
         ],
       ),
     );
@@ -270,8 +272,9 @@ class GoalDetailScreen extends StatelessWidget {
     for (final x in s.goals) {
       if (x.id == goalId) g = x;
     }
+    final l = AppLocalizations.of(context)!;
     if (g == null) {
-      return const Scaffold(body: Center(child: Text('Objetivo apagado.')));
+      return Scaffold(body: Center(child: Text(l.bpGoalDeleted)));
     }
     final goal = g;
     final p = s.goalProgressOf(goal);
@@ -284,7 +287,7 @@ class GoalDetailScreen extends StatelessWidget {
         title: Text(goal.name),
         actions: [
           IconButton(
-            tooltip: 'Editar',
+            tooltip: l.bpEdit,
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => Navigator.push(
               context,
@@ -292,13 +295,10 @@ class GoalDetailScreen extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Apagar',
+            tooltip: l.delete,
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
-              if (await confirm(
-                    context,
-                    'Apagar o objetivo “${goal.name}”? Os movimentos ficam, mas deixam de estar associados a ele.',
-                  ) &&
+              if (await confirm(context, l.bpDeleteGoalQuestion(goal.name)) &&
                   context.mounted) {
                 s.deleteGoal(goal);
                 Navigator.pop(context);
@@ -322,11 +322,13 @@ class GoalDetailScreen extends StatelessWidget {
                   ],
                   Row(
                     children: [
-                      Expanded(child: _Stat('Objetivo', fmtMoney(p.target))),
-                      Expanded(child: _Stat('Já tens', fmtMoney(p.saved))),
+                      Expanded(child: _Stat(l.bpGoal, fmtMoney(p.target))),
+                      Expanded(
+                        child: _Stat(l.bpAlreadyHave, fmtMoney(p.saved)),
+                      ),
                       Expanded(
                         child: _Stat(
-                          p.done ? 'Excedido' : 'Faltam',
+                          p.done ? l.bpExceeded : l.bpRemaining,
                           fmtMoney(p.done ? -p.remaining : p.remaining),
                         ),
                       ),
@@ -341,11 +343,16 @@ class GoalDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${(p.fraction * 100).round()}% · ${goal.endDate == null ? 'sem prazo' : 'prazo ${fmtDate(goal.endDate!)}'}',
+                    l.bpGoalPercentDeadline(
+                      '${(p.fraction * 100).round()}',
+                      goal.endDate == null
+                          ? l.bpNoDeadlineLower
+                          : l.bpDeadlineDate(fmtDate(goal.endDate!)),
+                    ),
                     style: tt.bodySmall,
                   ),
                   const SizedBox(height: 12),
-                  Text(_statusText(p, goal), style: tt.bodyMedium),
+                  Text(_statusText(l, p, goal), style: tt.bodyMedium),
                 ],
               ),
             ),
@@ -357,26 +364,23 @@ class GoalDetailScreen extends StatelessWidget {
             children: [
               FilledButton.tonalIcon(
                 icon: const Icon(Icons.link),
-                label: const Text('Associar movimento'),
+                label: Text(l.bpLinkTransaction),
                 onPressed: () => _pickMovement(context, s, goal, p),
               ),
               OutlinedButton.icon(
                 icon: const Icon(Icons.flag_outlined),
-                label: const Text('Alterar valor'),
+                label: Text(l.bpChangeAmount),
                 onPressed: () => _changeTarget(context, s, goal),
               ),
             ],
           ),
           const SizedBox(height: 18),
-          Text('Movimentos', style: tt.titleSmall),
+          Text(l.transactions, style: tt.titleSmall),
           const SizedBox(height: 4),
           if (p.entries.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                'Ainda nada. Transferências na subcategoria do objetivo entram sozinhas; pagamentos feitos com outra categoria associas com “Associar movimento”.',
-                style: tt.bodySmall,
-              ),
+              child: Text(l.bpNoGoalEntriesHint, style: tt.bodySmall),
             ),
           for (final e in p.entries)
             ListTile(
@@ -388,7 +392,10 @@ class GoalDetailScreen extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: Text(
-                '${fmtDate(e.txn.date)} · ${e.manual ? 'associado' : 'pela categoria'}',
+                l.bpEntrySubtitle(
+                  fmtDate(e.txn.date),
+                  e.manual ? l.bpLinkedManual : l.bpLinkedByCategory,
+                ),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -396,7 +403,7 @@ class GoalDetailScreen extends StatelessWidget {
                   Text(fmtMoney(e.cents), style: tt.titleSmall),
                   if (e.manual)
                     IconButton(
-                      tooltip: 'Desassociar',
+                      tooltip: l.bpUnlink,
                       icon: const Icon(Icons.link_off),
                       onPressed: () => s.unlinkMovement(e.allocationId!),
                     ),
@@ -404,7 +411,7 @@ class GoalDetailScreen extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 18),
-          Text('Histórico do valor', style: tt.titleSmall),
+          Text(l.bpAmountHistory, style: tt.titleSmall),
           const SizedBox(height: 4),
           for (final h in history.reversed)
             ListTile(
@@ -418,50 +425,51 @@ class GoalDetailScreen extends StatelessWidget {
     );
   }
 
-  String _statusText(GoalProgress p, Goal g) {
-    if (p.done) return 'Objetivo atingido.';
+  String _statusText(AppLocalizations l, GoalProgress p, Goal g) {
+    if (p.done) return l.bpStatusReached;
     final needed = p.neededPerMonth;
     if (needed != null) {
       final monthly = fmtMoney(p.monthly);
       return p.onTrack!
-          ? 'No ritmo atual chegas a tempo: fazes $monthly/mês e precisas de ${fmtMoney(needed)}/mês.'
-          : 'Para chegar a tempo precisas de ${fmtMoney(needed)}/mês; estás a fazer $monthly/mês.';
+          ? l.bpStatusOnTrack(monthly, fmtMoney(needed))
+          : l.bpStatusBehind(fmtMoney(needed), monthly);
     }
     if (p.eta != null) {
-      return 'No ritmo atual (${fmtMoney(p.monthly)}/mês) chegas a ${fmtDate(p.eta!)}.';
+      return l.bpStatusEta(fmtMoney(p.monthly), fmtDate(p.eta!));
     }
-    return 'Sem movimentos recentes. Faltam ${fmtMoney(p.remaining)}.';
+    return l.bpStatusNoRecent(fmtMoney(p.remaining));
   }
 
   Future<void> _changeTarget(BuildContext context, AppState s, Goal g) async {
+    final l = AppLocalizations.of(context)!;
     final ctrl = TextEditingController(
       text: (g.targetCents / 100).toStringAsFixed(2).replaceAll('.', ','),
     );
     final cents = await showDialog<int>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Alterar valor do objetivo'),
+        title: Text(l.bpChangeGoalAmountTitle),
         content: TextField(
           controller: ctrl,
           autofocus: true,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
-            labelText: 'Novo valor ($baseSym)',
-            helperText: 'O valor anterior fica no histórico. Os movimentos já associados mantêm-se.',
+            labelText: l.bpNewAmount(baseSym),
+            helperText: l.bpChangeAmountHint,
             helperMaxLines: 3,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
               final v = (parseCents(ctrl.text) ?? 0).abs();
               if (v > 0) Navigator.pop(ctx, v);
             },
-            child: const Text('Guardar'),
+            child: Text(l.bpSave),
           ),
         ],
       ),
@@ -476,6 +484,7 @@ class GoalDetailScreen extends StatelessWidget {
     Goal g,
     GoalProgress p,
   ) async {
+    final l = AppLocalizations.of(context)!;
     final txn = await showModalBottomSheet<Txn>(
       context: context,
       isScrollControlled: true,
@@ -501,8 +510,8 @@ class GoalDetailScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                     child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Procurar movimento',
+                      decoration: InputDecoration(
+                        hintText: l.bpSearchTransaction,
                         prefixIcon: Icon(Icons.search),
                         isDense: true,
                       ),
@@ -520,16 +529,19 @@ class GoalDetailScreen extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             subtitle: Text(
-                              '${fmtDate(t.date)} · ${fmtMoney(t.amount.abs())}'
-                              ' · por associar ${fmtMoney(t.amount.abs() - s.allocatedOf(t.id))}',
+                              l.bpTxnLinkSubtitle(
+                                fmtDate(t.date),
+                                fmtMoney(t.amount.abs()),
+                                fmtMoney(t.amount.abs() - s.allocatedOf(t.id)),
+                              ),
                             ),
                             onTap: () => Navigator.pop(ctx, t),
                           ),
                         if (list.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(24),
+                          Padding(
+                            padding: const EdgeInsets.all(24),
                             child: Center(
-                              child: Text('Nenhum movimento para associar.'),
+                              child: Text(l.bpNoTransactionsToLink),
                             ),
                           ),
                       ],
@@ -559,23 +571,22 @@ class GoalDetailScreen extends StatelessWidget {
           autofocus: true,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
-            labelText: 'Valor para “${g.name}” ($baseSym)',
-            helperText:
-                'Por associar: ${fmtMoney(left)}. Podes dividir o movimento por vários objetivos.',
+            labelText: l.bpAmountForGoal(g.name, baseSym),
+            helperText: l.bpUnlinkedHint(fmtMoney(left)),
             helperMaxLines: 3,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
               final v = (parseCents(ctrl.text) ?? 0).abs();
               if (v > 0 && v <= left) Navigator.pop(ctx, v);
             },
-            child: const Text('Associar'),
+            child: Text(l.bpLink),
           ),
         ],
       ),

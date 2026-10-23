@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../recurring/recurring.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -9,42 +10,44 @@ import '../widgets/form_kit.dart';
 import 'accounts_screen.dart';
 import 'transactions_screen.dart' show confirm;
 
-const _diasSemana = [
-  'segunda-feira',
-  'terça-feira',
-  'quarta-feira',
-  'quinta-feira',
-  'sexta-feira',
-  'sábado',
-  'domingo',
-];
+/// Nome do dia da semana (1 = segunda … 7 = domingo).
+String _weekdayName(AppLocalizations l, int weekday) => switch (weekday) {
+  1 => l.bpMonday,
+  2 => l.bpTuesday,
+  3 => l.bpWednesday,
+  4 => l.bpThursday,
+  5 => l.bpFriday,
+  6 => l.bpSaturday,
+  _ => l.bpSunday,
+};
 
-const _meses = [
-  'janeiro',
-  'fevereiro',
-  'março',
-  'abril',
-  'maio',
-  'junho',
-  'julho',
-  'agosto',
-  'setembro',
-  'outubro',
-  'novembro',
-  'dezembro',
-];
+/// Nome do mês (1 = janeiro … 12 = dezembro).
+String _monthName(AppLocalizations l, int month) => switch (month) {
+  1 => l.bpJanuary,
+  2 => l.bpFebruary,
+  3 => l.bpMarch,
+  4 => l.bpApril,
+  5 => l.bpMay,
+  6 => l.bpJune,
+  7 => l.bpJuly,
+  8 => l.bpAugust,
+  9 => l.bpSeptember,
+  10 => l.bpOctober,
+  11 => l.bpNovember,
+  _ => l.bpDecember,
+};
 
-String _freqNome(RecurrenceFreq f) => switch (f) {
-  RecurrenceFreq.monthly => 'Mensal',
-  RecurrenceFreq.weekly => 'Semanal',
-  RecurrenceFreq.yearly => 'Anual',
+String _freqNome(AppLocalizations l, RecurrenceFreq f) => switch (f) {
+  RecurrenceFreq.monthly => l.bpFreqMonthly,
+  RecurrenceFreq.weekly => l.bpFreqWeekly,
+  RecurrenceFreq.yearly => l.bpFreqYearly,
 };
 
 /// "dia 5", "quarta-feira" ou "15 de março", conforme a frequência.
-String _quando(RecurringRule r) => switch (r.freq) {
-  RecurrenceFreq.monthly => 'dia ${r.day}',
-  RecurrenceFreq.weekly => _diasSemana[r.day - 1],
-  RecurrenceFreq.yearly => '${r.day} de ${_meses[r.start.month - 1]}',
+String _quando(AppLocalizations l, RecurringRule r) => switch (r.freq) {
+  RecurrenceFreq.monthly => l.bpWhenMonthly(r.day),
+  RecurrenceFreq.weekly => _weekdayName(l, r.day),
+  RecurrenceFreq.yearly => l.bpWhenYearly(r.day, _monthName(l, r.start.month)),
 };
 
 /// Dia que acompanha a data de início (dia do mês, ou dia da semana no semanal).
@@ -61,11 +64,12 @@ class RecurringScreen extends StatelessWidget {
     final rules = s.recurringRules;
     final hoje = DateTime.now();
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Movimentos recorrentes')),
+      appBar: AppBar(title: Text(l.bpRecurringTitle)),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
-        label: const Text('Novo'),
+        label: Text(l.bpNew),
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const RecurringFormScreen()),
@@ -76,7 +80,7 @@ class RecurringScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(
-                  'Ainda não há movimentos recorrentes.\n\nRegista aqui o salário, a renda ou uma subscrição: o movimento é criado sozinho na data certa.',
+                  l.bpNoRecurringHint,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: cs.onSurfaceVariant),
                 ),
@@ -102,14 +106,15 @@ class _RecurringTile extends StatelessWidget {
     final s = context.read<AppState>();
     final r = rule;
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
     final entrada = r.amount > 0;
     final cor = Color(entrada ? s.incomeColor : s.expenseColor);
     final String estado;
     if (!r.active) {
-      estado = 'em pausa';
+      estado = l.bpPaused;
     } else {
       final prox = nextOccurrence(r, hoje);
-      estado = prox == null ? 'terminada' : 'próxima ${fmtDate(prox)}';
+      estado = prox == null ? l.bpEnded : l.bpNextDate(fmtDate(prox));
     }
     final conta = s.account(r.accountId);
     return Card(
@@ -121,7 +126,7 @@ class _RecurringTile extends StatelessWidget {
         title: Text(r.description),
         subtitle: Text(
           [
-            '${_freqNome(r.freq)} · ${_quando(r)}',
+            '${_freqNome(l, r.freq)} · ${_quando(l, r)}',
             if (conta != null) conta.name,
             estado,
           ].join(' · '),
@@ -220,15 +225,16 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
 
   void _save() {
     final s = context.read<AppState>();
+    final l = AppLocalizations.of(context)!;
     final name = desc.text.trim();
     final cents = parseCents(amount.text)?.abs();
     String? err;
     if (name.isEmpty) {
-      err = 'Escreve uma descrição.';
+      err = l.bpEnterDescription;
     } else if (cents == null || cents == 0) {
-      err = 'Indica um valor.';
+      err = l.bpEnterAmount;
     } else if (end != null && end!.isBefore(start)) {
-      err = 'A data de fim é anterior à de início.';
+      err = l.bpEndBeforeStart;
     }
     if (err != null) {
       setState(() => error = err);
@@ -253,9 +259,10 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
 
   Future<void> _delete() async {
     final e = widget.edit!;
+    final l = AppLocalizations.of(context)!;
     final ok = await confirm(
       context,
-      'Apagar "${e.description}"? Os movimentos já registados ficam.',
+      l.bpDeleteRecurringQuestion(e.description),
     );
     if (!ok || !mounted) return;
     context.read<AppState>().deleteRecurring(e.id!);
@@ -270,24 +277,25 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
     final cat = s.cat(categoryId);
     final acc = s.account(accountId);
     final isEdit = widget.edit != null;
+    final l = AppLocalizations.of(context)!;
 
     final dias = freq == RecurrenceFreq.weekly
         ? [
             for (var i = 1; i <= 7; i++)
-              DropdownMenuItem(value: i, child: Text(_diasSemana[i - 1])),
+              DropdownMenuItem(value: i, child: Text(_weekdayName(l, i))),
           ]
         : [
             for (var i = 1; i <= 31; i++)
-              DropdownMenuItem(value: i, child: Text('Dia $i')),
+              DropdownMenuItem(value: i, child: Text(l.dayOfMonthItem(i))),
           ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Editar recorrente' : 'Novo recorrente'),
+        title: Text(isEdit ? l.bpEditRecurring : l.bpNewRecurring),
         actions: [
           if (isEdit)
             IconButton(
-              tooltip: 'Apagar',
+              tooltip: l.delete,
               icon: const Icon(Icons.delete_outline),
               onPressed: _delete,
             ),
@@ -298,9 +306,9 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
         children: [
           SegmentedButton<bool>(
             showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: false, label: Text('Despesa')),
-              ButtonSegment(value: true, label: Text('Receita')),
+            segments: [
+              ButtonSegment(value: false, label: Text(l.bpExpenseType)),
+              ButtonSegment(value: true, label: Text(l.bpIncomeType)),
             ],
             selected: {income},
             onSelectionChanged: (v) => setState(() {
@@ -325,17 +333,17 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
             controller: desc,
             textCapitalization: TextCapitalization.sentences,
             onChanged: (_) => setState(() => error = null),
-            decoration: const InputDecoration(
-              labelText: 'Descrição',
-              hintText: 'Ex.: Salário, Renda, Netflix',
+            decoration: InputDecoration(
+              labelText: l.bpDescription,
+              hintText: l.bpDescriptionHint,
             ),
           ),
           const SizedBox(height: 12),
           TileField(
             icon: Icons.sell_outlined,
-            title: 'Categoria',
+            title: l.bpCategory,
             text: cat == null
-                ? 'Sem categoria'
+                ? l.noCategory
                 : '${cat.emoji} ${cat.name}'.trim(),
             isHint: cat == null,
             onTap: () async {
@@ -351,8 +359,10 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
           const SizedBox(height: 12),
           TileField(
             icon: Icons.account_balance_wallet_outlined,
-            title: 'Conta',
-            text: acc == null ? 'Sem conta' : '${acc.emoji} ${acc.name}'.trim(),
+            title: l.bpAccount,
+            text: acc == null
+                ? l.bpNoAccount
+                : '${acc.emoji} ${acc.name}'.trim(),
             isHint: acc == null,
             onTap: () async {
               final id = await pickAccount(context, selected: accountId);
@@ -361,13 +371,13 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
             },
           ),
           const SizedBox(height: 20),
-          Text('Frequência', style: tt.labelLarge),
+          Text(l.bpFrequency, style: tt.labelLarge),
           const SizedBox(height: 8),
           SegmentedButton<RecurrenceFreq>(
             showSelectedIcon: false,
             segments: [
               for (final f in RecurrenceFreq.values)
-                ButtonSegment(value: f, label: Text(_freqNome(f))),
+                ButtonSegment(value: f, label: Text(_freqNome(l, f))),
             ],
             selected: {freq},
             onSelectionChanged: (v) => _setFreq(v.first),
@@ -378,8 +388,8 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
             initialValue: day,
             decoration: InputDecoration(
               labelText: freq == RecurrenceFreq.weekly
-                  ? 'Dia da semana'
-                  : 'Dia do mês',
+                  ? l.bpDayOfWeek
+                  : l.bpDayOfMonth,
             ),
             items: dias,
             onChanged: (v) => setState(() => day = v ?? day),
@@ -388,14 +398,14 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 6, left: 4),
               child: Text(
-                'Em meses mais curtos, passa para o último dia do mês.',
+                l.bpShortMonthHint,
                 style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
             ),
           const SizedBox(height: 12),
           TileField(
             icon: Icons.event_outlined,
-            title: 'Início',
+            title: l.bpStart,
             text: fmtDate(start),
             trailing: Icons.edit_calendar_outlined,
             onTap: _pickStart,
@@ -403,15 +413,15 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 6, left: 4),
             child: Text(
-              'Se a data de início já passou, os movimentos desde então são criados ao abrir a app.',
+              l.bpPastStartHint,
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
           const SizedBox(height: 12),
           TileField(
             icon: Icons.event_busy_outlined,
-            title: 'Fim (opcional)',
-            text: end == null ? 'Sem data de fim' : fmtDate(end!),
+            title: l.bpEndOptional,
+            text: end == null ? l.bpNoEndDate : fmtDate(end!),
             isHint: end == null,
             trailing: Icons.edit_calendar_outlined,
             onTap: _pickEnd,
@@ -421,14 +431,14 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
               alignment: Alignment.centerLeft,
               child: TextButton(
                 onPressed: () => setState(() => end = null),
-                child: const Text('Remover data de fim'),
+                child: Text(l.bpRemoveEndDate),
               ),
             ),
           const SizedBox(height: 8),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Ativa'),
-            subtitle: const Text('Desativa para pausar, sem apagar'),
+            title: Text(l.bpActive),
+            subtitle: Text(l.bpActiveHint),
             value: active,
             onChanged: (v) => setState(() => active = v),
           ),
@@ -438,7 +448,7 @@ class _RecurringFormScreenState extends State<RecurringFormScreen> {
               child: Text(error!, style: TextStyle(color: cs.error)),
             ),
           const SizedBox(height: 16),
-          FilledButton(onPressed: _save, child: const Text('Guardar')),
+          FilledButton(onPressed: _save, child: Text(l.bpSave)),
         ],
       ),
     );
