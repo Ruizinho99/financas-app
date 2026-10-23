@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../import/parsers.dart';
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -40,6 +41,7 @@ class _ImportScreenState extends State<ImportScreen> {
   final accountMap = <String, int>{};
 
   Future<void> pick() async {
+    final l = AppLocalizations.of(context)!;
     setState(() {
       busy = true;
       error = null;
@@ -77,12 +79,10 @@ class _ImportScreenState extends State<ImportScreen> {
         _rebuild();
       }
       if (rows.isEmpty) {
-        error = ext == 'pdf'
-            ? 'Não encontrei movimentos neste PDF. Pode ser um PDF digitalizado (imagem) ou um formato diferente. Tenta exportar CSV/Excel no homebanking.'
-            : 'Não consegui ler movimentos. Ajusta as colunas abaixo.';
+        error = ext == 'pdf' ? l.impPdfNoRows : l.impCsvNoRows;
       }
     } catch (e) {
-      error = 'Erro ao ler o ficheiro: $e';
+      error = l.impReadError('$e');
       rows = [];
     }
     setState(() => busy = false);
@@ -133,6 +133,7 @@ class _ImportScreenState extends State<ImportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final fr = finalRows;
     final st0 = context.watch<AppState>();
     final income = fr
@@ -142,7 +143,7 @@ class _ImportScreenState extends State<ImportScreen> {
         .where((r) => r.amount < 0)
         .fold(0, (s, r) => s + r.amount);
     return Scaffold(
-      appBar: AppBar(title: const Text('Importar extrato')),
+      appBar: AppBar(title: Text(l.impImportTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -152,23 +153,19 @@ class _ImportScreenState extends State<ImportScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Formatos suportados: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido apenas no telemóvel e nunca sai daqui.',
-                  ),
+                  Text(l.impFormatsInfo),
                   const SizedBox(height: 12),
                   FilledButton.icon(
                     onPressed: busy ? null : pick,
                     icon: const Icon(Icons.upload_file),
                     label: Text(
-                      filename == null
-                          ? 'Escolher ficheiro'
-                          : 'Escolher outro ficheiro',
+                      filename == null ? l.impChooseFile : l.impChooseOtherFile,
                     ),
                   ),
                   if (filename != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text('Ficheiro: $filename'),
+                      child: Text(l.impFileName(filename!)),
                     ),
                 ],
               ),
@@ -202,9 +199,9 @@ class _ImportScreenState extends State<ImportScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: TileField(
                 icon: Icons.account_balance_wallet_outlined,
-                title: 'Conta deste extrato',
+                title: l.impStatementAccount,
                 text: st0.account(accountId) == null
-                    ? 'Seleciona uma conta (opcional)'
+                    ? l.impPickAccountOptional
                     : '${st0.account(accountId)!.emoji} ${st0.account(accountId)!.name}'
                           .trim(),
                 isHint: st0.account(accountId) == null,
@@ -248,19 +245,17 @@ class _ImportScreenState extends State<ImportScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${fr.length} movimentos',
+                      l.impTxnCount(fr.length),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Entradas ${fmtMoney(income)}   ·   Saídas ${fmtMoney(expense)}',
+                      l.impIncomeExpense(fmtMoney(income), fmtMoney(expense)),
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Inverter sinais'),
-                      subtitle: const Text(
-                        'Usa se as despesas aparecem como positivas',
-                      ),
+                      title: Text(l.impInvertSigns),
+                      subtitle: Text(l.impInvertSignsHint),
                       value: invert,
                       onChanged: (v) => setState(() => invert = v),
                     ),
@@ -280,7 +275,7 @@ class _ImportScreenState extends State<ImportScreen> {
                 padding: const EdgeInsets.all(12),
                 child: FilledButton.icon(
                   icon: const Icon(Icons.check),
-                  label: Text('Importar ${fr.length} movimentos'),
+                  label: Text(l.impImportButton(fr.length)),
                   onPressed: fr.isEmpty
                       ? null
                       : () {
@@ -321,7 +316,7 @@ class _ImportScreenState extends State<ImportScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                '$added importados, $dup duplicados ignorados. $unclassified grupos por classificar.',
+                                l.impImportDone(added, dup, unclassified),
                               ),
                             ),
                           );
@@ -333,6 +328,7 @@ class _ImportScreenState extends State<ImportScreen> {
   }
 
   List<Widget> _groupCards(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final st = context.watch<AppState>();
     final groups = <String, List<int>>{};
     for (var i = 0; i < rows.length; i++) {
@@ -353,15 +349,13 @@ class _ImportScreenState extends State<ImportScreen> {
       Padding(
         padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
         child: Text(
-          'Classificação: $classified de ${keys.length} grupos',
+          l.impClassifiedOf(classified, keys.length),
           style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
-      const Padding(
-        padding: EdgeInsets.fromLTRB(4, 0, 4, 4),
-        child: Text(
-          'Movimentos com o mesmo nome estão juntos. Escolhe a categoria e a subcategoria de cada grupo (ou deixa por classificar). As regras já memorizadas vêm preenchidas.',
-        ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+        child: Text(l.impGroupsExplain),
       ),
       for (final k in keys) _importGroup(context, st, k, groups[k]!),
     ];
@@ -373,6 +367,7 @@ class _ImportScreenState extends State<ImportScreen> {
     String key,
     List<int> idx,
   ) {
+    final l = AppLocalizations.of(context)!;
     final rule = st.ruleFor(key);
     final value = cats.containsKey(key) ? cats[key] : rule?.categoryId;
     final active = idx.where((i) => !excluded.contains(i)).toList();
@@ -404,13 +399,13 @@ class _ImportScreenState extends State<ImportScreen> {
               ],
             ),
             Text(
-              'Original: ${rows[idx.first].description}',
+              l.impOriginal(rows[idx.first].description),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             Text(
-              '${active.length} de ${idx.length} movimentos${rule != null ? ' · regra memorizada' : ''}',
+              '${l.impActiveOfTotal(active.length, idx.length)}${rule != null ? l.impRememberedRule : ''}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 10),
@@ -436,12 +431,15 @@ class _ImportScreenState extends State<ImportScreen> {
                 controller: controller,
                 focusNode: focus,
                 decoration: InputDecoration(
-                  labelText: 'Nome ou grupo (opcional)',
-                  hintText: 'Ex.: Ginásio, Restaurante Arminda…',
+                  labelText: l.impNameOrGroup,
+                  hintText: l.impNameHint,
                   prefixIcon: const Icon(Icons.label_outline),
                   isDense: true,
                   helperText: byName != null
-                      ? 'Junta-se ao grupo “${byName.name}” (${st.rulesOfGroup(byName.id).length} títulos)'
+                      ? l.impJoinsGroup(
+                          byName.name,
+                          st.rulesOfGroup(byName.id).length,
+                        )
                       : null,
                 ),
                 onChanged: (v) => setState(() {
@@ -471,7 +469,7 @@ class _ImportScreenState extends State<ImportScreen> {
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 controlAffinity: ListTileControlAffinity.leading,
-                title: const Text('Memorizar nome e categoria para o futuro'),
+                title: Text(l.impRememberNameCategory),
                 value: !noRemember.contains(key),
                 onChanged: (v) => setState(
                   () => v! ? noRemember.remove(key) : noRemember.add(key),
@@ -481,7 +479,7 @@ class _ImportScreenState extends State<ImportScreen> {
               tilePadding: EdgeInsets.zero,
               shape: const Border(),
               collapsedShape: const Border(),
-              title: const Text('Ver movimentos'),
+              title: Text(l.impViewTransactions),
               children: [
                 for (final i in idx)
                   CheckboxListTile(
@@ -509,71 +507,76 @@ class _ImportScreenState extends State<ImportScreen> {
     );
   }
 
-  Widget _accountsCard(AppState st) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Contas neste extrato',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${accountMap.length} ${accountMap.length == 1 ? 'conta' : 'contas'} detetadas. Escolhe a que corresponde a cada uma na app.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          for (final name in accountMap.keys) ...[
-            const SizedBox(height: 14),
+  Widget _accountsCard(AppState st) {
+    final l = AppLocalizations.of(context)!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Text(
-              '$name  ·  ${rows.where((r) => r.account == name).length} movimentos',
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              l.impAccountsInStatement,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<int>(
-              key: ValueKey(
-                'acc-$name-${accountMap[name]}-${st.accounts.length}',
-              ),
-              initialValue: accountMap[name],
-              isExpanded: true,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.account_balance_wallet_outlined),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: 0,
-                  child: Text('➕  Criar conta “$name”'),
+            const SizedBox(height: 4),
+            Text(
+              l.impAccountsDetected(accountMap.length),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            for (final name in accountMap.keys) ...[
+              const SizedBox(height: 14),
+              Text(
+                l.impAccountTxns(
+                  name,
+                  rows.where((r) => r.account == name).length,
                 ),
-                for (final a in st.accounts)
-                  DropdownMenuItem(
-                    value: a.id,
-                    child: Text('${a.emoji} ${a.name}'.trim()),
-                  ),
-                const DropdownMenuItem(value: -1, child: Text('Sem conta')),
-              ],
-              onChanged: (v) => setState(() => accountMap[name] = v ?? 0),
-            ),
-          ],
-          if (accountMap.length >= 2)
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Detetar transferências entre estas contas'),
-              subtitle: const Text(
-                'Saída numa conta e entrada noutra, do mesmo valor, não contam como despesa nem receita.',
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
-              value: detectTransfers,
-              onChanged: (v) => setState(() {
-                detectTransfers = v;
-                _markTransfers();
-              }),
-            ),
-        ],
+              const SizedBox(height: 8),
+              DropdownButtonFormField<int>(
+                key: ValueKey(
+                  'acc-$name-${accountMap[name]}-${st.accounts.length}',
+                ),
+                initialValue: accountMap[name],
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 0,
+                    child: Text(l.impCreateAccount(name)),
+                  ),
+                  for (final a in st.accounts)
+                    DropdownMenuItem(
+                      value: a.id,
+                      child: Text('${a.emoji} ${a.name}'.trim()),
+                    ),
+                  DropdownMenuItem(value: -1, child: Text(l.impNoAccount)),
+                ],
+                onChanged: (v) => setState(() => accountMap[name] = v ?? 0),
+              ),
+            ],
+            if (accountMap.length >= 2)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l.impDetectTransfers),
+                subtitle: Text(l.impDetectTransfersHint),
+                value: detectTransfers,
+                onChanged: (v) => setState(() {
+                  detectTransfers = v;
+                  _markTransfers();
+                }),
+              ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _transfersCard() {
+    final l = AppLocalizations.of(context)!;
     final list = [
       for (var i = 0; i < rows.length; i++)
         if (rows[i].isTransfer && !_outside(i)) i,
@@ -584,12 +587,10 @@ class _ImportScreenState extends State<ImportScreen> {
         collapsedShape: const Border(),
         leading: const Icon(Icons.swap_horiz),
         title: Text(
-          '${list.length} transferências entre contas',
+          l.impTransfersCount(list.length),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        subtitle: const Text(
-          'Não precisam de categoria e ficam fora das despesas e receitas.',
-        ),
+        subtitle: Text(l.impTransfersHint),
         children: [
           for (final i in list)
             ListTile(
@@ -612,69 +613,76 @@ class _ImportScreenState extends State<ImportScreen> {
     );
   }
 
-  Widget _skippedCard() => Card(
-    color: Theme.of(context).colorScheme.errorContainer,
-    child: ExpansionTile(
-      shape: const Border(),
-      collapsedShape: const Border(),
-      leading: Icon(
-        Icons.warning_amber_rounded,
-        color: Theme.of(context).colorScheme.onErrorContainer,
-      ),
-      title: Text(
-        '${skipped.length} ${skipped.length == 1 ? 'linha parece' : 'linhas parecem'} movimentos mas não ${skipped.length == 1 ? 'foi reconhecida' : 'foram reconhecidas'}',
-        style: TextStyle(
+  Widget _skippedCard() {
+    final l = AppLocalizations.of(context)!;
+    return Card(
+      color: Theme.of(context).colorScheme.errorContainer,
+      child: ExpansionTile(
+        shape: const Border(),
+        collapsedShape: const Border(),
+        leading: Icon(
+          Icons.warning_amber_rounded,
           color: Theme.of(context).colorScheme.onErrorContainer,
-          fontWeight: FontWeight.w600,
         ),
-      ),
-      subtitle: Text(
-        'Lidos: ${rows.length}. Toca para ver as linhas ignoradas.',
-        style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
-      ),
-      children: [
-        for (final l in skipped.take(30))
-          ListTile(
-            dense: true,
-            title: Text(l, maxLines: 2, overflow: TextOverflow.ellipsis),
+        title: Text(
+          l.impSkippedTitle(skipped.length),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onErrorContainer,
+            fontWeight: FontWeight.w600,
           ),
-        if (skipped.length > 30)
+        ),
+        subtitle: Text(
+          l.impSkippedSub(rows.length),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onErrorContainer,
+          ),
+        ),
+        children: [
+          for (final line in skipped.take(30))
+            ListTile(
+              dense: true,
+              title: Text(line, maxLines: 2, overflow: TextOverflow.ellipsis),
+            ),
+          if (skipped.length > 30)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(l.impAndMore(skipped.length - 30)),
+            ),
           Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text('… e mais ${skipped.length - 30}'),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            child: Text(l.impSkippedHelp),
           ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
-          child: Text(
-            'Se for um extrato do teu banco, exporta em CSV/Excel no homebanking ou envia-me um exemplo (com os dados tapados) para eu ajustar o leitor.',
-          ),
-        ),
-      ],
-    ),
-  );
-
-  Widget _pdfOptions() => Card(
-    child: ListTile(
-      title: const Text('Ano das datas sem ano'),
-      subtitle: const Text('Só afeta datas escritas como dd-mm'),
-      trailing: DropdownButton<int>(
-        value: year,
-        items: [
-          for (var y = DateTime.now().year + 1; y >= 2015; y--)
-            DropdownMenuItem(value: y, child: Text('$y')),
         ],
-        onChanged: (v) => setState(() {
-          year = v!;
-          final det = parseStatementDetailed(pdfRaw!, defaultYear: year);
-          rows = det.rows;
-          skipped = det.skipped;
-          _afterParse();
-        }),
       ),
-    ),
-  );
+    );
+  }
+
+  Widget _pdfOptions() {
+    final l = AppLocalizations.of(context)!;
+    return Card(
+      child: ListTile(
+        title: Text(l.impYearForDates),
+        subtitle: Text(l.impYearHint),
+        trailing: DropdownButton<int>(
+          value: year,
+          items: [
+            for (var y = DateTime.now().year + 1; y >= 2015; y--)
+              DropdownMenuItem(value: y, child: Text('$y')),
+          ],
+          onChanged: (v) => setState(() {
+            year = v!;
+            final det = parseStatementDetailed(pdfRaw!, defaultYear: year);
+            rows = det.rows;
+            skipped = det.skipped;
+            _afterParse();
+          }),
+        ),
+      ),
+    );
+  }
 
   Widget _mappingCard() {
+    final l = AppLocalizations.of(context)!;
     final t = table!;
     final cols = t.fold(0, (a, r) => r.length > a ? r.length : a);
     final header = mapping.headerRow >= 0 && mapping.headerRow < t.length
@@ -682,7 +690,7 @@ class _ImportScreenState extends State<ImportScreen> {
         : <String>[];
     String label(int c) => header.length > c && header[c].trim().isNotEmpty
         ? header[c].trim()
-        : 'Coluna ${c + 1}';
+        : l.impColumnN(c + 1);
     Widget dd(
       String title,
       int? value,
@@ -695,7 +703,7 @@ class _ImportScreenState extends State<ImportScreen> {
         decoration: InputDecoration(labelText: title, isDense: true),
         items: [
           if (optional)
-            const DropdownMenuItem(value: null, child: Text('— não usar —')),
+            DropdownMenuItem(value: null, child: Text(l.impDoNotUse)),
           for (var c = 0; c < cols; c++)
             DropdownMenuItem(
               value: c,
@@ -719,36 +727,32 @@ class _ImportScreenState extends State<ImportScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Colunas do ficheiro',
+              l.impFileColumns,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             dd(
-              'Linha de cabeçalho',
+              l.impHeaderRow,
               mapping.headerRow,
               (v) => mapping.headerRow = v ?? -1,
               optional: false,
             ),
-            dd('Data', mapping.date, (v) => mapping.date = v),
+            dd(l.impDate, mapping.date, (v) => mapping.date = v),
             dd(
-              'Descrição',
+              l.impDescription,
               mapping.description,
               (v) => mapping.description = v,
             ),
-            dd(
-              'Montante (com sinal)',
-              mapping.amount,
-              (v) => mapping.amount = v,
-            ),
+            dd(l.impAmountSigned, mapping.amount, (v) => mapping.amount = v),
             if (mapping.amount == null) ...[
-              dd('Débito (saídas)', mapping.debit, (v) => mapping.debit = v),
-              dd(
-                'Crédito (entradas)',
-                mapping.credit,
-                (v) => mapping.credit = v,
-              ),
+              dd(l.impDebitOut, mapping.debit, (v) => mapping.debit = v),
+              dd(l.impCreditIn, mapping.credit, (v) => mapping.credit = v),
             ],
-            dd('Saldo (opcional)', mapping.balance, (v) => mapping.balance = v),
+            dd(
+              l.impBalanceOptional,
+              mapping.balance,
+              (v) => mapping.balance = v,
+            ),
           ],
         ),
       ),

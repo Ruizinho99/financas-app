@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -56,6 +57,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     var groups = onlyPending ? s.unclassifiedGroups() : s.allGroups();
     final ql = q.toLowerCase();
@@ -92,10 +94,10 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Classificar'),
+            Text(l.impClassifyTitle),
             const SizedBox(height: 2),
             Text(
-              'Revê e categoriza as tuas transações importadas',
+              l.impClassifySubtitle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall
@@ -106,17 +108,17 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.sort),
-            tooltip: 'Ordenar',
+            tooltip: l.impSort,
             onSelected: (v) => setState(() => sort = v),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'count', child: Text('Mais movimentos')),
-              PopupMenuItem(value: 'total', child: Text('Maior valor')),
-              PopupMenuItem(value: 'recent', child: Text('Mais recentes')),
-              PopupMenuItem(value: 'name', child: Text('Nome (A-Z)')),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'count', child: Text(l.impSortCount)),
+              PopupMenuItem(value: 'total', child: Text(l.impSortTotal)),
+              PopupMenuItem(value: 'recent', child: Text(l.impSortRecent)),
+              PopupMenuItem(value: 'name', child: Text(l.impSortName)),
             ],
           ),
           IconButton(
-            tooltip: 'Grupos',
+            tooltip: l.impGroups,
             icon: const Icon(Icons.hub_outlined),
             onPressed: () => Navigator.push(
               context,
@@ -124,7 +126,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
             ),
           ),
           IconButton(
-            tooltip: 'Regras memorizadas',
+            tooltip: l.impRules,
             icon: const Icon(Icons.rule),
             onPressed: () => Navigator.push(
               context,
@@ -139,9 +141,9 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: TextField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Pesquisar grupos ou estabelecimentos…',
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                hintText: l.impSearchGroups,
               ),
               onChanged: (v) => setState(() => q = v),
             ),
@@ -157,28 +159,24 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                     onlyPending ? Icons.check_circle : Icons.pending_outlined,
                     size: 18,
                   ),
-                  label: Text('Por classificar ($pendingTx)'),
+                  label: Text(l.impToClassifyChip(pendingTx)),
                   selected: onlyPending,
                   onSelected: (_) => setState(() => onlyPending = true),
                 ),
                 const SizedBox(width: 10),
                 ChoiceChip(
-                  label: const Text('Todos'),
+                  label: Text(l.impAll),
                   selected: !onlyPending,
                   onSelected: (_) => setState(() => onlyPending = false),
                 ),
                 const SizedBox(width: 10),
                 ActionChip(
                   avatar: const Icon(Icons.tune, size: 18),
-                  label: const Text('Aplicar regras'),
+                  label: Text(l.impApplyRules),
                   onPressed: () {
                     final n = s.applyRules();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '$n movimentos classificados pelas regras.',
-                        ),
-                      ),
+                      SnackBar(content: Text(l.impClassifiedByRules(n))),
                     );
                   },
                 ),
@@ -203,8 +201,8 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                           const SizedBox(height: 16),
                           Text(
                             onlyPending
-                                ? 'Tudo classificado! 🎉'
-                                : 'Ainda não há movimentos.',
+                                ? l.impAllClassified
+                                : l.impNoTransactionsYet,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ],
@@ -232,9 +230,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                           final n = _apply(s, [g]);
                           setState(() {});
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('$n movimentos classificados.'),
-                            ),
+                            SnackBar(content: Text(l.impClassifiedCount(n))),
                           );
                         },
                       );
@@ -267,7 +263,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                       }
                     }),
                   ),
-                  const Text('Selecionar tudo'),
+                  Text(l.impSelectAll),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Align(
@@ -280,9 +276,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                         icon: const Icon(Icons.check, size: 20),
                         label: FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Aplicar a $applicable ${applicable == 1 ? 'movimento' : 'movimentos'}',
-                          ),
+                          child: Text(l.impApplyTo(applicable)),
                         ),
                         onPressed: applicable == 0
                             ? null
@@ -291,9 +285,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                 setState(() {});
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
-                                      '$n movimentos classificados.',
-                                    ),
+                                    content: Text(l.impClassifiedCount(n)),
                                   ),
                                 );
                               },
@@ -337,6 +329,7 @@ class _GroupCardState extends State<_GroupCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
@@ -395,7 +388,10 @@ class _GroupCardState extends State<_GroupCard> {
                               const SizedBox(width: 6),
                               Flexible(
                                 child: Text(
-                                  '${txns.length} ${txns.length == 1 ? 'movimento' : 'movimentos'} · ${fmtDate(dates.last)}',
+                                  l.impTxnCountDate(
+                                    txns.length,
+                                    fmtDate(dates.last),
+                                  ),
                                   style: tt.bodyMedium?.copyWith(
                                     color: cs.onSurfaceVariant,
                                   ),
@@ -444,9 +440,7 @@ class _GroupCardState extends State<_GroupCard> {
                   ActionChip(
                     visualDensity: VisualDensity.compact,
                     avatar: const Icon(Icons.hub_outlined, size: 16),
-                    label: Text(
-                      'Grupo · ${g.keys.length} ${g.keys.length == 1 ? 'título' : 'títulos'}',
-                    ),
+                    label: Text(l.impGroupChip(g.keys.length)),
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -455,10 +449,10 @@ class _GroupCardState extends State<_GroupCard> {
                     ),
                   )
                 else if (rule != null)
-                  const Chip(
+                  Chip(
                     visualDensity: VisualDensity.compact,
-                    avatar: Icon(Icons.bookmark, size: 16),
-                    label: Text('Memorizado'),
+                    avatar: const Icon(Icons.bookmark, size: 16),
+                    label: Text(l.impRemembered),
                   ),
               ],
             ),
@@ -480,9 +474,9 @@ class _GroupCardState extends State<_GroupCard> {
                 children: [
                   Icon(Icons.bookmark_border, color: cs.primary),
                   const SizedBox(width: 12),
-                  const Expanded(child: Text('Memorizar para futuros')),
+                  Expanded(child: Text(l.impRememberForFuture)),
                   IconButton(
-                    tooltip: 'O que é isto?',
+                    tooltip: l.impWhatIsThis,
                     icon: Icon(
                       Icons.info_outline,
                       size: 20,
@@ -491,14 +485,12 @@ class _GroupCardState extends State<_GroupCard> {
                     onPressed: () => showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('Memorizar para futuros'),
-                        content: const Text(
-                          'Guarda uma regra: da próxima vez que aparecer um movimento com este título, a app aplica logo o nome e a categoria que escolheste.',
-                        ),
+                        title: Text(l.impRememberForFuture),
+                        content: Text(l.impRememberHelp),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            child: const Text('OK'),
+                            child: Text(l.impOk),
                           ),
                         ],
                       ),
@@ -511,9 +503,7 @@ class _GroupCardState extends State<_GroupCard> {
             const SizedBox(height: 14),
             FilledButton.icon(
               icon: const Icon(Icons.check),
-              label: Text(
-                'Aplicar a ${txns.length} ${txns.length == 1 ? 'movimento' : 'movimentos'}',
-              ),
+              label: Text(l.impApplyTo(txns.length)),
               onPressed: pick == null ? null : widget.onApply,
             ),
             const SizedBox(height: 4),
@@ -523,12 +513,12 @@ class _GroupCardState extends State<_GroupCard> {
                 if (grp == null)
                   TextButton.icon(
                     icon: const Icon(Icons.edit_note),
-                    label: const Text('Nome e notas'),
+                    label: Text(l.impNameAndNotes),
                     onPressed: () => _details(context, txns, rule),
                   ),
                 TextButton.icon(
                   icon: const Icon(Icons.hub_outlined),
-                  label: Text(grp == null ? 'Juntar a grupo' : 'Gerir grupo'),
+                  label: Text(grp == null ? l.impJoinGroup : l.impManageGroup),
                   onPressed: () => grp == null
                       ? joinGroupDialog(
                           context,
@@ -545,12 +535,12 @@ class _GroupCardState extends State<_GroupCard> {
                 if (rule != null && grp == null)
                   TextButton.icon(
                     icon: const Icon(Icons.bookmark_remove_outlined),
-                    label: const Text('Esquecer regra'),
+                    label: Text(l.impForgetRule),
                     onPressed: () async {
                       if (await confirm(
                         context,
-                        'Esquecer a regra para “${g.key}”? Os movimentos já classificados mantêm-se.',
-                        ok: 'Esquecer',
+                        l.impForgetRuleQuestion(g.key),
+                        ok: l.impForget,
                       ))
                         s.deleteRule(rule.id);
                     },
@@ -569,7 +559,7 @@ class _GroupCardState extends State<_GroupCard> {
                   ),
                   child: Row(
                     children: [
-                      Text('${selectedTx.length} selecionados'),
+                      Text(l.impSelectedCount(selectedTx.length)),
                       const Spacer(),
                       TextButton(
                         onPressed: pick == null
@@ -586,8 +576,8 @@ class _GroupCardState extends State<_GroupCard> {
                               },
                         child: Text(
                           pick == null
-                              ? 'Escolhe a categoria'
-                              : 'Mover para ${s.path(pick)}',
+                              ? l.impChooseCategory
+                              : l.impMoveTo(s.path(pick)),
                         ),
                       ),
                       IconButton(
@@ -631,6 +621,7 @@ class _GroupCardState extends State<_GroupCard> {
     List<Txn> txns,
     Rule? rule,
   ) async {
+    final l = AppLocalizations.of(context)!;
     final s = context.read<AppState>();
     final label = TextEditingController(text: rule?.label ?? '');
     final note = TextEditingController(text: rule?.note ?? '');
@@ -638,46 +629,39 @@ class _GroupCardState extends State<_GroupCard> {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Nome e notas'),
+        title: Text(l.impNameAndNotes),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: label,
-                decoration: const InputDecoration(
-                  labelText: 'Nome amigável (opcional)',
-                  hintText: 'Ex.: Ginásio',
+                decoration: InputDecoration(
+                  labelText: l.impFriendlyName,
+                  hintText: l.impExampleGym,
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: note,
-                decoration: const InputDecoration(
-                  labelText: 'Descrição da regra (opcional)',
-                ),
+                decoration: InputDecoration(labelText: l.impRuleDescription),
                 maxLines: 2,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: txNote,
-                decoration: const InputDecoration(
-                  labelText: 'Nota em todos os movimentos (opcional)',
-                ),
+                decoration: InputDecoration(labelText: l.impNoteAllTx),
                 maxLines: 2,
               ),
               const SizedBox(height: 12),
-              const Text(
-                'O nome e a descrição ficam guardados na regra, para as próximas importações.',
-                style: TextStyle(fontSize: 12),
-              ),
+              Text(l.impNameSavedHint, style: const TextStyle(fontSize: 12)),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -697,7 +681,7 @@ class _GroupCardState extends State<_GroupCard> {
                 s.setNote(txns.map((t) => t.id).toList(), txNote.text.trim());
               Navigator.pop(ctx);
             },
-            child: const Text('Guardar'),
+            child: Text(l.impSave),
           ),
         ],
       ),
@@ -710,22 +694,20 @@ class RulesScreen extends StatelessWidget {
   const RulesScreen({super.key});
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final s = context.watch<AppState>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Regras memorizadas')),
+      appBar: AppBar(title: Text(l.impRules)),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
-        label: const Text('Regra'),
+        label: Text(l.impRule),
         onPressed: () => _editRule(context),
       ),
       body: s.rules.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text(
-                  'Sem regras. Ao mover movimentos com “Memorizar”, as regras aparecem aqui.',
-                  textAlign: TextAlign.center,
-                ),
+                padding: const EdgeInsets.all(32),
+                child: Text(l.impNoRules, textAlign: TextAlign.center),
               ),
             )
           : ListView(
@@ -739,7 +721,7 @@ class RulesScreen extends StatelessWidget {
                           : '${r.label}  (${r.pattern})',
                     ),
                     subtitle: Text(
-                      '${r.exact ? 'Igual a' : 'Contém'} → ${s.path(r.categoryId)}${r.note.isEmpty ? '' : '\n${r.note}'}',
+                      '${r.exact ? l.impEquals : l.impContains} → ${s.path(r.categoryId)}${r.note.isEmpty ? '' : '\n${r.note}'}',
                     ),
                     isThreeLine: r.note.isNotEmpty,
                     onTap: () => _editRule(context, edit: r),
@@ -754,6 +736,7 @@ class RulesScreen extends StatelessWidget {
   }
 
   Future<void> _editRule(BuildContext context, {Rule? edit}) async {
+    final l = AppLocalizations.of(context)!;
     final s = context.read<AppState>();
     final pattern = TextEditingController(text: edit?.pattern ?? '');
     final label = TextEditingController(text: edit?.label ?? '');
@@ -764,7 +747,7 @@ class RulesScreen extends StatelessWidget {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (ctx, set) => AlertDialog(
-          title: Text(edit == null ? 'Nova regra' : 'Editar regra'),
+          title: Text(edit == null ? l.impNewRule : l.impEditRule),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -773,14 +756,12 @@ class RulesScreen extends StatelessWidget {
                   controller: pattern,
                   enabled: edit == null,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'Texto a reconhecer (MAIÚSCULAS)',
-                  ),
+                  decoration: InputDecoration(labelText: l.impTextToRecognize),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Nome exatamente igual'),
-                  subtitle: const Text('Desligado: basta conter o texto'),
+                  title: Text(l.impExactName),
+                  subtitle: Text(l.impExactNameOff),
                   value: exact,
                   onChanged: edit == null ? (v) => set(() => exact = v) : null,
                 ),
@@ -791,14 +772,12 @@ class RulesScreen extends StatelessWidget {
                 ),
                 TextField(
                   controller: label,
-                  decoration: const InputDecoration(
-                    labelText: 'Nome amigável (opcional)',
-                  ),
+                  decoration: InputDecoration(labelText: l.impFriendlyName),
                 ),
                 TextField(
                   controller: note,
-                  decoration: const InputDecoration(
-                    labelText: 'Descrição (opcional)',
+                  decoration: InputDecoration(
+                    labelText: l.impDescriptionOptional,
                   ),
                   maxLines: 2,
                 ),
@@ -808,7 +787,7 @@ class RulesScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -825,7 +804,7 @@ class RulesScreen extends StatelessWidget {
                 s.applyRules();
                 Navigator.pop(ctx);
               },
-              child: const Text('Guardar'),
+              child: Text(l.impSave),
             ),
           ],
         ),
