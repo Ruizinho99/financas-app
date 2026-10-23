@@ -5,6 +5,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
 
 import '../goals/goals.dart';
+import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
@@ -116,6 +117,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 
   Future<void> _receiptMenu() async {
+    final l = AppLocalizations.of(context)!;
     final choice = await showModalBottomSheet<String>(
       context: context,
       useSafeArea: true,
@@ -128,7 +130,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Recibo',
+                  l.frmReceipt,
                   style: Theme.of(ctx).textTheme.titleLarge,
                 ),
               ),
@@ -136,28 +138,28 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             if (receipt != null)
               ListTile(
                 leading: const Icon(Icons.visibility_outlined),
-                title: const Text('Ver recibo'),
+                title: Text(l.frmViewReceipt),
                 onTap: () => Navigator.pop(ctx, 'view'),
               ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Tirar foto'),
+              title: Text(l.frmTakePhoto),
               onTap: () => Navigator.pop(ctx, 'camera'),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Escolher da galeria'),
+              title: Text(l.frmChooseFromGallery),
               onTap: () => Navigator.pop(ctx, 'gallery'),
             ),
             ListTile(
               leading: const Icon(Icons.attach_file),
-              title: const Text('Escolher ficheiro (PDF ou imagem)'),
+              title: Text(l.frmChooseFile),
               onTap: () => Navigator.pop(ctx, 'file'),
             ),
             if (receipt != null)
               ListTile(
                 leading: const Icon(Icons.delete_outline),
-                title: const Text('Remover recibo'),
+                title: Text(l.frmRemoveReceipt),
                 onTap: () => Navigator.pop(ctx, 'remove'),
               ),
             const SizedBox(height: 8),
@@ -209,18 +211,18 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       }
     } catch (e) {
       if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Não foi possível anexar o recibo: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.frmReceiptAttachError('$e'))));
     }
   }
 
   Future<void> _viewReceipt() async {
+    final l = AppLocalizations.of(context)!;
     final f = Receipts.file(receipt);
     if (f == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ficheiro do recibo não encontrado.')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l.frmReceiptFileNotFound)));
       return;
     }
     if (Receipts.isImage(receipt!)) {
@@ -249,9 +251,10 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 
   void _save(AppState s) {
+    final l = AppLocalizations.of(context)!;
     final cents = _cents();
     if (cents == null || cents == 0) {
-      setState(() => error = 'Indica um montante válido.');
+      setState(() => error = l.frmEnterValidAmount);
       return;
     }
     // não se pode reduzir o movimento abaixo do que já está associado a objetivos
@@ -259,10 +262,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     if (original != null) {
       final alocado = s.allocatedOf(original.id);
       if (cents < alocado) {
-        setState(
-          () => error =
-              'Já tens ${fmtMoney(alocado)} associado a objetivos. Reduz as associações primeiro.',
-        );
+        setState(() => error = l.frmAllocatedToGoals(fmtMoney(alocado)));
         return;
       }
     }
@@ -272,10 +272,9 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       d = switch (type) {
         _Type.transfer =>
           toAccountId != null
-              ? 'Transferência para ${s.account(toAccountId)?.name ?? ''}'
-                    .trim()
-              : 'Transferência',
-        _ => c?.name ?? (type == _Type.income ? 'Receita' : 'Despesa'),
+              ? l.frmTransferTo(s.account(toAccountId)?.name ?? '').trim()
+              : l.frmTransfer,
+        _ => c?.name ?? (type == _Type.income ? l.frmIncome : l.frmExpense),
       };
     }
     // anulação de uma despesa (só numa receita)
@@ -285,23 +284,20 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       final exp = _expenseById(s, reversesId);
       revCents = (parseCents(reversedCtrl.text) ?? 0).abs();
       if (exp == null) {
-        setState(() => error = 'A despesa anulada já não existe.');
+        setState(() => error = l.frmReversedGone);
         return;
       }
       if (revCents <= 0) {
-        setState(() => error = 'Indica quanto da despesa é anulado.');
+        setState(() => error = l.frmEnterReversedAmount);
         return;
       }
       if (revCents > cents) {
-        setState(() => error = 'A anulação não pode ser maior que a receita.');
+        setState(() => error = l.frmReversalTooBig);
         return;
       }
       final left = s.reversibleLeft(exp, exceptTxnId: widget.edit?.id);
       if (revCents > left) {
-        setState(
-          () =>
-              error = 'Só faltam ${fmtMoney(left)} para anular nesta despesa.',
-        );
+        setState(() => error = l.frmOnlyLeftToReverse(fmtMoney(left)));
         return;
       }
       revId = exp.id;
@@ -389,10 +385,11 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 
   String? _reversalHelp(AppState s) {
+    final l = AppLocalizations.of(context)!;
     final exp = _expenseById(s, reversesId);
     if (exp == null) return null;
     final left = s.reversibleLeft(exp, exceptTxnId: widget.edit?.id);
-    return 'Ainda se pode anular ${fmtMoney(left)} desta despesa. A parte anulada não conta como gasto nem como receita na Análise.';
+    return l.frmReversalHelp(fmtMoney(left));
   }
 
   bool _sameDay(DateTime a, DateTime b) =>
@@ -421,6 +418,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
 
   /// Escolhe a despesa que esta receita anula. Mostra as despesas recentes que ainda têm valor por anular.
   Future<void> _pickExpense(AppState s) async {
+    final l = AppLocalizations.of(context)!;
     final id = await showModalBottomSheet<int>(
       context: context,
       useSafeArea: true,
@@ -461,8 +459,8 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                     child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Procurar despesa',
+                      decoration: InputDecoration(
+                        hintText: l.frmSearchExpense,
                         prefixIcon: Icon(Icons.search),
                         isDense: true,
                       ),
@@ -474,7 +472,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                       children: [
                         ListTile(
                           leading: const Icon(Icons.close),
-                          title: const Text('Não anula nenhuma despesa'),
+                          title: Text(l.frmNoReversal),
                           onTap: () => Navigator.pop(ctx, -1),
                         ),
                         for (final t in list)
@@ -486,17 +484,23 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             subtitle: Text(
-                              '${fmtDate(t.date)} · ${fmtMoney(-t.amount)}'
-                              ' · por anular ${fmtMoney(s.reversibleLeft(t, exceptTxnId: widget.edit?.id))}',
+                              l.frmToReverseSubtitle(
+                                fmtDate(t.date),
+                                fmtMoney(-t.amount),
+                                fmtMoney(
+                                  s.reversibleLeft(
+                                    t,
+                                    exceptTxnId: widget.edit?.id,
+                                  ),
+                                ),
+                              ),
                             ),
                             onTap: () => Navigator.pop(ctx, t.id),
                           ),
                         if (list.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Center(
-                              child: Text('Nenhuma despesa para anular.'),
-                            ),
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Center(child: Text(l.frmNoExpenseToReverse)),
                           ),
                       ],
                     ),
@@ -523,6 +527,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 
   Future<void> _pickInvest(AppState s) async {
+    final l = AppLocalizations.of(context)!;
     final id = await showModalBottomSheet<int>(
       context: context,
       useSafeArea: true,
@@ -535,7 +540,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Plataforma de investimento',
+                  l.frmInvestPlatform,
                   style: Theme.of(ctx).textTheme.titleLarge,
                 ),
               ),
@@ -553,7 +558,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             if (investId != null)
               ListTile(
                 leading: const Icon(Icons.close),
-                title: const Text('Nenhuma'),
+                title: Text(l.frmNone),
                 onTap: () => Navigator.pop(ctx, -1),
               ),
             const SizedBox(height: 8),
@@ -573,10 +578,11 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 
   String _nomeObjetivo(AppState s, int goalId) {
+    final l = AppLocalizations.of(context)!;
     for (final g in s.goals) {
       if (g.id == goalId) return g.name;
     }
-    return 'Objetivo';
+    return l.goalFallback;
   }
 
   /// Objetivos ativos a que este movimento ainda não está associado.
@@ -599,6 +605,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     GoalAllocation? existente,
     required int disponivel,
   }) {
+    final l = AppLocalizations.of(context)!;
     final opcoes = existente == null
         ? _objetivosDisponiveis(s, e.id)
         : <Goal>[];
@@ -606,14 +613,14 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       context: context,
       builder: (ctx) => _AssociarDialog(
         titulo: existente == null
-            ? 'Dividir por objetivo'
+            ? l.frmSplitByGoal
             : _nomeObjetivo(s, existente.goalId),
         opcoes: opcoes,
         goalId:
             existente?.goalId ?? (opcoes.length == 1 ? opcoes.first.id : null),
         disponivel: disponivel,
         inicial: existente?.cents ?? disponivel,
-        confirmar: existente == null ? 'Associar' : 'Guardar',
+        confirmar: existente == null ? l.frmAllocate : l.frmSave,
         escolherObjetivo: existente == null,
       ),
     );
@@ -621,11 +628,12 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
 
   /// Secção "Objetivos" do movimento (despesas, receitas e transferências), se houver objetivos ativos.
   Widget _objetivosSecao(AppState s, Txn? e, TextTheme tt, ColorScheme cs) {
+    final l = AppLocalizations.of(context)!;
     if (e == null) {
       return Padding(
         padding: const EdgeInsets.only(top: 12),
         child: Text(
-          'Guarda o movimento para o dividir por objetivos.',
+          l.frmSaveToSplit,
           style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
         ),
       );
@@ -644,7 +652,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Objetivos', style: tt.titleSmall),
+          Text(l.goals, style: tt.titleSmall),
           const SizedBox(height: 4),
           for (final a in associacoes)
             ListTile(
@@ -660,7 +668,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    tooltip: 'Alterar valor',
+                    tooltip: l.frmChangeAmount,
                     icon: const Icon(Icons.edit_outlined),
                     onPressed: () async {
                       final r = await _associar(
@@ -673,7 +681,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                     },
                   ),
                   IconButton(
-                    tooltip: 'Desassociar',
+                    tooltip: l.frmUnlink,
                     icon: const Icon(Icons.link_off),
                     onPressed: () => s.unlinkMovement(a.id),
                   ),
@@ -683,13 +691,13 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Text(
-              'Por associar: ${fmtMoney(porAssociar)}',
+              l.frmToAllocate(fmtMoney(porAssociar)),
               style: tt.bodyMedium,
             ),
           ),
           OutlinedButton.icon(
             icon: const Icon(Icons.call_split),
-            label: const Text('Dividir por objetivos'),
+            label: Text(l.frmSplitByGoals),
             onPressed: podeDividir
                 ? () async {
                     final r = await _associar(s, e, disponivel: porAssociar);
@@ -705,6 +713,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final isEdit = widget.edit != null;
@@ -720,16 +729,16 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
 
     Widget accountTile({String? title}) => TileField(
       icon: Icons.account_balance_wallet_outlined,
-      title: title ?? 'Conta',
+      title: title ?? l.frmAccount,
       text: acc == null
-          ? 'Seleciona uma conta'
+          ? l.frmSelectAccount
           : '${acc.emoji} ${acc.name}'.trim(),
       isHint: acc == null,
       onTap: () async {
         final id = await pickAccount(
           context,
           selected: accountId,
-          title: 'Conta',
+          title: l.frmAccount,
         );
         if (id != null) setState(() => accountId = id == -1 ? null : id);
       },
@@ -737,9 +746,9 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
 
     final reciboTile = TileField(
       icon: Icons.receipt_long_outlined,
-      title: 'Recibo',
+      title: l.frmReceipt,
       text: receipt == null
-          ? 'Tira uma foto ou escolhe um ficheiro'
+          ? l.frmTakePhotoOrChoose
           : Receipts.displayName(receipt!),
       isHint: receipt == null,
       trailing: Icons.attach_file,
@@ -748,11 +757,11 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Editar movimento' : 'Novo movimento'),
+        title: Text(isEdit ? l.frmEditTransaction : l.frmNewTransaction),
         actions: [
           if (!isEdit)
             IconButton(
-              tooltip: 'Importar extrato',
+              tooltip: l.frmImportStatementTip,
               icon: const Icon(Icons.note_add_outlined),
               onPressed: () => Navigator.pushReplacement(
                 context,
@@ -761,10 +770,10 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             ),
           if (isEdit)
             IconButton(
-              tooltip: 'Apagar',
+              tooltip: l.delete,
               icon: const Icon(Icons.delete_outline),
               onPressed: () async {
-                if (await confirm(context, 'Apagar este movimento?')) {
+                if (await confirm(context, l.frmDeleteThisTransaction)) {
                   saved = true;
                   s.deleteTxns([widget.edit!.id]);
                   if (context.mounted) Navigator.pop(context);
@@ -778,13 +787,10 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
         children: [
           SegmentedButton<_Type>(
             showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: _Type.expense, label: Text('Despesa')),
-              ButtonSegment(value: _Type.income, label: Text('Receita')),
-              ButtonSegment(
-                value: _Type.transfer,
-                label: Text('Transferência'),
-              ),
+            segments: [
+              ButtonSegment(value: _Type.expense, label: Text(l.frmExpense)),
+              ButtonSegment(value: _Type.income, label: Text(l.frmIncome)),
+              ButtonSegment(value: _Type.transfer, label: Text(l.frmTransfer)),
             ],
             selected: {type},
             onSelectionChanged: (v) => _setType(v.first, s),
@@ -805,7 +811,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                 color: cs.onSurfaceVariant,
               ),
               suffixIcon: IconButton(
-                tooltip: 'Calculadora',
+                tooltip: l.frmCalculator,
                 icon: const Icon(Icons.calculate_outlined),
                 onPressed: _calculator,
               ),
@@ -816,9 +822,9 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           if (!isTransfer) ...[
             TileField(
               icon: Icons.sell_outlined,
-              title: 'Categoria',
+              title: l.frmCategory,
               text: cat == null
-                  ? 'Escolher categoria'
+                  ? l.frmChooseCategory
                   : '${cat.emoji.isEmpty ? '' : '${cat.emoji} '}${s.path(cat.id)}',
               isHint: cat == null,
               onTap: () => _pickCategory(s),
@@ -845,11 +851,11 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               const SizedBox(height: 12),
               TileField(
                 icon: Icons.undo,
-                title: 'Anula uma despesa (reembolso, devolução)',
+                title: l.frmReversesExpense,
                 text: () {
-                  if (reversesId == null) return 'Nenhuma';
+                  if (reversesId == null) return l.frmNone;
                   final x = _expenseById(s, reversesId);
-                  return x == null ? 'Despesa já não existe' : s.displayName(x);
+                  return x == null ? l.frmExpenseGone : s.displayName(x);
                 }(),
                 isHint: reversesId == null,
                 onTap: () => _pickExpense(s),
@@ -863,7 +869,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                   ),
                   onChanged: (_) => setState(() => error = null),
                   decoration: InputDecoration(
-                    labelText: 'Valor anulado ($baseSym)',
+                    labelText: l.frmReversedAmount(baseSym),
                     prefixText: '$baseSym  ',
                     helperMaxLines: 3,
                     helperText: _reversalHelp(s),
@@ -883,9 +889,9 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               maxLength,
             }) => null,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.notes),
-              hintText: 'Descrição (opcional)',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.notes),
+              hintText: l.frmDescriptionOptional,
             ),
           ),
           const SizedBox(height: 14),
@@ -894,13 +900,13 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             spacing: 8,
             children: [
               ChoiceChip(
-                label: const Text('Hoje'),
+                label: Text(l.frmToday),
                 selected: _sameDay(date, today),
                 showCheckmark: false,
                 onSelected: (_) => setState(() => date = today),
               ),
               ChoiceChip(
-                label: const Text('Ontem'),
+                label: Text(l.frmYesterday),
                 selected: _sameDay(date, yesterday),
                 showCheckmark: false,
                 onSelected: (_) => setState(() => date = yesterday),
@@ -909,7 +915,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                 avatar: const Icon(Icons.event, size: 18),
                 label: Text(
                   _sameDay(date, today) || _sameDay(date, yesterday)
-                      ? 'Outra data'
+                      ? l.frmOtherDate
                       : fmtDate(date),
                 ),
                 selected: !_sameDay(date, today) && !_sameDay(date, yesterday),
@@ -920,14 +926,14 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           ),
           if (isTransfer) ...[
             const SizedBox(height: 14),
-            accountTile(title: isEdit ? 'Conta' : 'Da conta'),
+            accountTile(title: isEdit ? l.frmAccount : l.frmFromAccount),
             if (!isEdit && investId == null) ...[
               const SizedBox(height: 12),
               TileField(
                 icon: Icons.account_balance_outlined,
-                title: 'Para a conta',
+                title: l.frmToAccount,
                 text: toAcc == null
-                    ? 'Seleciona a conta de destino'
+                    ? l.frmSelectDestinationAccount
                     : '${toAcc.emoji} ${toAcc.name}'.trim(),
                 isHint: toAcc == null,
                 onTap: () async {
@@ -935,7 +941,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                     context,
                     selected: toAccountId,
                     exclude: accountId,
-                    title: 'Conta de destino',
+                    title: l.frmDestinationAccount,
                   );
                   if (id != null)
                     setState(() => toAccountId = id == -1 ? null : id);
@@ -946,9 +952,9 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               const SizedBox(height: 12),
               TileField(
                 icon: Icons.trending_up,
-                title: 'Para investir (opcional)',
+                title: l.frmToInvestOptional,
                 text: s.investAccount(investId) == null
-                    ? 'Plataforma de investimento'
+                    ? l.frmInvestPlatform
                     : '${s.investAccount(investId)!.emoji} ${s.investAccount(investId)!.name}'
                           .trim(),
                 isHint: s.investAccount(investId) == null,
@@ -959,15 +965,15 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
               const SizedBox(height: 12),
               SegmentedButton<bool>(
                 showSelectedIcon: false,
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: false,
-                    label: Text('Saída'),
+                    label: Text(l.frmOutgoing),
                     icon: Icon(Icons.north_east),
                   ),
                   ButtonSegment(
                     value: true,
-                    label: Text('Entrada'),
+                    label: Text(l.frmIncoming),
                     icon: Icon(Icons.south_west),
                   ),
                 ],
@@ -978,7 +984,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 10),
               child: Text(
-                'Não conta como despesa nem receita na Análise.',
+                l.frmNotCountedNote,
                 style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
             ),
@@ -995,7 +1001,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                 childrenPadding: const EdgeInsets.only(bottom: 8),
                 initiallyExpanded: openExtras,
                 title: Text(
-                  isTransfer ? 'Recibo' : 'Mais opções (conta, recibo)',
+                  isTransfer ? l.frmReceipt : l.frmMoreOptions,
                   style: tt.titleSmall,
                 ),
                 children: [
@@ -1011,7 +1017,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           if (s.goals.any((g) => !g.archived))
             _objetivosSecao(s, widget.edit, tt, cs),
           const SizedBox(height: 12),
-          FilledButton(onPressed: () => _save(s), child: const Text('Guardar')),
+          FilledButton(onPressed: () => _save(s), child: Text(l.frmSave)),
         ],
       ),
     );
@@ -1054,6 +1060,7 @@ class _AssociarDialogState extends State<_AssociarDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final v = (parseCents(ctrl.text) ?? 0).abs();
     final excede = v > widget.disponivel;
     final gid = goalId;
@@ -1086,11 +1093,11 @@ class _AssociarDialogState extends State<_AssociarDialog> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              labelText: 'Valor ($baseSym)',
+              labelText: l.frmAmountCurrency(baseSym),
               prefixText: '$baseSym  ',
-              helperText: 'Por associar: ${fmtMoney(widget.disponivel)}',
+              helperText: l.frmToAllocate(fmtMoney(widget.disponivel)),
               errorText: excede
-                  ? 'Só faltam ${fmtMoney(widget.disponivel)} para associar.'
+                  ? l.frmOnlyLeftToAllocate(fmtMoney(widget.disponivel))
                   : null,
             ),
           ),
@@ -1099,7 +1106,7 @@ class _AssociarDialogState extends State<_AssociarDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: ok ? () => Navigator.pop(context, (gid, v)) : null,

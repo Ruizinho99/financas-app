@@ -130,7 +130,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   }),
                 ),
                 IconButton(
-                  tooltip: 'Importar extrato',
+                  tooltip: l.frmImportStatementTip,
                   icon: const Icon(Icons.upload_file),
                   onPressed: () => Navigator.push(
                     context,
@@ -153,15 +153,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               children: [
                 for (final (f, label, icon) in [
-                  (_Filter.all, 'Todos', Icons.all_inclusive),
-                  (_Filter.expense, 'Despesas', Icons.arrow_downward),
+                  (_Filter.all, l.frmAll, Icons.all_inclusive),
+                  (_Filter.expense, l.frmExpenses, Icons.arrow_downward),
                   (
                     _Filter.uncategorized,
                     l.noCategory,
                     Icons.format_list_bulleted,
                   ),
                   (_Filter.income, l.income, Icons.arrow_upward),
-                  (_Filter.transfers, 'Transferências', Icons.swap_horiz),
+                  (_Filter.transfers, l.frmTransfers, Icons.swap_horiz),
                 ])
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
@@ -220,7 +220,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${list.length} movimentos'),
+                Text(l.frmTransactionsCount(list.length)),
                 Text(
                   '+${fmtMoney(inc)}  /  ${fmtMoney(exp)}',
                   style: Theme.of(context).textTheme.bodySmall,
@@ -265,9 +265,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         subtitle: Text(
                           [
                             if (t.investAccountId != null)
-                              'Investimento · ${s.investAccount(t.investAccountId)?.name ?? ''}'
+                              l.frmInvestmentOf(
+                                s.investAccount(t.investAccountId)?.name ?? '',
+                              )
                             else if (t.isTransfer)
-                              'Transferência'
+                              l.frmTransfer
                             else
                               s.path(t.categoryId),
                             if (s.account(t.accountId) != null)
