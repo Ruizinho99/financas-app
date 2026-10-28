@@ -33,7 +33,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final income = s
         .txnsIn(period)
         .where(s.isIncomeTxn)
-        .fold(0, (a, t) => a + t.amount);
+        .fold(0, (a, t) => a + s.effectiveAmount(t));
     // só categorias que existem neste mês (ou que tiveram movimentos nele)
     final expenseRoots = s.roots
         .where(

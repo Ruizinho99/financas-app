@@ -106,4 +106,55 @@ void main() {
     final loc = a.insightsL(l).map((i) => i.title).toList();
     expect(loc, plain);
   });
+
+  test('mês fechado sem salário categorizado: um reembolso pequeno não substitui o salário definido', () {
+    s.setDefaultSalary(150000);
+    mov(5000, s.addCategory(const Categoria(id: 0, name: 'Saúde')));
+    final fechado = Analytics(
+      s,
+      Period.month(DateTime(2026, 6)),
+      const AnalysisFilter(),
+      today: DateTime(2026, 8, 1),
+    );
+    expect(fechado.income, 150000);
+    expect(fechado.incomeFromSalary, isTrue);
+    // a evolução mês a mês segue a mesma regra
+    expect(fechado.monthly(1).single.income, 150000);
+  });
+
+  test(
+    'receita recebida maior que o salário definido prevalece, em mês fechado',
+    () {
+      s.setDefaultSalary(150000);
+      mov(200000, s.addCategory(const Categoria(id: 0, name: 'Salário')));
+      final fechado = Analytics(
+        s,
+        Period.month(DateTime(2026, 6)),
+        const AnalysisFilter(),
+        today: DateTime(2026, 8, 1),
+      );
+      expect(fechado.income, 200000);
+      expect(fechado.incomeFromSalary, isFalse);
+    },
+  );
+
+  test('a receita do orçamento desconta a parte anulada, como a Análise', () {
+    final saude = s.addCategory(const Categoria(id: 0, name: 'Saúde'));
+    mov(-2000, saude);
+    final despesa = s.transactions.firstWhere((t) => t.amount == -2000);
+    s.addManual(
+      date: jun,
+      description: 'reembolso',
+      amount: 2000,
+      categoryId: saude,
+      reversesId: despesa.id,
+      reversedCents: 2000,
+    );
+    expect(an().incomeReceived, 0);
+    final doOrcamento = s
+        .txnsIn(period)
+        .where(s.isIncomeTxn)
+        .fold(0, (a, t) => a + s.effectiveAmount(t));
+    expect(doOrcamento, an().incomeReceived);
+  });
 }

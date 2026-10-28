@@ -371,14 +371,13 @@ class AppState extends ChangeNotifier {
     final mand = <int, int>{}, opt = <int, int>{};
     var unclassified = 0;
     for (final t in txnsIn(p)) {
-      if (t.amount >= 0 || t.isTransfer) continue;
+      if (!isSpend(t)) continue;
       final spent = -effectiveAmount(t);
       final c = cat(t.categoryId);
       if (c == null) {
         unclassified += spent;
         continue;
       }
-      if (c.isInvestment) continue;
       final target = isMandatory(c, monthKeyOf(t.date)) ? mand : opt;
       target[c.id] = (target[c.id] ?? 0) + spent;
     }
@@ -545,8 +544,10 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Estatísticas ----------
-  /// Despesa que conta nas contas: saída que não é transferência nem investimento.
-  /// Qualquer categoria serve para despesas e para receitas: quem decide é o sinal do movimento.
+  /// Despesa que conta nas contas (Análise, resumo do mês, obrigatória/opcional): saída que não é
+  /// transferência nem investimento. Qualquer categoria serve para despesas e para receitas: quem decide
+  /// é o sinal do movimento. O orçamento por categoria (`totalsByCategory`) inclui também o investimento,
+  /// para as metas de poupança.
   bool isSpend(Txn t) =>
       t.amount < 0 &&
       !t.isTransfer &&

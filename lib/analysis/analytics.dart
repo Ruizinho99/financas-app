@@ -218,9 +218,9 @@ class Analytics {
   List<Spend> _spends(Period p) {
     final out = <Spend>[];
     for (final t in s.transactions) {
-      if (!p.contains(t.date) || t.isTransfer || t.amount >= 0) continue;
+      if (!p.contains(t.date) || !s.isSpend(t))
+        continue; // investir não é gastar
       final c = s.cat(t.categoryId);
-      if (c != null && c.isInvestment) continue; // investir não é gastar
       final spent = -s.effectiveAmount(t);
       if (spent <= 0) continue; // despesa anulada por completo
       final mk = s.monthKeyOf(t.date);
@@ -352,9 +352,8 @@ class Analytics {
   int _incomeFor(Period shown, Period full) {
     final received = _income(shown);
     final salary = s.salaryIn(full);
-    if (ongoing)
-      return salary > 0 ? (received > salary ? received : salary) : received;
-    return received > 0 ? received : salary;
+    // o salário definido é o mínimo esperado: um movimento pequeno (ex.: um reembolso) não o substitui
+    return salary > 0 ? (received > salary ? received : salary) : received;
   }
 
   /// Período anterior completo (sem o corte dos "mesmos dias"), para o salário esperado.
@@ -364,8 +363,7 @@ class Analytics {
             previousPeriod(period, today: DateTime(1900)));
 
   late final int incomeReceived = _income(period);
-  late final bool incomeFromSalary =
-      incomeReceived == 0 && s.salaryIn(period) > 0;
+  late final bool incomeFromSalary = s.salaryIn(period) > incomeReceived;
   late final int income = _incomeFor(period, period);
   late final int prevIncome = previous == null
       ? 0
@@ -559,7 +557,7 @@ class Analytics {
           _sum(l.where((e) => e.mandatory)),
           _sum(l.where((e) => !e.mandatory && e.cat != null)),
           _sum(l.where((e) => e.cat == null)),
-          inc > 0 ? inc : s.salaryFor(mk),
+          inc > s.salaryFor(mk) ? inc : s.salaryFor(mk),
         ),
       );
     }
