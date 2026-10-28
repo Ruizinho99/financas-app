@@ -38,10 +38,6 @@ class _CategorySheetState extends State<_CategorySheet> {
   bool showAll = false; // inclui categorias terminadas e futuras
   int? openRoot; // passo 2: a categoria principal aberta, cujas subcategorias se mostram
 
-  /// Aceita o tipo pedido (despesa/receita). "Despesas e receitas" aceita sempre.
-  bool fits(Categoria c) =>
-      widget.income == null || c.both || c.isIncome == widget.income;
-
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
@@ -61,14 +57,12 @@ class _CategorySheetState extends State<_CategorySheet> {
     final searching = query.isNotEmpty;
 
     // subcategorias de uma principal que se podem escolher agora
-    List<Categoria> subsOf(Categoria r) => s
-        .childrenOf(r.id)
-        .where((k) => visible(k) && (fits(k) || r.both))
-        .toList();
+    List<Categoria> subsOf(Categoria r) =>
+        s.childrenOf(r.id).where(visible).toList();
 
     // passo 1: principais (ou, a pesquisar, principais e subcategorias que coincidem)
     final tops = <(Categoria, List<Categoria>)>[];
-    for (final r in s.roots.where((r) => fits(r) || r.both)) {
+    for (final r in s.roots) {
       final subs = subsOf(r);
       if (searching) {
         final rootMatches = r.name.toLowerCase().contains(query);

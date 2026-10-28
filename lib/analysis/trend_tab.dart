@@ -55,7 +55,7 @@ class _TrendTabState extends State<TrendTab> {
     String mlabel(DateTime d) => fmtMonthShort(d).split(' ').first;
 
     // categoria escolhida
-    final roots = s.roots.where((r) => !r.isIncome).toList();
+    final roots = s.roots.toList();
     List<int>? catSeries;
     if (categoryId != null) {
       final f = a.filter.copyWith(categoryIds: {categoryId!});

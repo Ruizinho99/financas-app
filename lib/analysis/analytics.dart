@@ -218,10 +218,9 @@ class Analytics {
   List<Spend> _spends(Period p) {
     final out = <Spend>[];
     for (final t in s.transactions) {
-      if (!p.contains(t.date) || t.isTransfer || t.amount >= 0) continue;
-      final c = s.cat(t.categoryId);
-      if (c != null && (c.isIncome || c.isInvestment))
+      if (!p.contains(t.date) || !s.isSpend(t))
         continue; // investir não é gastar
+      final c = s.cat(t.categoryId);
       final spent = -s.effectiveAmount(t);
       if (spent <= 0) continue; // despesa anulada por completo
       final mk = s.monthKeyOf(t.date);
@@ -335,8 +334,7 @@ class Analytics {
     var total = 0;
     for (final t in s.transactions) {
       if (!p.contains(t.date) || t.isTransfer || t.amount <= 0) continue;
-      final ic = s.cat(t.categoryId);
-      if (!((ic?.isIncome ?? false) || (ic?.both ?? false))) continue;
+      if (!s.isIncomeTxn(t)) continue;
       if (filter.accountIds.isNotEmpty &&
           (t.accountId == null || !filter.accountIds.contains(t.accountId)))
         continue;
@@ -354,9 +352,8 @@ class Analytics {
   int _incomeFor(Period shown, Period full) {
     final received = _income(shown);
     final salary = s.salaryIn(full);
-    if (ongoing)
-      return salary > 0 ? (received > salary ? received : salary) : received;
-    return received > 0 ? received : salary;
+    // o salário definido é o mínimo esperado: um movimento pequeno (ex.: um reembolso) não o substitui
+    return salary > 0 ? (received > salary ? received : salary) : received;
   }
 
   /// Período anterior completo (sem o corte dos "mesmos dias"), para o salário esperado.
@@ -366,8 +363,7 @@ class Analytics {
             previousPeriod(period, today: DateTime(1900)));
 
   late final int incomeReceived = _income(period);
-  late final bool incomeFromSalary =
-      incomeReceived == 0 && s.salaryIn(period) > 0;
+  late final bool incomeFromSalary = s.salaryIn(period) > incomeReceived;
   late final int income = _incomeFor(period, period);
   late final int prevIncome = previous == null
       ? 0
@@ -561,7 +557,7 @@ class Analytics {
           _sum(l.where((e) => e.mandatory)),
           _sum(l.where((e) => !e.mandatory && e.cat != null)),
           _sum(l.where((e) => e.cat == null)),
-          inc > 0 ? inc : s.salaryFor(mk),
+          inc > s.salaryFor(mk) ? inc : s.salaryFor(mk),
         ),
       );
     }
@@ -623,7 +619,7 @@ class Analytics {
 
     // 1) orçamentos de limite ultrapassados
     final own = s.totalsByCategory(period);
-    for (final c in s.roots.where((c) => !c.isIncome)) {
+    for (final c in s.roots) {
       final target = s.targetIn(c, period);
       final spentC = s.rollup(c, own);
       final limitLike = c.budgetType == BudgetType.limit;
@@ -755,7 +751,7 @@ class Analytics {
 
     // 1) orçamentos de limite ultrapassados
     final own = s.totalsByCategory(period);
-    for (final c in s.roots.where((c) => !c.isIncome)) {
+    for (final c in s.roots) {
       final target = s.targetIn(c, period);
       final spentC = s.rollup(c, own);
       final limitLike = c.budgetType == BudgetType.limit;
@@ -915,7 +911,7 @@ class Analytics {
   List<CategoryStat> budgetStats() {
     final own = s.totalsByCategory(period);
     final out = <CategoryStat>[];
-    for (final c in s.roots.where((c) => !c.isIncome)) {
+    for (final c in s.roots) {
       final t = s.targetIn(c, period);
       if (t <= 0) continue;
       out.add(CategoryStat(c, s.rollup(c, own), t));

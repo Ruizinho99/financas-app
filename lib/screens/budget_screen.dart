@@ -32,18 +32,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final allocated = s.totalAllocated(salary, key);
     final income = s
         .txnsIn(period)
-        .where(
-          (t) =>
-              t.amount > 0 &&
-              ((s.cat(t.categoryId)?.isIncome ?? false) ||
-                  (s.cat(t.categoryId)?.both ?? false)),
-        )
-        .fold(0, (a, t) => a + t.amount);
+        .where(s.isIncomeTxn)
+        .fold(0, (a, t) => a + s.effectiveAmount(t));
     // só categorias que existem neste mês (ou que tiveram movimentos nele)
     final expenseRoots = s.roots
         .where(
           (c) =>
-              !c.isIncome &&
+              // categorias que eram só de receita só aparecem se tiverem orçamento ou gastos
+              (!c.isIncome || c.hasBudget || s.rollup(c, own) != 0) &&
               (s.isCategoryActive(c, key) || s.rollup(c, own) != 0),
         )
         .toList();
@@ -279,33 +275,32 @@ class _CategoryBudgetTile extends StatelessWidget {
                 ),
         ),
         children: [
-          if (!c.isIncome)
-            Builder(
-              builder: (_) {
-                final direct = s.isMandatoryDirect(c, month);
-                final inherited = !direct && s.isMandatory(c, month);
-                return SwitchListTile(
-                  dense: true,
-                  title: Text(
-                    l.bpMandatoryInMonth(
-                      fmtMonth(
-                        DateTime(
-                          int.parse(month.substring(0, 4)),
-                          int.parse(month.substring(5, 7)),
-                        ),
+          Builder(
+            builder: (_) {
+              final direct = s.isMandatoryDirect(c, month);
+              final inherited = !direct && s.isMandatory(c, month);
+              return SwitchListTile(
+                dense: true,
+                title: Text(
+                  l.bpMandatoryInMonth(
+                    fmtMonth(
+                      DateTime(
+                        int.parse(month.substring(0, 4)),
+                        int.parse(month.substring(5, 7)),
                       ),
                     ),
                   ),
-                  subtitle: Text(
-                    inherited ? l.bpInheritedFromParent : l.bpOnlyThisMonthHint,
-                  ),
-                  value: direct || inherited,
-                  onChanged: inherited
-                      ? null
-                      : (v) => s.setMandatoryInMonth(c.id, month, v),
-                );
-              },
-            ),
+                ),
+                subtitle: Text(
+                  inherited ? l.bpInheritedFromParent : l.bpOnlyThisMonthHint,
+                ),
+                value: direct || inherited,
+                onChanged: inherited
+                    ? null
+                    : (v) => s.setMandatoryInMonth(c.id, month, v),
+              );
+            },
+          ),
           ListTile(
             dense: true,
             title: Text(
