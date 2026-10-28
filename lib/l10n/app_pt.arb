@@ -3581,6 +3581,17 @@
   "morInstalledVersion": "Versão instalada",
   "morUpdateDescription": "Procura no GitHub se há uma versão nova e instala-a por cima desta, sem perderes dados. A internet só é usada quando carregas no botão.",
   "morChecking": "A procurar…",
+  "updPopupTitle": "Há uma versão nova",
+  "updPopupBody": "A versão {tag} já está disponível. Queres atualizar agora?",
+  "@updPopupBody": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "updPopupLater": "Mais tarde",
+  "updPopupNow": "Atualizar",
   "morCheckUpdates": "Procurar atualizações",
   "morNewVersion": "Há uma versão nova: {version}",
   "@morNewVersion": {

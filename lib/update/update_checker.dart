@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../db/database.dart';
 import 'update_service.dart';
+
+/// Tag da versão nova encontrada ao abrir a app; o ecrã principal mostra um popup e limpa-a.
+final ValueNotifier<String?> pendingUpdate = ValueNotifier(null);
 
 /// Verifica, ao abrir a app, se há uma release nova. Só volta a perguntar ao GitHub
 /// uma vez por dia (e não avisa duas vezes pela mesma versão).

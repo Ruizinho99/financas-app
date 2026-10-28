@@ -6,6 +6,7 @@ import 'package:financas/invest/invest.dart';
 import 'package:financas/invest/invest_screen.dart';
 import 'package:financas/main.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/update/update_checker.dart';
 import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -366,6 +367,23 @@ void main() {
       }
     },
   );
+
+  testWidgets('versão nova: popup ao abrir a app, com Atualizar e Mais tarde', (
+    tester,
+  ) async {
+    final d = buildInvestData();
+    await _pump(tester, d.s, const HomeShell());
+    expect(find.text('Há uma versão nova'), findsNothing);
+    pendingUpdate.value = 'v9.9.9';
+    await tester.pumpAndSettle();
+    expect(find.text('Há uma versão nova'), findsOneWidget);
+    expect(find.textContaining('v9.9.9'), findsOneWidget);
+    expect(find.text('Atualizar'), findsOneWidget);
+    await tester.tap(find.text('Mais tarde'));
+    await tester.pumpAndSettle();
+    expect(find.text('Há uma versão nova'), findsNothing);
+    expect(pendingUpdate.value, isNull);
+  });
 
   testWidgets(
     'a Carteira abre pelo separador Carteira; Orçamento, Análise e Classificar estão em Mais',

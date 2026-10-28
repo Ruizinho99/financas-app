@@ -4750,6 +4750,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get morChecking => 'A procurar…';
 
   @override
+  String get updPopupTitle => 'Há uma versão nova';
+
+  @override
+  String updPopupBody(String tag) {
+    return 'A versão $tag já está disponível. Queres atualizar agora?';
+  }
+
+  @override
+  String get updPopupLater => 'Mais tarde';
+
+  @override
+  String get updPopupNow => 'Atualizar';
+
+  @override
   String get morCheckUpdates => 'Procurar atualizações';
 
   @override
