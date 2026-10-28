@@ -724,10 +724,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bpNewCategory => 'New category';
 
   @override
-  String get bpBudgetLimit => 'Limit';
+  String bpStatusOk(String left) {
+    return '✓ Within the maximum · $left left';
+  }
 
   @override
-  String get bpBudgetGoal => 'Goal';
+  String bpStatusOver(String over) {
+    return '⚠ Exceeded by $over';
+  }
+
+  @override
+  String get bpStatusMinOk => '✓ Minimum reached';
+
+  @override
+  String bpStatusMinBelow(String missing) {
+    return 'Below the minimum · $missing to go';
+  }
+
+  @override
+  String get bpBudgetLimit => 'Maximum';
+
+  @override
+  String get bpBudgetGoal => 'Minimum';
 
   @override
   String bpSpentOfTarget(String spent, String target, String type) {
@@ -790,11 +808,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bpHasBudget => 'Has a budget';
 
   @override
-  String get bpLimitHint => 'Limit: you want to spend at most this amount.';
+  String get bpLimitHint =>
+      'Maximum: you want to spend at most this amount (e.g. shopping). Going over shows as exceeded.';
 
   @override
   String get bpGoalHint =>
-      'Goal: you want to reach at least this amount (e.g. savings).';
+      'Minimum: you want to reach at least this amount (e.g. investments). Falling short shows as below.';
 
   @override
   String bpValueWithCurrency(String currency) {

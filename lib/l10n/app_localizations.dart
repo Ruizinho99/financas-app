@@ -1178,16 +1178,40 @@ abstract class AppLocalizations {
   /// **'Nova categoria'**
   String get bpNewCategory;
 
+  /// No description provided for @bpStatusOk.
+  ///
+  /// In pt, this message translates to:
+  /// **'✓ Dentro do máximo · restam {left}'**
+  String bpStatusOk(String left);
+
+  /// No description provided for @bpStatusOver.
+  ///
+  /// In pt, this message translates to:
+  /// **'⚠ Excedido em {over}'**
+  String bpStatusOver(String over);
+
+  /// No description provided for @bpStatusMinOk.
+  ///
+  /// In pt, this message translates to:
+  /// **'✓ Mínimo atingido'**
+  String get bpStatusMinOk;
+
+  /// No description provided for @bpStatusMinBelow.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abaixo do mínimo · faltam {missing}'**
+  String bpStatusMinBelow(String missing);
+
   /// No description provided for @bpBudgetLimit.
   ///
   /// In pt, this message translates to:
-  /// **'Limite'**
+  /// **'Máximo'**
   String get bpBudgetLimit;
 
   /// No description provided for @bpBudgetGoal.
   ///
   /// In pt, this message translates to:
-  /// **'Objetivo'**
+  /// **'Mínimo'**
   String get bpBudgetGoal;
 
   /// No description provided for @bpSpentOfTarget.
@@ -1283,13 +1307,13 @@ abstract class AppLocalizations {
   /// No description provided for @bpLimitHint.
   ///
   /// In pt, this message translates to:
-  /// **'Limite: queres gastar no máximo este valor.'**
+  /// **'Máximo: queres gastar no máximo este valor (ex.: compras). Passar disto aparece como excedido.'**
   String get bpLimitHint;
 
   /// No description provided for @bpGoalHint.
   ///
   /// In pt, this message translates to:
-  /// **'Objetivo: queres atingir pelo menos este valor (ex.: poupança).'**
+  /// **'Mínimo: queres atingir pelo menos este valor (ex.: investimentos). Ficar abaixo aparece como em falta.'**
   String get bpGoalHint;
 
   /// No description provided for @bpValueWithCurrency.

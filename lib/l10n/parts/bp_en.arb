@@ -43,8 +43,15 @@
   "bpNoCategoriesBudget": "You have no categories yet. Create the first one below (e.g. Housing) and set a budget for each.",
   "bpCategories": "Categories",
   "bpNewCategory": "New category",
-  "bpBudgetLimit": "Limit",
-  "bpBudgetGoal": "Goal",
+  "bpStatusOk": "✓ Within the maximum · {left} left",
+  "@bpStatusOk": {"placeholders": {"left": {"type": "String"}}},
+  "bpStatusOver": "⚠ Exceeded by {over}",
+  "@bpStatusOver": {"placeholders": {"over": {"type": "String"}}},
+  "bpStatusMinOk": "✓ Minimum reached",
+  "bpStatusMinBelow": "Below the minimum · {missing} to go",
+  "@bpStatusMinBelow": {"placeholders": {"missing": {"type": "String"}}},
+  "bpBudgetLimit": "Maximum",
+  "bpBudgetGoal": "Minimum",
   "bpSpentOfTarget": "{spent} of {target} · {type}",
   "@bpSpentOfTarget": {
     "placeholders": {
@@ -124,8 +131,8 @@
     }
   },
   "bpHasBudget": "Has a budget",
-  "bpLimitHint": "Limit: you want to spend at most this amount.",
-  "bpGoalHint": "Goal: you want to reach at least this amount (e.g. savings).",
+  "bpLimitHint": "Maximum: you want to spend at most this amount (e.g. shopping). Going over shows as exceeded.",
+  "bpGoalHint": "Minimum: you want to reach at least this amount (e.g. investments). Falling short shows as below.",
   "bpValueWithCurrency": "Amount ({currency})",
   "@bpValueWithCurrency": {
     "placeholders": {

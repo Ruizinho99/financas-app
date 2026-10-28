@@ -719,10 +719,28 @@ class AppLocalizationsPt extends AppLocalizations {
   String get bpNewCategory => 'Nova categoria';
 
   @override
-  String get bpBudgetLimit => 'Limite';
+  String bpStatusOk(String left) {
+    return '✓ Dentro do máximo · restam $left';
+  }
 
   @override
-  String get bpBudgetGoal => 'Objetivo';
+  String bpStatusOver(String over) {
+    return '⚠ Excedido em $over';
+  }
+
+  @override
+  String get bpStatusMinOk => '✓ Mínimo atingido';
+
+  @override
+  String bpStatusMinBelow(String missing) {
+    return 'Abaixo do mínimo · faltam $missing';
+  }
+
+  @override
+  String get bpBudgetLimit => 'Máximo';
+
+  @override
+  String get bpBudgetGoal => 'Mínimo';
 
   @override
   String bpSpentOfTarget(String spent, String target, String type) {
@@ -785,11 +803,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get bpHasBudget => 'Ter orçamento';
 
   @override
-  String get bpLimitHint => 'Limite: queres gastar no máximo este valor.';
+  String get bpLimitHint =>
+      'Máximo: queres gastar no máximo este valor (ex.: compras). Passar disto aparece como excedido.';
 
   @override
   String get bpGoalHint =>
-      'Objetivo: queres atingir pelo menos este valor (ex.: poupança).';
+      'Mínimo: queres atingir pelo menos este valor (ex.: investimentos). Ficar abaixo aparece como em falta.';
 
   @override
   String bpValueWithCurrency(String currency) {
