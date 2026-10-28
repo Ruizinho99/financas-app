@@ -231,150 +231,131 @@ void main() {
     },
   );
 
-  group(
-    'tipo da categoria (opcional, obrigatória, rendimento, investimento)',
-    () {
-      Future<void> create(
-        WidgetTester tester,
-        AppState s,
-        String name,
-        String kindLabel,
-      ) async {
-        tester.view.physicalSize = const Size(900, 2400);
-        tester.view.devicePixelRatio = 2;
-        addTearDown(tester.view.reset);
-        await tester.pumpWidget(_app(s));
-        await tester.tap(find.text('abrir'));
-        await tester.pumpAndSettle();
-        await tester.enterText(find.widgetWithText(TextField, 'Nome'), name);
-        if (kindLabel != 'Despesa opcional') {
-          await tester.ensureVisible(find.text('Despesa opcional'));
-          await tester.tap(find.text('Despesa opcional'));
-          await tester.pumpAndSettle();
-          await tester.tap(find.text(kindLabel).last);
-          await tester.pumpAndSettle();
-        }
-        await tester.tap(find.text('Guardar'));
-        await tester.pumpAndSettle();
-      }
-
-      testWidgets('por omissão é despesa opcional', (tester) async {
-        final s = AppState(Db.memory());
-        await create(tester, s, 'Lazer', 'Despesa opcional');
-        final c = s.categories.single;
-        expect(
-          (c.isIncome, c.isInvestment, s.rangesOf(c.id).isEmpty),
-          (false, false, true),
-        );
-      });
-
-      testWidgets(
-        'despesa obrigatória cria o período e conta como obrigatória',
-        (tester) async {
-          final s = AppState(Db.memory());
-          await create(tester, s, 'Renda', 'Despesa obrigatória');
-          final c = s.categories.single;
-          expect(s.isMandatory(c, '2026-03'), isTrue);
-          expect(s.isMandatory(c, '2031-12'), isTrue);
-        },
-      );
-
-      testWidgets(
-        'rendimento e investimento ficam marcados e as subcategorias herdam',
-        (tester) async {
-          final s = AppState(Db.memory());
-          await create(tester, s, 'Salário', 'Rendimento');
-          expect(s.categories.single.isIncome, isTrue);
-          final s2 = AppState(Db.memory());
-          await create(tester, s2, 'ETFs', 'Investimento');
-          final c = s2.categories.single;
-          expect(
-            (c.isInvestment, c.isIncome, c.budgetType),
-            (true, false, BudgetType.goal),
-          );
-          final id = s2.saveCategoryWithSubs(c, [
-            (id: null, name: 'Mundo', emoji: ''),
-          ]);
-          expect(s2.childrenOf(id).single.isInvestment, isTrue);
-        },
-      );
-
-      test('mudar de obrigatória para opcional apaga os períodos', () {
-        final s = AppState(Db.memory());
-        final id = s.addCategory(const Categoria(id: 0, name: 'Renda'));
-        s.addRange(id, '2026-01', null);
-        expect(s.isMandatory(s.cat(id)!, '2026-05'), isTrue);
-        for (final r in s.rangesOf(id)) {
-          s.removeRange(r.id);
-        }
-        expect(s.isMandatory(s.cat(id)!, '2026-05'), isFalse);
-      });
-
-      test('despesas em categorias de investimento não contam como gasto e contam como investido', () {
-        final s = AppState(Db.memory());
-        final lazer = s.addCategory(const Categoria(id: 0, name: 'Lazer'));
-        final etf = s.addCategory(
-          const Categoria(id: 0, name: 'ETFs', isInvestment: true),
-        );
-        s.addManual(
-          date: DateTime(2026, 6, 5),
-          description: 'cinema',
-          amount: -2000,
-          categoryId: lazer,
-        );
-        s.addManual(
-          date: DateTime(2026, 6, 6),
-          description: 'compra etf',
-          amount: -30000,
-          categoryId: etf,
-        );
-        final a = Analytics(
-          s,
-          Period.month(DateTime(2026, 6)),
-          const AnalysisFilter(),
-        );
-        expect(a.spent, 2000);
-        expect(a.invested, 30000);
-        expect(a.byCategory().map((e) => e.label), ['Lazer']);
-      });
-    },
-  );
-
-  group('categoria de despesas e receitas', () {
-    testWidgets('criar como "Despesas e receitas" e as subcategorias herdam', (
-      tester,
+  group('tipo da categoria (opcional, obrigatória, investimento)', () {
+    Future<void> create(
+      WidgetTester tester,
+      AppState s,
+      String name,
+      String kindLabel,
     ) async {
       tester.view.physicalSize = const Size(900, 2400);
       tester.view.devicePixelRatio = 2;
       addTearDown(tester.view.reset);
-      final s = AppState(Db.memory());
       await tester.pumpWidget(_app(s));
       await tester.tap(find.text('abrir'));
       await tester.pumpAndSettle();
-      await tester.enterText(
-        find.widgetWithText(TextField, 'Nome'),
-        'Vendas e compras',
-      );
-      await tester.ensureVisible(find.text('Despesa opcional'));
-      await tester.tap(find.text('Despesa opcional'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Despesas e receitas').last);
-      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome'), name);
+      if (kindLabel != 'Despesa opcional') {
+        await tester.ensureVisible(find.text('Despesa opcional'));
+        await tester.tap(find.text('Despesa opcional'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(kindLabel).last);
+        await tester.pumpAndSettle();
+      }
       await tester.tap(find.text('Guardar'));
       await tester.pumpAndSettle();
+    }
+
+    testWidgets('por omissão é despesa opcional', (tester) async {
+      final s = AppState(Db.memory());
+      await create(tester, s, 'Lazer', 'Despesa opcional');
       final c = s.categories.single;
-      expect((c.both, c.isIncome, c.isInvestment), (true, false, false));
-      final id = s.saveCategoryWithSubs(c, [
-        (id: null, name: 'OLX', emoji: ''),
-      ]);
-      expect(s.childrenOf(id).single.both, isTrue);
+      expect(
+        (c.isIncome, c.isInvestment, s.rangesOf(c.id).isEmpty),
+        (false, false, true),
+      );
     });
 
-    test('os gastos contam como despesa e as entradas como receita, sem se anularem', () {
+    testWidgets('despesa obrigatória cria o período e conta como obrigatória', (
+      tester,
+    ) async {
       final s = AppState(Db.memory());
-      final olx = s.addCategory(
-        const Categoria(id: 0, name: 'OLX', both: true),
+      await create(tester, s, 'Renda', 'Despesa obrigatória');
+      final c = s.categories.single;
+      expect(s.isMandatory(c, '2026-03'), isTrue);
+      expect(s.isMandatory(c, '2031-12'), isTrue);
+    });
+
+    testWidgets('investimento fica marcado e as subcategorias herdam', (
+      tester,
+    ) async {
+      final s = AppState(Db.memory());
+      await create(tester, s, 'ETFs', 'Investimento');
+      final c = s.categories.single;
+      expect(
+        (c.isInvestment, c.isIncome, c.budgetType),
+        (true, false, BudgetType.goal),
       );
+      final id = s.saveCategoryWithSubs(c, [
+        (id: null, name: 'Mundo', emoji: ''),
+      ]);
+      expect(s.childrenOf(id).single.isInvestment, isTrue);
+    });
+
+    testWidgets(
+      'o tipo já não oferece "Rendimento" nem "Despesas e receitas": todas as categorias servem para os dois',
+      (tester) async {
+        tester.view.physicalSize = const Size(900, 2400);
+        tester.view.devicePixelRatio = 2;
+        addTearDown(tester.view.reset);
+        final s = AppState(Db.memory());
+        await tester.pumpWidget(_app(s));
+        await tester.tap(find.text('abrir'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Despesa opcional'));
+        await tester.tap(find.text('Despesa opcional'));
+        await tester.pumpAndSettle();
+        expect(find.text('Despesa obrigatória'), findsWidgets);
+        expect(find.text('Investimento'), findsWidgets);
+        expect(find.text('Rendimento'), findsNothing);
+        expect(find.text('Despesas e receitas'), findsNothing);
+      },
+    );
+
+    test('mudar de obrigatória para opcional apaga os períodos', () {
+      final s = AppState(Db.memory());
+      final id = s.addCategory(const Categoria(id: 0, name: 'Renda'));
+      s.addRange(id, '2026-01', null);
+      expect(s.isMandatory(s.cat(id)!, '2026-05'), isTrue);
+      for (final r in s.rangesOf(id)) {
+        s.removeRange(r.id);
+      }
+      expect(s.isMandatory(s.cat(id)!, '2026-05'), isFalse);
+    });
+
+    test('despesas em categorias de investimento não contam como gasto e contam como investido', () {
+      final s = AppState(Db.memory());
+      final lazer = s.addCategory(const Categoria(id: 0, name: 'Lazer'));
+      final etf = s.addCategory(
+        const Categoria(id: 0, name: 'ETFs', isInvestment: true),
+      );
+      s.addManual(
+        date: DateTime(2026, 6, 5),
+        description: 'cinema',
+        amount: -2000,
+        categoryId: lazer,
+      );
+      s.addManual(
+        date: DateTime(2026, 6, 6),
+        description: 'compra etf',
+        amount: -30000,
+        categoryId: etf,
+      );
+      final a = Analytics(
+        s,
+        Period.month(DateTime(2026, 6)),
+        const AnalysisFilter(),
+      );
+      expect(a.spent, 2000);
+      expect(a.invested, 30000);
+      expect(a.byCategory().map((e) => e.label), ['Lazer']);
+    });
+  });
+
+  group('categorias partilhadas entre despesas e receitas', () {
+    test('numa categoria qualquer, a saída é despesa e a entrada é receita, sem se anularem', () {
+      final s = AppState(Db.memory());
+      final olx = s.addCategory(const Categoria(id: 0, name: 'OLX'));
       s.addManual(
         date: DateTime(2026, 6, 5),
         description: 'compra',
@@ -394,16 +375,16 @@ void main() {
       );
       expect(a.spent, 4000);
       expect(a.incomeReceived, 15000);
-      // no orçamento, a parte das receitas não abate ao gasto da categoria
+      // no orçamento, a entrada também não abate ao gasto da categoria
       final own = s.totalsByCategory(Period.month(DateTime(2026, 6)));
       expect(own[olx], 4000);
     });
 
     testWidgets(
-      'aparece na escolha de categoria tanto em despesa como em receita',
+      'todas as categorias aparecem na escolha, tanto em despesa como em receita',
       (tester) async {
         final s = AppState(Db.memory());
-        s.addCategory(const Categoria(id: 0, name: 'OLX', both: true));
+        s.addCategory(const Categoria(id: 0, name: 'OLX'));
         s.addCategory(const Categoria(id: 0, name: 'Salário', isIncome: true));
         s.addCategory(const Categoria(id: 0, name: 'Lazer'));
         await tester.pumpWidget(
@@ -428,7 +409,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.widgetWithText(ChoiceChip, 'OLX'), findsOneWidget);
         expect(find.widgetWithText(ChoiceChip, 'Lazer'), findsOneWidget);
-        expect(find.widgetWithText(ChoiceChip, 'Salário'), findsNothing);
+        // as categorias antigas só de receita também servem para despesas
+        expect(find.widgetWithText(ChoiceChip, 'Salário'), findsOneWidget);
         Navigator.of(tester.element(find.byType(Scaffold).first)).pop();
       },
     );

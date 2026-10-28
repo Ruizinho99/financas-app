@@ -96,14 +96,11 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     super.initState();
     final e = widget.edit;
     final st = context.read<AppState>();
+    // receita e "despesas e receitas" deixaram de ser tipos: qualquer categoria serve para os dois
     kind = e == null
         ? _Kind.optional
-        : e.isIncome
-        ? _Kind.income
         : e.isInvestment
         ? _Kind.investment
-        : e.both
-        ? _Kind.both
         : (st.rangesOf(e.id).isNotEmpty ? _Kind.mandatory : _Kind.optional);
     initialKind = kind;
     if (e != null && e.parentId == null) {
@@ -235,15 +232,15 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       id: e?.id ?? 0,
       name: name.text.trim(),
       parentId: parent,
-      isIncome: parentCat?.isIncome ?? income,
+      // as marcas antigas de receita e "despesas e receitas" guardam-se como estão (já não mudam nada)
+      isIncome: e?.isIncome ?? parentCat?.isIncome ?? false,
       isInvestment: parentCat?.isInvestment ?? (kind == _Kind.investment),
-      both: parentCat?.both ?? (kind == _Kind.both),
+      both: e?.both ?? parentCat?.both ?? false,
       emoji: emoji,
       description: desc.text.trim(),
       budgetType:
           e?.budgetType ??
-          (((parentCat?.isIncome ?? income) ||
-                  (parentCat?.isInvestment ?? (kind == _Kind.investment)))
+          ((parentCat?.isInvestment ?? (kind == _Kind.investment))
               ? BudgetType.goal
               : BudgetType.limit),
       budgetPercent: e?.budgetPercent ?? false,
@@ -656,7 +653,11 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                           helperMaxLines: 3,
                         ),
                         items: [
-                          for (final k in _Kind.values)
+                          for (final k in const [
+                            _Kind.optional,
+                            _Kind.mandatory,
+                            _Kind.investment,
+                          ])
                             DropdownMenuItem(
                               value: k,
                               child: Text(k.labelL(l)),

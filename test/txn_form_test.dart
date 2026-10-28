@@ -129,7 +129,9 @@ void main() {
     expect(d.s.transactions.length, before);
   });
 
-  testWidgets('receita só mostra categorias de rendimento', (tester) async {
+  testWidgets('receita mostra todas as categorias, as mesmas da despesa', (
+    tester,
+  ) async {
     final d = buildAnalysisData();
     await _pump(tester, d.s);
     await tester.tap(find.text('Receita'));
@@ -137,7 +139,8 @@ void main() {
     await tester.tap(find.text('Escolher categoria'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(ChoiceChip, 'Salário'), findsWidgets);
-    expect(find.widgetWithText(ChoiceChip, 'Casa'), findsNothing);
+    // a categoria de despesa também serve para uma receita (ex.: um reembolso)
+    expect(find.widgetWithText(ChoiceChip, 'Casa'), findsWidgets);
   });
 
   testWidgets(

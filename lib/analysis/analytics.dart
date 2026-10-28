@@ -220,8 +220,7 @@ class Analytics {
     for (final t in s.transactions) {
       if (!p.contains(t.date) || t.isTransfer || t.amount >= 0) continue;
       final c = s.cat(t.categoryId);
-      if (c != null && (c.isIncome || c.isInvestment))
-        continue; // investir não é gastar
+      if (c != null && c.isInvestment) continue; // investir não é gastar
       final spent = -s.effectiveAmount(t);
       if (spent <= 0) continue; // despesa anulada por completo
       final mk = s.monthKeyOf(t.date);
@@ -335,8 +334,7 @@ class Analytics {
     var total = 0;
     for (final t in s.transactions) {
       if (!p.contains(t.date) || t.isTransfer || t.amount <= 0) continue;
-      final ic = s.cat(t.categoryId);
-      if (!((ic?.isIncome ?? false) || (ic?.both ?? false))) continue;
+      if (!s.isIncomeTxn(t)) continue;
       if (filter.accountIds.isNotEmpty &&
           (t.accountId == null || !filter.accountIds.contains(t.accountId)))
         continue;
@@ -623,7 +621,7 @@ class Analytics {
 
     // 1) orçamentos de limite ultrapassados
     final own = s.totalsByCategory(period);
-    for (final c in s.roots.where((c) => !c.isIncome)) {
+    for (final c in s.roots) {
       final target = s.targetIn(c, period);
       final spentC = s.rollup(c, own);
       final limitLike = c.budgetType == BudgetType.limit;
@@ -755,7 +753,7 @@ class Analytics {
 
     // 1) orçamentos de limite ultrapassados
     final own = s.totalsByCategory(period);
-    for (final c in s.roots.where((c) => !c.isIncome)) {
+    for (final c in s.roots) {
       final target = s.targetIn(c, period);
       final spentC = s.rollup(c, own);
       final limitLike = c.budgetType == BudgetType.limit;
@@ -915,7 +913,7 @@ class Analytics {
   List<CategoryStat> budgetStats() {
     final own = s.totalsByCategory(period);
     final out = <CategoryStat>[];
-    for (final c in s.roots.where((c) => !c.isIncome)) {
+    for (final c in s.roots) {
       final t = s.targetIn(c, period);
       if (t <= 0) continue;
       out.add(CategoryStat(c, s.rollup(c, own), t));

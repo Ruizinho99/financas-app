@@ -324,9 +324,7 @@ class CategoriesScreen extends StatelessWidget {
         ),
         subtitle: Text(
           [
-            if (c.isIncome) l.morIncomeKind,
             if (c.isInvestment) l.morInvestmentKind,
-            if (c.both) l.morBothKinds,
             if (dates != null) dates,
             l.morTxnCount(count),
             if (s.rangesOf(c.id).isNotEmpty)

@@ -378,7 +378,7 @@ class AppState extends ChangeNotifier {
         unclassified += spent;
         continue;
       }
-      if (c.isIncome || c.isInvestment) continue;
+      if (c.isInvestment) continue;
       final target = isMandatory(c, monthKeyOf(t.date)) ? mand : opt;
       target[c.id] = (target[c.id] ?? 0) + spent;
     }
@@ -545,20 +545,30 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Estatísticas ----------
-  /// Gasto por categoria (inclui subcategorias nas categorias-pai).
-  /// Despesas contam como valor positivo; rendimentos também.
+  /// Despesa que conta nas contas: saída que não é transferência nem investimento.
+  /// Qualquer categoria serve para despesas e para receitas: quem decide é o sinal do movimento.
+  bool isSpend(Txn t) =>
+      t.amount < 0 &&
+      !t.isTransfer &&
+      !(cat(t.categoryId)?.isInvestment ?? false);
+
+  /// Receita que conta nas contas: entrada com categoria que não é transferência nem investimento.
+  bool isIncomeTxn(Txn t) {
+    if (t.amount <= 0 || t.isTransfer) return false;
+    final c = cat(t.categoryId);
+    return c != null && !c.isInvestment;
+  }
+
+  /// Gasto por categoria (inclui subcategorias nas categorias-pai). Só as saídas contam:
+  /// as entradas são receita, mesmo na mesma categoria.
   Map<int, int> totalsByCategory(Period p) {
     final own = <int, int>{};
     for (final t in txnsIn(p)) {
-      if (t.isTransfer) continue;
+      if (t.isTransfer || t.amount >= 0) continue;
       final id = t.categoryId;
       if (id == null) continue;
-      final c = cat(id);
-      if (c == null) continue;
-      if (c.both && t.amount > 0)
-        continue; // a parte das receitas não abate ao gasto
-      final v = effectiveAmount(t);
-      own[id] = (own[id] ?? 0) + (c.isIncome ? v : -v);
+      if (cat(id) == null) continue;
+      own[id] = (own[id] ?? 0) - effectiveAmount(t);
     }
     return own;
   }
@@ -661,9 +671,8 @@ class AppState extends ChangeNotifier {
         .fold(0, (s, ch) => s + ch.monthlyTarget(salary));
   }
 
-  int totalAllocated(int salary, [String? month]) => roots
-      .where((c) => !c.isIncome)
-      .fold(0, (s, c) => s + effectiveMonthlyTarget(c, salary, month));
+  int totalAllocated(int salary, [String? month]) =>
+      roots.fold(0, (s, c) => s + effectiveMonthlyTarget(c, salary, month));
 
   /// Alocação de [c] no período: soma mês a mês (suporta % e salários diferentes).
   int targetIn(Categoria c, Period p) {

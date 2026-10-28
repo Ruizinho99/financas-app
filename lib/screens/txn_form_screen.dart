@@ -92,9 +92,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     type = t;
     if (t != _Type.income) reversesId = null;
     if (t == _Type.transfer) categoryId = null;
-    final c = s.cat(categoryId);
-    if (c != null && !c.both && c.isIncome != (t == _Type.income))
-      categoryId = null;
+    // a categoria mantém-se ao trocar entre despesa e receita: é a mesma para os dois
   });
 
   int? _cents() {

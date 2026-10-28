@@ -167,7 +167,7 @@ class _FilterSheetState extends State<_FilterSheet> {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final l = AppLocalizations.of(context)!;
-    final roots = s.roots.where((r) => !r.isIncome).toList();
+    final roots = s.roots.toList();
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.9,

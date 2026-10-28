@@ -181,9 +181,7 @@ class _CategorySelectorState extends State<CategorySelector> {
                     ? l.frmEnded
                     : l.frmUpcoming));
 
-    final allRoots = s.roots
-        .where((r) => income == null || r.both || r.isIncome == income)
-        .toList();
+    final allRoots = s.roots.toList();
     final roots = allRoots.where(visible).toList();
     final subs = rootId == null
         ? <Categoria>[]
