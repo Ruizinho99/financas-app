@@ -43,8 +43,15 @@
   "bpNoCategoriesBudget": "Ainda não tens categorias. Cria a primeira abaixo (ex.: Habitação) e define o orçamento de cada uma.",
   "bpCategories": "Categorias",
   "bpNewCategory": "Nova categoria",
-  "bpBudgetLimit": "Limite",
-  "bpBudgetGoal": "Objetivo",
+  "bpStatusOk": "✓ Dentro do máximo · restam {left}",
+  "@bpStatusOk": {"placeholders": {"left": {"type": "String"}}},
+  "bpStatusOver": "⚠ Excedido em {over}",
+  "@bpStatusOver": {"placeholders": {"over": {"type": "String"}}},
+  "bpStatusMinOk": "✓ Mínimo atingido",
+  "bpStatusMinBelow": "Abaixo do mínimo · faltam {missing}",
+  "@bpStatusMinBelow": {"placeholders": {"missing": {"type": "String"}}},
+  "bpBudgetLimit": "Máximo",
+  "bpBudgetGoal": "Mínimo",
   "bpSpentOfTarget": "{spent} de {target} · {type}",
   "@bpSpentOfTarget": {
     "placeholders": {
@@ -124,8 +131,8 @@
     }
   },
   "bpHasBudget": "Ter orçamento",
-  "bpLimitHint": "Limite: queres gastar no máximo este valor.",
-  "bpGoalHint": "Objetivo: queres atingir pelo menos este valor (ex.: poupança).",
+  "bpLimitHint": "Máximo: queres gastar no máximo este valor (ex.: compras). Passar disto aparece como excedido.",
+  "bpGoalHint": "Mínimo: queres atingir pelo menos este valor (ex.: investimentos). Ficar abaixo aparece como em falta.",
   "bpValueWithCurrency": "Valor ({currency})",
   "@bpValueWithCurrency": {
     "placeholders": {

@@ -267,6 +267,16 @@ class _CategoryBudgetTile extends StatelessWidget {
                       ),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
+                    Text(
+                      budgetStatus(l, type, spent, target),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: BudgetBar.colorFor(
+                          type,
+                          target <= 0 ? 0 : spent / target,
+                        ),
+                      ),
+                    ),
                   ],
                 )
               : Text(
@@ -369,6 +379,16 @@ class _CategoryBudgetTile extends StatelessWidget {
                           : l.bpBudgetGoal,
                     ),
                   ),
+                  Text(
+                    budgetStatus(l, k.budgetType, spent, t),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: BudgetBar.colorFor(
+                        k.budgetType,
+                        t <= 0 ? 0 : spent / t,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             )
@@ -389,6 +409,19 @@ class _CategoryBudgetTile extends StatelessWidget {
           )
         : l.bpBudgetDescValue(type, fmtMoney(c.budgetValue));
   }
+}
+
+/// Estado de um orçamento: máximo (excedido ou não) ou mínimo (atingido ou em falta).
+String budgetStatus(AppLocalizations l, BudgetType type, int spent, int target) {
+  final s = spent < 0 ? 0 : spent;
+  if (type == BudgetType.limit) {
+    return s > target
+        ? l.bpStatusOver(fmtMoney(s - target))
+        : l.bpStatusOk(fmtMoney(target - s));
+  }
+  return s >= target
+      ? l.bpStatusMinOk
+      : l.bpStatusMinBelow(fmtMoney(target - s));
 }
 
 /// Define a alocação de uma categoria/subcategoria.
