@@ -3581,6 +3581,17 @@
   "morInstalledVersion": "Installed version",
   "morUpdateDescription": "Looks on GitHub for a newer version and installs it over this one, without losing data. The internet is only used when you tap the button.",
   "morChecking": "Checking…",
+  "updPopupTitle": "A new version is available",
+  "updPopupBody": "Version {tag} is available. Do you want to update now?",
+  "@updPopupBody": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "updPopupLater": "Later",
+  "updPopupNow": "Update",
   "morCheckUpdates": "Check for updates",
   "morNewVersion": "There is a new version: {version}",
   "@morNewVersion": {

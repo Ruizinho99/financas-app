@@ -13,10 +13,10 @@ import 'onboarding/onboarding_screen.dart';
 import 'screens/month_screen.dart';
 import 'screens/more_screen.dart';
 import 'screens/transactions_screen.dart';
+import 'screens/update_screen.dart';
 import 'util/format.dart';
 import 'state/app_state.dart';
 import 'update/update_checker.dart';
-import 'update/update_notifications.dart';
 import 'update/update_service.dart';
 import 'util/receipts.dart';
 
@@ -26,10 +26,7 @@ Future<void> _checkUpdates(Db db) async {
       db: db,
       service: UpdateService(),
       currentVersion: await UpdateChecker.installedVersion(),
-      notify: (tag) => UpdateNotifications.show(
-        tag,
-        appLanguage: db.setting('app_language') ?? 'system',
-      ),
+      notify: (tag) async => pendingUpdate.value = tag,
     );
     await checker.check();
   } catch (_) {
@@ -56,7 +53,7 @@ Future<void> main() async {
   await initializeDateFormatting('en');
   await Receipts.init();
   final db = await Db.open();
-  // ao abrir: verifica se há versão nova (no máximo uma vez por dia) e avisa com uma notificação
+  // ao abrir: verifica se há versão nova (no máximo uma vez por dia) e mostra um popup na app
   unawaited(_checkUpdates(db));
   final state = AppState(db);
   unawaited(_arranque(state));
@@ -208,6 +205,51 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    pendingUpdate.addListener(_offerUpdate);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _offerUpdate());
+  }
+
+  @override
+  void dispose() {
+    pendingUpdate.removeListener(_offerUpdate);
+    super.dispose();
+  }
+
+  /// Popup "há uma versão nova" ao abrir a app (uma vez por versão).
+  Future<void> _offerUpdate() async {
+    final tag = pendingUpdate.value;
+    if (tag == null || !mounted) return;
+    pendingUpdate.value = null;
+    final l = AppLocalizations.of(context)!;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.system_update),
+        title: Text(l.updPopupTitle),
+        content: Text(l.updPopupBody(tag)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.updPopupLater),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.updPopupNow),
+          ),
+        ],
+      ),
+    );
+    if (go == true && mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const UpdateScreen()),
+      );
+    }
+  }
+
   static const pages = <Widget>[
     MonthScreen(),
     TransactionsScreen(),

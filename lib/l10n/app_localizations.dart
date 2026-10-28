@@ -7304,6 +7304,30 @@ abstract class AppLocalizations {
   /// **'A procurar…'**
   String get morChecking;
 
+  /// No description provided for @updPopupTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Há uma versão nova'**
+  String get updPopupTitle;
+
+  /// No description provided for @updPopupBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'A versão {tag} já está disponível. Queres atualizar agora?'**
+  String updPopupBody(String tag);
+
+  /// No description provided for @updPopupLater.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mais tarde'**
+  String get updPopupLater;
+
+  /// No description provided for @updPopupNow.
+  ///
+  /// In pt, this message translates to:
+  /// **'Atualizar'**
+  String get updPopupNow;
+
   /// No description provided for @morCheckUpdates.
   ///
   /// In pt, this message translates to:

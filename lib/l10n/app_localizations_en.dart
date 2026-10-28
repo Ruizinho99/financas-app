@@ -4761,6 +4761,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get morChecking => 'Checking…';
 
   @override
+  String get updPopupTitle => 'A new version is available';
+
+  @override
+  String updPopupBody(String tag) {
+    return 'Version $tag is available. Do you want to update now?';
+  }
+
+  @override
+  String get updPopupLater => 'Later';
+
+  @override
+  String get updPopupNow => 'Update';
+
+  @override
   String get morCheckUpdates => 'Check for updates';
 
   @override
