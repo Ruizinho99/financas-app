@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../update/update_checker.dart';
+
 import '../l10n/app_localizations.dart';
 
 import '../models.dart';
@@ -91,8 +93,9 @@ class MoreScreen extends StatelessWidget {
             ),
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.system_update_alt),
+          if (selfUpdateSupported)
+            ListTile(
+              leading: const Icon(Icons.system_update_alt),
             title: Text(l.morUpdatesTitle),
             subtitle: Text(l.morUpdatesSubtitle),
             onTap: () => Navigator.push(

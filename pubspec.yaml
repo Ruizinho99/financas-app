@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.14.1+17
+version: 1.15.0+18
 
 environment:
   sdk: ^3.13.5
@@ -64,10 +64,11 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
 flutter_launcher_icons:
-  # Só Android: o ícone adaptativo usa fundo sólido + primeiro plano (logótipo
+  # Android (adaptativo) e iOS: o ícone adaptativo usa fundo sólido + primeiro plano (logótipo
   # sem fundo). O fundo #0A181A é a cor exterior da imagem completa.
   android: true
-  ios: false
+  ios: true
+  remove_alpha_ios: true
   image_path: "assets/icon/icon.png"
   adaptive_icon_background: "#0A181A"
   adaptive_icon_foreground: "assets/icon/icon.png"

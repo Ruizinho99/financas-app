@@ -141,11 +141,17 @@ Future<void> _sendSystem(
         AndroidFlutterLocalNotificationsPlugin
       >();
   await android?.requestNotificationsPermission();
+  await plugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >()
+      ?.requestPermissions(alert: true, badge: true, sound: true);
   await plugin.show(
     id: id,
     title: title,
     body: body,
     notificationDetails: NotificationDetails(
+      iOS: const DarwinNotificationDetails(),
       android: AndroidNotificationDetails(
         _channelId,
         l.morAlertsChannelName,

@@ -21,6 +21,7 @@ import 'update/update_service.dart';
 import 'util/receipts.dart';
 
 Future<void> _checkUpdates(Db db) async {
+  if (!selfUpdateSupported) return;
   try {
     final checker = UpdateChecker(
       db: db,
