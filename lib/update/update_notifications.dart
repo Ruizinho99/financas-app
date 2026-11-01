@@ -14,6 +14,15 @@ Future<AppLocalizations> notificationL10n(String appLanguage) {
 }
 
 /// Notificação do sistema quando há uma versão nova no GitHub.
+/// Pede a permissão de avisos no iOS (no Android há `requestNotificationsPermission`).
+Future<void> _requestIosPermission(FlutterLocalNotificationsPlugin p) async {
+  await p
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >()
+      ?.requestPermissions(alert: true, badge: true, sound: true);
+}
+
 class UpdateNotifications {
   UpdateNotifications._();
   static final _plugin = FlutterLocalNotificationsPlugin();
@@ -26,6 +35,11 @@ class UpdateNotifications {
     await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
       ),
     );
     _ready = true;
@@ -40,11 +54,13 @@ class UpdateNotifications {
           AndroidFlutterLocalNotificationsPlugin
         >();
     await android?.requestNotificationsPermission();
+    await _requestIosPermission(_plugin);
     await _plugin.show(
       id: _id,
       title: l.morUpdateAvailableTitle,
       body: l.morUpdateAvailableBody(tag.replaceFirst('v', '')),
       notificationDetails: NotificationDetails(
+        iOS: const DarwinNotificationDetails(),
         android: AndroidNotificationDetails(
           _channel,
           l.morUpdateChannelName,
