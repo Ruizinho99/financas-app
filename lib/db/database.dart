@@ -846,6 +846,12 @@ class Db {
   }
 
   void deleteTransactions(List<int> ids) {
+    if (ids.isEmpty) return;
+    // numa só transação: apagar milhares de movimentos é rápido e não deixa o trabalho a meio
+    inTransaction(() => _deleteTransactionsIn(ids));
+  }
+
+  void _deleteTransactionsIn(List<int> ids) {
     for (final id in ids) {
       _db.execute('DELETE FROM goal_allocations WHERE txn_id=?', [id]);
       // as receitas que anulavam esta despesa passam a ser receitas normais
@@ -932,21 +938,36 @@ class Db {
   void updateImportCount(int id, int count) =>
       _db.execute('UPDATE imports SET count=? WHERE id=?', [count, id]);
 
+  /// Movimentos que vieram desta importação (os que ainda existem).
+  List<int> importTxnIds(int importId) => [
+    for (final r in _db.select(
+      'SELECT id FROM transactions WHERE import_id=?',
+      [importId],
+    ))
+      r['id'] as int,
+  ];
+
+  /// Importações, com o número de movimentos que ainda lhe pertencem (não o de quando foi feita).
   List<({int id, String filename, DateTime createdAt, int count})> imports() =>
       _db
-          .select('SELECT * FROM imports ORDER BY id DESC')
+          .select(
+            'SELECT i.id, i.filename, i.created_at, '
+            '(SELECT COUNT(*) FROM transactions t WHERE t.import_id=i.id) AS n '
+            'FROM imports i ORDER BY i.id DESC',
+          )
           .map(
             (r) => (
               id: r['id'] as int,
               filename: r['filename'] as String,
               createdAt: DateTime.parse(r['created_at'] as String),
-              count: r['count'] as int,
+              count: r['n'] as int,
             ),
           )
           .toList();
 
   void deleteImport(int id) {
-    _db.execute('DELETE FROM transactions WHERE import_id=?', [id]);
+    // pelo mesmo caminho dos movimentos apagados à mão: limpa objetivos, anulações e ligações
+    deleteTransactions(importTxnIds(id));
     _db.execute('DELETE FROM imports WHERE id=?', [id]);
   }
 

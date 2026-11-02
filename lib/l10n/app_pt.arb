@@ -3784,6 +3784,9 @@
   "morAssetFallback": "Ativo",
   "morNavMonth": "Mês",
   "morNavPortfolio": "Carteira",
+  "selSelect": "Selecionar",
+  "selSelectAll": "Selecionar tudo",
+  "selDeselectAll": "Limpar seleção",
   "uncLabel": "Por classificar",
   "uncBudgetSubtitle": "{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares",
   "@uncBudgetSubtitle": {

@@ -3784,6 +3784,9 @@
   "morAssetFallback": "Asset",
   "morNavMonth": "Month",
   "morNavPortfolio": "Portfolio",
+  "selSelect": "Select",
+  "selSelectAll": "Select all",
+  "selDeselectAll": "Clear selection",
   "uncLabel": "Unclassified",
   "uncBudgetSubtitle": "{count, plural, =1{1 transaction without a category} other{{count} transactions without a category}} · counted as spending/income until you classify",
   "@uncBudgetSubtitle": {

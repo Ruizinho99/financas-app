@@ -4987,6 +4987,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get morNavPortfolio => 'Portfolio';
 
   @override
+  String get selSelect => 'Select';
+
+  @override
+  String get selSelectAll => 'Select all';
+
+  @override
+  String get selDeselectAll => 'Clear selection';
+
+  @override
   String get uncLabel => 'Unclassified';
 
   @override
