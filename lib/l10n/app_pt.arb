@@ -3717,5 +3717,14 @@
   "morAlertsChannelDescription": "Movimentos recorrentes e entregas de investimento",
   "morAssetFallback": "Ativo",
   "morNavMonth": "Mês",
-  "morNavPortfolio": "Carteira"
+  "morNavPortfolio": "Carteira",
+  "uncLabel": "Por classificar",
+  "uncBudgetSubtitle": "{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares",
+  "@uncBudgetSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

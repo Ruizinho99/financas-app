@@ -4890,4 +4890,18 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get morNavPortfolio => 'Carteira';
+
+  @override
+  String get uncLabel => 'Por classificar';
+
+  @override
+  String uncBudgetSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimentos sem categoria',
+      one: '1 movimento sem categoria',
+    );
+    return '$_temp0 · conta como despesa/receita até classificares';
+  }
 }

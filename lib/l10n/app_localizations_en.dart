@@ -4902,4 +4902,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get morNavPortfolio => 'Portfolio';
+
+  @override
+  String get uncLabel => 'Unclassified';
+
+  @override
+  String uncBudgetSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions without a category',
+      one: '1 transaction without a category',
+    );
+    return '$_temp0 · counted as spending/income until you classify';
+  }
 }

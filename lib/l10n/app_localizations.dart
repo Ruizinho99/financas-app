@@ -7501,6 +7501,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Carteira'**
   String get morNavPortfolio;
+
+  /// No description provided for @uncLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Por classificar'**
+  String get uncLabel;
+
+  /// No description provided for @uncBudgetSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares'**
+  String uncBudgetSubtitle(int count);
 }
 
 class _AppLocalizationsDelegate
