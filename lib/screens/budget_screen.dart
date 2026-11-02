@@ -7,6 +7,7 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import '../invest/plan_widgets.dart';
 import '../widgets/common.dart';
+import 'classify_screen.dart';
 
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({super.key});
@@ -30,10 +31,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
     final salary = s.salaryFor(key);
     final own = s.totalsByCategory(period);
     final allocated = s.totalAllocated(salary, key);
-    final income = s
+    final income = s.incomeIn(period);
+    // movimentos sem categoria do mês: contam como despesa/receita em "Por classificar"
+    final unclassifiedSpent = s.unclassifiedSpent(period);
+    final unclassifiedCount = s
         .txnsIn(period)
-        .where(s.isIncomeTxn)
-        .fold(0, (a, t) => a + s.effectiveAmount(t));
+        .where(s.isUnclassified)
+        .length;
     // só categorias que existem neste mês (ou que tiveram movimentos nele)
     final expenseRoots = s.roots
         .where(
@@ -146,6 +150,31 @@ class _BudgetScreenState extends State<BudgetScreen> {
               own,
               salary,
               key,
+            ),
+          if (unclassifiedCount > 0)
+            Card(
+              margin: const EdgeInsets.only(top: 6),
+              child: ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Colors.blueGrey,
+                  child: Icon(Icons.label_off_outlined, color: Colors.white),
+                ),
+                title: Text(
+                  l.uncLabel,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(l.uncBudgetSubtitle(unclassifiedCount)),
+                trailing: unclassifiedSpent > 0
+                    ? Text(
+                        fmtMoney(unclassifiedSpent),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      )
+                    : null,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ClassifyScreen()),
+                ),
+              ),
             ),
           Padding(
             padding: const EdgeInsets.only(top: 12),

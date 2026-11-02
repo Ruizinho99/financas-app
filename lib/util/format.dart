@@ -164,6 +164,6 @@ String fmtAgo(DateTime at, [DateTime? now]) {
 /// Exemplo de montante para campos vazios: "0,00" em português, "0.00" em inglês.
 String get zeroHint => formatLocale == 'en' ? '0.00' : '0,00';
 
-/// Texto de "sem categoria", no idioma da interface.
+/// Nome da categoria virtual dos movimentos sem categoria, no idioma da interface.
 String get noCategoryText =>
-    formatLocale == 'en' ? 'No category' : 'Sem categoria';
+    formatLocale == 'en' ? 'Unclassified' : 'Por classificar';

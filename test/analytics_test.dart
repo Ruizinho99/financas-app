@@ -108,7 +108,7 @@ void main() {
         'Casa',
         'Alimentação',
         'Lazer',
-        'Sem categoria',
+        'Por classificar',
       ]);
       expect(cats[1].amount, 43500);
       expect(cats[1].prev, 25000); // maio

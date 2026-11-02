@@ -3684,5 +3684,14 @@
   "morAlertsChannelDescription": "Recurring transactions and investment deliveries",
   "morAssetFallback": "Asset",
   "morNavMonth": "Month",
-  "morNavPortfolio": "Portfolio"
+  "morNavPortfolio": "Portfolio",
+  "uncLabel": "Unclassified",
+  "uncBudgetSubtitle": "{count, plural, =1{1 transaction without a category} other{{count} transactions without a category}} · counted as spending/income until you classify",
+  "@uncBudgetSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

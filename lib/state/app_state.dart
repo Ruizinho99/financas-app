@@ -553,11 +553,30 @@ class AppState extends ChangeNotifier {
       !t.isTransfer &&
       !(cat(t.categoryId)?.isInvestment ?? false);
 
-  /// Receita que conta nas contas: entrada com categoria que não é transferência nem investimento.
+  /// Receita que conta nas contas: entrada que não é transferência nem investimento. Uma entrada sem
+  /// categoria conta como receita (fica em "Por classificar" até ser classificada).
   bool isIncomeTxn(Txn t) {
     if (t.amount <= 0 || t.isTransfer) return false;
-    final c = cat(t.categoryId);
-    return c != null && !c.isInvestment;
+    return !(cat(t.categoryId)?.isInvestment ?? false);
+  }
+
+  /// Movimento sem categoria (a categoria virtual "Por classificar"; não existe na base de dados).
+  /// As transferências entre contas não precisam de categoria e ficam de fora.
+  bool isUnclassified(Txn t) => !t.isTransfer && cat(t.categoryId) == null;
+
+  /// Receita do período (a mesma conta na Análise, no Mês e no Orçamento).
+  int incomeIn(Period p) =>
+      txnsIn(p).where(isIncomeTxn).fold(0, (a, t) => a + effectiveAmount(t));
+
+  /// Despesa do período sem categoria ("Por classificar"). Soma com `totalsByCategory` dá a despesa total.
+  int unclassifiedSpent(Period p) {
+    var total = 0;
+    for (final t in txnsIn(p)) {
+      if (!isSpend(t) || cat(t.categoryId) != null) continue;
+      final spent = -effectiveAmount(t);
+      if (spent > 0) total += spent;
+    }
+    return total;
   }
 
   /// Gasto por categoria (inclui subcategorias nas categorias-pai). Só as saídas contam:
