@@ -7628,6 +7628,24 @@ abstract class AppLocalizations {
   /// **'Carteira'**
   String get morNavPortfolio;
 
+  /// No description provided for @selSelect.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar'**
+  String get selSelect;
+
+  /// No description provided for @selSelectAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar tudo'**
+  String get selSelectAll;
+
+  /// No description provided for @selDeselectAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limpar seleção'**
+  String get selDeselectAll;
+
   /// No description provided for @uncLabel.
   ///
   /// In pt, this message translates to:

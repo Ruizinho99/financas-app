@@ -4977,6 +4977,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get morNavPortfolio => 'Carteira';
 
   @override
+  String get selSelect => 'Selecionar';
+
+  @override
+  String get selSelectAll => 'Selecionar tudo';
+
+  @override
+  String get selDeselectAll => 'Limpar seleção';
+
+  @override
   String get uncLabel => 'Por classificar';
 
   @override

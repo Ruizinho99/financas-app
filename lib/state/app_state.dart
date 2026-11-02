@@ -1931,8 +1931,18 @@ class AppState extends ChangeNotifier {
     reload();
   }
 
+  /// Remove a importação e todos os movimentos que vieram dela (e os recibos que só eles usavam).
   void deleteImport(int id) {
+    final ids = db.importTxnIds(id);
+    final files = db.receiptsOf(ids);
     db.deleteImport(id);
+    final still = {
+      for (final t in db.transactions())
+        if (t.receiptPath != null) t.receiptPath!,
+    };
+    for (final f in files) {
+      if (!still.contains(f)) Receipts.delete(f);
+    }
     reload();
   }
 

@@ -26,6 +26,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   int? accountFilter; // null = todas as contas
   final selected = <int>{};
   bool searching = false;
+  bool selecting = false; // modo de seleção: caixas visíveis em cada movimento
 
   @override
   void initState() {
@@ -72,14 +73,35 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         .fold(0, (a, t) => a + s.flowAmount(t));
 
     return Scaffold(
-      appBar: selected.isNotEmpty
+      appBar: selecting
           ? AppBar(
               leading: IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: () => setState(selected.clear),
+                onPressed: () => setState(() {
+                  selected.clear();
+                  selecting = false;
+                }),
               ),
               title: Text(l.selectedCount(selected.length)),
               actions: [
+                IconButton(
+                  tooltip: list.every((t) => selected.contains(t.id))
+                      ? l.selDeselectAll
+                      : l.selSelectAll,
+                  icon: Icon(
+                    list.isNotEmpty &&
+                            list.every((t) => selected.contains(t.id))
+                        ? Icons.deselect
+                        : Icons.select_all,
+                  ),
+                  onPressed: () => setState(() {
+                    if (list.every((t) => selected.contains(t.id))) {
+                      selected.removeAll(list.map((t) => t.id));
+                    } else {
+                      selected.addAll(list.map((t) => t.id));
+                    }
+                  }),
+                ),
                 if (selected.length == 1)
                   IconButton(
                     tooltip: l.edvFixAmount,
@@ -90,38 +112,51 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           .firstOrNull;
                       if (t == null) return;
                       if (await corrigirValor(context, t)) {
-                        setState(selected.clear);
+                        setState(() {
+                          selected.clear();
+                          selecting = false;
+                        });
                       }
                     },
                   ),
                 IconButton(
                   tooltip: l.categorize,
                   icon: const Icon(Icons.folder_open),
-                  onPressed: () async {
-                    final id = await pickCategory(context);
-                    if (id == null) return;
-                    s.assign(
-                      s.transactions
-                          .where((t) => selected.contains(t.id))
-                          .toList(),
-                      id == -1 ? null : id,
-                    );
-                    setState(selected.clear);
-                  },
+                  onPressed: selected.isEmpty
+                      ? null
+                      : () async {
+                          final id = await pickCategory(context);
+                          if (id == null) return;
+                          s.assign(
+                            s.transactions
+                                .where((t) => selected.contains(t.id))
+                                .toList(),
+                            id == -1 ? null : id,
+                          );
+                          setState(() {
+                            selected.clear();
+                            selecting = false;
+                          });
+                        },
                 ),
                 IconButton(
                   tooltip: l.delete,
                   icon: const Icon(Icons.delete_outline),
-                  onPressed: () async {
-                    final ok = await confirm(
-                      context,
-                      l.deleteTransactionsQuestion(selected.length),
-                    );
-                    if (ok) {
-                      s.deleteTxns(selected.toList());
-                      setState(selected.clear);
-                    }
-                  },
+                  onPressed: selected.isEmpty
+                      ? null
+                      : () async {
+                          final ok = await confirm(
+                            context,
+                            l.deleteTransactionsQuestion(selected.length),
+                          );
+                          if (ok) {
+                            s.deleteTxns(selected.toList());
+                            setState(() {
+                              selected.clear();
+                              selecting = false;
+                            });
+                          }
+                        },
                 ),
               ],
             )
@@ -137,6 +172,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     )
                   : Text(l.transactions),
               actions: [
+                IconButton(
+                  tooltip: l.selSelect,
+                  icon: const Icon(Icons.checklist),
+                  onPressed: () => setState(() => selecting = true),
+                ),
                 IconButton(
                   icon: Icon(searching ? Icons.close : Icons.search),
                   onPressed: () => setState(() {
@@ -264,14 +304,23 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       final c = s.cat(t.categoryId);
                       final tile = ListTile(
                         selected: selected.contains(t.id),
-                        leading: t.isTransfer
-                            ? const Icon(Icons.swap_horiz)
-                            : (c == null
-                                  ? const Icon(
-                                      Icons.help_outline,
-                                      color: Colors.grey,
-                                    )
-                                  : CatBadge(c)),
+                        leading: selecting
+                            ? Checkbox(
+                                value: selected.contains(t.id),
+                                onChanged: (_) => setState(
+                                  () => selected.contains(t.id)
+                                      ? selected.remove(t.id)
+                                      : selected.add(t.id),
+                                ),
+                              )
+                            : (t.isTransfer
+                                  ? const Icon(Icons.swap_horiz)
+                                  : (c == null
+                                        ? const Icon(
+                                            Icons.help_outline,
+                                            color: Colors.grey,
+                                          )
+                                        : CatBadge(c))),
                         title: Text(
                           s.displayName(t),
                           maxLines: 2,
@@ -319,14 +368,17 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             MoneyText(t.amount, colored: !t.isTransfer),
                           ],
                         ),
-                        onTap: () => selected.isNotEmpty
+                        onTap: () => selecting
                             ? setState(
                                 () => selected.contains(t.id)
                                     ? selected.remove(t.id)
                                     : selected.add(t.id),
                               )
                             : showTxnEditor(context, edit: t),
-                        onLongPress: () => setState(() => selected.add(t.id)),
+                        onLongPress: () => setState(() {
+                          selecting = true;
+                          selected.add(t.id);
+                        }),
                       );
                       if (!showHeader) return tile;
                       return Column(
