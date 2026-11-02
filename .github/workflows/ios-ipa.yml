@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag da release onde juntar o .ipa (ex.: v1.15.1)
+        description: "Tag da release onde juntar o .ipa, por exemplo v1.15.1"
         required: true
 
 permissions:
