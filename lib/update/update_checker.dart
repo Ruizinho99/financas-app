@@ -7,6 +7,9 @@ import 'update_service.dart';
 /// A atualização pela app instala um APK: só existe no Android (no iOS atualiza-se pela App Store / TestFlight).
 bool get selfUpdateSupported => defaultTargetPlatform == TargetPlatform.android;
 
+/// No iOS a cópia de segurança passa pelo iCloud Drive / app Ficheiros (não pelo Google Drive).
+bool get isIosPlatform => defaultTargetPlatform == TargetPlatform.iOS;
+
 /// Tag da versão nova encontrada ao abrir a app; o ecrã principal mostra um popup e limpa-a.
 final ValueNotifier<String?> pendingUpdate = ValueNotifier(null);
 

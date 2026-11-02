@@ -198,7 +198,7 @@ class MoreScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.backup_outlined),
             title: Text(l.morBackupTitle),
-            subtitle: Text(l.morBackupSubtitle),
+            subtitle: Text(isIosPlatform ? l.iosBackupSubtitle : l.morBackupSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BackupScreen()),

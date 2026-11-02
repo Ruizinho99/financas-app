@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
+import '../update/update_checker.dart' show isIosPlatform;
 import '../util/format.dart';
 import '../widgets/form_kit.dart';
 import 'transactions_screen.dart' show confirm;
@@ -86,7 +87,7 @@ class _BackupScreenState extends State<BackupScreen> {
               Text(l.morBackupDescription, style: tt.bodyMedium),
               const SizedBox(height: 10),
               Text(
-                l.morBackupDriveHint,
+                isIosPlatform ? l.iosBackupDriveHint : l.morBackupDriveHint,
                 style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
               if (s.lastBackup != null) ...[
@@ -103,7 +104,7 @@ class _BackupScreenState extends State<BackupScreen> {
               FilledButton.icon(
                 onPressed: busy ? null : () => _save(s),
                 icon: const Icon(Icons.cloud_upload_outlined),
-                label: Text(l.morSaveBackup),
+                label: Text(isIosPlatform ? l.iosSaveBackup : l.morSaveBackup),
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
