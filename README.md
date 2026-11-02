@@ -1,6 +1,6 @@
 # Finanças
 
-App Android (Flutter) para importar extratos bancários (PDF, CSV, Excel), classificar movimentos, definir orçamento e analisar despesas. **Tudo fica guardado localmente no telemóvel** (SQLite). A internet só é usada, a pedido, para atualizar preços de investimentos (é enviado apenas o símbolo do ativo).
+App Android e iOS (Flutter) para importar extratos bancários (PDF, CSV, Excel), classificar movimentos, definir orçamento e analisar despesas. **Tudo fica guardado localmente no telemóvel** (SQLite). A internet só é usada, a pedido, para atualizar preços de investimentos (é enviado apenas o símbolo do ativo).
 
 ## Funcionalidades
 - **Movimentos**: lista, pesquisa, filtros (despesas, receitas, transferências, por conta), seleção múltipla. Novo movimento em ecrã completo com contas, recibos (foto ou ficheiro) e transferências entre contas.
@@ -22,6 +22,16 @@ flutter build apk --release
 ```
 
 Os APKs estão na secção **Releases** do GitHub.
+
+## iOS
+
+Cada release traz também `financas-vX.Y.Z-ios-unsigned.ipa`, **sem assinatura** (não há conta paga da Apple). Para instalar no iPhone:
+
+1. Instala o [AltStore](https://altstore.io), o [SideStore](https://sidestore.io) ou o [Sideloadly](https://sideloadly.io) e abre o `.ipa` com um deles.
+2. A app é assinada com o teu Apple ID gratuito. Com conta gratuita a assinatura expira ao fim de 7 dias; o AltStore/SideStore renovam-na sozinhos enquanto estiverem a funcionar.
+3. Em alternativa, abre `ios/Runner.xcworkspace` no Xcode, escolhe a tua equipa em *Signing* e corre no telemóvel (`flutter build ios`; precisa de CocoaPods).
+
+A atualização pela app (Mais › Atualizações) só existe no Android; no iOS instala-se o `.ipa` novo.
 
 - **Carteira (investimentos)**: plataformas (XTB, exchange…), ativos com preço médio de compra e posição inicial, compras, vendas e dividendos, dinheiro por alocar (standby), transferências do banco associadas a cada plataforma (e lembradas nas próximas importações) e atualização de preços por APIs gratuitas sem chave (Yahoo Finance e CoinGecko), convertidos para euros. Ativos em dólares (ou outras moedas): o preço de compra fica na moeda do ativo com o câmbio de cada compra, e vês o ganho em USD e em EUR. A posição inicial pode ser reaberta e é substituída ao guardar. Importação de compras, vendas e dividendos a partir de PDF (com texto), CSV ou Excel da corretora: colunas reconhecidas automaticamente (e ajustáveis), ativos ligados aos que já tens ou criados, câmbio por moeda e deteção de operações já importadas. As importações (extratos e operações) podem ser restringidas a um intervalo de datas. Cada transferência para uma plataforma pode ser ligada às compras que financiou; o que sobra fica em espera.
 
