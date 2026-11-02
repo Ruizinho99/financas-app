@@ -189,7 +189,7 @@ class _TrendTabState extends State<TrendTab> {
                 children: [
                   _dot(mand, l.anMandatory),
                   _dot(opt, l.anOptional),
-                  _dot(Colors.blueGrey, l.anNoCategory),
+                  _dot(Colors.blueGrey, l.uncLabel),
                 ],
               ),
               if (best != null &&

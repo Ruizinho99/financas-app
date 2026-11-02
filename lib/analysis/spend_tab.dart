@@ -443,7 +443,7 @@ class _SliceDetail extends StatelessWidget {
     final bySub = <String, int>{};
     for (final e in slice.items) {
       final label = e.cat == null
-          ? l.anNoCategory
+          ? l.uncLabel
           : (e.cat!.parentId == null
                 ? (s.childrenOf(e.cat!.id).isEmpty
                       ? e.cat!.name

@@ -1530,6 +1530,29 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get edvFixAmount => 'Fix amount';
+
+  @override
+  String edvOriginalValue(String valor) {
+    return 'Original amount: $valor (edited)';
+  }
+
+  @override
+  String edvBelowReversed(String valor) {
+    return 'This amount is below what incomes have already reversed ($valor). Fix or unlink those reversals first.';
+  }
+
+  @override
+  String edvHasReversals(String valor) {
+    return 'This expense already has $valor reversed by incomes. Fix or unlink those reversals before turning it into an income.';
+  }
+
+  @override
+  String edvBelowOwnReversal(String valor) {
+    return 'This amount is below the part this income reverses ($valor). Reduce the reversed amount first.';
+  }
+
+  @override
   String get frmReceipt => 'Receipt';
 
   @override
@@ -4894,4 +4917,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get morNavPortfolio => 'Portfolio';
+
+  @override
+  String get uncLabel => 'Unclassified';
+
+  @override
+  String uncBudgetSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions without a category',
+      one: '1 transaction without a category',
+    );
+    return '$_temp0 · counted as spending/income until you classify';
+  }
 }

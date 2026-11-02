@@ -73,11 +73,11 @@ void main() {
     expect(an().invested, 3000);
   });
 
-  test('entradas sem categoria e transferências não são receita', () {
+  test('entradas sem categoria ("Por classificar") são receita; transferências não', () {
     final c = s.addCategory(const Categoria(id: 0, name: 'Casa'));
     mov(700, null);
     mov(900, c, transfer: true);
-    expect(an().incomeReceived, 0);
+    expect(an().incomeReceived, 700);
     expect(
       s.isIncomeTxn(s.transactions.firstWhere((t) => t.amount == 900)),
       isFalse,

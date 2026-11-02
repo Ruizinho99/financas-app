@@ -1285,6 +1285,39 @@
       }
     }
   },
+  "edvFixAmount": "Fix amount",
+  "edvOriginalValue": "Original amount: {valor} (edited)",
+  "@edvOriginalValue": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowReversed": "This amount is below what incomes have already reversed ({valor}). Fix or unlink those reversals first.",
+  "@edvBelowReversed": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvHasReversals": "This expense already has {valor} reversed by incomes. Fix or unlink those reversals before turning it into an income.",
+  "@edvHasReversals": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowOwnReversal": "This amount is below the part this income reverses ({valor}). Reduce the reversed amount first.",
+  "@edvBelowOwnReversal": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
   "frmReceipt": "Receipt",
   "frmViewReceipt": "View receipt",
   "frmTakePhoto": "Take photo",
@@ -3693,5 +3726,14 @@
   "morAlertsChannelDescription": "Recurring transactions and investment deliveries",
   "morAssetFallback": "Asset",
   "morNavMonth": "Month",
-  "morNavPortfolio": "Portfolio"
+  "morNavPortfolio": "Portfolio",
+  "uncLabel": "Unclassified",
+  "uncBudgetSubtitle": "{count, plural, =1{1 transaction without a category} other{{count} transactions without a category}} · counted as spending/income until you classify",
+  "@uncBudgetSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
