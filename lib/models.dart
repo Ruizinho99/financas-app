@@ -107,6 +107,7 @@ class Txn {
   final int? investAccountId; // entrega (ou levantamento) de/para uma plataforma de investimento
   final int? reversesId; // receita que anula uma despesa: id da despesa (nulo = não anula nada)
   final int reversedCents; // parte desta receita que anula a despesa, em cêntimos (o resto é receita normal)
+  final int? linkGroup; // grupo de movimentos ligados à mão (valem pelo líquido); nulo = não ligado
   /// Valor com que o movimento foi criado/importado, se o utilizador o corrigiu (nulo = não editado).
   final int? originalAmount;
 
@@ -129,6 +130,7 @@ class Txn {
     this.investAccountId,
     this.reversesId,
     this.reversedCents = 0,
+    this.linkGroup,
     this.originalAmount,
   });
 }

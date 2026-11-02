@@ -137,6 +137,8 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('Receita'));
       await tester.pump();
+      await tester.scrollUntilVisible(find.text('Guardar'), 300, scrollable: find.byType(Scrollable).first);
+      await tester.pump();
       await tester.tap(find.text('Guardar'));
       await tester.pump();
       expect(s.transactions.single.amount, 1250);

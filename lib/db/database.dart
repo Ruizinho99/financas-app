@@ -391,6 +391,13 @@ class Db {
         )''');
       _db.execute('PRAGMA user_version = 21');
     }
+    if (v < 22) {
+      // v22: movimentos ligados à mão (ex.: enviei 10 e recebi 11): o grupo vale pelo líquido
+      try {
+        _db.execute('ALTER TABLE transactions ADD COLUMN link_group INTEGER');
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 22');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -507,6 +514,7 @@ class Db {
     investAccountId: r['invest_account_id'] as int?,
     reversesId: r['reverses_id'] as int?,
     reversedCents: (r['reversed_cents'] as int?) ?? 0,
+    linkGroup: r['link_group'] as int?,
     originalAmount: _valorOriginal(r['hash'] as String?, r['amount'] as int),
   );
 
@@ -845,7 +853,56 @@ class Db {
         'UPDATE transactions SET reverses_id=NULL, reversed_cents=0 WHERE reverses_id=?',
         [id],
       );
+      final g = _db.select('SELECT link_group FROM transactions WHERE id=?', [
+        id,
+      ]);
       _db.execute('DELETE FROM transactions WHERE id=?', [id]);
+      // se o grupo ligado ficar com um só movimento, deixa de haver ligação
+      if (g.isNotEmpty && g.first['link_group'] != null) {
+        _tidyLinkGroup(g.first['link_group'] as int);
+      }
+    }
+  }
+
+  /// Define o grupo de ligação dos movimentos (nulo = desligar) e limpa grupos que ficaram com um só.
+  void setLinkGroup(List<int> ids, int? group) {
+    final old = <int>{};
+    for (final id in ids) {
+      for (final r in _db.select(
+        'SELECT link_group FROM transactions WHERE id=?',
+        [id],
+      )) {
+        final g = r['link_group'] as int?;
+        if (g != null) old.add(g);
+      }
+      _db.execute('UPDATE transactions SET link_group=? WHERE id=?', [
+        group,
+        id,
+      ]);
+    }
+    for (final g in old) {
+      _tidyLinkGroup(g);
+    }
+  }
+
+  /// Junta num só grupo [from] todos os movimentos do grupo [other].
+  void mergeLinkGroups(int from, int other) => _db.execute(
+    'UPDATE transactions SET link_group=? WHERE link_group=?',
+    [from, other],
+  );
+
+  void _tidyLinkGroup(int g) {
+    final n =
+        _db.select(
+              'SELECT COUNT(*) AS n FROM transactions WHERE link_group=?',
+              [g],
+            ).first['n']
+            as int;
+    if (n < 2) {
+      _db.execute(
+        'UPDATE transactions SET link_group=NULL WHERE link_group=?',
+        [g],
+      );
     }
   }
 
@@ -1391,7 +1448,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 21;
+  static const _schemaVersion = 22;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

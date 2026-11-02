@@ -4422,6 +4422,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invfKindOther => 'Other';
 
   @override
+  String get lnkField => 'Link to another transaction';
+
+  @override
+  String get lnkNone => 'None';
+
+  @override
+  String lnkLinkedTo(String names, String net) {
+    return 'Linked to $names · net $net';
+  }
+
+  @override
+  String lnkResultExpense(String amount) {
+    return 'Count as a single expense of $amount';
+  }
+
+  @override
+  String lnkResultIncome(String amount) {
+    return 'Count as a single income of $amount';
+  }
+
+  @override
+  String get lnkResultZero => 'Net zero: counts as neither expense nor income';
+
+  @override
+  String lnkRepHint(String name) {
+    return 'The net counts on the largest outgoing transaction ($name), using its category.';
+  }
+
+  @override
+  String get lnkUnlink => 'Unlink';
+
+  @override
+  String lnkUnlinkOne(String name) {
+    return 'Unlink $name';
+  }
+
+  @override
+  String get lnkPickTitle => 'Link to which transaction?';
+
+  @override
+  String get lnkSearch => 'Search transaction';
+
+  @override
+  String get lnkSuggested => 'Suggested (opposite sign, close in time)';
+
+  @override
+  String get lnkOthers => 'Other transactions';
+
+  @override
+  String get lnkNoCandidates => 'There are no transactions to link.';
+
+  @override
+  String get lnkLinked => 'Transactions linked.';
+
+  @override
+  String get lnkUnlinked => 'Transaction unlinked.';
+
+  @override
   String get morMoreTitle => 'More';
 
   @override

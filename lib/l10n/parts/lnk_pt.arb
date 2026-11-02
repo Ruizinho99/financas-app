@@ -1,0 +1,57 @@
+{
+  "@@locale": "pt",
+  "lnkField": "Ligar a outro movimento",
+  "lnkNone": "Nenhum",
+  "lnkLinkedTo": "Ligado a {names} · líquido {net}",
+  "@lnkLinkedTo": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "net": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultExpense": "Contam como uma só despesa de {amount}",
+  "@lnkResultExpense": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultIncome": "Contam como uma só receita de {amount}",
+  "@lnkResultIncome": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultZero": "Líquido zero: não conta como despesa nem como receita",
+  "lnkRepHint": "O líquido conta no movimento de saída maior ({name}), com a categoria dele.",
+  "@lnkRepHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkUnlink": "Desligar",
+  "lnkUnlinkOne": "Desligar {name}",
+  "@lnkUnlinkOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkPickTitle": "Ligar a que movimento?",
+  "lnkSearch": "Procurar movimento",
+  "lnkSuggested": "Sugeridos (sinal oposto, perto no tempo)",
+  "lnkOthers": "Outros movimentos",
+  "lnkNoCandidates": "Não há movimentos para ligar.",
+  "lnkLinked": "Movimentos ligados.",
+  "lnkUnlinked": "Movimento desligado."
+}
