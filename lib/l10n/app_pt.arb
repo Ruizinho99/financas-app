@@ -2229,6 +2229,15 @@
       }
     }
   },
+  "impfixMismatchTitle": "{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}",
+  "@impfixMismatchTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impfixMismatchHelp": "Saldo anterior + movimento deveria dar o saldo da linha, mas não dá. Confirma o valor destes movimentos no extrato antes de importar (ou ajusta as colunas).",
   "invAdd": "Adicionar",
   "invRecordOperation": "Registar operação",
   "invRecordOperationHint": "Compra, venda, dividendo ou o que já tinhas",

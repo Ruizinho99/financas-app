@@ -2927,6 +2927,21 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String impfixMismatchTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimentos não batem certo com o saldo',
+      one: '1 movimento não bate certo com o saldo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get impfixMismatchHelp =>
+      'Saldo anterior + movimento deveria dar o saldo da linha, mas não dá. Confirma o valor destes movimentos no extrato antes de importar (ou ajusta as colunas).';
+
+  @override
   String get invAdd => 'Adicionar';
 
   @override

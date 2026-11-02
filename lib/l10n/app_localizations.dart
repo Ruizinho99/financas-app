@@ -4610,6 +4610,18 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{{count} títulos} =1{1 título} other{{count} títulos}}'**
   String impTitleCount(int count);
 
+  /// No description provided for @impfixMismatchTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}'**
+  String impfixMismatchTitle(int count);
+
+  /// No description provided for @impfixMismatchHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Saldo anterior + movimento deveria dar o saldo da linha, mas não dá. Confirma o valor destes movimentos no extrato antes de importar (ou ajusta as colunas).'**
+  String get impfixMismatchHelp;
+
   /// No description provided for @invAdd.
   ///
   /// In pt, this message translates to:
