@@ -2540,6 +2540,36 @@ abstract class AppLocalizations {
   /// **'Dia {day}'**
   String dayOfMonthItem(int day);
 
+  /// No description provided for @edvFixAmount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corrigir valor'**
+  String get edvFixAmount;
+
+  /// No description provided for @edvOriginalValue.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor original: {valor} (editado)'**
+  String edvOriginalValue(String valor);
+
+  /// No description provided for @edvBelowReversed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este valor fica abaixo do que já foi anulado por receitas ({valor}). Corrige ou desliga primeiro essas anulações.'**
+  String edvBelowReversed(String valor);
+
+  /// No description provided for @edvHasReversals.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esta despesa já tem {valor} anulados por receitas. Corrige ou desliga primeiro essas anulações antes de a transformar em receita.'**
+  String edvHasReversals(String valor);
+
+  /// No description provided for @edvBelowOwnReversal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este valor fica abaixo da parte que esta receita anula ({valor}). Reduz primeiro o valor anulado.'**
+  String edvBelowOwnReversal(String valor);
+
   /// No description provided for @frmReceipt.
   ///
   /// In pt, this message translates to:
