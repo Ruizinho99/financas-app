@@ -255,12 +255,15 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       setState(() => error = l.frmEnterValidAmount);
       return;
     }
-    // não se pode reduzir o movimento abaixo do que já está associado a objetivos
+    // o valor novo não pode ficar abaixo do que está associado a objetivos nem do que já foi anulado
     final original = widget.edit;
     if (original != null) {
-      final alocado = s.allocatedOf(original.id);
-      if (cents < alocado) {
-        setState(() => error = l.frmAllocatedToGoals(fmtMoney(alocado)));
+      final novo = type == _Type.expense
+          ? -cents
+          : (type == _Type.income ? cents : (transferIn ? cents : -cents));
+      final issue = s.amountEditIssue(original, novo);
+      if (issue != null) {
+        setState(() => error = amountIssueText(l, issue.$1, issue.$2));
         return;
       }
     }
@@ -967,6 +970,10 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                 onPressed: _calculator,
               ),
               errorText: error,
+              helperText: widget.edit?.originalAmount == null
+                  ? null
+                  : l.edvOriginalValue(fmtMoney(widget.edit!.originalAmount!)),
+              helperMaxLines: 2,
             ),
           ),
           const SizedBox(height: 18),
@@ -1264,6 +1271,124 @@ class _AssociarDialogState extends State<_AssociarDialog> {
           onPressed: ok ? () => Navigator.pop(context, (gid, v)) : null,
           child: Text(widget.confirmar),
         ),
+      ],
+    );
+  }
+}
+
+/// Texto do motivo por que o valor de um movimento não pode ser corrigido para o valor pedido.
+String amountIssueText(AppLocalizations l, AmountIssue issue, int cents) =>
+    switch (issue) {
+      AmountIssue.belowAllocated => l.frmAllocatedToGoals(fmtMoney(cents)),
+      AmountIssue.belowReversed => l.edvBelowReversed(fmtMoney(cents)),
+      AmountIssue.hasReversals => l.edvHasReversals(fmtMoney(cents)),
+      AmountIssue.belowOwnReversal => l.edvBelowOwnReversal(fmtMoney(cents)),
+    };
+
+/// Ação rápida: corrige só o valor e o sinal de um movimento (despesa/receita, ou saída/entrada
+/// numa transferência), sem abrir o formulário completo. Devolve true se guardou.
+Future<bool> corrigirValor(BuildContext context, Txn t) async {
+  final r = await showDialog<bool>(
+    context: context,
+    builder: (_) => ChangeNotifierProvider<AppState>.value(
+      value: context.read<AppState>(),
+      child: _CorrigirValorDialog(t: t),
+    ),
+  );
+  return r ?? false;
+}
+
+class _CorrigirValorDialog extends StatefulWidget {
+  final Txn t;
+  const _CorrigirValorDialog({required this.t});
+  @override
+  State<_CorrigirValorDialog> createState() => _CorrigirValorDialogState();
+}
+
+class _CorrigirValorDialogState extends State<_CorrigirValorDialog> {
+  late bool entrada = widget.t.amount > 0;
+  late final ctrl = TextEditingController(
+    text: _TxnFormScreenState._centsText(widget.t.amount),
+  );
+  String? erro;
+
+  @override
+  void dispose() {
+    ctrl.dispose();
+    super.dispose();
+  }
+
+  void _guardar() {
+    final l = AppLocalizations.of(context)!;
+    final s = context.read<AppState>();
+    final txt = ctrl.text.trim();
+    var v = parseCents(txt)?.abs();
+    final e = v == null ? evalExpression(txt) : null;
+    if (v == null && e != null) v = (e * 100).round().abs();
+    if (v == null || v == 0) {
+      setState(() => erro = l.frmEnterValidAmount);
+      return;
+    }
+    final issue = s.setAmount(widget.t, entrada ? v : -v);
+    if (issue != null) {
+      setState(() => erro = amountIssueText(l, issue.$1, issue.$2));
+      return;
+    }
+    Navigator.pop(context, true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final tr = widget.t.isTransfer;
+    return AlertDialog(
+      title: Text(l.edvFixAmount),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SegmentedButton<bool>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(
+                value: false,
+                label: Text(tr ? l.frmOutgoing : l.frmExpense),
+              ),
+              ButtonSegment(
+                value: true,
+                label: Text(tr ? l.frmIncoming : l.frmIncome),
+              ),
+            ],
+            selected: {entrada},
+            onSelectionChanged: (v) => setState(() {
+              entrada = v.first;
+              erro = null;
+            }),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ctrl,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (_) => setState(() => erro = null),
+            decoration: InputDecoration(
+              labelText: l.frmAmountCurrency(baseSym),
+              prefixText: '$baseSym  ',
+              errorText: erro,
+              errorMaxLines: 4,
+              helperText: widget.t.originalAmount == null
+                  ? null
+                  : l.edvOriginalValue(fmtMoney(widget.t.originalAmount!)),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(onPressed: _guardar, child: Text(l.frmSave)),
       ],
     );
   }

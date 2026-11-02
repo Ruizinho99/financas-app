@@ -273,7 +273,7 @@ class OverviewTab extends StatelessWidget {
                           DonutItem(l.anMandatory, a.mandatoryTotal, mandColor),
                           DonutItem(l.anOptional, a.optionalTotal, optColor),
                           DonutItem(
-                            l.anNoCategory,
+                            l.uncLabel,
                             a.unclassifiedTotal,
                             Colors.blueGrey,
                           ),
@@ -310,7 +310,7 @@ class OverviewTab extends StatelessWidget {
                     if (a.unclassifiedTotal > 0)
                       LegendRow(
                         color: Colors.blueGrey,
-                        label: l.anNoCategory,
+                        label: l.uncLabel,
                         value: fmtMoney(a.unclassifiedTotal),
                         share: fmtPercent(a.unclassifiedTotal / a.spent),
                       ),

@@ -107,6 +107,9 @@ class CategoryStat {
   double get ratio => target <= 0 ? 0 : spent / target;
 }
 
+/// Motivos pelos quais o valor de um movimento não pode ser corrigido para o valor pedido.
+enum AmountIssue { belowAllocated, belowReversed, hasReversals, belowOwnReversal }
+
 class AppState extends ChangeNotifier {
   final Db db;
   final PriceService prices;
@@ -554,11 +557,30 @@ class AppState extends ChangeNotifier {
       !t.isTransfer &&
       !(cat(t.categoryId)?.isInvestment ?? false);
 
-  /// Receita que conta nas contas: entrada com categoria que não é transferência nem investimento.
+  /// Receita que conta nas contas: entrada que não é transferência nem investimento. Uma entrada sem
+  /// categoria conta como receita (fica em "Por classificar" até ser classificada).
   bool isIncomeTxn(Txn t) {
     if (flowAmount(t) <= 0 || t.isTransfer) return false;
-    final c = cat(t.categoryId);
-    return c != null && !c.isInvestment;
+    return !(cat(t.categoryId)?.isInvestment ?? false);
+  }
+
+  /// Movimento sem categoria (a categoria virtual "Por classificar"; não existe na base de dados).
+  /// As transferências entre contas não precisam de categoria e ficam de fora.
+  bool isUnclassified(Txn t) => !t.isTransfer && cat(t.categoryId) == null;
+
+  /// Receita do período (a mesma conta na Análise, no Mês e no Orçamento).
+  int incomeIn(Period p) =>
+      txnsIn(p).where(isIncomeTxn).fold(0, (a, t) => a + effectiveAmount(t));
+
+  /// Despesa do período sem categoria ("Por classificar"). Soma com `totalsByCategory` dá a despesa total.
+  int unclassifiedSpent(Period p) {
+    var total = 0;
+    for (final t in txnsIn(p)) {
+      if (!isSpend(t) || cat(t.categoryId) != null) continue;
+      final spent = -effectiveAmount(t);
+      if (spent > 0) total += spent;
+    }
+    return total;
   }
 
   /// Gasto por categoria (inclui subcategorias nas categorias-pai). Só as saídas contam:
@@ -1604,6 +1626,55 @@ class AppState extends ChangeNotifier {
       );
     }
     reload();
+  }
+
+  /// Problema que impede corrigir o valor de um movimento (nulo = pode).
+  /// [novo] é o valor novo com sinal (negativo = saída). O inteiro devolvido é o limite em causa.
+  (AmountIssue, int)? amountEditIssue(Txn e, int novo) {
+    final alocado = allocatedOf(e.id);
+    if (novo.abs() < alocado) return (AmountIssue.belowAllocated, alocado);
+    final anulado = reversedByExpense[e.id] ?? 0;
+    if (e.amount < 0 && anulado > 0) {
+      if (novo >= 0) return (AmountIssue.hasReversals, anulado);
+      if (-novo < anulado) return (AmountIssue.belowReversed, anulado);
+    }
+    if (e.amount > 0 &&
+        e.reversedCents > 0 &&
+        novo > 0 &&
+        novo < e.reversedCents) {
+      return (AmountIssue.belowOwnReversal, e.reversedCents);
+    }
+    return null;
+  }
+
+  /// Correção rápida do valor (e do sinal) de um movimento. Devolve o problema, se o houver
+  /// (e nesse caso não altera nada). Mantém o saldo importado e a chave de deduplicação.
+  /// Se a receita passa a despesa, deixa de anular a despesa a que estava ligada.
+  (AmountIssue, int)? setAmount(Txn e, int novo) {
+    final issue = amountEditIssue(e, novo);
+    if (issue != null) return issue;
+    final flipOut = e.amount > 0 && novo < 0;
+    updateTxn(
+      Txn(
+        id: e.id,
+        date: e.date,
+        description: e.description,
+        amount: novo,
+        balance: e.balance,
+        categoryId: e.categoryId,
+        note: e.note,
+        source: e.source,
+        merchantKey: e.merchantKey,
+        importId: e.importId,
+        accountId: e.accountId,
+        isTransfer: e.isTransfer,
+        receiptPath: e.receiptPath,
+        investAccountId: e.investAccountId,
+        reversesId: flipOut ? null : e.reversesId,
+        reversedCents: flipOut ? 0 : e.reversedCents,
+      ),
+    );
+    return null;
   }
 
   void updateTxn(Txn t) {

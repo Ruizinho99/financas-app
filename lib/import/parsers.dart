@@ -124,8 +124,12 @@ DateTime? _mk(int y, int m, int d) {
 // PDF
 // ---------------------------------------------------------------------------
 const _date = r'\d{1,2}[-/.]\d{1,2}(?:[-/.]\d{2,4})?';
+// Montante: o "(?<![\d.,])" impede de começar a meio de um número (antes, "1220,00" era lido como "220,00"
+// com um "1" na descrição) e o milhar com espaço só vale com grupos de 3 dígitos antes da vírgula,
+// para que o "00" dos cêntimos de um montante nunca se cole ao montante seguinte ("1220,00 400,00").
 const _amount =
-    r'[-+]?\(?\d{1,3}(?:[. ]\d{3})*,\d{2}\)?(?:\s?[-+]|\s?[CD]R?)?|[-+]?\d+\.\d{2}';
+    r'(?<![\d.,])[-+]?\(?(?:\d{1,3}(?:[. ]\d{3})+|\d+),\d{2}\)?(?:\s?[-+]|\s?[CD]R?)?(?!\d)'
+    r'|(?<![\d.,])[-+]?\d+\.\d{2}(?!\d)';
 final _lineRe = RegExp(
   '^($_date)(?:\\s+($_date))?\\s+(.*?)\\s*($_amount)(?:\\s+($_amount))?\\s*\$',
 );
@@ -403,17 +407,37 @@ List<ParsedRow> parseStatementText(String text, {int? defaultYear}) =>
     }
   }
   dropPending();
-  _inferSigns(rows);
+  reconcileBalances(rows);
   return (rows: rows, skipped: skipped);
 }
 
-/// Montantes sem sinal: inferir pela variação do saldo (linhas seguidas da mesma conta).
-void _inferSigns(List<ParsedRow> rows) {
+/// Validação cruzada com o saldo (PDF, CSV e Excel): saldo anterior + movimento = saldo desta linha.
+/// - se o valor só difere no sinal, usa a variação do saldo (montantes sem sinal nos PDFs);
+/// - se o "montante" é igual ao próprio saldo (coluna do saldo tomada por engano), usa a variação;
+/// - se mesmo assim não bate certo, marca [ParsedRow.balanceMismatch] para o utilizador confirmar.
+/// Funciona com extratos por ordem cronológica ou invertida (deteta-se pela ordem que mais bate certo).
+void reconcileBalances(List<ParsedRow> rows) {
+  bool comparable(ParsedRow p, ParsedRow c) =>
+      p.account == c.account && p.balance != null && c.balance != null;
+  var asc = 0, desc = 0;
   for (var i = 1; i < rows.length; i++) {
     final p = rows[i - 1], c = rows[i];
-    if (p.account == c.account && p.balance != null && c.balance != null) {
-      final delta = c.balance! - p.balance!;
-      if (delta.abs() == c.amount.abs()) c.amount = delta;
+    if (!comparable(p, c)) continue;
+    if ((c.balance! - p.balance!).abs() == c.amount.abs()) asc++;
+    if ((p.balance! - c.balance!).abs() == p.amount.abs()) desc++;
+  }
+  final ascending = asc >= desc;
+  for (var i = 1; i < rows.length; i++) {
+    final p = rows[i - 1], c = rows[i];
+    if (!comparable(p, c)) continue;
+    final earlier = ascending ? p : c, later = ascending ? c : p;
+    final delta = later.balance! - earlier.balance!;
+    if (later.amount == delta) continue;
+    if (delta != 0 &&
+        (delta.abs() == later.amount.abs() || later.amount == later.balance)) {
+      later.amount = delta;
+    } else {
+      later.balanceMismatch = true;
     }
   }
 }
@@ -594,30 +618,7 @@ ColumnMapping guessMapping(List<List<String>> table) {
   }
   if (bestScore >= 2) {
     m.headerRow = best;
-    final used = <int>{};
-    for (var c = 0; c < table[best].length; c++) {
-      final k = _headerKind(table[best][c]);
-      if (k == null) continue;
-      switch (k) {
-        case 'date':
-          m.date ??= c;
-        case 'desc':
-          m.description ??= c;
-        case 'amount':
-          m.amount ??= c;
-        case 'debit':
-          m.debit ??= c;
-        case 'credit':
-          m.credit ??= c;
-        case 'balance':
-          m.balance ??= c;
-      }
-      used.add(c);
-    }
-    if (m.amount != null) {
-      m.debit = null;
-      m.credit = null;
-    }
+    _applyHeader(table[best], m);
   } else {
     m.headerRow = -1;
     // Heurística por conteúdo
@@ -653,6 +654,30 @@ ColumnMapping guessMapping(List<List<String>> table) {
   return m;
 }
 
+/// Preenche o mapeamento a partir de uma linha de cabeçalho.
+void _applyHeader(List<String> hdr, ColumnMapping m) {
+  for (var c = 0; c < hdr.length; c++) {
+    switch (_headerKind(hdr[c])) {
+      case 'date':
+        m.date ??= c;
+      case 'desc':
+        m.description ??= c;
+      case 'amount':
+        m.amount ??= c;
+      case 'debit':
+        m.debit ??= c;
+      case 'credit':
+        m.credit ??= c;
+      case 'balance':
+        m.balance ??= c;
+    }
+  }
+  if (m.amount != null) {
+    m.debit = null;
+    m.credit = null;
+  }
+}
+
 String? _headerKind(String h) {
   final s = _norm(h.trim());
   if (s.isEmpty) return null;
@@ -661,30 +686,48 @@ String? _headerKind(String h) {
     r'^(DATA|DATE|DT|DATA MOV|DATA MOVIMENTO|DATA OPERACAO|DATA LANCAMENTO)',
   ).hasMatch(s))
     return 'date';
+  // "Saldo após movimento" é saldo (e não descrição): o saldo tem prioridade sobre "movimento"
+  if (RegExp(r'SALDO|BALANCE').hasMatch(s)) return 'balance';
   if (RegExp(
-    r'DESCR|DESIGNACAO|MOVIMENTO|DETALHE|NARRATIVE|PAYEE|BENEFICIARIO|REFERENCIA|MEMO|DETAILS',
+    r'DESCR|DESIGNACAO|DETALHE|NARRATIVE|PAYEE|BENEFICIARIO|REFERENCIA|MEMO|DETAILS',
   ).hasMatch(s))
     return 'desc';
-  if (RegExp(r'SALDO|BALANCE').hasMatch(s)) return 'balance';
   if (RegExp(r'DEBITO|DEBIT|SAIDA|DEBITOS').hasMatch(s)) return 'debit';
   if (RegExp(r'CREDITO|CREDIT|ENTRADA|CREDITOS').hasMatch(s)) return 'credit';
   if (RegExp(r'MONTANTE|VALOR|IMPORTE|AMOUNT|QUANTIA').hasMatch(s))
     return 'amount';
+  if (RegExp(r'MOVIMENTO').hasMatch(s)) return 'desc';
   return null;
 }
 
 List<ParsedRow> rowsFromTable(
   List<List<String>> table,
-  ColumnMapping m, {
+  ColumnMapping m0, {
   int? defaultYear,
 }) {
   final out = <ParsedRow>[];
+  var m = m0;
   String at(List<String> r, int? c) =>
       (c == null || c >= r.length) ? '' : r[c].trim();
-  for (var i = m.headerRow + 1; i < table.length; i++) {
+  for (var i = m0.headerRow + 1; i < table.length; i++) {
     final r = table[i];
     final d = parseDate(at(r, m.date), defaultYear: defaultYear);
-    if (d == null) continue;
+    if (d == null) {
+      // Cabeçalho repetido a meio do ficheiro (nova página, outra conta/tabela): as colunas podem ter
+      // mudado de sítio; sem isto o saldo de uma tabela passava a ser lido como montante.
+      if (m0.headerRow >= 0 &&
+          r.where((c) => _headerKind(c) != null).length >= 3) {
+        final n = ColumnMapping(headerRow: i);
+        _applyHeader(r, n);
+        if (n.date != null &&
+            (n.amount != null || n.debit != null || n.credit != null)) {
+          m = n;
+          // mapeamento escolhido à mão pelo utilizador mantém-se se o cabeçalho for igual ao primeiro
+          if (_sameLayout(table[m0.headerRow], r)) m = m0;
+        }
+      }
+      continue;
+    }
     int? amount;
     if (m.amount != null) {
       amount = _amt(at(r, m.amount));
@@ -705,5 +748,14 @@ List<ParsedRow> rowsFromTable(
       ),
     );
   }
+  reconcileBalances(out);
   return out;
+}
+
+bool _sameLayout(List<String> a, List<String> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (_norm(a[i].trim()) != _norm(b[i].trim())) return false;
+  }
+  return true;
 }

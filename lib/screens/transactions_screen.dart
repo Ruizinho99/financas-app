@@ -8,6 +8,7 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 import 'import_screen.dart';
+import 'txn_form_screen.dart' show corrigirValor;
 
 enum _Filter { all, uncategorized, income, expense, transfers }
 
@@ -79,6 +80,20 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ),
               title: Text(l.selectedCount(selected.length)),
               actions: [
+                if (selected.length == 1)
+                  IconButton(
+                    tooltip: l.edvFixAmount,
+                    icon: const Icon(Icons.price_change_outlined),
+                    onPressed: () async {
+                      final t = s.transactions
+                          .where((t) => t.id == selected.first)
+                          .firstOrNull;
+                      if (t == null) return;
+                      if (await corrigirValor(context, t)) {
+                        setState(selected.clear);
+                      }
+                    },
+                  ),
                 IconButton(
                   tooltip: l.categorize,
                   icon: const Icon(Icons.folder_open),
@@ -286,6 +301,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (t.valueEdited)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Tooltip(
+                                  message: l.edvOriginalValue(
+                                    fmtMoney(t.originalAmount!),
+                                  ),
+                                  child: const Icon(Icons.edit_note, size: 16),
+                                ),
+                              ),
                             if (t.receiptPath != null)
                               const Padding(
                                 padding: EdgeInsets.only(right: 4),

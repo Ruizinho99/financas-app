@@ -1285,6 +1285,39 @@
       }
     }
   },
+  "edvFixAmount": "Corrigir valor",
+  "edvOriginalValue": "Valor original: {valor} (editado)",
+  "@edvOriginalValue": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowReversed": "Este valor fica abaixo do que já foi anulado por receitas ({valor}). Corrige ou desliga primeiro essas anulações.",
+  "@edvBelowReversed": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvHasReversals": "Esta despesa já tem {valor} anulados por receitas. Corrige ou desliga primeiro essas anulações antes de a transformar em receita.",
+  "@edvHasReversals": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowOwnReversal": "Este valor fica abaixo da parte que esta receita anula ({valor}). Reduz primeiro o valor anulado.",
+  "@edvBelowOwnReversal": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
   "frmReceipt": "Recibo",
   "frmViewReceipt": "Ver recibo",
   "frmTakePhoto": "Tirar foto",
@@ -2196,6 +2229,15 @@
       }
     }
   },
+  "impfixMismatchTitle": "{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}",
+  "@impfixMismatchTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impfixMismatchHelp": "Saldo anterior + movimento deveria dar o saldo da linha, mas não dá. Confirma o valor destes movimentos no extrato antes de importar (ou ajusta as colunas).",
   "invAdd": "Adicionar",
   "invRecordOperation": "Registar operação",
   "invRecordOperationHint": "Compra, venda, dividendo ou o que já tinhas",
@@ -3738,5 +3780,14 @@
   "morAlertsChannelDescription": "Movimentos recorrentes e entregas de investimento",
   "morAssetFallback": "Ativo",
   "morNavMonth": "Mês",
-  "morNavPortfolio": "Carteira"
+  "morNavPortfolio": "Carteira",
+  "uncLabel": "Por classificar",
+  "uncBudgetSubtitle": "{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares",
+  "@uncBudgetSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

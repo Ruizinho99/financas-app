@@ -108,6 +108,10 @@ class Txn {
   final int? reversesId; // receita que anula uma despesa: id da despesa (nulo = não anula nada)
   final int reversedCents; // parte desta receita que anula a despesa, em cêntimos (o resto é receita normal)
   final int? linkGroup; // grupo de movimentos ligados à mão (valem pelo líquido); nulo = não ligado
+  /// Valor com que o movimento foi criado/importado, se o utilizador o corrigiu (nulo = não editado).
+  final int? originalAmount;
+
+  bool get valueEdited => originalAmount != null;
 
   const Txn({
     required this.id,
@@ -127,6 +131,7 @@ class Txn {
     this.reversesId,
     this.reversedCents = 0,
     this.linkGroup,
+    this.originalAmount,
   });
 }
 
@@ -189,6 +194,8 @@ class ParsedRow {
   String?
   account; // nome da conta, quando o extrato tem várias (ex.: "Conta Simples")
   bool isTransfer; // transferência entre contas do próprio utilizador
+  // saldo anterior + movimento não bate com o saldo desta linha (valor a confirmar na pré-visualização)
+  bool balanceMismatch = false;
   ParsedRow(
     this.date,
     this.description,

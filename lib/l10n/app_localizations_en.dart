@@ -1530,6 +1530,29 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get edvFixAmount => 'Fix amount';
+
+  @override
+  String edvOriginalValue(String valor) {
+    return 'Original amount: $valor (edited)';
+  }
+
+  @override
+  String edvBelowReversed(String valor) {
+    return 'This amount is below what incomes have already reversed ($valor). Fix or unlink those reversals first.';
+  }
+
+  @override
+  String edvHasReversals(String valor) {
+    return 'This expense already has $valor reversed by incomes. Fix or unlink those reversals before turning it into an income.';
+  }
+
+  @override
+  String edvBelowOwnReversal(String valor) {
+    return 'This amount is below the part this income reverses ($valor). Reduce the reversed amount first.';
+  }
+
+  @override
   String get frmReceipt => 'Receipt';
 
   @override
@@ -2911,6 +2934,21 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String impfixMismatchTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions don\'t match the balance',
+      one: '1 transaction doesn\'t match the balance',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get impfixMismatchHelp =>
+      'Previous balance + transaction should equal the row\'s balance, but it doesn\'t. Check the amount of these transactions in the statement before importing (or adjust the columns).';
 
   @override
   String get invAdd => 'Add';
@@ -4937,4 +4975,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get morNavPortfolio => 'Portfolio';
+
+  @override
+  String get uncLabel => 'Unclassified';
+
+  @override
+  String uncBudgetSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions without a category',
+      one: '1 transaction without a category',
+    );
+    return '$_temp0 · counted as spending/income until you classify';
+  }
 }

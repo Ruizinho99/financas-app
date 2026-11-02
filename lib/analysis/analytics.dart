@@ -404,7 +404,7 @@ class Analytics {
       final root = k == _none ? null : s.cat(int.parse(k));
       return Slice(
         key: k,
-        label: root?.name ?? 'Sem categoria',
+        label: root?.name ?? noCategoryText,
         emoji: root?.emoji ?? '',
         amount: _sum(l),
         prev: prev,
@@ -421,7 +421,7 @@ class Analytics {
       final root = k == _none ? null : s.cat(int.parse(k));
       return Slice(
         key: k,
-        label: root?.name ?? l.anNoCategory,
+        label: root?.name ?? l.uncLabel,
         emoji: root?.emoji ?? '',
         amount: _sum(l2),
         prev: prev,
@@ -438,7 +438,7 @@ class Analytics {
         final parent = s.cat(c?.parentId);
         return Slice(
           key: k,
-          label: c?.name ?? l.anNoCategory,
+          label: c?.name ?? l.uncLabel,
           subtitle: parent?.name,
           emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
           amount: _sum(l2),
@@ -469,7 +469,7 @@ class Analytics {
         final parent = s.cat(c?.parentId);
         return Slice(
           key: k,
-          label: c?.name ?? 'Sem categoria',
+          label: c?.name ?? noCategoryText,
           subtitle: parent?.name,
           emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
           amount: _sum(l),

@@ -2540,6 +2540,36 @@ abstract class AppLocalizations {
   /// **'Dia {day}'**
   String dayOfMonthItem(int day);
 
+  /// No description provided for @edvFixAmount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corrigir valor'**
+  String get edvFixAmount;
+
+  /// No description provided for @edvOriginalValue.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor original: {valor} (editado)'**
+  String edvOriginalValue(String valor);
+
+  /// No description provided for @edvBelowReversed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este valor fica abaixo do que já foi anulado por receitas ({valor}). Corrige ou desliga primeiro essas anulações.'**
+  String edvBelowReversed(String valor);
+
+  /// No description provided for @edvHasReversals.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esta despesa já tem {valor} anulados por receitas. Corrige ou desliga primeiro essas anulações antes de a transformar em receita.'**
+  String edvHasReversals(String valor);
+
+  /// No description provided for @edvBelowOwnReversal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este valor fica abaixo da parte que esta receita anula ({valor}). Reduz primeiro o valor anulado.'**
+  String edvBelowOwnReversal(String valor);
+
   /// No description provided for @frmReceipt.
   ///
   /// In pt, this message translates to:
@@ -4579,6 +4609,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'{count, plural, =0{{count} títulos} =1{1 título} other{{count} títulos}}'**
   String impTitleCount(int count);
+
+  /// No description provided for @impfixMismatchTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}'**
+  String impfixMismatchTitle(int count);
+
+  /// No description provided for @impfixMismatchHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Saldo anterior + movimento deveria dar o saldo da linha, mas não dá. Confirma o valor destes movimentos no extrato antes de importar (ou ajusta as colunas).'**
+  String get impfixMismatchHelp;
 
   /// No description provided for @invAdd.
   ///
@@ -7567,6 +7609,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Carteira'**
   String get morNavPortfolio;
+
+  /// No description provided for @uncLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Por classificar'**
+  String get uncLabel;
+
+  /// No description provided for @uncBudgetSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares'**
+  String uncBudgetSubtitle(int count);
 }
 
 class _AppLocalizationsDelegate
