@@ -187,6 +187,8 @@ class ParsedRow {
   String?
   account; // nome da conta, quando o extrato tem várias (ex.: "Conta Simples")
   bool isTransfer; // transferência entre contas do próprio utilizador
+  // saldo anterior + movimento não bate com o saldo desta linha (valor a confirmar na pré-visualização)
+  bool balanceMismatch = false;
   ParsedRow(
     this.date,
     this.description,

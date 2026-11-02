@@ -2196,6 +2196,15 @@
       }
     }
   },
+  "impfixMismatchTitle": "{count, plural, =1{1 transaction doesn't match the balance} other{{count} transactions don't match the balance}}",
+  "@impfixMismatchTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impfixMismatchHelp": "Previous balance + transaction should equal the row's balance, but it doesn't. Check the amount of these transactions in the statement before importing (or adjust the columns).",
   "invAdd": "Add",
   "invRecordOperation": "Record operation",
   "invRecordOperationHint": "Buy, sell, dividend or what you already had",

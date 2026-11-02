@@ -2913,6 +2913,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String impfixMismatchTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions don\'t match the balance',
+      one: '1 transaction doesn\'t match the balance',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get impfixMismatchHelp =>
+      'Previous balance + transaction should equal the row\'s balance, but it doesn\'t. Check the amount of these transactions in the statement before importing (or adjust the columns).';
+
+  @override
   String get invAdd => 'Add';
 
   @override

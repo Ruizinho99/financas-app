@@ -213,6 +213,7 @@ class _ImportScreenState extends State<ImportScreen> {
               ),
             ),
           if (skipped.isNotEmpty) _skippedCard(),
+          if (rows.any((r) => r.balanceMismatch)) _mismatchCard(),
           if (table != null) _mappingCard(),
           if (filename != null && source == 'pdf' && rows.isNotEmpty)
             _pdfOptions(),
@@ -608,6 +609,41 @@ class _ImportScreenState extends State<ImportScreen> {
                 colored: false,
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  /// Aviso: movimentos cujo valor não bate certo com a variação do saldo (possível coluna/valor errado).
+  Widget _mismatchCard() {
+    final l = AppLocalizations.of(context)!;
+    final bad = rows.where((r) => r.balanceMismatch).toList();
+    final fg = Theme.of(context).colorScheme.onErrorContainer;
+    return Card(
+      color: Theme.of(context).colorScheme.errorContainer,
+      child: ExpansionTile(
+        shape: const Border(),
+        collapsedShape: const Border(),
+        leading: Icon(Icons.rule_rounded, color: fg),
+        title: Text(
+          l.impfixMismatchTitle(bad.length),
+          style: TextStyle(color: fg, fontWeight: FontWeight.w600),
+        ),
+        children: [
+          for (final r in bad.take(30))
+            ListTile(
+              dense: true,
+              title: Text(
+                '${fmtDate(r.date)}  ${r.description}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: Text(fmtMoney(r.amount)),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            child: Text(l.impfixMismatchHelp),
+          ),
         ],
       ),
     );
