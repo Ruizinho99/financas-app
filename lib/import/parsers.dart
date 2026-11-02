@@ -127,9 +127,10 @@ const _date = r'\d{1,2}[-/.]\d{1,2}(?:[-/.]\d{2,4})?';
 // Montante: o "(?<![\d.,])" impede de começar a meio de um número (antes, "1220,00" era lido como "220,00"
 // com um "1" na descrição) e o milhar com espaço só vale com grupos de 3 dígitos antes da vírgula,
 // para que o "00" dos cêntimos de um montante nunca se cole ao montante seguinte ("1220,00 400,00").
+// Há bancos (ActivoBank) que usam ponto decimal e espaço nos milhares ("1 223.78"): também se aceita.
 const _amount =
     r'(?<![\d.,])[-+]?\(?(?:\d{1,3}(?:[. ]\d{3})+|\d+),\d{2}\)?(?:\s?[-+]|\s?[CD]R?)?(?!\d)'
-    r'|(?<![\d.,])[-+]?\d+\.\d{2}(?!\d)';
+    r'|(?<![\d.,])[-+]?(?:\d{1,3}(?: \d{3})+|\d+)\.\d{2}(?!\d)';
 final _lineRe = RegExp(
   '^($_date)(?:\\s+($_date))?\\s+(.*?)\\s*($_amount)(?:\\s+($_amount))?\\s*\$',
 );
