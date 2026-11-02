@@ -1526,6 +1526,29 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get edvFixAmount => 'Corrigir valor';
+
+  @override
+  String edvOriginalValue(String valor) {
+    return 'Valor original: $valor (editado)';
+  }
+
+  @override
+  String edvBelowReversed(String valor) {
+    return 'Este valor fica abaixo do que já foi anulado por receitas ($valor). Corrige ou desliga primeiro essas anulações.';
+  }
+
+  @override
+  String edvHasReversals(String valor) {
+    return 'Esta despesa já tem $valor anulados por receitas. Corrige ou desliga primeiro essas anulações antes de a transformar em receita.';
+  }
+
+  @override
+  String edvBelowOwnReversal(String valor) {
+    return 'Este valor fica abaixo da parte que esta receita anula ($valor). Reduz primeiro o valor anulado.';
+  }
+
+  @override
   String get frmReceipt => 'Recibo';
 
   @override

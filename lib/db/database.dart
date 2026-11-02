@@ -507,7 +507,18 @@ class Db {
     investAccountId: r['invest_account_id'] as int?,
     reversesId: r['reverses_id'] as int?,
     reversedCents: (r['reversed_cents'] as int?) ?? 0,
+    originalAmount: _valorOriginal(r['hash'] as String?, r['amount'] as int),
   );
+
+  /// A chave de deduplicação (data|DESCRIÇÃO|valor|saldo) fixa-se na criação e nunca muda
+  /// ao editar; daí se tira o valor original (penúltimo segmento) para saber se foi corrigido.
+  static int? _valorOriginal(String? chave, int atual) {
+    if (chave == null) return null;
+    final p = chave.split('|');
+    if (p.length < 3) return null;
+    final v = int.tryParse(p[p.length - 2]);
+    return (v == null || v == atual) ? null : v;
+  }
 
   List<Txn> transactions() => _db
       .select('SELECT * FROM transactions ORDER BY date DESC, id DESC')
@@ -563,8 +574,10 @@ class Db {
     [h],
   ).isNotEmpty;
 
+  /// Atualiza o movimento SEM tocar na chave de deduplicação: assim uma nova importação do
+  /// mesmo extrato continua a reconhecer a linha original (mesmo com valor/descrição/data corrigidos).
   void updateTransaction(Txn t, {required String merchantKey}) => _db.execute(
-    'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,hash=?,account_id=?,is_transfer=?,receipt_path=?,invest_account_id=?,reverses_id=?,reversed_cents=? WHERE id=?',
+    'UPDATE transactions SET date=?,description=?,amount=?,balance=?,category_id=?,note=?,merchant_key=?,account_id=?,is_transfer=?,receipt_path=?,invest_account_id=?,reverses_id=?,reversed_cents=? WHERE id=?',
     [
       isoDate(t.date),
       t.description,
@@ -573,7 +586,6 @@ class Db {
       t.categoryId,
       t.note,
       merchantKey,
-      hashOf(t.date, t.description, t.amount, t.balance),
       t.accountId,
       t.isTransfer ? 1 : 0,
       t.receiptPath,

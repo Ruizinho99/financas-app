@@ -1,0 +1,36 @@
+{
+  "@@locale": "pt",
+  "edvFixAmount": "Corrigir valor",
+  "edvOriginalValue": "Valor original: {valor} (editado)",
+  "@edvOriginalValue": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowReversed": "Este valor fica abaixo do que já foi anulado por receitas ({valor}). Corrige ou desliga primeiro essas anulações.",
+  "@edvBelowReversed": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvHasReversals": "Esta despesa já tem {valor} anulados por receitas. Corrige ou desliga primeiro essas anulações antes de a transformar em receita.",
+  "@edvHasReversals": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowOwnReversal": "Este valor fica abaixo da parte que esta receita anula ({valor}). Reduz primeiro o valor anulado.",
+  "@edvBelowOwnReversal": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  }
+}
