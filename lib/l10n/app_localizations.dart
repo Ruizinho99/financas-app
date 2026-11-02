@@ -6776,6 +6776,102 @@ abstract class AppLocalizations {
   /// **'Outro'**
   String get invfKindOther;
 
+  /// No description provided for @lnkField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ligar a outro movimento'**
+  String get lnkField;
+
+  /// No description provided for @lnkNone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum'**
+  String get lnkNone;
+
+  /// No description provided for @lnkLinkedTo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ligado a {names} · líquido {net}'**
+  String lnkLinkedTo(String names, String net);
+
+  /// No description provided for @lnkResultExpense.
+  ///
+  /// In pt, this message translates to:
+  /// **'Contam como uma só despesa de {amount}'**
+  String lnkResultExpense(String amount);
+
+  /// No description provided for @lnkResultIncome.
+  ///
+  /// In pt, this message translates to:
+  /// **'Contam como uma só receita de {amount}'**
+  String lnkResultIncome(String amount);
+
+  /// No description provided for @lnkResultZero.
+  ///
+  /// In pt, this message translates to:
+  /// **'Líquido zero: não conta como despesa nem como receita'**
+  String get lnkResultZero;
+
+  /// No description provided for @lnkRepHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'O líquido conta no movimento de saída maior ({name}), com a categoria dele.'**
+  String lnkRepHint(String name);
+
+  /// No description provided for @lnkUnlink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desligar'**
+  String get lnkUnlink;
+
+  /// No description provided for @lnkUnlinkOne.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desligar {name}'**
+  String lnkUnlinkOne(String name);
+
+  /// No description provided for @lnkPickTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ligar a que movimento?'**
+  String get lnkPickTitle;
+
+  /// No description provided for @lnkSearch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Procurar movimento'**
+  String get lnkSearch;
+
+  /// No description provided for @lnkSuggested.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sugeridos (sinal oposto, perto no tempo)'**
+  String get lnkSuggested;
+
+  /// No description provided for @lnkOthers.
+  ///
+  /// In pt, this message translates to:
+  /// **'Outros movimentos'**
+  String get lnkOthers;
+
+  /// No description provided for @lnkNoCandidates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não há movimentos para ligar.'**
+  String get lnkNoCandidates;
+
+  /// No description provided for @lnkLinked.
+  ///
+  /// In pt, this message translates to:
+  /// **'Movimentos ligados.'**
+  String get lnkLinked;
+
+  /// No description provided for @lnkUnlinked.
+  ///
+  /// In pt, this message translates to:
+  /// **'Movimento desligado.'**
+  String get lnkUnlinked;
+
   /// No description provided for @morMoreTitle.
   ///
   /// In pt, this message translates to:

@@ -3362,6 +3362,60 @@
   "invfKindFund": "Fund",
   "invfKindBond": "Bond",
   "invfKindOther": "Other",
+  "lnkField": "Link to another transaction",
+  "lnkNone": "None",
+  "lnkLinkedTo": "Linked to {names} · net {net}",
+  "@lnkLinkedTo": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "net": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultExpense": "Count as a single expense of {amount}",
+  "@lnkResultExpense": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultIncome": "Count as a single income of {amount}",
+  "@lnkResultIncome": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultZero": "Net zero: counts as neither expense nor income",
+  "lnkRepHint": "The net counts on the largest outgoing transaction ({name}), using its category.",
+  "@lnkRepHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkUnlink": "Unlink",
+  "lnkUnlinkOne": "Unlink {name}",
+  "@lnkUnlinkOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkPickTitle": "Link to which transaction?",
+  "lnkSearch": "Search transaction",
+  "lnkSuggested": "Suggested (opposite sign, close in time)",
+  "lnkOthers": "Other transactions",
+  "lnkNoCandidates": "There are no transactions to link.",
+  "lnkLinked": "Transactions linked.",
+  "lnkUnlinked": "Transaction unlinked.",
   "morMoreTitle": "More",
   "morBudgetSubtitle": "Salary and limits per category",
   "morPlanningSubtitle": "Salary and planned expenses per month",

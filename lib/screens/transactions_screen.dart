@@ -46,9 +46,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         case _Filter.uncategorized:
           if (t.categoryId != null || t.isTransfer) return false;
         case _Filter.income:
-          if (t.amount <= 0 || t.isTransfer) return false;
+          if (s.flowAmount(t) <= 0 || t.isTransfer) return false;
         case _Filter.expense:
-          if (t.amount >= 0 || t.isTransfer) return false;
+          if (s.flowAmount(t) >= 0 || t.isTransfer) return false;
         case _Filter.transfers:
           if (!t.isTransfer) return false;
         case _Filter.all:
@@ -64,11 +64,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       for (final t in s.transactions) DateTime(t.date.year, t.date.month),
     }.toList()..sort((a, b) => b.compareTo(a));
     final inc = list
-        .where((t) => t.amount > 0 && !t.isTransfer)
-        .fold(0, (a, t) => a + t.amount);
+        .where((t) => s.flowAmount(t) > 0 && !t.isTransfer)
+        .fold(0, (a, t) => a + s.flowAmount(t));
     final exp = list
-        .where((t) => t.amount < 0 && !t.isTransfer)
-        .fold(0, (a, t) => a + t.amount);
+        .where((t) => s.flowAmount(t) < 0 && !t.isTransfer)
+        .fold(0, (a, t) => a + s.flowAmount(t));
 
     return Scaffold(
       appBar: selected.isNotEmpty
@@ -276,6 +276,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               s.account(t.accountId)!.name,
                             if (reversalLabel(l, s, t) != null)
                               reversalLabel(l, s, t)!,
+                            if (linkLabel(l, s, t) != null) linkLabel(l, s, t)!,
                             if (goalLabel(l, s, t) != null) goalLabel(l, s, t)!,
                             if (t.note.isNotEmpty) t.note,
                           ].join(' · '),
@@ -339,6 +340,13 @@ String? reversalLabel(AppLocalizations l, AppState s, Txn t) {
     return l.reversedLeft(fmtMoney(done), fmtMoney(-s.effectiveAmount(t)));
   }
   return null;
+}
+
+/// Texto dos movimentos ligados à mão: com que movimentos está ligado e o líquido do grupo.
+String? linkLabel(AppLocalizations l, AppState s, Txn t) {
+  if (!s.isLinked(t)) return null;
+  final names = s.linkedWith(t).map(s.displayName).join(', ');
+  return l.lnkLinkedTo(names, fmtMoney(s.linkNet(t.linkGroup!)));
 }
 
 /// Divisão de um movimento pelos objetivos: "Objetivos: Férias 50,00 € · Alimentação 50,00 €".

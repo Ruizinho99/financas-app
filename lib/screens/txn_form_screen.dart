@@ -382,6 +382,159 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     ];
   }
 
+  /// Ligação a outros movimentos (ex.: enviei 10 e recebi 11): o grupo conta pelo líquido.
+  /// Liga e desliga logo, sem esperar pelo botão de guardar.
+  List<Widget> _linkSection(AppState s, AppLocalizations l) {
+    final e = widget.edit!;
+    final cur = s.transactions.where((t) => t.id == e.id).firstOrNull ?? e;
+    final others = s.linkedWith(cur);
+    final net = cur.linkGroup == null ? 0 : s.linkNet(cur.linkGroup!);
+    return [
+      const SizedBox(height: 12),
+      TileField(
+        icon: Icons.link,
+        title: l.lnkField,
+        text: others.isEmpty ? l.lnkNone : others.map(s.displayName).join(', '),
+        isHint: others.isEmpty,
+        onTap: () => _pickLink(s, cur),
+      ),
+      if (others.isNotEmpty) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+          child: Text(
+            net < 0
+                ? l.lnkResultExpense(fmtMoney(-net))
+                : net > 0
+                ? l.lnkResultIncome(fmtMoney(net))
+                : l.lnkResultZero,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
+          child: Text(
+            l.lnkRepHint(s.displayName(s.linkRep(cur.linkGroup!)!)),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            icon: const Icon(Icons.link_off, size: 18),
+            label: Text(l.lnkUnlink),
+            onPressed: () {
+              s.unlinkTxn(cur.id);
+              setState(() {});
+            },
+          ),
+        ),
+      ],
+    ];
+  }
+
+  /// Escolhe o movimento a ligar: primeiro os de sinal oposto até 30 dias de distância, depois os outros.
+  Future<void> _pickLink(AppState s, Txn cur) async {
+    final l = AppLocalizations.of(context)!;
+    final id = await showModalBottomSheet<int>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) {
+        var q = '';
+        return StatefulBuilder(
+          builder: (ctx, set) {
+            final query = q.trim().toLowerCase();
+            int dist(Txn t) => t.date.difference(cur.date).inDays.abs();
+            final all =
+                [
+                  for (final t in s.transactions)
+                    if (t.id != cur.id &&
+                        !t.isTransfer &&
+                        !(cur.linkGroup != null &&
+                            t.linkGroup == cur.linkGroup))
+                      t,
+                ].where(
+                  (t) =>
+                      query.isEmpty ||
+                      '${s.displayName(t)} ${t.description}'
+                          .toLowerCase()
+                          .contains(query),
+                );
+            final list = all.toList()
+              ..sort((a, b) => dist(a).compareTo(dist(b)));
+            bool sugg(Txn t) =>
+                (t.amount > 0) != (cur.amount > 0) && dist(t) <= 30;
+            final near = list.where(sugg).take(50).toList();
+            final rest = list.where((t) => !sugg(t)).take(150).toList();
+            Widget tile(Txn t) => ListTile(
+              title: Text(
+                s.displayName(t),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text('${fmtDate(t.date)} · ${fmtMoney(t.amount)}'),
+              onTap: () => Navigator.pop(ctx, t.id),
+            );
+            return SizedBox(
+              height: MediaQuery.of(ctx).size.height * 0.75,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: l.lnkSearch,
+                        prefixIcon: const Icon(Icons.search),
+                        isDense: true,
+                      ),
+                      onChanged: (v) => set(() => q = v),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        if (near.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                            child: Text(
+                              l.lnkSuggested,
+                              style: Theme.of(ctx).textTheme.labelLarge,
+                            ),
+                          ),
+                        for (final t in near) tile(t),
+                        if (rest.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                            child: Text(
+                              l.lnkOthers,
+                              style: Theme.of(ctx).textTheme.labelLarge,
+                            ),
+                          ),
+                        for (final t in rest) tile(t),
+                        if (near.isEmpty && rest.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Center(child: Text(l.lnkNoCandidates)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (id == null || !mounted) return;
+    if (s.linkTxns(cur.id, id)) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l.lnkLinked)));
+    }
+    setState(() {});
+  }
+
   String? _reversalHelp(AppState s) {
     final l = AppLocalizations.of(context)!;
     final exp = _expenseById(s, reversesId);
@@ -875,6 +1028,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                 ),
               ],
             ],
+            if (isEdit) ..._linkSection(s, l),
             const SizedBox(height: 14),
           ],
           TextField(

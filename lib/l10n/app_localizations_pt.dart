@@ -4379,6 +4379,65 @@ class AppLocalizationsPt extends AppLocalizations {
   String get invfKindOther => 'Outro';
 
   @override
+  String get lnkField => 'Ligar a outro movimento';
+
+  @override
+  String get lnkNone => 'Nenhum';
+
+  @override
+  String lnkLinkedTo(String names, String net) {
+    return 'Ligado a $names · líquido $net';
+  }
+
+  @override
+  String lnkResultExpense(String amount) {
+    return 'Contam como uma só despesa de $amount';
+  }
+
+  @override
+  String lnkResultIncome(String amount) {
+    return 'Contam como uma só receita de $amount';
+  }
+
+  @override
+  String get lnkResultZero =>
+      'Líquido zero: não conta como despesa nem como receita';
+
+  @override
+  String lnkRepHint(String name) {
+    return 'O líquido conta no movimento de saída maior ($name), com a categoria dele.';
+  }
+
+  @override
+  String get lnkUnlink => 'Desligar';
+
+  @override
+  String lnkUnlinkOne(String name) {
+    return 'Desligar $name';
+  }
+
+  @override
+  String get lnkPickTitle => 'Ligar a que movimento?';
+
+  @override
+  String get lnkSearch => 'Procurar movimento';
+
+  @override
+  String get lnkSuggested => 'Sugeridos (sinal oposto, perto no tempo)';
+
+  @override
+  String get lnkOthers => 'Outros movimentos';
+
+  @override
+  String get lnkNoCandidates => 'Não há movimentos para ligar.';
+
+  @override
+  String get lnkLinked => 'Movimentos ligados.';
+
+  @override
+  String get lnkUnlinked => 'Movimento desligado.';
+
+  @override
   String get morMoreTitle => 'Mais';
 
   @override
