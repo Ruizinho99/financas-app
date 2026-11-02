@@ -4422,6 +4422,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invfKindOther => 'Other';
 
   @override
+  String get iosBackupSubtitle => 'Save or restore to iCloud Drive or a file';
+
+  @override
+  String get iosBackupDriveHint =>
+      'There is no need to connect an account in the app: when saving, choose “iCloud Drive” (or another folder) in the iPhone Files sheet. To restore, pick the file, from the iPhone or from iCloud Drive.';
+
+  @override
+  String get iosSaveBackup => 'Save backup (iCloud Drive or file)';
+
+  @override
   String get lnkField => 'Link to another transaction';
 
   @override

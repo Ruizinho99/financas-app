@@ -6818,6 +6818,24 @@ abstract class AppLocalizations {
   /// **'Outro'**
   String get invfKindOther;
 
+  /// No description provided for @iosBackupSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardar ou restaurar no iCloud Drive ou num ficheiro'**
+  String get iosBackupSubtitle;
+
+  /// No description provided for @iosBackupDriveHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não precisas de ligar nenhuma conta na app: ao guardar, escolhe “iCloud Drive” (ou outra pasta) na janela de ficheiros do iPhone. Para restaurar, escolhe o ficheiro, do iPhone ou do iCloud Drive.'**
+  String get iosBackupDriveHint;
+
+  /// No description provided for @iosSaveBackup.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardar cópia (iCloud Drive ou ficheiro)'**
+  String get iosSaveBackup;
+
   /// No description provided for @lnkField.
   ///
   /// In pt, this message translates to:

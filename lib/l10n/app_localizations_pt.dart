@@ -4417,6 +4417,17 @@ class AppLocalizationsPt extends AppLocalizations {
   String get invfKindOther => 'Outro';
 
   @override
+  String get iosBackupSubtitle =>
+      'Guardar ou restaurar no iCloud Drive ou num ficheiro';
+
+  @override
+  String get iosBackupDriveHint =>
+      'Não precisas de ligar nenhuma conta na app: ao guardar, escolhe “iCloud Drive” (ou outra pasta) na janela de ficheiros do iPhone. Para restaurar, escolhe o ficheiro, do iPhone ou do iCloud Drive.';
+
+  @override
+  String get iosSaveBackup => 'Guardar cópia (iCloud Drive ou ficheiro)';
+
+  @override
   String get lnkField => 'Ligar a outro movimento';
 
   @override
