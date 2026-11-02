@@ -243,7 +243,7 @@ class Analytics {
     if (f.accountIds.isNotEmpty &&
         (t.accountId == null || !f.accountIds.contains(t.accountId)))
       return false;
-    final a = -t.amount;
+    final a = -s.flowAmount(t);
     if (f.minCents != null && a < f.minCents!) return false;
     if (f.maxCents != null && a > f.maxCents!) return false;
     final q = f.query.trim().toLowerCase();
@@ -273,13 +273,13 @@ class Analytics {
   int _investedByCategory(Period p) {
     var total = 0;
     for (final t in s.transactions) {
-      if (!p.contains(t.date) || t.isTransfer || t.amount >= 0) continue;
+      if (!p.contains(t.date) || t.isTransfer || s.flowAmount(t) >= 0) continue;
       final c = s.cat(t.categoryId);
       if (c == null || !c.isInvestment) continue;
       if (filter.accountIds.isNotEmpty &&
           (t.accountId == null || !filter.accountIds.contains(t.accountId)))
         continue;
-      total += -t.amount;
+      total += -s.flowAmount(t); // ligados: o líquido
     }
     return total;
   }
@@ -333,7 +333,7 @@ class Analytics {
   int _income(Period p) {
     var total = 0;
     for (final t in s.transactions) {
-      if (!p.contains(t.date) || t.isTransfer || t.amount <= 0) continue;
+      if (!p.contains(t.date) || t.isTransfer || s.flowAmount(t) <= 0) continue;
       if (!s.isIncomeTxn(t)) continue;
       if (filter.accountIds.isNotEmpty &&
           (t.accountId == null || !filter.accountIds.contains(t.accountId)))
@@ -404,7 +404,7 @@ class Analytics {
       final root = k == _none ? null : s.cat(int.parse(k));
       return Slice(
         key: k,
-        label: root?.name ?? 'Sem categoria',
+        label: root?.name ?? noCategoryText,
         emoji: root?.emoji ?? '',
         amount: _sum(l),
         prev: prev,
@@ -421,7 +421,7 @@ class Analytics {
       final root = k == _none ? null : s.cat(int.parse(k));
       return Slice(
         key: k,
-        label: root?.name ?? l.anNoCategory,
+        label: root?.name ?? l.uncLabel,
         emoji: root?.emoji ?? '',
         amount: _sum(l2),
         prev: prev,
@@ -438,7 +438,7 @@ class Analytics {
         final parent = s.cat(c?.parentId);
         return Slice(
           key: k,
-          label: c?.name ?? l.anNoCategory,
+          label: c?.name ?? l.uncLabel,
           subtitle: parent?.name,
           emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
           amount: _sum(l2),
@@ -469,7 +469,7 @@ class Analytics {
         final parent = s.cat(c?.parentId);
         return Slice(
           key: k,
-          label: c?.name ?? 'Sem categoria',
+          label: c?.name ?? noCategoryText,
           subtitle: parent?.name,
           emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
           amount: _sum(l),

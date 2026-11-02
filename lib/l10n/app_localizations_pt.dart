@@ -1526,6 +1526,29 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get edvFixAmount => 'Corrigir valor';
+
+  @override
+  String edvOriginalValue(String valor) {
+    return 'Valor original: $valor (editado)';
+  }
+
+  @override
+  String edvBelowReversed(String valor) {
+    return 'Este valor fica abaixo do que já foi anulado por receitas ($valor). Corrige ou desliga primeiro essas anulações.';
+  }
+
+  @override
+  String edvHasReversals(String valor) {
+    return 'Esta despesa já tem $valor anulados por receitas. Corrige ou desliga primeiro essas anulações antes de a transformar em receita.';
+  }
+
+  @override
+  String edvBelowOwnReversal(String valor) {
+    return 'Este valor fica abaixo da parte que esta receita anula ($valor). Reduz primeiro o valor anulado.';
+  }
+
+  @override
   String get frmReceipt => 'Recibo';
 
   @override
@@ -2902,6 +2925,21 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String impfixMismatchTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimentos não batem certo com o saldo',
+      one: '1 movimento não bate certo com o saldo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get impfixMismatchHelp =>
+      'Saldo anterior + movimento deveria dar o saldo da linha, mas não dá. Confirma o valor destes movimentos no extrato antes de importar (ou ajusta as colunas).';
 
   @override
   String get invAdd => 'Adicionar';
@@ -4390,6 +4428,65 @@ class AppLocalizationsPt extends AppLocalizations {
   String get iosSaveBackup => 'Guardar cópia (iCloud Drive ou ficheiro)';
 
   @override
+  String get lnkField => 'Ligar a outro movimento';
+
+  @override
+  String get lnkNone => 'Nenhum';
+
+  @override
+  String lnkLinkedTo(String names, String net) {
+    return 'Ligado a $names · líquido $net';
+  }
+
+  @override
+  String lnkResultExpense(String amount) {
+    return 'Contam como uma só despesa de $amount';
+  }
+
+  @override
+  String lnkResultIncome(String amount) {
+    return 'Contam como uma só receita de $amount';
+  }
+
+  @override
+  String get lnkResultZero =>
+      'Líquido zero: não conta como despesa nem como receita';
+
+  @override
+  String lnkRepHint(String name) {
+    return 'O líquido conta no movimento de saída maior ($name), com a categoria dele.';
+  }
+
+  @override
+  String get lnkUnlink => 'Desligar';
+
+  @override
+  String lnkUnlinkOne(String name) {
+    return 'Desligar $name';
+  }
+
+  @override
+  String get lnkPickTitle => 'Ligar a que movimento?';
+
+  @override
+  String get lnkSearch => 'Procurar movimento';
+
+  @override
+  String get lnkSuggested => 'Sugeridos (sinal oposto, perto no tempo)';
+
+  @override
+  String get lnkOthers => 'Outros movimentos';
+
+  @override
+  String get lnkNoCandidates => 'Não há movimentos para ligar.';
+
+  @override
+  String get lnkLinked => 'Movimentos ligados.';
+
+  @override
+  String get lnkUnlinked => 'Movimento desligado.';
+
+  @override
   String get morMoreTitle => 'Mais';
 
   @override
@@ -4878,4 +4975,18 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get morNavPortfolio => 'Carteira';
+
+  @override
+  String get uncLabel => 'Por classificar';
+
+  @override
+  String uncBudgetSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimentos sem categoria',
+      one: '1 movimento sem categoria',
+    );
+    return '$_temp0 · conta como despesa/receita até classificares';
+  }
 }

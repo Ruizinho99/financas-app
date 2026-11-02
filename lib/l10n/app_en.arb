@@ -1285,6 +1285,39 @@
       }
     }
   },
+  "edvFixAmount": "Fix amount",
+  "edvOriginalValue": "Original amount: {valor} (edited)",
+  "@edvOriginalValue": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowReversed": "This amount is below what incomes have already reversed ({valor}). Fix or unlink those reversals first.",
+  "@edvBelowReversed": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvHasReversals": "This expense already has {valor} reversed by incomes. Fix or unlink those reversals before turning it into an income.",
+  "@edvHasReversals": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowOwnReversal": "This amount is below the part this income reverses ({valor}). Reduce the reversed amount first.",
+  "@edvBelowOwnReversal": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
   "frmReceipt": "Receipt",
   "frmViewReceipt": "View receipt",
   "frmTakePhoto": "Take photo",
@@ -2196,6 +2229,15 @@
       }
     }
   },
+  "impfixMismatchTitle": "{count, plural, =1{1 transaction doesn't match the balance} other{{count} transactions don't match the balance}}",
+  "@impfixMismatchTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "impfixMismatchHelp": "Previous balance + transaction should equal the row's balance, but it doesn't. Check the amount of these transactions in the statement before importing (or adjust the columns).",
   "invAdd": "Add",
   "invRecordOperation": "Record operation",
   "invRecordOperationHint": "Buy, sell, dividend or what you already had",
@@ -3365,6 +3407,60 @@
   "iosBackupSubtitle": "Save or restore to iCloud Drive or a file",
   "iosBackupDriveHint": "There is no need to connect an account in the app: when saving, choose “iCloud Drive” (or another folder) in the iPhone Files sheet. To restore, pick the file, from the iPhone or from iCloud Drive.",
   "iosSaveBackup": "Save backup (iCloud Drive or file)",
+  "lnkField": "Link to another transaction",
+  "lnkNone": "None",
+  "lnkLinkedTo": "Linked to {names} · net {net}",
+  "@lnkLinkedTo": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      },
+      "net": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultExpense": "Count as a single expense of {amount}",
+  "@lnkResultExpense": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultIncome": "Count as a single income of {amount}",
+  "@lnkResultIncome": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkResultZero": "Net zero: counts as neither expense nor income",
+  "lnkRepHint": "The net counts on the largest outgoing transaction ({name}), using its category.",
+  "@lnkRepHint": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkUnlink": "Unlink",
+  "lnkUnlinkOne": "Unlink {name}",
+  "@lnkUnlinkOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lnkPickTitle": "Link to which transaction?",
+  "lnkSearch": "Search transaction",
+  "lnkSuggested": "Suggested (opposite sign, close in time)",
+  "lnkOthers": "Other transactions",
+  "lnkNoCandidates": "There are no transactions to link.",
+  "lnkLinked": "Transactions linked.",
+  "lnkUnlinked": "Transaction unlinked.",
   "morMoreTitle": "More",
   "morBudgetSubtitle": "Salary and limits per category",
   "morPlanningSubtitle": "Salary and planned expenses per month",
@@ -3687,5 +3783,14 @@
   "morAlertsChannelDescription": "Recurring transactions and investment deliveries",
   "morAssetFallback": "Asset",
   "morNavMonth": "Month",
-  "morNavPortfolio": "Portfolio"
+  "morNavPortfolio": "Portfolio",
+  "uncLabel": "Unclassified",
+  "uncBudgetSubtitle": "{count, plural, =1{1 transaction without a category} other{{count} transactions without a category}} · counted as spending/income until you classify",
+  "@uncBudgetSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

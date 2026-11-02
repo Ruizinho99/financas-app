@@ -8,6 +8,7 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
 import 'import_screen.dart';
+import 'txn_form_screen.dart' show corrigirValor;
 
 enum _Filter { all, uncategorized, income, expense, transfers }
 
@@ -46,9 +47,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         case _Filter.uncategorized:
           if (t.categoryId != null || t.isTransfer) return false;
         case _Filter.income:
-          if (t.amount <= 0 || t.isTransfer) return false;
+          if (s.flowAmount(t) <= 0 || t.isTransfer) return false;
         case _Filter.expense:
-          if (t.amount >= 0 || t.isTransfer) return false;
+          if (s.flowAmount(t) >= 0 || t.isTransfer) return false;
         case _Filter.transfers:
           if (!t.isTransfer) return false;
         case _Filter.all:
@@ -64,11 +65,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       for (final t in s.transactions) DateTime(t.date.year, t.date.month),
     }.toList()..sort((a, b) => b.compareTo(a));
     final inc = list
-        .where((t) => t.amount > 0 && !t.isTransfer)
-        .fold(0, (a, t) => a + t.amount);
+        .where((t) => s.flowAmount(t) > 0 && !t.isTransfer)
+        .fold(0, (a, t) => a + s.flowAmount(t));
     final exp = list
-        .where((t) => t.amount < 0 && !t.isTransfer)
-        .fold(0, (a, t) => a + t.amount);
+        .where((t) => s.flowAmount(t) < 0 && !t.isTransfer)
+        .fold(0, (a, t) => a + s.flowAmount(t));
 
     return Scaffold(
       appBar: selected.isNotEmpty
@@ -79,6 +80,20 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ),
               title: Text(l.selectedCount(selected.length)),
               actions: [
+                if (selected.length == 1)
+                  IconButton(
+                    tooltip: l.edvFixAmount,
+                    icon: const Icon(Icons.price_change_outlined),
+                    onPressed: () async {
+                      final t = s.transactions
+                          .where((t) => t.id == selected.first)
+                          .firstOrNull;
+                      if (t == null) return;
+                      if (await corrigirValor(context, t)) {
+                        setState(selected.clear);
+                      }
+                    },
+                  ),
                 IconButton(
                   tooltip: l.categorize,
                   icon: const Icon(Icons.folder_open),
@@ -276,6 +291,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               s.account(t.accountId)!.name,
                             if (reversalLabel(l, s, t) != null)
                               reversalLabel(l, s, t)!,
+                            if (linkLabel(l, s, t) != null) linkLabel(l, s, t)!,
                             if (goalLabel(l, s, t) != null) goalLabel(l, s, t)!,
                             if (t.note.isNotEmpty) t.note,
                           ].join(' · '),
@@ -285,6 +301,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (t.valueEdited)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Tooltip(
+                                  message: l.edvOriginalValue(
+                                    fmtMoney(t.originalAmount!),
+                                  ),
+                                  child: const Icon(Icons.edit_note, size: 16),
+                                ),
+                              ),
                             if (t.receiptPath != null)
                               const Padding(
                                 padding: EdgeInsets.only(right: 4),
@@ -339,6 +365,13 @@ String? reversalLabel(AppLocalizations l, AppState s, Txn t) {
     return l.reversedLeft(fmtMoney(done), fmtMoney(-s.effectiveAmount(t)));
   }
   return null;
+}
+
+/// Texto dos movimentos ligados à mão: com que movimentos está ligado e o líquido do grupo.
+String? linkLabel(AppLocalizations l, AppState s, Txn t) {
+  if (!s.isLinked(t)) return null;
+  final names = s.linkedWith(t).map(s.displayName).join(', ');
+  return l.lnkLinkedTo(names, fmtMoney(s.linkNet(t.linkGroup!)));
 }
 
 /// Divisão de um movimento pelos objetivos: "Objetivos: Férias 50,00 € · Alimentação 50,00 €".

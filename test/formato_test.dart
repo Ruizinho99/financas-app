@@ -38,7 +38,7 @@ void main() {
       'há 5 min',
     );
     expect(fmtAgo(agora.subtract(const Duration(days: 2)), agora), 'há 2 dias');
-    expect(noCategoryText, 'Sem categoria');
+    expect(noCategoryText, 'Por classificar');
     setFormatLocale('en');
     expect(
       fmtAgo(agora.subtract(const Duration(minutes: 5)), agora),
@@ -46,6 +46,6 @@ void main() {
     );
     expect(fmtAgo(agora.subtract(const Duration(days: 1)), agora), '1 day ago');
     expect(fmtAgo(agora, agora), 'just now');
-    expect(noCategoryText, 'No category');
+    expect(noCategoryText, 'Unclassified');
   });
 }

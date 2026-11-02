@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -105,6 +106,9 @@ class CategoryStat {
 
   double get ratio => target <= 0 ? 0 : spent / target;
 }
+
+/// Motivos pelos quais o valor de um movimento não pode ser corrigido para o valor pedido.
+enum AmountIssue { belowAllocated, belowReversed, hasReversals, belowOwnReversal }
 
 class AppState extends ChangeNotifier {
   final Db db;
@@ -549,15 +553,34 @@ class AppState extends ChangeNotifier {
   /// é o sinal do movimento. O orçamento por categoria (`totalsByCategory`) inclui também o investimento,
   /// para as metas de poupança.
   bool isSpend(Txn t) =>
-      t.amount < 0 &&
+      flowAmount(t) < 0 &&
       !t.isTransfer &&
       !(cat(t.categoryId)?.isInvestment ?? false);
 
-  /// Receita que conta nas contas: entrada com categoria que não é transferência nem investimento.
+  /// Receita que conta nas contas: entrada que não é transferência nem investimento. Uma entrada sem
+  /// categoria conta como receita (fica em "Por classificar" até ser classificada).
   bool isIncomeTxn(Txn t) {
-    if (t.amount <= 0 || t.isTransfer) return false;
-    final c = cat(t.categoryId);
-    return c != null && !c.isInvestment;
+    if (flowAmount(t) <= 0 || t.isTransfer) return false;
+    return !(cat(t.categoryId)?.isInvestment ?? false);
+  }
+
+  /// Movimento sem categoria (a categoria virtual "Por classificar"; não existe na base de dados).
+  /// As transferências entre contas não precisam de categoria e ficam de fora.
+  bool isUnclassified(Txn t) => !t.isTransfer && cat(t.categoryId) == null;
+
+  /// Receita do período (a mesma conta na Análise, no Mês e no Orçamento).
+  int incomeIn(Period p) =>
+      txnsIn(p).where(isIncomeTxn).fold(0, (a, t) => a + effectiveAmount(t));
+
+  /// Despesa do período sem categoria ("Por classificar"). Soma com `totalsByCategory` dá a despesa total.
+  int unclassifiedSpent(Period p) {
+    var total = 0;
+    for (final t in txnsIn(p)) {
+      if (!isSpend(t) || cat(t.categoryId) != null) continue;
+      final spent = -effectiveAmount(t);
+      if (spent > 0) total += spent;
+    }
+    return total;
   }
 
   /// Gasto por categoria (inclui subcategorias nas categorias-pai). Só as saídas contam:
@@ -565,7 +588,7 @@ class AppState extends ChangeNotifier {
   Map<int, int> totalsByCategory(Period p) {
     final own = <int, int>{};
     for (final t in txnsIn(p)) {
-      if (t.isTransfer || t.amount >= 0) continue;
+      if (t.isTransfer || flowAmount(t) >= 0) continue;
       final id = t.categoryId;
       if (id == null) continue;
       if (cat(id) == null) continue;
@@ -1451,9 +1474,112 @@ class AppState extends ChangeNotifier {
   /// Valor do movimento depois das anulações. Despesa: negativo, com a parte anulada tirada.
   /// Receita que anula: a parte anulada deixa de ser receita. Os saldos e o extrato não mudam.
   int effectiveAmount(Txn t) {
+    final g = t.linkGroup;
+    if (g != null) {
+      final members = linkGroups[g];
+      if (members != null && members.length > 1) {
+        // movimentos ligados: o líquido fica no representante e os outros deixam de contar
+        return linkRep(g)?.id == t.id
+            ? members.fold(0, (a, m) => a + _ownEffective(m))
+            : 0;
+      }
+    }
+    return _ownEffective(t);
+  }
+
+  int _ownEffective(Txn t) {
     if (t.amount < 0) return t.amount + (reversedByExpense[t.id] ?? 0);
     if (t.amount > 0) return t.amount - t.reversedCents;
     return t.amount;
+  }
+
+  // ---------- Movimentos ligados ----------
+  Map<int, List<Txn>>? _linkCache;
+  List<Txn>? _linkFor;
+
+  /// Movimentos ligados à mão, por grupo (só grupos com 2 ou mais).
+  Map<int, List<Txn>> get linkGroups {
+    if (_linkCache == null || !identical(_linkFor, transactions)) {
+      final m = <int, List<Txn>>{};
+      for (final t in transactions) {
+        final g = t.linkGroup;
+        if (g != null) (m[g] ??= []).add(t);
+      }
+      m.removeWhere((_, l) => l.length < 2);
+      _linkCache = m;
+      _linkFor = transactions;
+    }
+    return _linkCache!;
+  }
+
+  /// O movimento está ligado a outro(s)?
+  bool isLinked(Txn t) =>
+      t.linkGroup != null && linkGroups.containsKey(t.linkGroup);
+
+  /// Representante do grupo: a saída maior (a que dá a categoria da operação). Em empate, o mais antigo.
+  Txn? linkRep(int group) {
+    final l = linkGroups[group];
+    if (l == null) return null;
+    var best = l.first;
+    for (final t in l) {
+      if (t.amount < best.amount || (t.amount == best.amount && t.id < best.id))
+        best = t;
+    }
+    return best;
+  }
+
+  /// Os outros movimentos ligados a [t].
+  List<Txn> linkedWith(Txn t) => isLinked(t)
+      ? [
+          for (final x in linkGroups[t.linkGroup]!)
+            if (x.id != t.id) x,
+        ]
+      : const [];
+
+  /// Resultado líquido do grupo (soma dos valores, já com as anulações).
+  int linkNet(int group) => (linkGroups[group] ?? const <Txn>[]).fold(
+    0,
+    (a, m) => a + _ownEffective(m),
+  );
+
+  /// Valor que o movimento tem nas estatísticas: o do próprio, ou, se estiver ligado, o líquido
+  /// (no representante) / zero (nos restantes).
+  int flowAmount(Txn t) => isLinked(t) ? effectiveAmount(t) : t.amount;
+
+  /// Liga dois movimentos (e os grupos a que já pertençam). Devolve false se não for possível:
+  /// o mesmo movimento, transferências/investimentos ou movimentos que já estão no mesmo grupo.
+  bool linkTxns(int a, int b) {
+    if (a == b) return false;
+    final ta = transactions.where((t) => t.id == a).firstOrNull;
+    final tb = transactions.where((t) => t.id == b).firstOrNull;
+    if (ta == null || tb == null) return false;
+    if (ta.isTransfer || tb.isTransfer) return false;
+    final ga = isLinked(ta) ? ta.linkGroup : null;
+    final gb = isLinked(tb) ? tb.linkGroup : null;
+    if (ga != null && ga == gb) return false;
+    db.inTransaction(() {
+      if (ga != null && gb != null) {
+        db.mergeLinkGroups(ga, gb);
+      } else if (ga != null) {
+        db.setLinkGroup([b], ga);
+      } else if (gb != null) {
+        db.setLinkGroup([a], gb);
+      } else {
+        // grupo novo: um id nunca usado por outro grupo
+        final g =
+            transactions.fold<int>(0, (m, t) => math.max(m, t.linkGroup ?? 0)) +
+            1;
+        db.setLinkGroup([a, b], g);
+      }
+    });
+    reload();
+    return true;
+  }
+
+  /// Desliga o movimento do grupo; se o grupo ficar com um só, deixa de existir. Repõe o comportamento normal.
+  void unlinkTxn(int id) {
+    db.setLinkGroup([id], null);
+    reload();
   }
 
   /// Quanto ainda pode ser anulado numa despesa ([exceptTxnId]: a receita que se está a editar).
@@ -1500,6 +1626,55 @@ class AppState extends ChangeNotifier {
       );
     }
     reload();
+  }
+
+  /// Problema que impede corrigir o valor de um movimento (nulo = pode).
+  /// [novo] é o valor novo com sinal (negativo = saída). O inteiro devolvido é o limite em causa.
+  (AmountIssue, int)? amountEditIssue(Txn e, int novo) {
+    final alocado = allocatedOf(e.id);
+    if (novo.abs() < alocado) return (AmountIssue.belowAllocated, alocado);
+    final anulado = reversedByExpense[e.id] ?? 0;
+    if (e.amount < 0 && anulado > 0) {
+      if (novo >= 0) return (AmountIssue.hasReversals, anulado);
+      if (-novo < anulado) return (AmountIssue.belowReversed, anulado);
+    }
+    if (e.amount > 0 &&
+        e.reversedCents > 0 &&
+        novo > 0 &&
+        novo < e.reversedCents) {
+      return (AmountIssue.belowOwnReversal, e.reversedCents);
+    }
+    return null;
+  }
+
+  /// Correção rápida do valor (e do sinal) de um movimento. Devolve o problema, se o houver
+  /// (e nesse caso não altera nada). Mantém o saldo importado e a chave de deduplicação.
+  /// Se a receita passa a despesa, deixa de anular a despesa a que estava ligada.
+  (AmountIssue, int)? setAmount(Txn e, int novo) {
+    final issue = amountEditIssue(e, novo);
+    if (issue != null) return issue;
+    final flipOut = e.amount > 0 && novo < 0;
+    updateTxn(
+      Txn(
+        id: e.id,
+        date: e.date,
+        description: e.description,
+        amount: novo,
+        balance: e.balance,
+        categoryId: e.categoryId,
+        note: e.note,
+        source: e.source,
+        merchantKey: e.merchantKey,
+        importId: e.importId,
+        accountId: e.accountId,
+        isTransfer: e.isTransfer,
+        receiptPath: e.receiptPath,
+        investAccountId: e.investAccountId,
+        reversesId: flipOut ? null : e.reversesId,
+        reversedCents: flipOut ? 0 : e.reversedCents,
+      ),
+    );
+    return null;
   }
 
   void updateTxn(Txn t) {

@@ -2540,6 +2540,36 @@ abstract class AppLocalizations {
   /// **'Dia {day}'**
   String dayOfMonthItem(int day);
 
+  /// No description provided for @edvFixAmount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corrigir valor'**
+  String get edvFixAmount;
+
+  /// No description provided for @edvOriginalValue.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor original: {valor} (editado)'**
+  String edvOriginalValue(String valor);
+
+  /// No description provided for @edvBelowReversed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este valor fica abaixo do que já foi anulado por receitas ({valor}). Corrige ou desliga primeiro essas anulações.'**
+  String edvBelowReversed(String valor);
+
+  /// No description provided for @edvHasReversals.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esta despesa já tem {valor} anulados por receitas. Corrige ou desliga primeiro essas anulações antes de a transformar em receita.'**
+  String edvHasReversals(String valor);
+
+  /// No description provided for @edvBelowOwnReversal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este valor fica abaixo da parte que esta receita anula ({valor}). Reduz primeiro o valor anulado.'**
+  String edvBelowOwnReversal(String valor);
+
   /// No description provided for @frmReceipt.
   ///
   /// In pt, this message translates to:
@@ -4579,6 +4609,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'{count, plural, =0{{count} títulos} =1{1 título} other{{count} títulos}}'**
   String impTitleCount(int count);
+
+  /// No description provided for @impfixMismatchTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}'**
+  String impfixMismatchTitle(int count);
+
+  /// No description provided for @impfixMismatchHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Saldo anterior + movimento deveria dar o saldo da linha, mas não dá. Confirma o valor destes movimentos no extrato antes de importar (ou ajusta as colunas).'**
+  String get impfixMismatchHelp;
 
   /// No description provided for @invAdd.
   ///
@@ -6794,6 +6836,102 @@ abstract class AppLocalizations {
   /// **'Guardar cópia (iCloud Drive ou ficheiro)'**
   String get iosSaveBackup;
 
+  /// No description provided for @lnkField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ligar a outro movimento'**
+  String get lnkField;
+
+  /// No description provided for @lnkNone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum'**
+  String get lnkNone;
+
+  /// No description provided for @lnkLinkedTo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ligado a {names} · líquido {net}'**
+  String lnkLinkedTo(String names, String net);
+
+  /// No description provided for @lnkResultExpense.
+  ///
+  /// In pt, this message translates to:
+  /// **'Contam como uma só despesa de {amount}'**
+  String lnkResultExpense(String amount);
+
+  /// No description provided for @lnkResultIncome.
+  ///
+  /// In pt, this message translates to:
+  /// **'Contam como uma só receita de {amount}'**
+  String lnkResultIncome(String amount);
+
+  /// No description provided for @lnkResultZero.
+  ///
+  /// In pt, this message translates to:
+  /// **'Líquido zero: não conta como despesa nem como receita'**
+  String get lnkResultZero;
+
+  /// No description provided for @lnkRepHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'O líquido conta no movimento de saída maior ({name}), com a categoria dele.'**
+  String lnkRepHint(String name);
+
+  /// No description provided for @lnkUnlink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desligar'**
+  String get lnkUnlink;
+
+  /// No description provided for @lnkUnlinkOne.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desligar {name}'**
+  String lnkUnlinkOne(String name);
+
+  /// No description provided for @lnkPickTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ligar a que movimento?'**
+  String get lnkPickTitle;
+
+  /// No description provided for @lnkSearch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Procurar movimento'**
+  String get lnkSearch;
+
+  /// No description provided for @lnkSuggested.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sugeridos (sinal oposto, perto no tempo)'**
+  String get lnkSuggested;
+
+  /// No description provided for @lnkOthers.
+  ///
+  /// In pt, this message translates to:
+  /// **'Outros movimentos'**
+  String get lnkOthers;
+
+  /// No description provided for @lnkNoCandidates.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não há movimentos para ligar.'**
+  String get lnkNoCandidates;
+
+  /// No description provided for @lnkLinked.
+  ///
+  /// In pt, this message translates to:
+  /// **'Movimentos ligados.'**
+  String get lnkLinked;
+
+  /// No description provided for @lnkUnlinked.
+  ///
+  /// In pt, this message translates to:
+  /// **'Movimento desligado.'**
+  String get lnkUnlinked;
+
   /// No description provided for @morMoreTitle.
   ///
   /// In pt, this message translates to:
@@ -7489,6 +7627,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Carteira'**
   String get morNavPortfolio;
+
+  /// No description provided for @uncLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Por classificar'**
+  String get uncLabel;
+
+  /// No description provided for @uncBudgetSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares'**
+  String uncBudgetSubtitle(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -1,0 +1,36 @@
+{
+  "@@locale": "en",
+  "edvFixAmount": "Fix amount",
+  "edvOriginalValue": "Original amount: {valor} (edited)",
+  "@edvOriginalValue": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowReversed": "This amount is below what incomes have already reversed ({valor}). Fix or unlink those reversals first.",
+  "@edvBelowReversed": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvHasReversals": "This expense already has {valor} reversed by incomes. Fix or unlink those reversals before turning it into an income.",
+  "@edvHasReversals": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "edvBelowOwnReversal": "This amount is below the part this income reverses ({valor}). Reduce the reversed amount first.",
+  "@edvBelowOwnReversal": {
+    "placeholders": {
+      "valor": {
+        "type": "String"
+      }
+    }
+  }
+}
