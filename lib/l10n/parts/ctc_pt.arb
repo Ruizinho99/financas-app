@@ -1,0 +1,5 @@
+{
+  "ctcCopyTooltip": "Copiar categorias",
+  "ctcCopied": "{count, plural, =0{Nenhuma categoria copiada} =1{1 categoria copiada} other{{count} categorias copiadas}}",
+  "@ctcCopied": {"placeholders": {"count": {"type": "int"}}}
+}

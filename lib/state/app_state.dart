@@ -473,6 +473,25 @@ class AppState extends ChangeNotifier {
     return c.id == ofId || ancestorsOf(c).any((a) => a.id == ofId);
   }
 
+  /// Todas as categorias (e as arquivadas) como texto, uma por linha, com um "-" por nível:
+  /// "cat1", "-cat1.1", "--cat1.1.1"... Na mesma ordem do ecrã Categorias.
+  String categoryTreeText() {
+    final out = <String>[];
+    final seen = <int>{};
+    void walk(Categoria c, int depth) {
+      if (!seen.add(c.id)) return;
+      out.add('${'-' * depth}${c.name}');
+      for (final k in _kids[c.id] ?? const <Categoria>[]) {
+        walk(k, depth + 1);
+      }
+    }
+
+    for (final r in categories.where((c) => c.parentId == null)) {
+      walk(r, 0);
+    }
+    return out.join('\n');
+  }
+
   /// "Avó › Mãe › Filha" – permite distinguir categorias com o mesmo nome.
   String path(int? id) {
     final c = cat(id);

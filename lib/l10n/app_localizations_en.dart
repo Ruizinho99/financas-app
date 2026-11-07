@@ -1807,6 +1807,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get ctcCopyTooltip => 'Copy categories';
+
+  @override
+  String ctcCopied(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categories copied',
+      one: '1 category copied',
+      zero: 'No categories copied',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get edvFixAmount => 'Fix amount';
 
   @override

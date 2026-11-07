@@ -2864,6 +2864,18 @@ abstract class AppLocalizations {
   /// **'Apagar “{name}”? {subs, plural, =0{} =1{Apaga também 1 subcategoria. } other{Apaga também as {subs} subcategorias. }}{txns, plural, =0{Não há movimentos nesta categoria.} =1{O movimento fica sem categoria.} other{Os {txns} movimentos ficam sem categoria.}}'**
   String ctbDeleteQuestion(String name, int subs, int txns);
 
+  /// No description provided for @ctcCopyTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Copiar categorias'**
+  String get ctcCopyTooltip;
+
+  /// No description provided for @ctcCopied.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{Nenhuma categoria copiada} =1{1 categoria copiada} other{{count} categorias copiadas}}'**
+  String ctcCopied(int count);
+
   /// No description provided for @edvFixAmount.
   ///
   /// In pt, this message translates to:

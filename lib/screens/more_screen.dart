@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../update/update_checker.dart';
@@ -317,7 +318,26 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       walk(r, 0);
     }
     return Scaffold(
-      appBar: AppBar(title: Text(l.morCategoriesScreenTitle)),
+      appBar: AppBar(
+        title: Text(l.morCategoriesScreenTitle),
+        actions: [
+          IconButton(
+            tooltip: l.ctcCopyTooltip,
+            icon: const Icon(Icons.copy_all_outlined),
+            onPressed: s.categories.isEmpty
+                ? null
+                : () async {
+                    await Clipboard.setData(
+                      ClipboardData(text: s.categoryTreeText()),
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l.ctcCopied(s.categories.length))),
+                    );
+                  },
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showCategoryEditor(context),
         icon: const Icon(Icons.add),
