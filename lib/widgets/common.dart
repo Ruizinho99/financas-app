@@ -6,7 +6,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../screens/txn_form_screen.dart';
 import '../util/format.dart';
-import 'category_editor.dart';
+import 'category_picker.dart';
 import 'form_kit.dart';
 
 export 'category_editor.dart' show showCategoryEditor;
@@ -112,15 +112,16 @@ class BudgetBar extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Seletor de categoria: dois dropdowns ligados (categoria → subcategoria)
+// Seletor de categoria: um só campo com o caminho completo (A › B › C),
+// que abre a escolha em árvore (chooseCategory)
 // ---------------------------------------------------------------------------
-class CategorySelector extends StatefulWidget {
-  /// Id da categoria ou subcategoria escolhida (null = nenhuma).
+class CategorySelector extends StatelessWidget {
+  /// Id da categoria escolhida, a qualquer profundidade (null = nenhuma).
   final int? value;
   final ValueChanged<int?> onChanged;
-  final bool compact; // lado a lado, para listas
-  final bool form; // rótulos por cima e ícones, como nos formulários
-  final bool? income; // filtra rendimentos (true) ou despesas (false)
+  final bool compact; // campo mais baixo, para listas
+  final bool form; // rótulo por cima e ícone, como nos formulários
+  final bool? income; // ignorado: todas as categorias servem para tudo
   /// Intervalo de datas dos movimentos: só mostra categorias que existiam nessa altura
   /// (por omissão, as que existem hoje).
   final DateTimeRange? when;
@@ -135,188 +136,52 @@ class CategorySelector extends StatefulWidget {
   });
 
   @override
-  State<CategorySelector> createState() => _CategorySelectorState();
-}
-
-class _CategorySelectorState extends State<CategorySelector> {
-  static const _none = -1, _newItem = -2, _toggleAll = -3;
-  bool _showAll = false; // incluir categorias fora do período
-  int _tick =
-      0; // força os dropdowns a voltarem ao valor real depois de "Nova…"
-
-  bool _showAllOrVisible(Categoria c, AppState s, DateTime from, DateTime to) =>
-      _showAll || s.isCategoryActiveDuring(c, from, to);
-
-  int? get value => widget.value;
-  ValueChanged<int?> get onChanged => widget.onChanged;
-  bool get compact => widget.compact;
-  bool get form => widget.form;
-  bool? get income => widget.income;
-
-  @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final l = AppLocalizations.of(context)!;
-    final chosen = s.cat(value);
-    final rootId = chosen == null ? null : (chosen.parentId ?? chosen.id);
-    final subId = chosen?.parentId == null ? null : chosen!.id;
-    final from = widget.when?.start ?? DateTime.now();
-    final to = widget.when?.end ?? from;
-    bool visible(Categoria c) {
-      if (_showAll || c.id == value || c.id == rootId) return true;
-      return s.isCategoryActiveDuring(c, from, to);
+    final cs = Theme.of(context).colorScheme;
+    final text = s.cat(value) == null ? '' : s.path(value);
+
+    Future<void> open() async {
+      final id = await chooseCategory(
+        context,
+        selected: value,
+        income: income,
+        when: when,
+      );
+      if (id == null) return;
+      onChanged(id == -1 ? null : id);
     }
 
-    String tag(Categoria c) =>
-        (!c.hasDates && !(s.cat(c.parentId)?.hasDates ?? false))
-        ? ''
-        : (s.isCategoryActiveNow(c)
-              ? ''
-              : ((c.activeTo ?? s.cat(c.parentId)?.activeTo) != null &&
-                        (c.activeTo ?? s.cat(c.parentId)!.activeTo!).compareTo(
-                              monthKey(DateTime.now()),
-                            ) <
-                            0
-                    ? l.frmEnded
-                    : l.frmUpcoming));
-
-    final allRoots = s.roots.toList();
-    final roots = allRoots.where(visible).toList();
-    final subs = rootId == null
-        ? <Categoria>[]
-        : s.childrenOf(rootId).where(visible).toList();
-    final hiddenExist = s.categories.any(
-      (c) => !c.archived && c.hasDates && !_showAllOrVisible(c, s, from, to),
-    );
-
-    Future<void> createRoot() async {
-      final id = await showCategoryEditor(context);
-      if (!mounted) return;
-      setState(() => _tick++);
-      if (id != null) onChanged(id);
-    }
-
-    Future<void> createSub() async {
-      final id = await showCategoryEditor(context, parentId: rootId);
-      if (!mounted) return;
-      setState(() => _tick++);
-      if (id != null) onChanged(id);
-    }
-
-    final catDrop = DropdownButtonFormField<int>(
-      key: ValueKey('cat-$rootId-${roots.length}-$_tick'),
-      initialValue: rootId,
-      isExpanded: true,
-      decoration: form
-          ? InputDecoration(
-              hintText: l.frmSelectCategory,
-              prefixIcon: Icon(Icons.sell_outlined),
-            )
-          : InputDecoration(labelText: l.frmCategory, isDense: compact),
-      items: [
-        for (final r in roots)
-          DropdownMenuItem(
-            value: r.id,
-            child: Text(
-              '${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}${tag(r)}',
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        DropdownMenuItem(value: _newItem, child: Text(l.frmNewCategory)),
-        if (hiddenExist || _showAll)
-          DropdownMenuItem(
-            value: _toggleAll,
-            child: Text(_showAll ? l.frmHideEndedFuture : l.frmShowEndedFuture),
-          ),
-        if (rootId != null)
-          DropdownMenuItem(value: _none, child: Text(l.frmNoCategoryItem)),
-      ],
-      onChanged: (v) {
-        if (v == _newItem) {
-          createRoot();
-        } else if (v == _toggleAll) {
-          setState(() {
-            _showAll = !_showAll;
-            _tick++;
-          });
-        } else if (v == _none) {
-          onChanged(null);
-        } else if (v != rootId) {
-          onChanged(v);
-        }
-      },
-    );
-
-    final subDrop = DropdownButtonFormField<int>(
-      key: ValueKey('sub-$rootId-$subId-${subs.length}-$_tick'),
-      initialValue: subId,
-      isExpanded: true,
-      decoration: form
-          ? InputDecoration(
-              hintText: l.frmSelectSubcategory,
-              prefixIcon: const Icon(Icons.format_list_bulleted),
-              enabled: rootId != null,
-            )
-          : InputDecoration(
-              labelText: l.frmSubcategory,
-              isDense: compact,
-              enabled: rootId != null,
-            ),
-      items: rootId == null
-          ? const []
-          : [
-              for (final k in subs)
-                DropdownMenuItem(
-                  value: k.id,
-                  child: Text(
-                    '${k.emoji.isEmpty ? '🏷️' : k.emoji}  ${k.name}${tag(k)}',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              DropdownMenuItem(
-                value: _newItem,
-                child: Text(l.frmNewSubcategory),
+    final field = InkWell(
+      onTap: open,
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        isEmpty: text.isEmpty && !form,
+        decoration: form
+            ? const InputDecoration(prefixIcon: Icon(Icons.sell_outlined))
+            : InputDecoration(
+                labelText: l.frmCategory,
+                isDense: compact,
+                suffixIcon: const Icon(Icons.arrow_drop_down),
               ),
-              if (subId != null)
-                DropdownMenuItem(value: _none, child: Text(l.frmNoSubcategory)),
-            ],
-      onChanged: rootId == null
-          ? null
-          : (v) {
-              if (v == _newItem) {
-                createSub();
-              } else if (v == _none) {
-                onChanged(rootId);
-              } else {
-                onChanged(v);
-              }
-            },
+        child: Text(
+          text.isEmpty && form ? l.frmSelectCategory : text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: text.isEmpty && form
+              ? TextStyle(color: cs.onSurfaceVariant)
+              : null,
+        ),
+      ),
     );
-
     if (form) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          FieldLabel(l.frmCategory),
-          catDrop,
-          FieldLabel(l.frmSubcategory, optional: true),
-          subDrop,
-        ],
+        children: [FieldLabel(l.frmCategory), field],
       );
     }
-    if (compact) {
-      return Row(
-        children: [
-          Expanded(child: catDrop),
-          const SizedBox(width: 8),
-          Expanded(child: subDrop),
-        ],
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [catDrop, const SizedBox(height: 12), subDrop],
-    );
+    return field;
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
+import '../widgets/category_picker.dart';
 import 'analytics.dart';
 import 'widgets.dart';
 
@@ -55,7 +56,6 @@ class _TrendTabState extends State<TrendTab> {
     String mlabel(DateTime d) => fmtMonthShort(d).split(' ').first;
 
     // categoria escolhida
-    final roots = s.roots.toList();
     List<int>? catSeries;
     if (categoryId != null) {
       final f = a.filter.copyWith(categoryIds: {categoryId!});
@@ -385,25 +385,35 @@ class _TrendTabState extends State<TrendTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              DropdownButtonFormField<int?>(
-                initialValue: categoryId,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.category_outlined),
-                  hintText: l.anChooseCategory,
+              InkWell(
+                key: const ValueKey('trend-cat-field'),
+                borderRadius: BorderRadius.circular(12),
+                onTap: () async {
+                  // qualquer categoria, a qualquer profundidade (inclui o que tem dentro)
+                  final id = await chooseCategory(
+                    context,
+                    selected: categoryId,
+                    allowNew: false,
+                  );
+                  if (id == null) return;
+                  setState(() => categoryId = id == -1 ? null : id);
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.category_outlined),
+                    suffixIcon: Icon(Icons.arrow_drop_down),
+                  ),
+                  child: Text(
+                    categoryId == null || s.cat(categoryId) == null
+                        ? l.anChooseCategory
+                        : s.path(categoryId),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: categoryId == null
+                        ? TextStyle(color: cs.onSurfaceVariant)
+                        : null,
+                  ),
                 ),
-                items: [
-                  DropdownMenuItem(value: null, child: Text(l.anNone)),
-                  for (final r in roots)
-                    DropdownMenuItem(
-                      value: r.id,
-                      child: Text(
-                        '${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
-                onChanged: (v) => setState(() => categoryId = v),
               ),
               if (catSeries != null) ...[
                 const SizedBox(height: 14),
