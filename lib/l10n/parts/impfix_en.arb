@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "impfixMismatchTitle": "{count, plural, =1{1 transaction doesn't match the balance} other{{count} transactions don't match the balance}}",
+  "impfixMismatchTitle": "{count, plural, =0{{count} transactions don't match the balance} =1{1 transaction doesn't match the balance} other{{count} transactions don't match the balance}}",
   "@impfixMismatchTitle": {
     "placeholders": {
       "count": {

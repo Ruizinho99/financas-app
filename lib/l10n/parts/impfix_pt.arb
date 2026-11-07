@@ -1,6 +1,6 @@
 {
   "@@locale": "pt",
-  "impfixMismatchTitle": "{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}",
+  "impfixMismatchTitle": "{count, plural, =0{{count} movimentos não batem certo com o saldo} =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}",
   "@impfixMismatchTitle": {
     "placeholders": {
       "count": {

@@ -1,6 +1,6 @@
 {
   "uncLabel": "Unclassified",
-  "uncBudgetSubtitle": "{count, plural, =1{1 transaction without a category} other{{count} transactions without a category}} · counted as spending/income until you classify",
+  "uncBudgetSubtitle": "{count, plural, =0{{count} transactions without a category} =1{1 transaction without a category} other{{count} transactions without a category}} · counted as spending/income until you classify",
   "@uncBudgetSubtitle": {
     "placeholders": {
       "count": {

@@ -2108,6 +2108,228 @@ abstract class AppLocalizations {
   /// **'Desativa para pausar, sem apagar'**
   String get bpActiveHint;
 
+  /// No description provided for @budSpentThisMonth.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gasto este mês'**
+  String get budSpentThisMonth;
+
+  /// No description provided for @budDayOfTotal.
+  ///
+  /// In pt, this message translates to:
+  /// **'dia {day} de {total}'**
+  String budDayOfTotal(int day, int total);
+
+  /// No description provided for @budOfBudgeted.
+  ///
+  /// In pt, this message translates to:
+  /// **'de {amount} orçamentados'**
+  String budOfBudgeted(String amount);
+
+  /// No description provided for @budPaceMark.
+  ///
+  /// In pt, this message translates to:
+  /// **'A marca mostra onde devias estar hoje'**
+  String get budPaceMark;
+
+  /// No description provided for @budMetricLeft.
+  ///
+  /// In pt, this message translates to:
+  /// **'Restante'**
+  String get budMetricLeft;
+
+  /// No description provided for @budMetricUnallocated.
+  ///
+  /// In pt, this message translates to:
+  /// **'Por alocar'**
+  String get budMetricUnallocated;
+
+  /// No description provided for @budMetricSalary.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salário'**
+  String get budMetricSalary;
+
+  /// No description provided for @budUnbudgetedNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'+ {amount} em categorias sem orçamento'**
+  String budUnbudgetedNote(String amount);
+
+  /// No description provided for @budCountOver.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{0 excedidos} =1{1 excedido} other{{count} excedidos}}'**
+  String budCountOver(int count);
+
+  /// No description provided for @budCountBelow.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{0 abaixo do mínimo} =1{1 abaixo do mínimo} other{{count} abaixo do mínimo}}'**
+  String budCountBelow(int count);
+
+  /// No description provided for @budCountOk.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{0 em ordem} =1{1 em ordem} other{{count} em ordem}}'**
+  String budCountOk(int count);
+
+  /// No description provided for @budGroupAttention.
+  ///
+  /// In pt, this message translates to:
+  /// **'Precisa de atenção · {count}'**
+  String budGroupAttention(int count);
+
+  /// No description provided for @budGroupOk.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em ordem · {count}'**
+  String budGroupOk(int count);
+
+  /// No description provided for @budGroupNone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem orçamento · {count}'**
+  String budGroupNone(int count);
+
+  /// No description provided for @budGroupAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Categorias · {count}'**
+  String budGroupAll(int count);
+
+  /// No description provided for @budSortLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'ordenar: {mode}'**
+  String budSortLabel(String mode);
+
+  /// No description provided for @budSortState.
+  ///
+  /// In pt, this message translates to:
+  /// **'estado'**
+  String get budSortState;
+
+  /// No description provided for @budSortSpent.
+  ///
+  /// In pt, this message translates to:
+  /// **'gasto'**
+  String get budSortSpent;
+
+  /// No description provided for @budSortName.
+  ///
+  /// In pt, this message translates to:
+  /// **'nome'**
+  String get budSortName;
+
+  /// No description provided for @budPillOver.
+  ///
+  /// In pt, this message translates to:
+  /// **'+{amount} acima'**
+  String budPillOver(String amount);
+
+  /// No description provided for @budPillMissing.
+  ///
+  /// In pt, this message translates to:
+  /// **'faltam {amount}'**
+  String budPillMissing(String amount);
+
+  /// No description provided for @budPillLeft.
+  ///
+  /// In pt, this message translates to:
+  /// **'restam {amount}'**
+  String budPillLeft(String amount);
+
+  /// No description provided for @budPillReached.
+  ///
+  /// In pt, this message translates to:
+  /// **'atingido'**
+  String get budPillReached;
+
+  /// No description provided for @budRowMax.
+  ///
+  /// In pt, this message translates to:
+  /// **'{spent} · máximo {target}'**
+  String budRowMax(String spent, String target);
+
+  /// No description provided for @budRowMin.
+  ///
+  /// In pt, this message translates to:
+  /// **'{spent} · mínimo {target}'**
+  String budRowMin(String spent, String target);
+
+  /// No description provided for @budNoBudgetSpent.
+  ///
+  /// In pt, this message translates to:
+  /// **'{amount} gastos'**
+  String budNoBudgetSpent(String amount);
+
+  /// No description provided for @budSuggest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definir {amount}'**
+  String budSuggest(String amount);
+
+  /// No description provided for @budSetBudget.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definir orçamento'**
+  String get budSetBudget;
+
+  /// No description provided for @budSuggestNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sugestão = média dos últimos 3 meses.'**
+  String get budSuggestNote;
+
+  /// No description provided for @budSheetOfMax.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gastaste {spent} · {percent} do máximo'**
+  String budSheetOfMax(String spent, String percent);
+
+  /// No description provided for @budSheetOfMin.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gastaste {spent} · {percent} do mínimo'**
+  String budSheetOfMin(String spent, String percent);
+
+  /// No description provided for @budSubcategories.
+  ///
+  /// In pt, this message translates to:
+  /// **'Subcategorias'**
+  String get budSubcategories;
+
+  /// No description provided for @budLast6.
+  ///
+  /// In pt, this message translates to:
+  /// **'Últimos 6 meses'**
+  String get budLast6;
+
+  /// No description provided for @budChartMax.
+  ///
+  /// In pt, this message translates to:
+  /// **'máx. {amount}'**
+  String budChartMax(String amount);
+
+  /// No description provided for @budChartMin.
+  ///
+  /// In pt, this message translates to:
+  /// **'mín. {amount}'**
+  String budChartMin(String amount);
+
+  /// No description provided for @budEditBudget.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar orçamento'**
+  String get budEditBudget;
+
+  /// No description provided for @budNoBudgetYet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem orçamento definido'**
+  String get budNoBudgetYet;
+
   /// No description provided for @appName.
   ///
   /// In pt, this message translates to:

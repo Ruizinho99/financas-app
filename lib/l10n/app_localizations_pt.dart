@@ -1277,6 +1277,182 @@ class AppLocalizationsPt extends AppLocalizations {
   String get bpActiveHint => 'Desativa para pausar, sem apagar';
 
   @override
+  String get budSpentThisMonth => 'Gasto este mês';
+
+  @override
+  String budDayOfTotal(int day, int total) {
+    return 'dia $day de $total';
+  }
+
+  @override
+  String budOfBudgeted(String amount) {
+    return 'de $amount orçamentados';
+  }
+
+  @override
+  String get budPaceMark => 'A marca mostra onde devias estar hoje';
+
+  @override
+  String get budMetricLeft => 'Restante';
+
+  @override
+  String get budMetricUnallocated => 'Por alocar';
+
+  @override
+  String get budMetricSalary => 'Salário';
+
+  @override
+  String budUnbudgetedNote(String amount) {
+    return '+ $amount em categorias sem orçamento';
+  }
+
+  @override
+  String budCountOver(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count excedidos',
+      one: '1 excedido',
+      zero: '0 excedidos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budCountBelow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count abaixo do mínimo',
+      one: '1 abaixo do mínimo',
+      zero: '0 abaixo do mínimo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budCountOk(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count em ordem',
+      one: '1 em ordem',
+      zero: '0 em ordem',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budGroupAttention(int count) {
+    return 'Precisa de atenção · $count';
+  }
+
+  @override
+  String budGroupOk(int count) {
+    return 'Em ordem · $count';
+  }
+
+  @override
+  String budGroupNone(int count) {
+    return 'Sem orçamento · $count';
+  }
+
+  @override
+  String budGroupAll(int count) {
+    return 'Categorias · $count';
+  }
+
+  @override
+  String budSortLabel(String mode) {
+    return 'ordenar: $mode';
+  }
+
+  @override
+  String get budSortState => 'estado';
+
+  @override
+  String get budSortSpent => 'gasto';
+
+  @override
+  String get budSortName => 'nome';
+
+  @override
+  String budPillOver(String amount) {
+    return '+$amount acima';
+  }
+
+  @override
+  String budPillMissing(String amount) {
+    return 'faltam $amount';
+  }
+
+  @override
+  String budPillLeft(String amount) {
+    return 'restam $amount';
+  }
+
+  @override
+  String get budPillReached => 'atingido';
+
+  @override
+  String budRowMax(String spent, String target) {
+    return '$spent · máximo $target';
+  }
+
+  @override
+  String budRowMin(String spent, String target) {
+    return '$spent · mínimo $target';
+  }
+
+  @override
+  String budNoBudgetSpent(String amount) {
+    return '$amount gastos';
+  }
+
+  @override
+  String budSuggest(String amount) {
+    return 'Definir $amount';
+  }
+
+  @override
+  String get budSetBudget => 'Definir orçamento';
+
+  @override
+  String get budSuggestNote => 'Sugestão = média dos últimos 3 meses.';
+
+  @override
+  String budSheetOfMax(String spent, String percent) {
+    return 'Gastaste $spent · $percent do máximo';
+  }
+
+  @override
+  String budSheetOfMin(String spent, String percent) {
+    return 'Gastaste $spent · $percent do mínimo';
+  }
+
+  @override
+  String get budSubcategories => 'Subcategorias';
+
+  @override
+  String get budLast6 => 'Últimos 6 meses';
+
+  @override
+  String budChartMax(String amount) {
+    return 'máx. $amount';
+  }
+
+  @override
+  String budChartMin(String amount) {
+    return 'mín. $amount';
+  }
+
+  @override
+  String get budEditBudget => 'Editar orçamento';
+
+  @override
+  String get budNoBudgetYet => 'Sem orçamento definido';
+
+  @override
   String get appName => 'Finanças';
 
   @override

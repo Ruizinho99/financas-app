@@ -1,0 +1,208 @@
+{
+  "budSpentThisMonth": "Spent this month",
+  "budDayOfTotal": "day {day} of {total}",
+  "@budDayOfTotal": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "budOfBudgeted": "of {amount} budgeted",
+  "@budOfBudgeted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budPaceMark": "The mark shows where you should be today",
+  "budMetricLeft": "Left",
+  "budMetricUnallocated": "Unallocated",
+  "budMetricSalary": "Salary",
+  "budUnbudgetedNote": "+ {amount} in categories without a budget",
+  "@budUnbudgetedNote": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budCountOver": "{count, plural, =0{0 over} =1{1 over} other{{count} over}}",
+  "@budCountOver": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budCountBelow": "{count, plural, =0{0 below minimum} =1{1 below minimum} other{{count} below minimum}}",
+  "@budCountBelow": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budCountOk": "{count, plural, =0{0 on track} =1{1 on track} other{{count} on track}}",
+  "@budCountOk": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budGroupAttention": "Needs attention · {count}",
+  "@budGroupAttention": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budGroupOk": "On track · {count}",
+  "@budGroupOk": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budGroupNone": "No budget · {count}",
+  "@budGroupNone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budGroupAll": "Categories · {count}",
+  "@budGroupAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budSortLabel": "sort: {mode}",
+  "@budSortLabel": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "budSortState": "status",
+  "budSortSpent": "spent",
+  "budSortName": "name",
+  "budPillOver": "+{amount} over",
+  "@budPillOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budPillMissing": "{amount} to go",
+  "@budPillMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budPillLeft": "{amount} left",
+  "@budPillLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budPillReached": "reached",
+  "budRowMax": "{spent} · maximum {target}",
+  "@budRowMax": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "budRowMin": "{spent} · minimum {target}",
+  "@budRowMin": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "budNoBudgetSpent": "{amount} spent",
+  "@budNoBudgetSpent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budSuggest": "Set {amount}",
+  "@budSuggest": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budSetBudget": "Set budget",
+  "budSuggestNote": "Suggestion = average of the last 3 months.",
+  "budSheetOfMax": "You spent {spent} · {percent} of the maximum",
+  "@budSheetOfMax": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "budSheetOfMin": "You spent {spent} · {percent} of the minimum",
+  "@budSheetOfMin": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "budSubcategories": "Subcategories",
+  "budLast6": "Last 6 months",
+  "budChartMax": "max. {amount}",
+  "@budChartMax": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budChartMin": "min. {amount}",
+  "@budChartMin": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budEditBudget": "Edit budget",
+  "budNoBudgetYet": "No budget set"
+}
