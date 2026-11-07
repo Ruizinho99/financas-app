@@ -1491,6 +1491,90 @@
       }
     }
   },
+  "ctbPickParentTitle": "Escolher categoria-mãe",
+  "ctbMoveTo": "Mover “{name}” para…",
+  "@ctbMoveTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbSearch": "Pesquisar categoria",
+  "ctbNoMatches": "Nenhuma categoria encontrada",
+  "ctbMoveMenu": "Mover para…",
+  "ctbMoveButton": "Mover",
+  "ctbMainLevel": "o nível principal",
+  "ctbMoveConfirm": "{count, plural, =0{“{name}” passa para dentro de “{dest}”.} =1{“{name}” e a sua subcategoria passam para dentro de “{dest}”.} other{“{name}” e as suas {count} subcategorias passam para dentro de “{dest}”.}}",
+  "@ctbMoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "dest": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbMoveConfirmTop": "{count, plural, =0{“{name}” passa a ser uma categoria principal.} =1{“{name}” e a sua subcategoria passam para o nível principal.} other{“{name}” e as suas {count} subcategorias passam para o nível principal.}}",
+  "@ctbMoveConfirmTop": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ctbMoved": "“{name}” foi movida.",
+  "@ctbMoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbMoveErrSelf": "Uma categoria não pode ficar dentro de si mesma.",
+  "ctbMoveErrDescendant": "Não dá para mover uma categoria para dentro de uma das suas próprias subcategorias.",
+  "ctbMoveErrNameTaken": "Já existe “{name}” em {dest}. Muda o nome antes de mover.",
+  "@ctbMoveErrNameTaken": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "dest": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbSubCount": "{count, plural, =0{{count} subcategorias} =1{1 subcategoria} other{{count} subcategorias}}",
+  "@ctbSubCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ctbExpand": "Mostrar subcategorias",
+  "ctbCollapse": "Esconder subcategorias",
+  "ctbDeleteQuestion": "Apagar “{name}”? {subs, plural, =0{} =1{Apaga também 1 subcategoria. } other{Apaga também as {subs} subcategorias. }}{txns, plural, =0{Não há movimentos nesta categoria.} =1{O movimento fica sem categoria.} other{Os {txns} movimentos ficam sem categoria.}}",
+  "@ctbDeleteQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "subs": {
+        "type": "int"
+      },
+      "txns": {
+        "type": "int"
+      }
+    }
+  },
   "edvFixAmount": "Corrigir valor",
   "edvOriginalValue": "Valor original: {valor} (editado)",
   "@edvOriginalValue": {
@@ -2435,7 +2519,7 @@
       }
     }
   },
-  "impfixMismatchTitle": "{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}",
+  "impfixMismatchTitle": "{count, plural, =0{{count} movimentos não batem certo com o saldo} =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}",
   "@impfixMismatchTitle": {
     "placeholders": {
       "count": {
@@ -3994,7 +4078,7 @@
   "selSelectAll": "Selecionar tudo",
   "selDeselectAll": "Limpar seleção",
   "uncLabel": "Por classificar",
-  "uncBudgetSubtitle": "{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares",
+  "uncBudgetSubtitle": "{count, plural, =0{{count} movimentos sem categoria} =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares",
   "@uncBudgetSubtitle": {
     "placeholders": {
       "count": {

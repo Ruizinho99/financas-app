@@ -1702,6 +1702,110 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get ctbPickParentTitle => 'Escolher categoria-mãe';
+
+  @override
+  String ctbMoveTo(String name) {
+    return 'Mover “$name” para…';
+  }
+
+  @override
+  String get ctbSearch => 'Pesquisar categoria';
+
+  @override
+  String get ctbNoMatches => 'Nenhuma categoria encontrada';
+
+  @override
+  String get ctbMoveMenu => 'Mover para…';
+
+  @override
+  String get ctbMoveButton => 'Mover';
+
+  @override
+  String get ctbMainLevel => 'o nível principal';
+
+  @override
+  String ctbMoveConfirm(String name, int count, String dest) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '“$name” e as suas $count subcategorias passam para dentro de “$dest”.',
+      one: '“$name” e a sua subcategoria passam para dentro de “$dest”.',
+      zero: '“$name” passa para dentro de “$dest”.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ctbMoveConfirmTop(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '“$name” e as suas $count subcategorias passam para o nível principal.',
+      one: '“$name” e a sua subcategoria passam para o nível principal.',
+      zero: '“$name” passa a ser uma categoria principal.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ctbMoved(String name) {
+    return '“$name” foi movida.';
+  }
+
+  @override
+  String get ctbMoveErrSelf =>
+      'Uma categoria não pode ficar dentro de si mesma.';
+
+  @override
+  String get ctbMoveErrDescendant =>
+      'Não dá para mover uma categoria para dentro de uma das suas próprias subcategorias.';
+
+  @override
+  String ctbMoveErrNameTaken(String name, String dest) {
+    return 'Já existe “$name” em $dest. Muda o nome antes de mover.';
+  }
+
+  @override
+  String ctbSubCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategorias',
+      one: '1 subcategoria',
+      zero: '$count subcategorias',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ctbExpand => 'Mostrar subcategorias';
+
+  @override
+  String get ctbCollapse => 'Esconder subcategorias';
+
+  @override
+  String ctbDeleteQuestion(String name, int subs, int txns) {
+    String _temp0 = intl.Intl.pluralLogic(
+      subs,
+      locale: localeName,
+      other: 'Apaga também as $subs subcategorias. ',
+      one: 'Apaga também 1 subcategoria. ',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      txns,
+      locale: localeName,
+      other: 'Os $txns movimentos ficam sem categoria.',
+      one: 'O movimento fica sem categoria.',
+      zero: 'Não há movimentos nesta categoria.',
+    );
+    return 'Apagar “$name”? $_temp0$_temp1';
+  }
+
+  @override
   String get edvFixAmount => 'Corrigir valor';
 
   @override
@@ -3109,6 +3213,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos não batem certo com o saldo',
       one: '1 movimento não bate certo com o saldo',
+      zero: '$count movimentos não batem certo com o saldo',
     );
     return '$_temp0';
   }
@@ -5171,6 +5276,7 @@ class AppLocalizationsPt extends AppLocalizations {
       locale: localeName,
       other: '$count movimentos sem categoria',
       one: '1 movimento sem categoria',
+      zero: '$count movimentos sem categoria',
     );
     return '$_temp0 · conta como despesa/receita até classificares';
   }

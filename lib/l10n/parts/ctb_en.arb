@@ -1,0 +1,86 @@
+{
+  "ctbPickParentTitle": "Choose parent category",
+  "ctbMoveTo": "Move “{name}” to…",
+  "@ctbMoveTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbSearch": "Search category",
+  "ctbNoMatches": "No category found",
+  "ctbMoveMenu": "Move to…",
+  "ctbMoveButton": "Move",
+  "ctbMainLevel": "the top level",
+  "ctbMoveConfirm": "{count, plural, =0{“{name}” moves into “{dest}”.} =1{“{name}” and its subcategory move into “{dest}”.} other{“{name}” and its {count} subcategories move into “{dest}”.}}",
+  "@ctbMoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "dest": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbMoveConfirmTop": "{count, plural, =0{“{name}” becomes a main category.} =1{“{name}” and its subcategory move to the top level.} other{“{name}” and its {count} subcategories move to the top level.}}",
+  "@ctbMoveConfirmTop": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ctbMoved": "“{name}” was moved.",
+  "@ctbMoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbMoveErrSelf": "A category can't be placed inside itself.",
+  "ctbMoveErrDescendant": "A category can't be moved into one of its own subcategories.",
+  "ctbMoveErrNameTaken": "“{name}” already exists in {dest}. Rename it before moving.",
+  "@ctbMoveErrNameTaken": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "dest": {
+        "type": "String"
+      }
+    }
+  },
+  "ctbSubCount": "{count, plural, =0{{count} subcategories} =1{1 subcategory} other{{count} subcategories}}",
+  "@ctbSubCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ctbExpand": "Show subcategories",
+  "ctbCollapse": "Hide subcategories",
+  "ctbDeleteQuestion": "Delete “{name}”? {subs, plural, =0{} =1{This also deletes 1 subcategory. } other{This also deletes its {subs} subcategories. }}{txns, plural, =0{There are no transactions in it.} =1{The transaction is left without a category.} other{The {txns} transactions are left without a category.}}",
+  "@ctbDeleteQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "subs": {
+        "type": "int"
+      },
+      "txns": {
+        "type": "int"
+      }
+    }
+  }
+}

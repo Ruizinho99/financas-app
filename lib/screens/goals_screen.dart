@@ -6,7 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
-import '../widgets/category_picker.dart';
+import '../widgets/category_editor.dart' show pickCategoryInTree;
 import '../widgets/form_kit.dart';
 import 'transactions_screen.dart' show confirm;
 
@@ -128,8 +128,15 @@ class _GoalFormScreenState extends State<GoalFormScreen> {
   }
 
   Future<void> _pickParent(AppState s) async {
-    final id = await chooseCategory(context, selected: parentId);
-    if (id == null || id == -1) return;
+    // a categoria-mãe do objetivo pode estar em qualquer nível da árvore
+    final r = await pickCategoryInTree(
+      context,
+      selected: parentId,
+      allowNone: false,
+      title: AppLocalizations.of(context)!.ctbPickParentTitle,
+    );
+    final id = r?.id;
+    if (id == null) return;
     setState(() => parentId = id);
   }
 
