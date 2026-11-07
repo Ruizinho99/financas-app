@@ -43,7 +43,7 @@ void main() {
     await tester.pumpWidget(_app(s, const BudgetScreen()));
     await tester.pumpAndSettle();
     expect(find.text('Budget'), findsOneWidget);
-    expect(find.text('Net salary'), findsOneWidget);
+    expect(find.text('Salary'), findsOneWidget);
     expect(find.text('New category'), findsOneWidget);
     expect(find.textContaining('Set your net salary'), findsOneWidget);
   });

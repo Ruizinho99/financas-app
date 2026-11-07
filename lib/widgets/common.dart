@@ -89,7 +89,6 @@ class BudgetBar extends StatelessWidget {
       return Colors.green.shade500;
     }
     if (ratio >= 1) return Colors.green.shade600;
-    if (ratio >= 0.5) return Colors.lightBlue.shade500;
     return Colors.amber.shade700;
   }
 

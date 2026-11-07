@@ -1281,6 +1281,182 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bpActiveHint => 'Turn off to pause, without deleting';
 
   @override
+  String get budSpentThisMonth => 'Spent this month';
+
+  @override
+  String budDayOfTotal(int day, int total) {
+    return 'day $day of $total';
+  }
+
+  @override
+  String budOfBudgeted(String amount) {
+    return 'of $amount budgeted';
+  }
+
+  @override
+  String get budPaceMark => 'The mark shows where you should be today';
+
+  @override
+  String get budMetricLeft => 'Left';
+
+  @override
+  String get budMetricUnallocated => 'Unallocated';
+
+  @override
+  String get budMetricSalary => 'Salary';
+
+  @override
+  String budUnbudgetedNote(String amount) {
+    return '+ $amount in categories without a budget';
+  }
+
+  @override
+  String budCountOver(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count over',
+      one: '1 over',
+      zero: '0 over',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budCountBelow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count below minimum',
+      one: '1 below minimum',
+      zero: '0 below minimum',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budCountOk(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count on track',
+      one: '1 on track',
+      zero: '0 on track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budGroupAttention(int count) {
+    return 'Needs attention · $count';
+  }
+
+  @override
+  String budGroupOk(int count) {
+    return 'On track · $count';
+  }
+
+  @override
+  String budGroupNone(int count) {
+    return 'No budget · $count';
+  }
+
+  @override
+  String budGroupAll(int count) {
+    return 'Categories · $count';
+  }
+
+  @override
+  String budSortLabel(String mode) {
+    return 'sort: $mode';
+  }
+
+  @override
+  String get budSortState => 'status';
+
+  @override
+  String get budSortSpent => 'spent';
+
+  @override
+  String get budSortName => 'name';
+
+  @override
+  String budPillOver(String amount) {
+    return '+$amount over';
+  }
+
+  @override
+  String budPillMissing(String amount) {
+    return '$amount to go';
+  }
+
+  @override
+  String budPillLeft(String amount) {
+    return '$amount left';
+  }
+
+  @override
+  String get budPillReached => 'reached';
+
+  @override
+  String budRowMax(String spent, String target) {
+    return '$spent · maximum $target';
+  }
+
+  @override
+  String budRowMin(String spent, String target) {
+    return '$spent · minimum $target';
+  }
+
+  @override
+  String budNoBudgetSpent(String amount) {
+    return '$amount spent';
+  }
+
+  @override
+  String budSuggest(String amount) {
+    return 'Set $amount';
+  }
+
+  @override
+  String get budSetBudget => 'Set budget';
+
+  @override
+  String get budSuggestNote => 'Suggestion = average of the last 3 months.';
+
+  @override
+  String budSheetOfMax(String spent, String percent) {
+    return 'You spent $spent · $percent of the maximum';
+  }
+
+  @override
+  String budSheetOfMin(String spent, String percent) {
+    return 'You spent $spent · $percent of the minimum';
+  }
+
+  @override
+  String get budSubcategories => 'Subcategories';
+
+  @override
+  String get budLast6 => 'Last 6 months';
+
+  @override
+  String budChartMax(String amount) {
+    return 'max. $amount';
+  }
+
+  @override
+  String budChartMin(String amount) {
+    return 'min. $amount';
+  }
+
+  @override
+  String get budEditBudget => 'Edit budget';
+
+  @override
+  String get budNoBudgetYet => 'No budget set';
+
+  @override
   String get appName => 'Finances';
 
   @override
