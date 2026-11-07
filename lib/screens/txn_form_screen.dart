@@ -11,10 +11,16 @@ import '../state/app_state.dart';
 import '../util/format.dart';
 import '../util/receipts.dart';
 import '../widgets/category_picker.dart';
+import '../widgets/common.dart' show CatBadge;
 import '../widgets/form_kit.dart';
 import 'accounts_screen.dart';
 import 'import_screen.dart';
 import 'transactions_screen.dart' show confirm;
+import 'txn_form/dialogos.dart';
+import 'txn_form/widgets.dart';
+
+// A API pública (corrigirValor, amountIssueText) mantém-se neste ficheiro.
+export 'txn_form/dialogos.dart' show corrigirValor, amountIssueText;
 
 enum _Type { expense, income, transfer }
 
@@ -38,7 +44,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   );
   late final desc = TextEditingController(text: widget.edit?.description ?? '');
   late int? categoryId = widget.edit?.categoryId;
-  late int? accountId = widget.edit?.accountId;
+  int? accountId; // ao criar, a última conta usada (ver initState)
   int? toAccountId;
   late int? investId = widget
       .edit
@@ -57,11 +63,45 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       false; // recibo anexado nesta sessão (apagar se não guardar)
   bool saved = false;
   String? error;
+  late final noteCtrl = TextEditingController(text: widget.edit?.note ?? '');
+  final amountFocus = FocusNode();
+  // a categoria/conta foram escolhidas à mão: as sugestões já não lhes mexem
+  late bool catManual = widget.edit?.categoryId != null;
+  bool catSuggested =
+      false; // categoria sugerida pelo nome (ainda não confirmada)
+  late bool accountManual = widget.edit?.accountId != null;
+  late bool descApplied =
+      widget.edit != null; // sugestão de descrição escolhida: esconde a lista
+  late bool advOpen;
+  late bool noteOpen = (widget.edit?.note ?? '').trim().isNotEmpty;
+  late bool goalsOpen;
+  String? importFile; // nome do ficheiro de onde veio o movimento importado
 
   @override
   void initState() {
     super.initState();
     final e = widget.edit;
+    final s = context.read<AppState>();
+    accountId = e != null ? e.accountId : s.lastUsedAccountId;
+    if (e != null && e.importId != null) {
+      try {
+        importFile = s.db
+            .imports()
+            .where((i) => i.id == e.importId)
+            .firstOrNull
+            ?.filename;
+      } catch (_) {}
+    }
+    final alocado = e == null ? 0 : s.allocatedOf(e.id);
+    goalsOpen = alocado > 0;
+    // o bloco Avançado abre sozinho se algum dos campos já tem valor
+    advOpen =
+        e != null &&
+        (e.receiptPath != null ||
+            e.note.trim().isNotEmpty ||
+            e.linkGroup != null ||
+            alocado > 0 ||
+            (e.isTransfer && e.investAccountId != null));
     type = e == null
         ? _Type.expense
         : (e.isTransfer
@@ -73,11 +113,21 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   void dispose() {
     if (!saved && newReceipt) Receipts.delete(receipt);
     reversedCtrl.dispose();
+    noteCtrl.dispose();
+    amountFocus.dispose();
+    desc.dispose();
+    amount.dispose();
     super.dispose();
   }
 
-  static String _centsText(int cents) =>
-      (cents.abs() / 100).toStringAsFixed(2).replaceAll('.', ',');
+  static String _centsText(int cents) => centsText(cents);
+
+  /// O movimento em edição, como está guardado agora (o valor pode ter sido corrigido entretanto).
+  Txn? _orig(AppState s) {
+    final e = widget.edit;
+    if (e == null) return null;
+    return s.transactions.where((t) => t.id == e.id).firstOrNull ?? e;
+  }
 
   /// Despesa pelo id (nulo se já não existir).
   Txn? _expenseById(AppState s, int? id) {
@@ -91,18 +141,32 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   void _setType(_Type t, AppState s) => setState(() {
     type = t;
     if (t != _Type.income) reversesId = null;
-    if (t == _Type.transfer) categoryId = null;
+    if (t == _Type.transfer) {
+      categoryId = null;
+      catManual = false;
+      catSuggested = false;
+    }
     // a categoria mantém-se ao trocar entre despesa e receita: é a mesma para os dois
   });
 
-  int? _cents() {
-    final t = amount.text.trim();
+  /// Valor em cêntimos de um texto: número simples ou conta ("12,50 + 11"). Nulo se inválido.
+  /// Uma conta tem de ser avaliada primeiro: o leitor de números ignora os sinais e juntaria os dígitos.
+  static int? _centsOf(String text) {
+    final t = text.trim();
     if (t.isEmpty) return null;
+    if (RegExp(r'\d\s*[+\-*/×÷x]\s*[\d(]').hasMatch(t)) {
+      final e = evalExpression(
+        t.replaceAll(RegExp(r'(?<=\d)\s*x\s*(?=[\d(])'), '*'),
+      );
+      if (e != null) return (e * 100).round().abs();
+    }
     final v = parseCents(t);
     if (v != null) return v.abs();
     final e = evalExpression(t);
     return e == null ? null : (e * 100).round().abs();
   }
+
+  int? _cents() => _centsOf(amount.text);
 
   Future<void> _calculator() async {
     final v = await showCalculator(context, initial: amount.text);
@@ -248,7 +312,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     }
   }
 
-  void _save(AppState s) {
+  void _save(AppState s, {bool again = false}) {
     final l = AppLocalizations.of(context)!;
     final cents = _cents();
     if (cents == null || cents == 0) {
@@ -256,7 +320,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       return;
     }
     // o valor novo não pode ficar abaixo do que está associado a objetivos nem do que já foi anulado
-    final original = widget.edit;
+    final original = _orig(s);
     if (original != null) {
       final novo = type == _Type.expense
           ? -cents
@@ -303,7 +367,8 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       }
       revId = exp.id;
     }
-    final e = widget.edit;
+    final e = _orig(s);
+    final nota = noteCtrl.text.trim();
     saved = true;
     if (e == null) {
       if (type == _Type.transfer && investId != null) {
@@ -332,6 +397,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           description: d,
           amount: type == _Type.expense ? -cents : cents,
           categoryId: categoryId,
+          note: nota,
           accountId: accountId,
           receiptPath: receipt,
           reversesId: revId,
@@ -350,7 +416,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
           amount: signed,
           balance: e.balance,
           categoryId: type == _Type.transfer ? null : categoryId,
-          note: e.note,
+          note: nota,
           source: e.source,
           merchantKey: e.merchantKey,
           importId: e.importId,
@@ -365,46 +431,128 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       if (e.receiptPath != null && e.receiptPath != receipt)
         Receipts.delete(e.receiptPath);
     }
+    if (again && e == null) {
+      _resetForNew(l);
+      return;
+    }
     Navigator.pop(context);
   }
 
-  /// As categorias mais usadas neste tipo de movimento, para escolher com um toque.
-  List<Categoria> _suggestions(AppState s) {
-    final count = <int, int>{};
-    for (final t in s.transactions) {
-      final id = t.categoryId;
-      if (id == null || t.isTransfer) continue;
-      if ((type == _Type.income) != (t.amount > 0)) continue;
-      count[id] = (count[id] ?? 0) + 1;
-    }
-    final ids = count.keys.toList()
-      ..sort((a, b) => count[b]!.compareTo(count[a]!));
-    return [
-      for (final id in ids.take(4))
-        if (s.cat(id) != null) s.cat(id)!,
-    ];
+  /// "Guardar e novo": limpa valor, descrição, categoria e extras; mantém tipo, data e conta.
+  void _resetForNew(AppLocalizations l) {
+    setState(() {
+      saved = false;
+      newReceipt = false;
+      receipt = null;
+      amount.clear();
+      desc.clear();
+      noteCtrl.clear();
+      noteOpen = false;
+      categoryId = null;
+      catManual = false;
+      catSuggested = false;
+      descApplied = false;
+      reversesId = null;
+      reversedCtrl.clear();
+      error = null;
+    });
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l.frm2Saved),
+          duration: const Duration(seconds: 2),
+          // flutuante, acima da barra de baixo, para não tapar os botões
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
+        ),
+      );
+    amountFocus.requestFocus();
+  }
+
+  /// Corrige só o valor/sinal (diálogo rápido) e traz o resultado para o formulário.
+  Future<void> _fixAmount(AppState s) async {
+    final cur = _orig(s);
+    if (cur == null) return;
+    final ok = await corrigirValor(context, cur);
+    if (!ok || !mounted) return;
+    final n = _orig(context.read<AppState>());
+    if (n == null) return;
+    setState(() {
+      amount.text = centsText(n.amount);
+      type = n.isTransfer
+          ? _Type.transfer
+          : (n.amount > 0 ? _Type.income : _Type.expense);
+      transferIn = n.amount > 0;
+      if (n.reversesId == null) {
+        reversesId = null;
+        reversedCtrl.clear();
+      }
+      error = null;
+    });
+  }
+
+  /// Ao escrever a descrição: sugere a categoria pelo nome, enquanto não foi escolhida à mão.
+  void _onDescChanged(AppState s) {
+    setState(() {
+      descApplied = false;
+      if (catManual || type == _Type.transfer) return;
+      final sc = s.suggestCategoryFor(desc.text);
+      if (sc != null) {
+        categoryId = sc;
+        catSuggested = true;
+      } else if (catSuggested) {
+        categoryId = null;
+        catSuggested = false;
+      }
+    });
+  }
+
+  /// Toque numa sugestão de descrição: preenche também a categoria e a conta, se ainda não foram escolhidas.
+  void _applySuggestion(AppState s, DescSuggestion g) {
+    setState(() {
+      desc.value = TextEditingValue(
+        text: g.text,
+        selection: TextSelection.collapsed(offset: g.text.length),
+      );
+      descApplied = true;
+      if (!catManual && g.categoryId != null && s.cat(g.categoryId) != null) {
+        categoryId = g.categoryId;
+        catSuggested = false;
+      }
+      if (!accountManual &&
+          g.accountId != null &&
+          s.account(g.accountId) != null) {
+        accountId = g.accountId;
+      }
+    });
+  }
+
+  /// As categorias mais usadas neste tipo de movimento (saídas ou entradas), para escolher com um toque.
+  /// Sem uso recente, olha para todo o histórico.
+  List<int> _mostUsed(AppState s) {
+    final inc = type == _Type.income;
+    final ids = s.mostUsedCategoryIds(limit: 5, income: inc);
+    return ids.isNotEmpty
+        ? ids
+        : s.mostUsedCategoryIds(limit: 5, income: inc, days: 36500);
   }
 
   /// Ligação a outros movimentos (ex.: enviei 10 e recebi 11): o grupo conta pelo líquido.
   /// Liga e desliga logo, sem esperar pelo botão de guardar.
-  List<Widget> _linkSection(AppState s, AppLocalizations l) {
-    final e = widget.edit!;
-    final cur = s.transactions.where((t) => t.id == e.id).firstOrNull ?? e;
-    final others = s.linkedWith(cur);
+  Widget _linkDetails(
+    AppState s,
+    AppLocalizations l,
+    Txn cur,
+    List<Txn> others,
+  ) {
     final net = cur.linkGroup == null ? 0 : s.linkNet(cur.linkGroup!);
-    return [
-      const SizedBox(height: 12),
-      TileField(
-        icon: Icons.link,
-        title: l.lnkField,
-        text: others.isEmpty ? l.lnkNone : others.map(s.displayName).join(', '),
-        isHint: others.isEmpty,
-        onTap: () => _pickLink(s, cur),
-      ),
-      if (others.isNotEmpty) ...[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-          child: Text(
+    return Padding(
+      padding: const EdgeInsets.only(left: 56, bottom: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
             net < 0
                 ? l.lnkResultExpense(fmtMoney(-net))
                 : net > 0
@@ -412,27 +560,25 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
                 : l.lnkResultZero,
             style: Theme.of(context).textTheme.bodySmall,
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
-          child: Text(
+          const SizedBox(height: 2),
+          Text(
             l.lnkRepHint(s.displayName(s.linkRep(cur.linkGroup!)!)),
             style: Theme.of(context).textTheme.bodySmall,
           ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            icon: const Icon(Icons.link_off, size: 18),
-            label: Text(l.lnkUnlink),
-            onPressed: () {
-              s.unlinkTxn(cur.id);
-              setState(() {});
-            },
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              icon: const Icon(Icons.link_off, size: 18),
+              label: Text(l.lnkUnlink),
+              onPressed: () {
+                s.unlinkTxn(cur.id);
+                setState(() {});
+              },
+            ),
           ),
-        ),
-      ],
-    ];
+        ],
+      ),
+    );
   }
 
   /// Escolhe o movimento a ligar: primeiro os de sinal oposto até 30 dias de distância, depois os outros.
@@ -567,7 +713,11 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
       when: DateTimeRange(start: date, end: date),
     );
     if (id == null) return;
-    setState(() => categoryId = id == -1 ? null : id);
+    setState(() {
+      categoryId = id == -1 ? null : id;
+      catManual = true;
+      catSuggested = false;
+    });
   }
 
   /// Escolhe a despesa que esta receita anula. Mostra as despesas recentes que ainda têm valor por anular.
@@ -765,7 +915,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
         : <Goal>[];
     return showDialog<(int, int)>(
       context: context,
-      builder: (ctx) => _AssociarDialog(
+      builder: (ctx) => AssociarDialog(
         titulo: existente == null
             ? l.frmSplitByGoal
             : _nomeObjetivo(s, existente.goalId),
@@ -781,17 +931,9 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   }
 
   /// Secção "Objetivos" do movimento (despesas, receitas e transferências), se houver objetivos ativos.
-  Widget _objetivosSecao(AppState s, Txn? e, TextTheme tt, ColorScheme cs) {
+  Widget _objetivosSecao(AppState s, Txn e) {
     final l = AppLocalizations.of(context)!;
-    if (e == null) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: Text(
-          l.frmSaveToSplit,
-          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-        ),
-      );
-    }
+    final tt = Theme.of(context).textTheme;
     final total = _valorGuardado(s, e);
     final alocado = s.allocatedOf(e.id);
     final porAssociar = total > alocado ? total - alocado : 0;
@@ -802,12 +944,10 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     final podeDividir =
         porAssociar > 0 && _objetivosDisponiveis(s, e.id).isNotEmpty;
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l.goals, style: tt.titleSmall),
-          const SizedBox(height: 4),
           for (final a in associacoes)
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -864,6 +1004,413 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     );
   }
 
+  // ---------- Apresentação ----------
+
+  /// Cor do tipo de movimento: despesa e receita usam as cores do utilizador; transferência é azul.
+  Color _typeColor(AppState s, _Type t) => switch (t) {
+    _Type.expense => Color(s.expenseColor),
+    _Type.income => Color(s.incomeColor),
+    _Type.transfer => const Color(0xFF1E88E5),
+  };
+
+  String get _sign => switch (type) {
+    _Type.expense => '− ',
+    _Type.income => '+ ',
+    _Type.transfer => '',
+  };
+
+  /// Resultado de uma conta escrita no valor ("12,50 + 11" → "= 23,50 €"); nulo se for um número simples.
+  String? _calcResult(AppLocalizations l) {
+    final t = amount.text.trim();
+    if (!RegExp(r'\d\s*[+\-*/×÷x]\s*[\d(]').hasMatch(t)) return null;
+    final c = _centsOf(t);
+    return c == null ? null : l.frm2CalcResult(fmtMoney(c));
+  }
+
+  /// Faixa no topo ao editar um movimento importado de um extrato.
+  Widget? _importBanner(AppState s, AppLocalizations l) {
+    final e = _orig(s);
+    if (e == null || (e.source == 'manual' && e.importId == null)) return null;
+    final cs = Theme.of(context).colorScheme;
+    final partes = <String>[
+      importFile != null
+          ? l.frm2ImportedFrom(importFile!)
+          : l.frm2ImportedStatement,
+      if (e.description.trim().isNotEmpty)
+        l.frm2OriginalDesc(e.description.trim()),
+      if (e.balance != null) l.frm2BalanceAfter(fmtMoney(e.balance!)),
+    ];
+    return Container(
+      key: const ValueKey('faixa-importado'),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.description_outlined,
+            size: 20,
+            color: cs.onSecondaryContainer,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              partes.join(' · '),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: cs.onSecondaryContainer),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Sugestões de descrições anteriores enquanto se escreve.
+  Widget _descSuggestions(AppState s, AppLocalizations l) {
+    if (type == _Type.transfer || descApplied) return const SizedBox.shrink();
+    final list = s.suggestDescriptions(
+      desc.text,
+      limit: 4,
+      income: type == _Type.income,
+    );
+    if (list.isEmpty) return const SizedBox.shrink();
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    return Container(
+      key: const ValueKey('sugestoes-descricao'),
+      margin: const EdgeInsets.only(top: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (final g in list)
+            InkWell(
+              onTap: () => _applySuggestion(s, g),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                child: Row(
+                  children: [
+                    CatBadge(s.cat(g.categoryId), size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        [
+                          g.text,
+                          if (g.categoryId != null &&
+                              s.cat(g.categoryId) != null)
+                            ' — ${s.path(g.categoryId)}',
+                          ' · ${l.frm2SuggestionTimes(g.count)}',
+                        ].join(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: tt.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Chips de conta: todas as contas (ou as primeiras e "+ N"); "Sem conta" se não houver contas.
+  Widget _accountChips(AppState s, AppLocalizations l) {
+    final accs = s.accounts;
+    if (accs.isEmpty) {
+      return Wrap(
+        children: [
+          ChoiceChip(
+            label: Text(l.frm2NoAccount),
+            selected: true,
+            showCheckmark: false,
+            onSelected: (_) {},
+          ),
+        ],
+      );
+    }
+    var shown = accs;
+    if (accs.length > 4) {
+      shown = accs.take(3).toList();
+      final sel = accs.where((a) => a.id == accountId).firstOrNull;
+      if (sel != null && !shown.contains(sel)) shown.add(sel);
+    }
+    final more = accs.length - shown.length;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 0,
+      children: [
+        for (final a in shown)
+          ChoiceChip(
+            label: Text('${a.emoji} ${a.name}'.trim()),
+            selected: a.id == accountId,
+            showCheckmark: false,
+            onSelected: (_) => setState(() {
+              accountId = a.id == accountId ? null : a.id;
+              accountManual = true;
+            }),
+          ),
+        if (more > 0)
+          ActionChip(
+            label: Text('+ $more'),
+            onPressed: () async {
+              final id = await pickAccount(
+                context,
+                selected: accountId,
+                title: l.frmAccount,
+              );
+              if (id != null) {
+                setState(() {
+                  accountId = id == -1 ? null : id;
+                  accountManual = true;
+                });
+              }
+            },
+          ),
+      ],
+    );
+  }
+
+  /// "De" e "Para" lado a lado, com botão para trocar (nova transferência).
+  Widget _transferAccounts(AppState s, AppLocalizations l) {
+    final acc = s.account(accountId);
+    final toAcc = s.account(toAccountId);
+    String nome(Conta? c, String vazio) =>
+        c == null ? vazio : '${c.emoji} ${c.name}'.trim();
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: CaixaConta(
+            rotulo: l.frm2FromAccount,
+            texto: nome(acc, l.frmSelectAccount),
+            dica: acc == null,
+            onTap: () async {
+              final id = await pickAccount(
+                context,
+                selected: accountId,
+                title: l.frmFromAccount,
+              );
+              if (id != null) {
+                setState(() {
+                  accountId = id == -1 ? null : id;
+                  accountManual = true;
+                });
+              }
+            },
+          ),
+        ),
+        if (investId == null) ...[
+          IconButton(
+            tooltip: l.frm2SwapAccounts,
+            icon: const Icon(Icons.swap_horiz),
+            onPressed: () => setState(() {
+              final t = accountId;
+              accountId = toAccountId;
+              toAccountId = t;
+              accountManual = true;
+            }),
+          ),
+          Expanded(
+            child: CaixaConta(
+              rotulo: l.frm2ToAccount,
+              texto: nome(toAcc, l.frmSelectDestinationAccount),
+              dica: toAcc == null,
+              onTap: () async {
+                final id = await pickAccount(
+                  context,
+                  selected: toAccountId,
+                  exclude: accountId,
+                  title: l.frmDestinationAccount,
+                );
+                if (id != null) {
+                  setState(() => toAccountId = id == -1 ? null : id);
+                }
+              },
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Bloco único "Avançado": nota, recibo, ligação, objetivos e investimento.
+  Widget _advanced(AppState s, AppLocalizations l) {
+    final cs = Theme.of(context).colorScheme;
+    final isTransfer = type == _Type.transfer;
+    final e = _orig(s);
+    final nota = noteCtrl.text.trim();
+    final rows = <Widget>[];
+
+    if (!(e == null && isTransfer)) {
+      rows.add(
+        LinhaAvancada(
+          icon: Icons.sticky_note_2_outlined,
+          title: l.frm2Note,
+          subtitle: nota.isEmpty ? l.frm2NoteHint : nota.split('\n').first,
+          hasValue: nota.isNotEmpty,
+          trailing: noteOpen ? Icons.expand_less : Icons.expand_more,
+          onTap: () => setState(() => noteOpen = !noteOpen),
+          child: noteOpen
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: TextField(
+                    controller: noteCtrl,
+                    minLines: 1,
+                    maxLines: 4,
+                    textCapitalization: TextCapitalization.sentences,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(hintText: l.frm2NoteHint),
+                  ),
+                )
+              : null,
+        ),
+      );
+    }
+
+    rows.add(
+      LinhaAvancada(
+        icon: Icons.receipt_long_outlined,
+        title: l.frmReceipt,
+        subtitle: receipt == null
+            ? l.frmTakePhotoOrChoose
+            : Receipts.displayName(receipt!),
+        hasValue: receipt != null,
+        trailing: Icons.attach_file,
+        onTap: _receiptMenu,
+      ),
+    );
+
+    if (e != null && !isTransfer) {
+      final others = s.linkedWith(e);
+      rows.add(
+        LinhaAvancada(
+          icon: Icons.link,
+          title: l.lnkField,
+          subtitle: others.isEmpty
+              ? l.lnkNone
+              : others.map(s.displayName).join(', '),
+          hasValue: others.isNotEmpty,
+          onTap: () => _pickLink(s, e),
+          child: others.isEmpty ? null : _linkDetails(s, l, e, others),
+        ),
+      );
+    }
+
+    if (e != null && s.goals.any((g) => !g.archived)) {
+      final alocado = s.allocatedOf(e.id);
+      rows.add(
+        LinhaAvancada(
+          icon: Icons.flag_outlined,
+          title: l.goals,
+          subtitle: alocado > 0
+              ? l.frm2GoalsAllocated(fmtMoney(alocado))
+              : l.frm2GoalsHint,
+          hasValue: alocado > 0,
+          trailing: goalsOpen ? Icons.expand_less : Icons.expand_more,
+          onTap: () => setState(() => goalsOpen = !goalsOpen),
+          child: goalsOpen ? _objetivosSecao(s, e) : null,
+        ),
+      );
+    }
+
+    if (isTransfer && (s.investAccounts.isNotEmpty || investId != null)) {
+      final inv = s.investAccount(investId);
+      rows.add(
+        LinhaAvancada(
+          icon: Icons.trending_up,
+          title: l.frmToInvestOptional,
+          subtitle: inv == null
+              ? l.frmInvestPlatform
+              : '${inv.emoji} ${inv.name}'.trim(),
+          hasValue: inv != null,
+          onTap: () => _pickInvest(s),
+        ),
+      );
+    }
+
+    return Container(
+      key: const ValueKey('bloco-avancado'),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.tune),
+            title: Text(l.frm2Advanced),
+            subtitle: advOpen
+                ? null
+                : Text(
+                    l.frm2AdvancedHint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+            trailing: Icon(advOpen ? Icons.expand_less : Icons.expand_more),
+            onTap: () => setState(() => advOpen = !advOpen),
+          ),
+          if (advOpen)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: rows,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bottomBar(AppState s, AppLocalizations l) {
+    final isEdit = widget.edit != null;
+    return Material(
+      elevation: 8,
+      color: Theme.of(context).colorScheme.surface,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: isEdit
+                      ? () => _fixAmount(s)
+                      : () => _save(s, again: true),
+                  child: Text(
+                    isEdit ? l.edvFixAmount : l.frm2SaveAndNew,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => _save(s),
+                  child: Text(l.frmSave, textAlign: TextAlign.center),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
@@ -872,41 +1419,20 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
     final cs = Theme.of(context).colorScheme;
     final isEdit = widget.edit != null;
     final isTransfer = type == _Type.transfer;
-    final acc = s.account(accountId);
-    final toAcc = s.account(toAccountId);
     final cat = s.cat(categoryId);
     final today = DateTime.now();
     final yesterday = DateTime(today.year, today.month, today.day - 1);
-    final sugg = isTransfer ? <Categoria>[] : _suggestions(s);
-    final openExtras =
-        receipt != null || (!isTransfer && accountId != null && isEdit);
+    final cor = _typeColor(s, type);
+    final original = _orig(s)?.originalAmount;
+    final banner = _importBanner(s, l);
+    final mostUsed = isTransfer ? <int>[] : _mostUsed(s);
+    final calc = _calcResult(l);
 
-    Widget accountTile({String? title}) => TileField(
-      icon: Icons.account_balance_wallet_outlined,
-      title: title ?? l.frmAccount,
-      text: acc == null
-          ? l.frmSelectAccount
-          : '${acc.emoji} ${acc.name}'.trim(),
-      isHint: acc == null,
-      onTap: () async {
-        final id = await pickAccount(
-          context,
-          selected: accountId,
-          title: l.frmAccount,
-        );
-        if (id != null) setState(() => accountId = id == -1 ? null : id);
-      },
-    );
-
-    final reciboTile = TileField(
-      icon: Icons.receipt_long_outlined,
-      title: l.frmReceipt,
-      text: receipt == null
-          ? l.frmTakePhotoOrChoose
-          : Receipts.displayName(receipt!),
-      isHint: receipt == null,
-      trailing: Icons.attach_file,
-      onTap: _receiptMenu,
+    Widget typeLabel(_Type t, String text) => Text(
+      text,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: _typeColor(s, t), fontWeight: FontWeight.w700),
     );
 
     return Scaffold(
@@ -936,460 +1462,266 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+      body: Column(
         children: [
-          SegmentedButton<_Type>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(value: _Type.expense, label: Text(l.frmExpense)),
-              ButtonSegment(value: _Type.income, label: Text(l.frmIncome)),
-              ButtonSegment(value: _Type.transfer, label: Text(l.frmTransfer)),
-            ],
-            selected: {type},
-            onSelectionChanged: (v) => _setType(v.first, s),
-          ),
-          const SizedBox(height: 22),
-          // montante em destaque
-          TextField(
-            controller: amount,
-            autofocus: !isEdit,
-            textAlign: TextAlign.center,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: tt.displaySmall?.copyWith(fontWeight: FontWeight.w800),
-            onChanged: (_) => setState(() => error = null),
-            decoration: InputDecoration(
-              hintText: zeroHint,
-              prefixText: '$baseSym  ',
-              prefixStyle: tt.headlineSmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-              suffixIcon: IconButton(
-                tooltip: l.frmCalculator,
-                icon: const Icon(Icons.calculate_outlined),
-                onPressed: _calculator,
-              ),
-              errorText: error,
-              helperText: widget.edit?.originalAmount == null
-                  ? null
-                  : l.edvOriginalValue(fmtMoney(widget.edit!.originalAmount!)),
-              helperMaxLines: 2,
-            ),
-          ),
-          const SizedBox(height: 18),
-          if (!isTransfer) ...[
-            TileField(
-              icon: Icons.sell_outlined,
-              title: l.frmCategory,
-              text: cat == null
-                  ? l.frmChooseCategory
-                  : '${cat.emoji.isEmpty ? '' : '${cat.emoji} '}${s.path(cat.id)}',
-              isHint: cat == null,
-              onTap: () => _pickCategory(s),
-            ),
-            if (sugg.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 0,
-                  children: [
-                    for (final c in sugg)
-                      ChoiceChip(
-                        selected: c.id == categoryId,
-                        showCheckmark: false,
-                        avatar: c.emoji.isEmpty ? null : Text(c.emoji),
-                        label: Text(c.name),
-                        onSelected: (_) => setState(() => categoryId = c.id),
-                      ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              children: [
+                if (banner != null) banner,
+                SegmentedButton<_Type>(
+                  key: const ValueKey('tipo'),
+                  showSelectedIcon: false,
+                  style: SegmentedButton.styleFrom(
+                    selectedBackgroundColor: cor.withValues(alpha: 0.16),
+                    selectedForegroundColor: cor,
+                  ),
+                  segments: [
+                    ButtonSegment(
+                      value: _Type.expense,
+                      label: typeLabel(_Type.expense, l.frmExpense),
+                    ),
+                    ButtonSegment(
+                      value: _Type.income,
+                      label: typeLabel(_Type.income, l.frmIncome),
+                    ),
+                    ButtonSegment(
+                      value: _Type.transfer,
+                      label: typeLabel(_Type.transfer, l.frmTransfer),
+                    ),
                   ],
+                  selected: {type},
+                  onSelectionChanged: (v) => _setType(v.first, s),
                 ),
-              ),
-            if (type == _Type.income) ...[
-              const SizedBox(height: 12),
-              TileField(
-                icon: Icons.undo,
-                title: l.frmReversesExpense,
-                text: () {
-                  if (reversesId == null) return l.frmNone;
-                  final x = _expenseById(s, reversesId);
-                  return x == null ? l.frmExpenseGone : s.displayName(x);
-                }(),
-                isHint: reversesId == null,
-                onTap: () => _pickExpense(s),
-              ),
-              if (reversesId != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+                // montante em destaque, com o sinal e a cor do tipo
                 TextField(
-                  controller: reversedCtrl,
+                  controller: amount,
+                  focusNode: amountFocus,
+                  autofocus: !isEdit,
+                  textAlign: TextAlign.center,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  style: tt.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cor,
+                  ),
                   onChanged: (_) => setState(() => error = null),
                   decoration: InputDecoration(
-                    labelText: l.frmReversedAmount(baseSym),
-                    prefixText: '$baseSym  ',
-                    helperMaxLines: 3,
-                    helperText: _reversalHelp(s),
+                    hintText: zeroHint,
+                    prefixText: '$_sign$baseSym  ',
+                    prefixStyle: tt.headlineSmall?.copyWith(
+                      color: cor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    suffixIcon: IconButton(
+                      tooltip: l.frmCalculator,
+                      icon: const Icon(Icons.calculate_outlined),
+                      onPressed: _calculator,
+                    ),
+                    errorText: error,
+                    errorMaxLines: 4,
+                    helperText: calc,
+                    helperMaxLines: 2,
                   ),
                 ),
-              ],
-            ],
-            if (isEdit) ..._linkSection(s, l),
-            const SizedBox(height: 14),
-          ],
-          TextField(
-            controller: desc,
-            maxLength: 120,
-            buildCounter: (
-              _, {
-              required currentLength,
-              required isFocused,
-              maxLength,
-            }) => null,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.notes),
-              hintText: l.frmDescriptionOptional,
-            ),
-          ),
-          const SizedBox(height: 14),
-          // data: Hoje / Ontem / outra
-          Wrap(
-            spacing: 8,
-            children: [
-              ChoiceChip(
-                label: Text(l.frmToday),
-                selected: _sameDay(date, today),
-                showCheckmark: false,
-                onSelected: (_) => setState(() => date = today),
-              ),
-              ChoiceChip(
-                label: Text(l.frmYesterday),
-                selected: _sameDay(date, yesterday),
-                showCheckmark: false,
-                onSelected: (_) => setState(() => date = yesterday),
-              ),
-              ChoiceChip(
-                avatar: const Icon(Icons.event, size: 18),
-                label: Text(
-                  _sameDay(date, today) || _sameDay(date, yesterday)
-                      ? l.frmOtherDate
-                      : fmtDate(date),
-                ),
-                selected: !_sameDay(date, today) && !_sameDay(date, yesterday),
-                showCheckmark: false,
-                onSelected: (_) => _pickDate(),
-              ),
-            ],
-          ),
-          if (isTransfer) ...[
-            const SizedBox(height: 14),
-            accountTile(title: isEdit ? l.frmAccount : l.frmFromAccount),
-            if (!isEdit && investId == null) ...[
-              const SizedBox(height: 12),
-              TileField(
-                icon: Icons.account_balance_outlined,
-                title: l.frmToAccount,
-                text: toAcc == null
-                    ? l.frmSelectDestinationAccount
-                    : '${toAcc.emoji} ${toAcc.name}'.trim(),
-                isHint: toAcc == null,
-                onTap: () async {
-                  final id = await pickAccount(
-                    context,
-                    selected: toAccountId,
-                    exclude: accountId,
-                    title: l.frmDestinationAccount,
-                  );
-                  if (id != null)
-                    setState(() => toAccountId = id == -1 ? null : id);
-                },
-              ),
-            ],
-            if (s.investAccounts.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              TileField(
-                icon: Icons.trending_up,
-                title: l.frmToInvestOptional,
-                text: s.investAccount(investId) == null
-                    ? l.frmInvestPlatform
-                    : '${s.investAccount(investId)!.emoji} ${s.investAccount(investId)!.name}'
-                          .trim(),
-                isHint: s.investAccount(investId) == null,
-                onTap: () => _pickInvest(s),
-              ),
-            ],
-            if (isEdit) ...[
-              const SizedBox(height: 12),
-              SegmentedButton<bool>(
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(
-                    value: false,
-                    label: Text(l.frmOutgoing),
-                    icon: Icon(Icons.north_east),
+                if (original != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.edit_note,
+                          size: 18,
+                          color: cs.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            l.edvOriginalValue(fmtMoney(original)),
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  ButtonSegment(
-                    value: true,
-                    label: Text(l.frmIncoming),
-                    icon: Icon(Icons.south_west),
+                SecaoRotulo(l.frm2WhereWhat),
+                TextField(
+                  controller: desc,
+                  maxLength: 120,
+                  buildCounter: (
+                    _, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) => null,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (v) => _onDescChanged(s),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.notes),
+                    hintText: l.frmDescriptionOptional,
                   ),
-                ],
-                selected: {transferIn},
-                onSelectionChanged: (v) => setState(() => transferIn = v.first),
-              ),
-            ],
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                l.frmNotCountedNote,
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-              ),
-            ),
-          ],
-          Material(
-            key: const ValueKey('mais-opcoes'),
-            type: MaterialType.transparency,
-            child: Theme(
-              data: Theme.of(context)
-                  .copyWith(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                key: ValueKey('mais-$isTransfer'),
-                tilePadding: EdgeInsets.zero,
-                childrenPadding: const EdgeInsets.only(bottom: 8),
-                initiallyExpanded: openExtras,
-                title: Text(
-                  isTransfer ? l.frmReceipt : l.frmMoreOptions,
-                  style: tt.titleSmall,
                 ),
-                children: [
-                  if (!isTransfer) ...[
-                    accountTile(),
+                _descSuggestions(s, l),
+                if (!isTransfer) ...[
+                  SecaoRotulo(l.frmCategory),
+                  TileField(
+                    icon: Icons.sell_outlined,
+                    text: cat == null
+                        ? l.frmChooseCategory
+                        : '${cat.emoji.isEmpty ? '' : '${cat.emoji} '}${s.path(cat.id)}',
+                    isHint: cat == null,
+                    onTap: () => _pickCategory(s),
+                  ),
+                  if (catSuggested && cat != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.auto_awesome, size: 14, color: cs.primary),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              l.frm2SuggestedByName,
+                              style: tt.bodySmall?.copyWith(color: cs.primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (mostUsed.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Wrap(
+                        key: const ValueKey('mais-usadas'),
+                        spacing: 8,
+                        runSpacing: 0,
+                        children: [
+                          for (final id in mostUsed)
+                            if (s.cat(id) != null)
+                              ChoiceChip(
+                                selected: id == categoryId,
+                                showCheckmark: false,
+                                avatar: s.cat(id)!.emoji.isEmpty
+                                    ? null
+                                    : Text(s.cat(id)!.emoji),
+                                label: Text(s.cat(id)!.name),
+                                onSelected: (_) => setState(() {
+                                  categoryId = id;
+                                  catManual = true;
+                                  catSuggested = false;
+                                }),
+                              ),
+                        ],
+                      ),
+                    ),
+                  if (type == _Type.income) ...[
                     const SizedBox(height: 12),
+                    TileField(
+                      icon: Icons.undo,
+                      title: l.frmReversesExpense,
+                      text: () {
+                        if (reversesId == null) return l.frmNone;
+                        final x = _expenseById(s, reversesId);
+                        return x == null ? l.frmExpenseGone : s.displayName(x);
+                      }(),
+                      isHint: reversesId == null,
+                      onTap: () => _pickExpense(s),
+                    ),
+                    if (reversesId != null) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: reversedCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        onChanged: (_) => setState(() => error = null),
+                        decoration: InputDecoration(
+                          labelText: l.frmReversedAmount(baseSym),
+                          prefixText: '$baseSym  ',
+                          helperMaxLines: 3,
+                          helperText: _reversalHelp(s),
+                        ),
+                      ),
+                    ],
                   ],
-                  reciboTile,
                 ],
-              ),
-            ),
-          ),
-          if (s.goals.any((g) => !g.archived))
-            _objetivosSecao(s, widget.edit, tt, cs),
-          const SizedBox(height: 12),
-          FilledButton(onPressed: () => _save(s), child: Text(l.frmSave)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Valor de uma associação entre um movimento e um objetivo (diálogo com o seu próprio controlador).
-class _AssociarDialog extends StatefulWidget {
-  final String titulo;
-  final List<Goal> opcoes;
-  final int? goalId;
-  final int disponivel;
-  final int inicial;
-  final String confirmar;
-  final bool escolherObjetivo;
-  const _AssociarDialog({
-    required this.titulo,
-    required this.opcoes,
-    required this.goalId,
-    required this.disponivel,
-    required this.inicial,
-    required this.confirmar,
-    required this.escolherObjetivo,
-  });
-  @override
-  State<_AssociarDialog> createState() => _AssociarDialogState();
-}
-
-class _AssociarDialogState extends State<_AssociarDialog> {
-  late int? goalId = widget.goalId;
-  late final ctrl = TextEditingController(
-    text: _TxnFormScreenState._centsText(widget.inicial),
-  );
-
-  @override
-  void dispose() {
-    ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final v = (parseCents(ctrl.text) ?? 0).abs();
-    final excede = v > widget.disponivel;
-    final gid = goalId;
-    final ok = gid != null && v > 0 && !excede;
-    return AlertDialog(
-      title: Text(widget.titulo),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.escolherObjetivo) ...[
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                for (final g in widget.opcoes)
-                  ChoiceChip(
-                    selected: g.id == goalId,
-                    showCheckmark: false,
-                    label: Text(g.name),
-                    onSelected: (_) => setState(() => goalId = g.id),
+                SecaoRotulo(l.frm2When),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      label: Text(l.frmToday),
+                      selected: _sameDay(date, today),
+                      showCheckmark: false,
+                      onSelected: (_) => setState(() => date = today),
+                    ),
+                    ChoiceChip(
+                      label: Text(l.frmYesterday),
+                      selected: _sameDay(date, yesterday),
+                      showCheckmark: false,
+                      onSelected: (_) => setState(() => date = yesterday),
+                    ),
+                    ChoiceChip(
+                      avatar: const Icon(Icons.event, size: 18),
+                      label: Text(
+                        _sameDay(date, today) || _sameDay(date, yesterday)
+                            ? l.frmOtherDate
+                            : fmtDate(date),
+                      ),
+                      selected:
+                          !_sameDay(date, today) && !_sameDay(date, yesterday),
+                      showCheckmark: false,
+                      onSelected: (_) => _pickDate(),
+                    ),
+                  ],
+                ),
+                SecaoRotulo(l.frmAccount),
+                if (isTransfer && !isEdit)
+                  _transferAccounts(s, l)
+                else
+                  _accountChips(s, l),
+                if (isTransfer && isEdit) ...[
+                  const SizedBox(height: 12),
+                  SegmentedButton<bool>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: false,
+                        label: Text(l.frmOutgoing),
+                        icon: const Icon(Icons.north_east),
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        label: Text(l.frmIncoming),
+                        icon: const Icon(Icons.south_west),
+                      ),
+                    ],
+                    selected: {transferIn},
+                    onSelectionChanged: (v) =>
+                        setState(() => transferIn = v.first),
                   ),
+                ],
+                if (isTransfer)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      l.frmNotCountedNote,
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                _advanced(s, l),
               ],
             ),
-            const SizedBox(height: 12),
-          ],
-          TextField(
-            controller: ctrl,
-            autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              labelText: l.frmAmountCurrency(baseSym),
-              prefixText: '$baseSym  ',
-              helperText: l.frmToAllocate(fmtMoney(widget.disponivel)),
-              errorText: excede
-                  ? l.frmOnlyLeftToAllocate(fmtMoney(widget.disponivel))
-                  : null,
-            ),
           ),
+          _bottomBar(s, l),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l.cancel),
-        ),
-        FilledButton(
-          onPressed: ok ? () => Navigator.pop(context, (gid, v)) : null,
-          child: Text(widget.confirmar),
-        ),
-      ],
-    );
-  }
-}
-
-/// Texto do motivo por que o valor de um movimento não pode ser corrigido para o valor pedido.
-String amountIssueText(AppLocalizations l, AmountIssue issue, int cents) =>
-    switch (issue) {
-      AmountIssue.belowAllocated => l.frmAllocatedToGoals(fmtMoney(cents)),
-      AmountIssue.belowReversed => l.edvBelowReversed(fmtMoney(cents)),
-      AmountIssue.hasReversals => l.edvHasReversals(fmtMoney(cents)),
-      AmountIssue.belowOwnReversal => l.edvBelowOwnReversal(fmtMoney(cents)),
-    };
-
-/// Ação rápida: corrige só o valor e o sinal de um movimento (despesa/receita, ou saída/entrada
-/// numa transferência), sem abrir o formulário completo. Devolve true se guardou.
-Future<bool> corrigirValor(BuildContext context, Txn t) async {
-  final r = await showDialog<bool>(
-    context: context,
-    builder: (_) => ChangeNotifierProvider<AppState>.value(
-      value: context.read<AppState>(),
-      child: _CorrigirValorDialog(t: t),
-    ),
-  );
-  return r ?? false;
-}
-
-class _CorrigirValorDialog extends StatefulWidget {
-  final Txn t;
-  const _CorrigirValorDialog({required this.t});
-  @override
-  State<_CorrigirValorDialog> createState() => _CorrigirValorDialogState();
-}
-
-class _CorrigirValorDialogState extends State<_CorrigirValorDialog> {
-  late bool entrada = widget.t.amount > 0;
-  late final ctrl = TextEditingController(
-    text: _TxnFormScreenState._centsText(widget.t.amount),
-  );
-  String? erro;
-
-  @override
-  void dispose() {
-    ctrl.dispose();
-    super.dispose();
-  }
-
-  void _guardar() {
-    final l = AppLocalizations.of(context)!;
-    final s = context.read<AppState>();
-    final txt = ctrl.text.trim();
-    var v = parseCents(txt)?.abs();
-    final e = v == null ? evalExpression(txt) : null;
-    if (v == null && e != null) v = (e * 100).round().abs();
-    if (v == null || v == 0) {
-      setState(() => erro = l.frmEnterValidAmount);
-      return;
-    }
-    final issue = s.setAmount(widget.t, entrada ? v : -v);
-    if (issue != null) {
-      setState(() => erro = amountIssueText(l, issue.$1, issue.$2));
-      return;
-    }
-    Navigator.pop(context, true);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final tr = widget.t.isTransfer;
-    return AlertDialog(
-      title: Text(l.edvFixAmount),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SegmentedButton<bool>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
-                value: false,
-                label: Text(tr ? l.frmOutgoing : l.frmExpense),
-              ),
-              ButtonSegment(
-                value: true,
-                label: Text(tr ? l.frmIncoming : l.frmIncome),
-              ),
-            ],
-            selected: {entrada},
-            onSelectionChanged: (v) => setState(() {
-              entrada = v.first;
-              erro = null;
-            }),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: ctrl,
-            autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            onChanged: (_) => setState(() => erro = null),
-            decoration: InputDecoration(
-              labelText: l.frmAmountCurrency(baseSym),
-              prefixText: '$baseSym  ',
-              errorText: erro,
-              errorMaxLines: 4,
-              helperText: widget.t.originalAmount == null
-                  ? null
-                  : l.edvOriginalValue(fmtMoney(widget.t.originalAmount!)),
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: Text(l.cancel),
-        ),
-        FilledButton(onPressed: _guardar, child: Text(l.frmSave)),
-      ],
     );
   }
 }

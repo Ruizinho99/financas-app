@@ -57,6 +57,29 @@ Future<void> _pump(
   await tester.pumpAndSettle();
 }
 
+/// Abre o bloco "Avançado" (recolhido por omissão) se ainda estiver fechado.
+Future<void> abrirAvancado(WidgetTester tester) async {
+  if (find.byKey(const ValueKey('bloco-avancado')).evaluate().isEmpty) return;
+  final linha = find.text('Nota');
+  if (linha.evaluate().isNotEmpty) return; // já aberto
+  await tester.ensureVisible(find.text('Avançado'));
+  await tester.pump();
+  await tester.tap(find.text('Avançado'));
+  await tester.pumpAndSettle();
+}
+
+/// Abre o bloco "Avançado" e a secção dos objetivos.
+Future<void> abrirObjetivos(WidgetTester tester) async {
+  await abrirAvancado(tester);
+  if (find.textContaining('Por associar').evaluate().isNotEmpty) {
+    return;
+  }
+  await tester.ensureVisible(find.text('Objetivos'));
+  await tester.pump();
+  await tester.tap(find.text('Objetivos'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('pt_PT');
@@ -175,6 +198,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Escolher categoria'), findsNothing);
       await tester.enterText(find.byType(TextField).first, '400');
+      await abrirAvancado(tester);
+      await tester.ensureVisible(find.text('Plataforma de investimento'));
       await tester.tap(find.text('Plataforma de investimento'));
       await tester.pumpAndSettle();
       await tester.tap(find.textContaining('XTB').last);
@@ -186,25 +211,26 @@ void main() {
     },
   );
 
-  testWidgets('editar mantém os dados; recibo e conta ficam em "Mais opções"', (
-    tester,
-  ) async {
-    final d = buildAnalysisData();
-    final t = d.s.transactions.firstWhere((x) => x.description == 'NETFLIX');
-    await _pump(tester, d.s, edit: t);
-    expect(find.text('Editar movimento'), findsOneWidget);
-    expect(
-      (tester.widget(
-        find.byType(TextField).first,
-      ) as TextField).controller!.text,
-      '12,99',
-    );
-    expect(find.textContaining('Lazer'), findsWidgets);
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
-    final after = d.s.transactions.firstWhere((x) => x.id == t.id);
-    expect((after.amount, after.categoryId), (t.amount, t.categoryId));
-  });
+  testWidgets(
+    'editar mantém os dados; recibo fica no bloco "Avançado" e a conta à vista',
+    (tester) async {
+      final d = buildAnalysisData();
+      final t = d.s.transactions.firstWhere((x) => x.description == 'NETFLIX');
+      await _pump(tester, d.s, edit: t);
+      expect(find.text('Editar movimento'), findsOneWidget);
+      expect(
+        (tester.widget(
+          find.byType(TextField).first,
+        ) as TextField).controller!.text,
+        '12,99',
+      );
+      expect(find.textContaining('Lazer'), findsWidgets);
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+      final after = d.s.transactions.firstWhere((x) => x.id == t.id);
+      expect((after.amount, after.categoryId), (t.amount, t.categoryId));
+    },
+  );
 
   for (final (name, b, size, scale) in [
     ('360 dp claro', Brightness.light, const Size(360, 780), 1.0),
@@ -231,6 +257,7 @@ void main() {
     String valor,
   ) async {
     await tester.ensureVisible(find.text('Dividir por objetivos'));
+    await tester.pump();
     await tester.tap(find.text('Dividir por objetivos'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(ChoiceChip, objetivo));
@@ -271,6 +298,7 @@ void main() {
         (x) => x.description == 'Jantar grupo',
       );
       await _pump(tester, d.s, edit: t);
+      await abrirObjetivos(tester);
       expect(find.text('Objetivos'), findsOneWidget);
       expect(find.text('Por associar: ${fmtMoney(10000)}'), findsOneWidget);
       await dividir(tester, 'Férias', '50');
@@ -308,7 +336,9 @@ void main() {
       (x) => x.description == 'Jantar grupo',
     );
     await _pump(tester, d.s, edit: t);
+    await abrirObjetivos(tester);
     await tester.ensureVisible(find.text('Dividir por objetivos'));
+    await tester.pump();
     await tester.tap(find.text('Dividir por objetivos'));
     await tester.pumpAndSettle();
     final campo = find.descendant(
@@ -352,8 +382,10 @@ void main() {
     );
     d.s.linkMovement(t.id, ferias, 6000);
     await _pump(tester, d.s, edit: t);
+    await abrirObjetivos(tester);
     expect(find.text('Por associar: ${fmtMoney(4000)}'), findsOneWidget);
     await tester.ensureVisible(find.byTooltip('Alterar valor'));
+    await tester.pump();
     await tester.tap(find.byTooltip('Alterar valor'));
     await tester.pumpAndSettle();
     final campo = find.descendant(
@@ -393,6 +425,7 @@ void main() {
       );
       d.s.linkMovement(t.id, ferias, 8000);
       await _pump(tester, d.s, edit: t);
+      await abrirObjetivos(tester);
       await tester.enterText(find.byType(TextField).first, '50');
       await tester.tap(find.text('Guardar'));
       await tester.pumpAndSettle();
@@ -430,6 +463,7 @@ void main() {
       (x) => x.description == 'Poupança mensal',
     );
     await _pump(tester, d.s, edit: t);
+    await abrirObjetivos(tester);
     expect(find.text('Objetivos'), findsOneWidget);
     await dividir(tester, 'Férias', '50');
     await dividir(tester, 'Emergência', '50');
@@ -443,24 +477,15 @@ void main() {
     expect(d.s.allocatedOf(t.id), 10000);
   });
 
-  testWidgets(
-    'movimento novo mostra só a dica para o guardar antes de dividir',
-    (tester) async {
-      final d = buildAnalysisData();
-      d.s.addGoal(
-        name: 'Férias',
-        parentCategoryId: d.lazer,
-        targetCents: 100000,
-      );
-      await _pump(tester, d.s);
-      await tester.ensureVisible(
-        find.text('Guarda o movimento para o dividir por objetivos.'),
-      );
-      expect(
-        find.text('Guarda o movimento para o dividir por objetivos.'),
-        findsOneWidget,
-      );
-      expect(find.text('Dividir por objetivos'), findsNothing);
-    },
-  );
+  testWidgets('movimento novo não oferece a divisão por objetivos', (
+    tester,
+  ) async {
+    final d = buildAnalysisData();
+    d.s.addGoal(name: 'Férias', parentCategoryId: d.lazer, targetCents: 100000);
+    await _pump(tester, d.s);
+    await abrirAvancado(tester);
+    // só se divide por objetivos depois de o movimento existir
+    expect(find.text('Objetivos'), findsNothing);
+    expect(find.text('Dividir por objetivos'), findsNothing);
+  });
 }

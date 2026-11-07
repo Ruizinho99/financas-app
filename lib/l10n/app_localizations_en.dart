@@ -1845,6 +1845,88 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get frm2WhereWhat => 'Where / what';
+
+  @override
+  String get frm2When => 'When';
+
+  @override
+  String get frm2Advanced => 'Advanced';
+
+  @override
+  String get frm2AdvancedHint => 'Note, receipt, link to another transaction…';
+
+  @override
+  String get frm2SuggestedByName => 'suggested from the name · tap to change';
+
+  @override
+  String get frm2NoAccount => 'No account';
+
+  @override
+  String get frm2SaveAndNew => 'Save and new';
+
+  @override
+  String get frm2Saved => 'Saved';
+
+  @override
+  String frm2ImportedFrom(String file) {
+    return 'Imported from $file';
+  }
+
+  @override
+  String get frm2ImportedStatement => 'Imported from a statement';
+
+  @override
+  String frm2OriginalDesc(String desc) {
+    return 'original description: $desc';
+  }
+
+  @override
+  String frm2BalanceAfter(String amount) {
+    return 'balance $amount';
+  }
+
+  @override
+  String get frm2SwapAccounts => 'Swap accounts';
+
+  @override
+  String get frm2Note => 'Note';
+
+  @override
+  String get frm2NoteHint => 'Add a note';
+
+  @override
+  String get frm2GoalsHint => 'Split this amount across goals';
+
+  @override
+  String frm2GoalsAllocated(String amount) {
+    return '$amount in goals';
+  }
+
+  @override
+  String frm2SuggestionTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count times',
+      one: '1 time',
+      zero: '$count times',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String frm2CalcResult(String amount) {
+    return '= $amount';
+  }
+
+  @override
+  String get frm2FromAccount => 'From';
+
+  @override
+  String get frm2ToAccount => 'To';
+
+  @override
   String get frmReceipt => 'Receipt';
 
   @override
