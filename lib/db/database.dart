@@ -493,6 +493,25 @@ class Db {
   void deleteMandatoryRange(int id) =>
       _db.execute('DELETE FROM mandatory_ranges WHERE id=?', [id]);
 
+  /// Aponta para [to] tudo o que apontava para a categoria [from] (movimentos, regras, grupos de regras,
+  /// períodos obrigatórios, objetivos, planeamento e movimentos recorrentes).
+  void repointCategory(int from, int to) {
+    for (final t in const [
+      'transactions',
+      'rules',
+      'rule_groups',
+      'mandatory_ranges',
+      'goals',
+      'planned_items',
+      'recurring_rules',
+    ]) {
+      _db.execute('UPDATE $t SET category_id=? WHERE category_id=?', [
+        to,
+        from,
+      ]);
+    }
+  }
+
   /// Muda a categoria-mãe (nulo = categoria principal). O apagar em cascata e os movimentos não mudam.
   void setCategoryParent(int id, int? parentId) => _db.execute(
     'UPDATE categories SET parent_id=? WHERE id=?',

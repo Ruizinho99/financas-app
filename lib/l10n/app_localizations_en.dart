@@ -5280,6 +5280,89 @@ class AppLocalizationsEn extends AppLocalizations {
   String get morNavPortfolio => 'Portfolio';
 
   @override
+  String get mrgMenu => 'Merge into…';
+
+  @override
+  String mrgMergeInto(String name) {
+    return 'Merge \"$name\" into…';
+  }
+
+  @override
+  String get mrgCannot => 'You can\'t merge into this category.';
+
+  @override
+  String mrgTitle(String from, String to) {
+    return 'Merge \"$from\" into \"$to\"?';
+  }
+
+  @override
+  String mrgTransactions(int count, String to) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count transactions move to \"$to\".',
+      one: '1 transaction moves to \"$to\".',
+      zero: 'No transactions change category.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mrgSubcategories(int count, String to) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategories move inside \"$to\".',
+      one: '1 subcategory moves inside \"$to\".',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mrgClashes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count subcategories with the same name merge into the existing ones.',
+      one: '1 subcategory with the same name merges into the existing one.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mrgAlsoMoves =>
+      'Rules, mandatory periods, planning, recurring items and goals move too.';
+
+  @override
+  String get mrgBothBudgets => 'Both have a budget. Which one stays?';
+
+  @override
+  String mrgBudgetSum(String a, String b, String total) {
+    return 'Add them: $a + $b = $total';
+  }
+
+  @override
+  String mrgBudgetKeep(String name, String amount) {
+    return 'Keep the one of \"$name\": $amount';
+  }
+
+  @override
+  String mrgWarning(String from) {
+    return '\"$from\" will no longer exist and this can\'t be undone. Consider making a backup first.';
+  }
+
+  @override
+  String get mrgConfirm => 'Merge';
+
+  @override
+  String mrgDone(String from, String to) {
+    return '\"$from\" merged into \"$to\".';
+  }
+
+  @override
   String get selSelect => 'Select';
 
   @override

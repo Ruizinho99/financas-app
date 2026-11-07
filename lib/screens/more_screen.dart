@@ -14,6 +14,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/category_editor.dart';
+import '../widgets/category_merge.dart';
 import '../widgets/common.dart';
 import 'accounts_screen.dart';
 import 'appearance_screen.dart';
@@ -426,6 +427,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               if (mounted) setState(() => collapsed.remove(c.id));
             }
             if (v == 'move') await moveCategoryFlow(context, s, c);
+            if (v == 'merge') await mergeCategoryFlow(context, s, c);
             if (v == 'edit') showCategoryEditor(context, edit: c);
             if (v == 'budget') showBudgetEditor(context, c);
             if (v == 'archive') {
@@ -460,6 +462,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           itemBuilder: (_) => [
             PopupMenuItem(value: 'sub', child: Text(l.morNewSubcategory)),
             PopupMenuItem(value: 'move', child: Text(l.ctbMoveMenu)),
+            PopupMenuItem(value: 'merge', child: Text(l.mrgMenu)),
             PopupMenuItem(value: 'edit', child: Text(l.bpEdit)),
             PopupMenuItem(value: 'budget', child: Text(l.budget)),
             PopupMenuItem(value: 'dup', child: Text(l.morDuplicateNextYear)),

@@ -4083,6 +4083,104 @@
   "morAssetFallback": "Ativo",
   "morNavMonth": "Mês",
   "morNavPortfolio": "Carteira",
+  "mrgMenu": "Unificar com…",
+  "mrgMergeInto": "Unificar \"{name}\" em…",
+  "@mrgMergeInto": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgCannot": "Não é possível unificar nesta categoria.",
+  "mrgTitle": "Unificar \"{from}\" em \"{to}\"?",
+  "@mrgTitle": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgTransactions": "{count, plural, =0{Nenhum movimento muda de categoria.} =1{1 movimento passa para \"{to}\".} other{{count} movimentos passam para \"{to}\".}}",
+  "@mrgTransactions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgSubcategories": "{count, plural, =0{} =1{1 subcategoria passa para dentro de \"{to}\".} other{{count} subcategorias passam para dentro de \"{to}\".}}",
+  "@mrgSubcategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgClashes": "{count, plural, =0{} =1{1 subcategoria com o mesmo nome une-se à que já existe.} other{{count} subcategorias com o mesmo nome unem-se às que já existem.}}",
+  "@mrgClashes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mrgAlsoMoves": "As regras, os períodos obrigatórios, o planeamento, os recorrentes e os objetivos também passam.",
+  "mrgBothBudgets": "As duas têm orçamento. O que fica?",
+  "mrgBudgetSum": "Somar: {a} + {b} = {total}",
+  "@mrgBudgetSum": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgBudgetKeep": "Manter o de \"{name}\": {amount}",
+  "@mrgBudgetKeep": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgWarning": "\"{from}\" deixa de existir e isto não se pode desfazer. Convém guardar uma cópia de segurança antes.",
+  "@mrgWarning": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgConfirm": "Unificar",
+  "mrgDone": "\"{from}\" unificada em \"{to}\".",
+  "@mrgDone": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
   "selSelect": "Selecionar",
   "selSelectAll": "Selecionar tudo",
   "selDeselectAll": "Limpar seleção",
