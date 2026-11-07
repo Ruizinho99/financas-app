@@ -1706,6 +1706,107 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get ctbPickParentTitle => 'Choose parent category';
+
+  @override
+  String ctbMoveTo(String name) {
+    return 'Move “$name” to…';
+  }
+
+  @override
+  String get ctbSearch => 'Search category';
+
+  @override
+  String get ctbNoMatches => 'No category found';
+
+  @override
+  String get ctbMoveMenu => 'Move to…';
+
+  @override
+  String get ctbMoveButton => 'Move';
+
+  @override
+  String get ctbMainLevel => 'the top level';
+
+  @override
+  String ctbMoveConfirm(String name, int count, String dest) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '“$name” and its $count subcategories move into “$dest”.',
+      one: '“$name” and its subcategory move into “$dest”.',
+      zero: '“$name” moves into “$dest”.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ctbMoveConfirmTop(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '“$name” and its $count subcategories move to the top level.',
+      one: '“$name” and its subcategory move to the top level.',
+      zero: '“$name” becomes a main category.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String ctbMoved(String name) {
+    return '“$name” was moved.';
+  }
+
+  @override
+  String get ctbMoveErrSelf => 'A category can\'t be placed inside itself.';
+
+  @override
+  String get ctbMoveErrDescendant =>
+      'A category can\'t be moved into one of its own subcategories.';
+
+  @override
+  String ctbMoveErrNameTaken(String name, String dest) {
+    return '“$name” already exists in $dest. Rename it before moving.';
+  }
+
+  @override
+  String ctbSubCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategories',
+      one: '1 subcategory',
+      zero: '$count subcategories',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get ctbExpand => 'Show subcategories';
+
+  @override
+  String get ctbCollapse => 'Hide subcategories';
+
+  @override
+  String ctbDeleteQuestion(String name, int subs, int txns) {
+    String _temp0 = intl.Intl.pluralLogic(
+      subs,
+      locale: localeName,
+      other: 'This also deletes its $subs subcategories. ',
+      one: 'This also deletes 1 subcategory. ',
+      zero: '',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      txns,
+      locale: localeName,
+      other: 'The $txns transactions are left without a category.',
+      one: 'The transaction is left without a category.',
+      zero: 'There are no transactions in it.',
+    );
+    return 'Delete “$name”? $_temp0$_temp1';
+  }
+
+  @override
   String get edvFixAmount => 'Fix amount';
 
   @override
@@ -3118,6 +3219,7 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count transactions don\'t match the balance',
       one: '1 transaction doesn\'t match the balance',
+      zero: '$count transactions don\'t match the balance',
     );
     return '$_temp0';
   }
@@ -5181,6 +5283,7 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count transactions without a category',
       one: '1 transaction without a category',
+      zero: '$count transactions without a category',
     );
     return '$_temp0 · counted as spending/income until you classify';
   }

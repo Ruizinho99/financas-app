@@ -103,11 +103,9 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
         ? _Kind.investment
         : (st.rangesOf(e.id).isNotEmpty ? _Kind.mandatory : _Kind.optional);
     initialKind = kind;
-    if (e != null && e.parentId == null) {
-      // subcategorias existentes: editáveis aqui
-      for (final k in context.read<AppState>().categories.where(
-        (c) => c.parentId == e.id,
-      )) {
+    if (e != null) {
+      // subcategorias diretas existentes (de qualquer nível): editáveis aqui
+      for (final k in st.categories.where((c) => c.parentId == e.id)) {
         subs.add(_SubRow(id: k.id, name: k.name, emoji: k.emoji));
       }
     }
@@ -124,11 +122,9 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
   }
 
   // ---------- helpers ----------
-  bool get _showSubs =>
-      parent == null ||
-      !isEdit; // em edição de uma subcategoria não há subcategorias
-  bool get _subsAreSiblings =>
-      parent != null; // com categoria-mãe escolhida, as extra ficam ao lado
+  // ao criar com uma categoria-mãe escolhida, as linhas extra ficam ao lado da nova;
+  // ao editar, as linhas são filhas diretas da categoria editada
+  bool get _subsAreSiblings => parent != null && !isEdit;
 
   void _addSub() {
     final r = _SubRow();
@@ -140,7 +136,10 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     final l = AppLocalizations.of(context)!;
     final s = context.read<AppState>();
     if (r.id != null) {
-      final n = s.transactions.where((t) => t.categoryId == r.id).length;
+      // movimentos da subcategoria e de tudo o que tem dentro (também são apagados da árvore)
+      final n = s.transactions
+          .where((t) => s.inSubtree(t.categoryId, r.id!))
+          .length;
       if (n > 0 &&
           !await confirm(
             context,
@@ -168,7 +167,16 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     final parentCat = s.cat(parent);
 
     nameError = null;
-    if (main.isEmpty) {
+    final e = widget.edit;
+    final moveErr = (e != null && parent != e.parentId)
+        ? s.canMoveCategory(e.id, parent)
+        : null;
+    if (moveErr == MoveError.self || moveErr == MoveError.intoDescendant) {
+      nameError = moveErr == MoveError.self
+          ? l.ctbMoveErrSelf
+          : l.ctbMoveErrDescendant;
+      ok = false;
+    } else if (main.isEmpty) {
       nameError = l.frmEnterName;
       ok = false;
     } else if (s.categoryNameTaken(main, parent, excludeId: widget.edit?.id)) {
@@ -220,7 +228,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     }
   }
 
-  void _save(AppState s) {
+  Future<void> _save(AppState s) async {
     setState(() {});
     if (!_validate(s)) {
       setState(() {});
@@ -228,10 +236,15 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     }
     final e = widget.edit;
     final parentCat = s.cat(parent);
+    // mudar de sítio na árvore: confirma o efeito antes (a subárvore vai toda)
+    final moving = e != null && parent != e.parentId;
+    if (moving && !await confirmMove(context, s, e, parent)) return;
+    if (!mounted) return;
     final main = Categoria(
       id: e?.id ?? 0,
       name: name.text.trim(),
-      parentId: parent,
+      // ao editar, a mudança de mãe faz-se com moveCategory (leva a subárvore e herda o tipo)
+      parentId: e == null ? parent : e.parentId,
       // as marcas antigas de receita e "despesas e receitas" guardam-se como estão (já não mudam nada)
       isIncome: e?.isIncome ?? parentCat?.isIncome ?? false,
       isInvestment: parentCat?.isInvestment ?? (kind == _Kind.investment),
@@ -257,10 +270,9 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
           : null,
     );
     final toSave = [
-      if (_showSubs)
-        for (final r in subs)
-          if (r.name.text.trim().isNotEmpty)
-            (id: r.id, name: r.name.text.trim(), emoji: r.emoji),
+      for (final r in subs)
+        if (r.name.text.trim().isNotEmpty)
+          (id: r.id, name: r.name.text.trim(), emoji: r.emoji),
     ];
     final id = s.saveCategoryWithSubs(
       main,
@@ -268,6 +280,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       removedIds: removed,
       subsAreSiblings: _subsAreSiblings,
     );
+    if (moving) s.moveCategory(id, parent);
     _applyMandatory(s, id, parentCat);
     Navigator.pop(context, id);
   }
@@ -395,13 +408,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
     final l = AppLocalizations.of(context)!;
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final roots = s.roots.where((r) => r.id != widget.edit?.id).toList();
     final parentCat = s.cat(parent);
-    final liveSubs = subs
-        .where((r) => r.name.text.trim().isNotEmpty || r.id != null)
-        .length;
-    // uma categoria que já tem subcategorias não pode passar a ser subcategoria (só 2 níveis)
-    final lockParent = isEdit && widget.edit!.parentId == null && liveSubs > 0;
     final subMode = parentCat != null;
 
     final title = isEdit
@@ -493,39 +500,41 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<int?>(
-                      initialValue: parent,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: l.frmParentCategory,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        helperText: lockParent ? l.frmHasSubsLock : null,
-                        helperMaxLines: 2,
-                      ),
-                      items: [
-                        DropdownMenuItem(
-                          value: null,
-                          child: Text(l.frmNoneMainCategory),
-                        ),
-                        for (final r in roots)
-                          DropdownMenuItem(
-                            value: r.id,
-                            child: Text(
-                              '${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}',
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                    // "Dentro de": qualquer categoria, exceto ela própria e as suas descendentes
+                    InkWell(
+                      key: const ValueKey('parent-field'),
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () async {
+                        final r = await pickCategoryInTree(
+                          context,
+                          selected: parent,
+                          excludeSubtreeOf: widget.edit?.id,
+                          title: l.ctbPickParentTitle,
+                        );
+                        if (r != null && mounted) {
+                          setState(() {
+                            parent = r.id;
+                            nameError = null;
+                          });
+                        }
+                      },
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: l.frmParentCategory,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
                           ),
-                      ],
-                      onChanged: lockParent
-                          ? null
-                          : (v) => setState(() {
-                              parent = v;
-                              nameError = null;
-                            }),
+                          suffixIcon: const Icon(Icons.arrow_drop_down),
+                        ),
+                        child: Text(
+                          parentCat == null
+                              ? l.frmNoneMainCategory
+                              : '${parentCat.emoji.isEmpty ? '🏷️' : parentCat.emoji}  ${s.path(parentCat.id)}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ),
                     if (subMode) ...[
                       const SizedBox(height: 10),
@@ -558,7 +567,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                                     ),
                                     TextSpan(
                                       text:
-                                          '${parentCat.emoji.isEmpty ? '🏷️' : parentCat.emoji} ${parentCat.name}',
+                                          '${parentCat.emoji.isEmpty ? '🏷️' : parentCat.emoji} ${s.path(parentCat.id)}',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -572,7 +581,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                       ),
                     ],
                     // ----- subcategorias -----
-                    if (_showSubs) ...[
+                    ...[
                       _section(
                         subMode
                             ? l.frmMoreSubsOf(parentCat.name)
@@ -779,4 +788,216 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       ),
     );
   }
+}
+
+// ---------- Escolher/mover dentro da árvore ----------
+
+/// Resultado do seletor em árvore: `id` nulo = "Nenhuma (principal)".
+typedef TreePick = ({int? id});
+
+/// Escolhe uma categoria de qualquer nível numa lista em árvore (indentada), com pesquisa.
+/// [excludeSubtreeOf]: esconde essa categoria e tudo o que tem dentro (para não mover para si mesma).
+/// Devolve `null` se for cancelado.
+Future<TreePick?> pickCategoryInTree(
+  BuildContext context, {
+  int? selected,
+  int? excludeSubtreeOf,
+  bool allowNone = true,
+  String? title,
+}) {
+  return showModalBottomSheet<TreePick>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => _TreePickerSheet(
+      selected: selected,
+      excludeSubtreeOf: excludeSubtreeOf,
+      allowNone: allowNone,
+      title: title,
+    ),
+  );
+}
+
+class _TreePickerSheet extends StatefulWidget {
+  final int? selected;
+  final int? excludeSubtreeOf;
+  final bool allowNone;
+  final String? title;
+  const _TreePickerSheet({
+    this.selected,
+    this.excludeSubtreeOf,
+    this.allowNone = true,
+    this.title,
+  });
+  @override
+  State<_TreePickerSheet> createState() => _TreePickerSheetState();
+}
+
+class _TreePickerSheetState extends State<_TreePickerSheet> {
+  String q = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final l = AppLocalizations.of(context)!;
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final query = q.trim().toLowerCase();
+
+    // percurso em profundidade: (categoria, nível)
+    final rows = <(Categoria, int)>[];
+    void walk(Categoria c, int depth) {
+      if (c.id == widget.excludeSubtreeOf) return;
+      rows.add((c, depth));
+      for (final k in s.childrenOf(c.id)) {
+        walk(k, depth + 1);
+      }
+    }
+
+    for (final r in s.roots) {
+      walk(r, 0);
+    }
+    final shown = query.isEmpty
+        ? rows
+        : rows.where((e) => e.$1.name.toLowerCase().contains(query)).toList();
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.title != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                child: Text(widget.title!, style: tt.titleMedium),
+              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                onChanged: (v) => setState(() => q = v),
+                decoration: InputDecoration(
+                  hintText: l.ctbSearch,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  if (widget.allowNone && query.isEmpty)
+                    ListTile(
+                      key: const ValueKey('tree-pick-none'),
+                      leading: const Icon(Icons.folder_open_outlined),
+                      title: Text(l.frmNoneMainCategory),
+                      trailing: widget.selected == null
+                          ? Icon(Icons.check, color: cs.primary)
+                          : null,
+                      onTap: () => Navigator.pop<TreePick>(context, (id: null)),
+                    ),
+                  for (final (c, depth) in shown)
+                    ListTile(
+                      key: ValueKey('tree-pick-${c.id}'),
+                      contentPadding: EdgeInsets.only(
+                        left: 16.0 + (query.isEmpty ? depth : 0) * 24,
+                        right: 16,
+                      ),
+                      leading: CatBadge(c, size: 22),
+                      title: Text(c.name),
+                      // na pesquisa não há indentação: o caminho distingue nomes iguais
+                      subtitle: query.isEmpty || depth == 0
+                          ? null
+                          : Text(s.path(c.id)),
+                      trailing: widget.selected == c.id
+                          ? Icon(Icons.check, color: cs.primary)
+                          : null,
+                      onTap: () =>
+                          Navigator.pop<TreePick>(context, (id: c.id)),
+                    ),
+                  if (shown.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(child: Text(l.ctbNoMatches)),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Mensagem clara para um erro ao mover uma categoria.
+String moveErrorText(
+  AppLocalizations l,
+  AppState s,
+  Categoria c,
+  int? newParentId,
+  MoveError e,
+) => switch (e) {
+  MoveError.self => l.ctbMoveErrSelf,
+  MoveError.intoDescendant => l.ctbMoveErrDescendant,
+  MoveError.nameTaken => l.ctbMoveErrNameTaken(
+    c.name,
+    newParentId == null ? l.ctbMainLevel : '“${s.path(newParentId)}”',
+  ),
+};
+
+/// Pergunta se se quer mesmo mover [c] para [newParentId], dizendo o que vai com ela.
+Future<bool> confirmMove(
+  BuildContext context,
+  AppState s,
+  Categoria c,
+  int? newParentId,
+) {
+  final l = AppLocalizations.of(context)!;
+  final n = s.descendantsOf(c.id).length;
+  final text = newParentId == null
+      ? l.ctbMoveConfirmTop(c.name, n)
+      : l.ctbMoveConfirm(c.name, n, s.path(newParentId));
+  return confirm(context, text, ok: l.ctbMoveButton);
+}
+
+/// "Mover para…": escolhe o destino, valida, confirma e move. Mostra os erros numa mensagem.
+Future<void> moveCategoryFlow(
+  BuildContext context,
+  AppState s,
+  Categoria c,
+) async {
+  final l = AppLocalizations.of(context)!;
+  final messenger = ScaffoldMessenger.of(context);
+  final r = await pickCategoryInTree(
+    context,
+    selected: c.parentId,
+    excludeSubtreeOf: c.id,
+    title: l.ctbMoveTo(c.name),
+  );
+  if (r == null || r.id == c.parentId || !context.mounted) return;
+  final err = s.canMoveCategory(c.id, r.id);
+  if (err != null) {
+    messenger.showSnackBar(
+      SnackBar(content: Text(moveErrorText(l, s, c, r.id, err))),
+    );
+    return;
+  }
+  if (!await confirmMove(context, s, c, r.id) || !context.mounted) return;
+  final e2 = s.moveCategory(c.id, r.id);
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        e2 == null ? l.ctbMoved(c.name) : moveErrorText(l, s, c, r.id, e2),
+      ),
+    ),
+  );
 }
