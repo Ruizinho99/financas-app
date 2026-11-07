@@ -1575,6 +1575,15 @@
       }
     }
   },
+  "ctcCopyTooltip": "Copy categories",
+  "ctcCopied": "{count, plural, =0{No categories copied} =1{1 category copied} other{{count} categories copied}}",
+  "@ctcCopied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "edvFixAmount": "Fix amount",
   "edvOriginalValue": "Original amount: {valor} (edited)",
   "@edvOriginalValue": {
