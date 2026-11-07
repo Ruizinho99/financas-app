@@ -1,0 +1,53 @@
+{
+  "pksAll": "All",
+  "pksSuggested": "Suggested from the name",
+  "pksMostUsed": "Most used",
+  "pksSearchIn": "Search in {name}",
+  "@pksSearchIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pksOnlyThis": "Only {name} — choose this category",
+  "@pksOnlyThis": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pksNewSub": "New subcategory in {name}",
+  "@pksNewSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pksResults": "{count, plural, =0{{count} results, at every level} =1{1 result, at every level} other{{count} results, at every level}}",
+  "@pksResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pksCreateNamed": "Create \"{text}\"…",
+  "@pksCreateNamed": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "pksOpen": "Open {name}",
+  "@pksOpen": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
+}

@@ -5355,6 +5355,52 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get pksAll => 'Todas';
+
+  @override
+  String get pksSuggested => 'Sugerida pelo nome';
+
+  @override
+  String get pksMostUsed => 'Mais usadas';
+
+  @override
+  String pksSearchIn(String name) {
+    return 'Pesquisar em $name';
+  }
+
+  @override
+  String pksOnlyThis(String name) {
+    return 'Só $name — escolher esta categoria';
+  }
+
+  @override
+  String pksNewSub(String name) {
+    return 'Nova subcategoria em $name';
+  }
+
+  @override
+  String pksResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resultados, em todos os níveis',
+      one: '1 resultado, em todos os níveis',
+      zero: '$count resultados, em todos os níveis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pksCreateNamed(String text) {
+    return 'Criar \"$text\"…';
+  }
+
+  @override
+  String pksOpen(String name) {
+    return 'Abrir $name';
+  }
+
+  @override
   String get selSelect => 'Selecionar';
 
   @override

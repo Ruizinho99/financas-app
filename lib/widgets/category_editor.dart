@@ -13,13 +13,18 @@ Future<int?> showCategoryEditor(
   BuildContext context, {
   Categoria? edit,
   int? parentId,
+  String? name, // nome inicial (nova categoria criada a partir de uma pesquisa)
 }) {
   return showDialog<int>(
     context: context,
     barrierDismissible:
         false, // não perder o que já foi escrito por um toque fora do modal
     builder: (_) =>
-        CategoryEditorDialog(edit: edit, parentId: parentId ?? edit?.parentId),
+        CategoryEditorDialog(
+          edit: edit,
+          parentId: parentId ?? edit?.parentId,
+          name: name,
+        ),
   );
 }
 
@@ -69,13 +74,21 @@ extension on _Kind {
 class CategoryEditorDialog extends StatefulWidget {
   final Categoria? edit;
   final int? parentId;
-  const CategoryEditorDialog({super.key, this.edit, this.parentId});
+  final String? name;
+  const CategoryEditorDialog({
+    super.key,
+    this.edit,
+    this.parentId,
+    this.name,
+  });
   @override
   State<CategoryEditorDialog> createState() => _CategoryEditorDialogState();
 }
 
 class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
-  late final name = TextEditingController(text: widget.edit?.name ?? '');
+  late final name = TextEditingController(
+    text: widget.edit?.name ?? widget.name ?? '',
+  );
   late final desc = TextEditingController(text: widget.edit?.description ?? '');
   late int? parent = widget.parentId;
   late _Kind kind;

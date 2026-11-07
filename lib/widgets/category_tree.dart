@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models.dart';
 import '../state/app_state.dart';
+import 'common.dart';
 
 /// Árvore expansível de categorias com caixas, a qualquer profundidade.
 /// Escolher uma categoria inclui tudo o que está dentro dela (as descendentes ficam
@@ -35,7 +36,13 @@ class CategoryTreeChecks extends StatelessWidget {
     final own = selected.contains(c.id);
     final on = covered || own;
     final partial = !on && kids.any((k) => _touched(s, k));
-    final title = Text('${c.emoji.isEmpty ? '🏷️' : c.emoji}  ${c.name}');
+    final title = Row(
+      children: [
+        CatBadge(c, size: 18),
+        const SizedBox(width: 8),
+        Expanded(child: Text(c.name)),
+      ],
+    );
 
     void toggle() {
       final next = {...selected};

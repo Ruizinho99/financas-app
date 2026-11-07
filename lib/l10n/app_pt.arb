@@ -4181,6 +4181,57 @@
       }
     }
   },
+  "pksAll": "Todas",
+  "pksSuggested": "Sugerida pelo nome",
+  "pksMostUsed": "Mais usadas",
+  "pksSearchIn": "Pesquisar em {name}",
+  "@pksSearchIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pksOnlyThis": "Só {name} — escolher esta categoria",
+  "@pksOnlyThis": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pksNewSub": "Nova subcategoria em {name}",
+  "@pksNewSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pksResults": "{count, plural, =0{{count} resultados, em todos os níveis} =1{1 resultado, em todos os níveis} other{{count} resultados, em todos os níveis}}",
+  "@pksResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pksCreateNamed": "Criar \"{text}\"…",
+  "@pksCreateNamed": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "pksOpen": "Abrir {name}",
+  "@pksOpen": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "selSelect": "Selecionar",
   "selSelectAll": "Selecionar tudo",
   "selDeselectAll": "Limpar seleção",

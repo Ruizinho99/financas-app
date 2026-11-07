@@ -4,18 +4,25 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
-import 'category_editor.dart';
+import 'common.dart';
 
 /// Escolhe uma categoria numa só folha, com pesquisa, a navegar pela árvore em
 /// qualquer profundidade (A › B › C › ...).
 /// Devolve o id escolhido, `-1` para "sem categoria" ou `null` se for cancelado.
 /// [allowNew] esconde "Nova categoria" (ex.: em filtros, onde só se escolhe o que existe).
+/// [suggestedId] mostra uma categoria sugerida (ex.: pelo nome do movimento); se faltar,
+/// mas houver [description], a sugestão vem do histórico (`suggestCategoryFor`).
+/// [mostUsed] força a lista das mais usadas; por omissão vem do histórico, em saídas
+/// ou entradas conforme [income].
 Future<int?> chooseCategory(
   BuildContext context, {
   int? selected,
   bool? income,
   DateTimeRange? when,
   bool allowNew = true,
+  int? suggestedId,
+  List<int>? mostUsed,
+  String? description,
 }) {
   return showModalBottomSheet<int>(
     context: context,
@@ -27,8 +34,23 @@ Future<int?> chooseCategory(
       income: income,
       when: when,
       allowNew: allowNew,
+      suggestedId: suggestedId,
+      mostUsed: mostUsed,
+      description: description,
     ),
   );
+}
+
+/// Minúsculas e sem acentos, mantendo o comprimento (para realçar o troço que coincide).
+String _fold(String s) {
+  const from = 'àáâãäåçèéêëìíîïñòóôõöùúûüýÿ';
+  const to = 'aaaaaaceeeeiiiinooooouuuuyy';
+  final b = StringBuffer();
+  for (final c in s.toLowerCase().split('')) {
+    final i = from.indexOf(c);
+    b.write(i >= 0 ? to[i] : c);
+  }
+  return b.toString();
 }
 
 class _CategorySheet extends StatefulWidget {
@@ -36,11 +58,17 @@ class _CategorySheet extends StatefulWidget {
   final bool? income;
   final DateTimeRange? when;
   final bool allowNew;
+  final int? suggestedId;
+  final List<int>? mostUsed;
+  final String? description;
   const _CategorySheet({
     this.selected,
     this.income,
     this.when,
     this.allowNew = true,
+    this.suggestedId,
+    this.mostUsed,
+    this.description,
   });
   @override
   State<_CategorySheet> createState() => _CategorySheetState();
@@ -49,8 +77,7 @@ class _CategorySheet extends StatefulWidget {
 class _CategorySheetState extends State<_CategorySheet> {
   String q = '';
   bool showAll = false; // inclui categorias terminadas e futuras
-  int?
-  level; // categoria cujo conteúdo se mostra (null = o nível das principais)
+  int? level; // categoria cujo conteúdo se mostra (null = as principais)
   bool _init = false;
 
   @override
@@ -80,9 +107,9 @@ class _CategorySheetState extends State<_CategorySheet> {
         (id == null ? s.roots.toList() : s.childrenOf(id))
             .where(shown)
             .toList();
-    bool hasShownKids(Categoria c) => s.childrenOf(c.id).any(shown);
 
-    final query = q.trim().toLowerCase();
+    final cur = s.cat(level);
+    final query = _fold(q.trim());
     final searching = query.isNotEmpty;
     final hiddenExist = s.categories.any(
       (c) =>
@@ -92,68 +119,222 @@ class _CategorySheetState extends State<_CategorySheet> {
           !s.isCategoryActiveDuring(c, from, to),
     );
 
-    Widget chip(Categoria c, {String? label, bool bold = false}) {
-      return ChoiceChip(
-        key: ValueKey('cat-pick-${c.id}'),
-        selected: c.id == widget.selected,
-        showCheckmark: false,
-        avatar: c.emoji.isEmpty ? null : Text(c.emoji),
-        label: Text(label ?? c.name),
-        onSelected: (_) => Navigator.pop(context, c.id),
-        labelStyle: bold ? const TextStyle(fontWeight: FontWeight.w700) : null,
-      );
-    }
+    // ---- peças ----
+    Widget circle(Categoria c) => Container(
+      width: 40,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: cs.surfaceContainerHighest,
+      ),
+      child: CatBadge(c, size: 20),
+    );
 
-    final body = <Widget>[];
-    var empty = false;
-    if (searching) {
-      // procura em todos os níveis e mostra o caminho completo
-      final hits = [
-        for (final c in s.categories)
-          if (!c.archived && visible(c) && c.name.toLowerCase().contains(query))
-            c,
-      ]..sort((a, b) => s.path(a.id).compareTo(s.path(b.id)));
-      empty = hits.isEmpty;
-      body.add(
-        Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 4),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: [for (final c in hits) chip(c, label: s.path(c.id))],
+    Widget check() => Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Icon(Icons.check_circle, size: 20, color: cs.primary),
+    );
+
+    /// Linha de categoria: tocar à esquerda escolhe; a seta, à direita, abre o interior.
+    Widget row(Categoria c) {
+      final kids = s.childrenOf(c.id).where(shown).toList();
+      final isSel = c.id == widget.selected;
+      return Material(
+        color: isSel ? cs.primaryContainer.withValues(alpha: 0.4) : null,
+        borderRadius: BorderRadius.circular(12),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  key: ValueKey('cat-pick-${c.id}'),
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(12),
+                  ),
+                  onTap: () => Navigator.pop(context, c.id),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        circle(c),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            c.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: tt.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (isSel) check(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (kids.isNotEmpty) ...[
+                VerticalDivider(
+                  width: 1,
+                  thickness: 1,
+                  indent: 8,
+                  endIndent: 8,
+                  color: cs.outlineVariant,
+                ),
+                Tooltip(
+                  message: l.pksOpen(c.name),
+                  child: InkWell(
+                    key: ValueKey('cat-open-${c.id}'),
+                    borderRadius: const BorderRadius.horizontal(
+                      right: Radius.circular(12),
+                    ),
+                    onTap: () => setState(() => level = c.id),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${kids.length}',
+                            style: tt.bodyMedium?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_right,
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       );
+    }
+
+    Widget header(String text) => Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 6),
+      child: Text(
+        text,
+        style: tt.labelLarge?.copyWith(color: cs.onSurfaceVariant),
+      ),
+    );
+
+    Widget chip(Categoria c, String keyPrefix, {String? label}) {
+      return ChoiceChip(
+        key: ValueKey('$keyPrefix-${c.id}'),
+        selected: c.id == widget.selected,
+        showCheckmark: false,
+        avatar: CatBadge(c, size: 16),
+        label: Text(label ?? c.name),
+        onSelected: (_) => Navigator.pop(context, c.id),
+      );
+    }
+
+    /// Nome com o troço que coincide com a pesquisa a negrito.
+    Widget highlighted(Categoria c) {
+      final base = tt.bodyLarge!.copyWith(fontWeight: FontWeight.w600);
+      final f = _fold(c.name);
+      final i = f.length == c.name.length ? f.indexOf(query) : -1;
+      if (i < 0) return Text(c.name, style: base);
+      return Text.rich(
+        TextSpan(
+          style: base,
+          children: [
+            TextSpan(text: c.name.substring(0, i)),
+            TextSpan(
+              text: c.name.substring(i, i + query.length),
+              style: TextStyle(
+                color: cs.primary,
+                backgroundColor: cs.primary.withValues(alpha: 0.15),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            TextSpan(text: c.name.substring(i + query.length)),
+          ],
+        ),
+      );
+    }
+
+    // ---- corpo ----
+    final body = <Widget>[];
+    var empty = false;
+    if (searching) {
+      // procura em todos os níveis (dentro da categoria aberta, se houver uma)
+      final hits = [
+        for (final c in s.categories)
+          if (!c.archived &&
+              visible(c) &&
+              (cur == null || s.inSubtree(c.id, cur.id) && c.id != cur.id) &&
+              _fold(c.name).contains(query))
+            c,
+      ]..sort((a, b) => s.path(a.id).compareTo(s.path(b.id)));
+      empty = hits.isEmpty;
+      if (!empty) body.add(header(l.pksResults(hits.length)));
+      for (final c in hits) {
+        final parents = s.ancestorsOf(c).reversed.map((a) => a.name).join(' › ');
+        body.add(
+          InkWell(
+            key: ValueKey('cat-pick-${c.id}'),
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => Navigator.pop(context, c.id),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  circle(c),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        highlighted(c),
+                        if (parents.isNotEmpty)
+                          Text(
+                            parents,
+                            key: ValueKey('cat-path-${c.id}'),
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (c.id == widget.selected) check(),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
     } else {
-      final cur = s.cat(level);
       final kids = kidsOf(level);
       empty = cur == null && kids.isEmpty;
       if (cur != null) {
-        // caminho clicável até aqui: Principais › A › B
+        // migalhas clicáveis: Todas › A › B
         final chain = [...s.ancestorsOf(cur).reversed, cur];
         body.add(
           Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 4),
+            padding: const EdgeInsets.only(top: 4, bottom: 8),
             child: Wrap(
-              spacing: 4,
-              runSpacing: 4,
+              spacing: 2,
+              runSpacing: 2,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                ActionChip(
-                  key: const ValueKey('cat-back'),
-                  avatar: const Icon(Icons.arrow_back, size: 18),
-                  label: Text(
-                    cur.parentId == null
-                        ? l.frmMainCategories
-                        : (s.cat(cur.parentId)?.name ?? ''),
-                  ),
-                  onPressed: () => setState(() => level = cur.parentId),
-                ),
-                const SizedBox(width: 4),
                 TextButton(
                   key: const ValueKey('crumb-root'),
                   onPressed: () => setState(() => level = null),
-                  child: Text(l.frmMainCategories),
+                  child: Text(l.pksAll),
                 ),
                 for (final a in chain) ...[
                   Text('›', style: tt.bodyMedium),
@@ -177,46 +358,116 @@ class _CategorySheetState extends State<_CategorySheet> {
             ),
           ),
         );
+        // escolher a própria categoria aberta
+        body.add(
+          Material(
+            color: cs.primaryContainer,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              key: const ValueKey('cat-self'),
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => Navigator.pop(context, cur.id),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    circle(cur),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l.pksOnlyThis(cur.name),
+                        style: tt.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.onPrimaryContainer,
+                        ),
+                      ),
+                    ),
+                    if (cur.id == widget.selected) check(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+        body.add(const SizedBox(height: 8));
+      } else {
+        // sugerida e mais usadas só aparecem ao abrir, no nível das principais
+        final sugId =
+            widget.suggestedId ??
+            (widget.description == null
+                ? null
+                : s.suggestCategoryFor(widget.description!));
+        final sug = s.cat(sugId);
+        final showSug = sug != null && !sug.archived && shown(sug);
+        if (showSug) {
+          body.add(header(l.pksSuggested));
+          body.add(
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ActionChip(
+                key: ValueKey('cat-sug-${sug.id}'),
+                avatar: const Icon(Icons.auto_awesome, size: 18),
+                label: Text(
+                  s.path(sug.id),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                side: BorderSide(color: cs.primary),
+                onPressed: () => Navigator.pop(context, sug.id),
+              ),
+            ),
+          );
+        }
+        final used = [
+          for (final id in widget.mostUsed ??
+              s.mostUsedCategoryIds(limit: 6, income: widget.income))
+            if (s.cat(id) != null &&
+                !s.cat(id)!.archived &&
+                shown(s.cat(id)!) &&
+                !(showSug && id == sug.id))
+              s.cat(id)!,
+        ].take(5).toList();
+        if (used.isNotEmpty) {
+          body.add(header(l.pksMostUsed));
+          body.add(
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [for (final c in used) chip(c, 'cat-top', label: null)],
+            ),
+          );
+        }
+        if (showSug || used.isNotEmpty) body.add(header(l.pksAll));
+      }
+      for (final k in kids) {
+        body.add(row(k));
+      }
+      if (kids.isEmpty && cur != null) {
         body.add(
           Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: chip(cur, label: l.frmOnlyName(cur.name), bold: true),
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              l.frmNoSubcategories,
+              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
         );
       }
-      body.add(
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: [
-            for (final k in kids)
-              if (!hasShownKids(k))
-                chip(k, bold: cur == null)
-              else
-                ChoiceChip(
-                  key: ValueKey('cat-open-${k.id}'),
-                  selected: k.id == widget.selected,
-                  showCheckmark: false,
-                  avatar: k.emoji.isEmpty ? null : Text(k.emoji),
-                  label: Text('${k.name} ›'),
-                  labelStyle: cur == null
-                      ? const TextStyle(fontWeight: FontWeight.w700)
-                      : null,
-                  onSelected: (_) => setState(() => level = k.id),
-                ),
-            if (kids.isEmpty && cur != null)
-              Text(
-                l.frmNoSubcategories,
-                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-              ),
-          ],
-        ),
-      );
     }
 
+    // "Nova categoria" cria já no nível em que se está; a pesquisa abre o editor com o texto
+    Future<void> create({String? name}) async {
+      final id = await showCategoryEditor(
+        context,
+        parentId: level,
+        name: name,
+      );
+      if (id != null && context.mounted) Navigator.pop(context, id);
+    }
+
+    final rawQuery = q.trim();
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.8,
@@ -228,7 +479,9 @@ class _CategorySheetState extends State<_CategorySheet> {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
             child: TextField(
               decoration: InputDecoration(
-                hintText: l.frmSearchCategory,
+                hintText: cur == null
+                    ? l.frmSearchCategory
+                    : l.pksSearchIn(cur.name),
                 prefixIcon: const Icon(Icons.search),
                 isDense: true,
               ),
@@ -238,7 +491,7 @@ class _CategorySheetState extends State<_CategorySheet> {
           Expanded(
             child: ListView(
               controller: scroll,
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               children: [
                 ...body,
                 if (empty)
@@ -255,22 +508,26 @@ class _CategorySheetState extends State<_CategorySheet> {
                       ),
                     ),
                   ),
-                const SizedBox(height: 12),
-                if (widget.allowNew)
+                const SizedBox(height: 8),
+                if (widget.allowNew && searching)
                   ListTile(
+                    key: const ValueKey('cat-create-text'),
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.add),
-                    title: Text(l.frmNewCategoryTitle),
-                    onTap: () async {
-                      // uma nova categoria nasce dentro do nível que se está a ver
-                      final id = await showCategoryEditor(
-                        context,
-                        parentId: searching ? null : level,
-                      );
-                      if (id != null && context.mounted) {
-                        Navigator.pop(context, id);
-                      }
-                    },
+                    title: Text(l.pksCreateNamed(rawQuery)),
+                    onTap: () => create(name: rawQuery),
+                  ),
+                if (widget.allowNew && !searching)
+                  ListTile(
+                    key: const ValueKey('cat-create'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.add),
+                    title: Text(
+                      cur == null
+                          ? l.frmNewCategoryTitle
+                          : l.pksNewSub(cur.name),
+                    ),
+                    onTap: () => create(),
                   ),
                 if (widget.selected != null)
                   ListTile(

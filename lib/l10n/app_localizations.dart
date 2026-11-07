@@ -8048,6 +8048,60 @@ abstract class AppLocalizations {
   /// **'\"{from}\" unificada em \"{to}\".'**
   String mrgDone(String from, String to);
 
+  /// No description provided for @pksAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todas'**
+  String get pksAll;
+
+  /// No description provided for @pksSuggested.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sugerida pelo nome'**
+  String get pksSuggested;
+
+  /// No description provided for @pksMostUsed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mais usadas'**
+  String get pksMostUsed;
+
+  /// No description provided for @pksSearchIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pesquisar em {name}'**
+  String pksSearchIn(String name);
+
+  /// No description provided for @pksOnlyThis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Só {name} — escolher esta categoria'**
+  String pksOnlyThis(String name);
+
+  /// No description provided for @pksNewSub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova subcategoria em {name}'**
+  String pksNewSub(String name);
+
+  /// No description provided for @pksResults.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} resultados, em todos os níveis} =1{1 resultado, em todos os níveis} other{{count} resultados, em todos os níveis}}'**
+  String pksResults(int count);
+
+  /// No description provided for @pksCreateNamed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar \"{text}\"…'**
+  String pksCreateNamed(String text);
+
+  /// No description provided for @pksOpen.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir {name}'**
+  String pksOpen(String name);
+
   /// No description provided for @selSelect.
   ///
   /// In pt, this message translates to:
