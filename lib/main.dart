@@ -245,9 +245,8 @@ class _HomeShellState extends State<HomeShell> {
       ),
     );
     if (go == true && mounted) {
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const UpdateScreen()),
-      );
+      await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const UpdateScreen()));
     }
   }
 

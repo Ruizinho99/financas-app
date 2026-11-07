@@ -16,6 +16,9 @@ import '../util/format.dart';
 import '../util/month_cycle.dart';
 import '../util/receipts.dart';
 
+/// Porque é que uma categoria não pode ser movida para um sítio.
+enum MoveError { self, intoDescendant, nameTaken }
+
 /// Período de análise: um mês, um ano, o ano até hoje (YTD) ou um intervalo de datas.
 class Period {
   final DateTime start; // inclusivo
@@ -108,7 +111,12 @@ class CategoryStat {
 }
 
 /// Motivos pelos quais o valor de um movimento não pode ser corrigido para o valor pedido.
-enum AmountIssue { belowAllocated, belowReversed, hasReversals, belowOwnReversal }
+enum AmountIssue {
+  belowAllocated,
+  belowReversed,
+  hasReversals,
+  belowOwnReversal,
+}
 
 class AppState extends ChangeNotifier {
   final Db db;
@@ -199,10 +207,7 @@ class AppState extends ChangeNotifier {
   List<DateTime> get salaryDates {
     final id = salaryCategoryId;
     if (id == null) return const [];
-    final ids = {
-      id,
-      ...categories.where((c) => c.parentId == id).map((c) => c.id),
-    };
+    final ids = subtreeIds(id);
     return salaryBoundaries([
       for (final t in transactions)
         if (t.amount > 0 && !t.isTransfer && ids.contains(t.categoryId)) t.date,
@@ -326,7 +331,7 @@ class AppState extends ChangeNotifier {
     bool own(int id) =>
         mandatoryRanges.any((r) => r.categoryId == id && r.covers(month));
     if (own(c.id)) return true;
-    return inherit && c.parentId != null && own(c.parentId!);
+    return inherit && ancestorsOf(c).any((a) => own(a.id));
   }
 
   bool isMandatoryDirect(Categoria c, String month) =>
@@ -400,15 +405,123 @@ class AppState extends ChangeNotifier {
   List<Categoria> get roots =>
       categories.where((c) => c.parentId == null && !c.archived).toList();
   List<Categoria> childrenOf(int id) =>
-      categories.where((c) => c.parentId == id && !c.archived).toList();
+      (_kids[id] ?? const <Categoria>[]).where((c) => !c.archived).toList();
   Categoria? parentOf(Categoria c) => cat(c.parentId);
 
-  /// "Pai › Filha" – permite distinguir categorias com o mesmo nome.
+  // ---------- Árvore de categorias (qualquer profundidade) ----------
+  List<Categoria>? _kidsFor;
+  Map<int, List<Categoria>> _kidsIdx = {};
+
+  /// Filhas diretas de cada categoria (inclui as arquivadas), recalculado quando a lista muda.
+  Map<int, List<Categoria>> get _kids {
+    if (!identical(_kidsFor, categories)) {
+      final m = <int, List<Categoria>>{};
+      for (final c in categories) {
+        final p = c.parentId;
+        if (p != null) (m[p] ??= []).add(c);
+      }
+      _kidsIdx = m;
+      _kidsFor = categories;
+    }
+    return _kidsIdx;
+  }
+
+  /// Todas as categorias abaixo de [id], a qualquer profundidade (sem incluir [id]).
+  List<Categoria> descendantsOf(int id) {
+    final out = <Categoria>[];
+    final seen = <int>{id};
+    final stack = [id];
+    while (stack.isNotEmpty) {
+      for (final k in _kids[stack.removeLast()] ?? const <Categoria>[]) {
+        if (seen.add(k.id)) {
+          out.add(k);
+          stack.add(k.id);
+        }
+      }
+    }
+    return out;
+  }
+
+  /// [id] e todos os seus descendentes.
+  Set<int> subtreeIds(int id) => {id, ...descendantsOf(id).map((c) => c.id)};
+
+  /// As categorias acima de [c], da mais próxima (a mãe) à principal.
+  List<Categoria> ancestorsOf(Categoria c) {
+    final out = <Categoria>[];
+    final seen = <int>{c.id};
+    var p = cat(c.parentId);
+    while (p != null && seen.add(p.id)) {
+      out.add(p);
+      p = cat(p.parentId);
+    }
+    return out;
+  }
+
+  /// A categoria principal (a raiz) de [c]; [c] se já for principal.
+  Categoria rootOf(Categoria c) {
+    final a = ancestorsOf(c);
+    return a.isEmpty ? c : a.last;
+  }
+
+  /// 0 = principal, 1 = subcategoria, 2 = sub-subcategoria, ...
+  int depthOf(Categoria c) => ancestorsOf(c).length;
+
+  /// [id] é [ofId] ou está abaixo dele?
+  bool inSubtree(int? id, int ofId) {
+    final c = cat(id);
+    if (c == null) return false;
+    return c.id == ofId || ancestorsOf(c).any((a) => a.id == ofId);
+  }
+
+  /// "Avó › Mãe › Filha" – permite distinguir categorias com o mesmo nome.
   String path(int? id) {
     final c = cat(id);
     if (c == null) return noCategoryText;
-    final p = cat(c.parentId);
-    return p == null ? c.name : '${p.name} › ${c.name}';
+    return [...ancestorsOf(c).reversed.map((a) => a.name), c.name].join(' › ');
+  }
+
+  /// Porque é que [id] não pode passar para dentro de [newParentId] (nulo = tornar-se principal).
+  MoveError? canMoveCategory(int id, int? newParentId) {
+    final c = cat(id);
+    if (c == null) return MoveError.self;
+    if (newParentId == id) return MoveError.self;
+    if (newParentId != null && inSubtree(newParentId, id)) {
+      return MoveError.intoDescendant;
+    }
+    if (newParentId == c.parentId) return null; // já lá está: nada a mudar
+    if (categoryNameTaken(c.name, newParentId, excludeId: id)) {
+      return MoveError.nameTaken;
+    }
+    return null;
+  }
+
+  /// Move a categoria (com tudo o que tem dentro) para dentro de [newParentId], ou para o topo se for nulo.
+  /// Os movimentos ficam onde estão. Dentro de uma categoria de investimento, as categorias movidas
+  /// passam a ser de investimento (e ao contrário), tal como as subcategorias criadas lá.
+  /// Devolve o motivo se não for possível.
+  MoveError? moveCategory(int id, int? newParentId) {
+    final err = canMoveCategory(id, newParentId);
+    if (err != null) return err;
+    final c = cat(id)!;
+    if (newParentId == c.parentId) return null;
+    final parent = cat(newParentId);
+    db.inTransaction(() {
+      if (parent != null) {
+        for (final x in [c, ...descendantsOf(id)]) {
+          db.saveCategory(
+            x.copyWith(
+              isIncome: parent.isIncome,
+              isInvestment: parent.isInvestment,
+              both: parent.both,
+            ),
+            id: x.id,
+          );
+        }
+      }
+      db.setCategoryParent(id, newParentId);
+    });
+    reload();
+    return null;
   }
 
   Rule? ruleFor(String key) {
@@ -597,11 +710,11 @@ class AppState extends ChangeNotifier {
     return own;
   }
 
-  /// Total de uma categoria incluindo descendentes directos.
+  /// Total de uma categoria incluindo todos os descendentes, a qualquer profundidade.
   int rollup(Categoria c, Map<int, int> own) {
     var total = own[c.id] ?? 0;
-    for (final ch in categories.where((x) => x.parentId == c.id)) {
-      total += own[ch.id] ?? 0;
+    for (final d in descendantsOf(c.id)) {
+      total += own[d.id] ?? 0;
     }
     return total;
   }
@@ -610,8 +723,7 @@ class AppState extends ChangeNotifier {
   /// A categoria existe no mês [month]? Tem de estar dentro das suas datas e das da categoria-mãe.
   bool isCategoryActive(Categoria c, String month) {
     if (!c.activeIn(month)) return false;
-    final p = cat(c.parentId);
-    return p == null || p.activeIn(month);
+    return ancestorsOf(c).every((a) => a.activeIn(month));
   }
 
   bool isCategoryActiveNow(Categoria c) => isCategoryActive(c, currentMonthKey);
@@ -678,9 +790,13 @@ class AppState extends ChangeNotifier {
     }
 
     final newId = copy(c, c.parentId);
-    for (final k in categories.where((x) => x.parentId == c.id)) {
-      copy(k, newId);
+    void copyTree(Categoria from, int newParent) {
+      for (final k in _kids[from.id] ?? const <Categoria>[]) {
+        copyTree(k, copy(k, newParent));
+      }
     }
+
+    copyTree(c, newId);
     reload();
     return newId;
   }
@@ -692,7 +808,7 @@ class AppState extends ChangeNotifier {
     if (c.hasBudget) return c.monthlyTarget(salary);
     return childrenOf(c.id)
         .where((ch) => month == null || isCategoryActive(ch, month))
-        .fold(0, (s, ch) => s + ch.monthlyTarget(salary));
+        .fold(0, (s, ch) => s + effectiveMonthlyTarget(ch, salary, month));
   }
 
   int totalAllocated(int salary, [String? month]) =>
@@ -1351,7 +1467,7 @@ class AppState extends ChangeNotifier {
     final own = totalsByCategory(periodOfMonth(month));
     final c = cat(categoryId);
     if (c == null) return 0;
-    return c.parentId == null ? rollup(c, own) : (own[c.id] ?? 0);
+    return rollup(c, own);
   }
 
   // ---------- Objetivos ----------
@@ -1369,7 +1485,7 @@ class AppState extends ChangeNotifier {
       Categoria(
         id: 0,
         name: name.trim(),
-        parentId: p == null ? null : (p.parentId ?? p.id),
+        parentId: p?.id,
         isInvestment: true,
         emoji: '🎯',
         description: 'Objetivo',

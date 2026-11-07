@@ -236,8 +236,9 @@ class Analytics {
     if (f.type == SpendType.optional && (mand || c == null)) return false;
     if (f.categoryIds.isNotEmpty) {
       if (c == null) return false;
+      // uma categoria escolhida inclui tudo o que está dentro dela, a qualquer profundidade
       if (!f.categoryIds.contains(c.id) &&
-          !(c.parentId != null && f.categoryIds.contains(c.parentId)))
+          !s.ancestorsOf(c).any((a) => f.categoryIds.contains(a.id)))
         return false;
     }
     if (f.accountIds.isNotEmpty &&
@@ -399,7 +400,7 @@ class Analytics {
 
   /// Por categoria principal (inclui as subcategorias).
   List<Slice> byCategory() => _slices(
-    (e) => e.cat == null ? _none : '${e.cat!.parentId ?? e.cat!.id}',
+    (e) => e.cat == null ? _none : '${s.rootOf(e.cat!).id}',
     (k, l, prev) {
       final root = k == _none ? null : s.cat(int.parse(k));
       return Slice(
@@ -416,7 +417,7 @@ class Analytics {
 
   /// Igual a [byCategory], com os textos traduzidos.
   List<Slice> byCategoryL(AppLocalizations l) => _slices(
-    (e) => e.cat == null ? _none : '${e.cat!.parentId ?? e.cat!.id}',
+    (e) => e.cat == null ? _none : '${s.rootOf(e.cat!).id}',
     (k, l2, prev) {
       final root = k == _none ? null : s.cat(int.parse(k));
       return Slice(
@@ -439,7 +440,7 @@ class Analytics {
         return Slice(
           key: k,
           label: c?.name ?? l.uncLabel,
-          subtitle: parent?.name,
+          subtitle: parent == null ? null : s.path(parent.id),
           emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
           amount: _sum(l2),
           prev: prev,
@@ -470,7 +471,7 @@ class Analytics {
         return Slice(
           key: k,
           label: c?.name ?? noCategoryText,
-          subtitle: parent?.name,
+          subtitle: parent == null ? null : s.path(parent.id),
           emoji: c?.emoji.isNotEmpty == true ? c!.emoji : (parent?.emoji ?? ''),
           amount: _sum(l),
           prev: prev,

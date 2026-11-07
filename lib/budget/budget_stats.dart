@@ -83,7 +83,7 @@ List<CatBudget> budgetRows(
     final type = c.hasBudget
         ? c.budgetType
         : s
-              .childrenOf(c.id)
+              .descendantsOf(c.id)
               .firstWhere((k) => k.hasBudget, orElse: () => c)
               .budgetType;
     out.add(

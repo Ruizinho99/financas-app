@@ -96,13 +96,13 @@ class MoreScreen extends StatelessWidget {
           if (selfUpdateSupported)
             ListTile(
               leading: const Icon(Icons.system_update_alt),
-            title: Text(l.morUpdatesTitle),
-            subtitle: Text(l.morUpdatesSubtitle),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const UpdateScreen()),
+              title: Text(l.morUpdatesTitle),
+              subtitle: Text(l.morUpdatesSubtitle),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UpdateScreen()),
+              ),
             ),
-          ),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
             title: Text(l.appearanceTitle),
@@ -198,7 +198,9 @@ class MoreScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.backup_outlined),
             title: Text(l.morBackupTitle),
-            subtitle: Text(isIosPlatform ? l.iosBackupSubtitle : l.morBackupSubtitle),
+            subtitle: Text(
+              isIosPlatform ? l.iosBackupSubtitle : l.morBackupSubtitle,
+            ),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BackupScreen()),
