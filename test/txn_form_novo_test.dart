@@ -528,6 +528,27 @@ void main() {
     });
   });
 
+  testWidgets('a barra de baixo fica por cima do teclado', (tester) async {
+    final d = buildAnalysisData();
+    await _pump(tester, d.s, size: const Size(360, 700));
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300 * 3);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(tester.getBottomLeft(find.text('Guardar')).dy, lessThan(700 - 300));
+    expect(tester.getBottomLeft(find.text('Guardar e novo')).dy,
+        lessThan(700 - 300));
+  });
+
+  testWidgets('ao editar não aparece a lista de sugestões sem escrever', (
+    tester,
+  ) async {
+    final d = buildAnalysisData();
+    final t = d.s.transactions.firstWhere((x) => x.description == 'NETFLIX');
+    await _pump(tester, d.s, edit: t);
+    expect(find.byKey(const ValueKey('sugestoes-descricao')), findsNothing);
+  });
+
   for (final (nome, size, scale) in [
     ('360 dp', const Size(360, 700), 1.0),
     ('360 dp e letra 130%', const Size(360, 700), 1.3),

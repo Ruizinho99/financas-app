@@ -211,25 +211,26 @@ void main() {
     },
   );
 
-  testWidgets('editar mantém os dados; recibo e conta ficam em "Mais opções"', (
-    tester,
-  ) async {
-    final d = buildAnalysisData();
-    final t = d.s.transactions.firstWhere((x) => x.description == 'NETFLIX');
-    await _pump(tester, d.s, edit: t);
-    expect(find.text('Editar movimento'), findsOneWidget);
-    expect(
-      (tester.widget(
-        find.byType(TextField).first,
-      ) as TextField).controller!.text,
-      '12,99',
-    );
-    expect(find.textContaining('Lazer'), findsWidgets);
-    await tester.tap(find.text('Guardar'));
-    await tester.pumpAndSettle();
-    final after = d.s.transactions.firstWhere((x) => x.id == t.id);
-    expect((after.amount, after.categoryId), (t.amount, t.categoryId));
-  });
+  testWidgets(
+    'editar mantém os dados; recibo fica no bloco "Avançado" e a conta à vista',
+    (tester) async {
+      final d = buildAnalysisData();
+      final t = d.s.transactions.firstWhere((x) => x.description == 'NETFLIX');
+      await _pump(tester, d.s, edit: t);
+      expect(find.text('Editar movimento'), findsOneWidget);
+      expect(
+        (tester.widget(
+          find.byType(TextField).first,
+        ) as TextField).controller!.text,
+        '12,99',
+      );
+      expect(find.textContaining('Lazer'), findsWidgets);
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+      final after = d.s.transactions.firstWhere((x) => x.id == t.id);
+      expect((after.amount, after.categoryId), (t.amount, t.categoryId));
+    },
+  );
 
   for (final (name, b, size, scale) in [
     ('360 dp claro', Brightness.light, const Size(360, 780), 1.0),

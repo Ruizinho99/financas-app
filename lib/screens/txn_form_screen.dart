@@ -70,7 +70,8 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
   bool catSuggested =
       false; // categoria sugerida pelo nome (ainda não confirmada)
   late bool accountManual = widget.edit?.accountId != null;
-  bool descApplied = false; // sugestão de descrição escolhida: esconde a lista
+  late bool descApplied =
+      widget.edit != null; // sugestão de descrição escolhida: esconde a lista
   late bool advOpen;
   late bool noteOpen = (widget.edit?.note ?? '').trim().isNotEmpty;
   late bool goalsOpen;
@@ -461,6 +462,9 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
         SnackBar(
           content: Text(l.frm2Saved),
           duration: const Duration(seconds: 2),
+          // flutuante, acima da barra de baixo, para não tapar os botões
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 84),
         ),
       );
     amountFocus.requestFocus();
@@ -1458,250 +1462,266 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
             ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+      body: Column(
         children: [
-          if (banner != null) banner,
-          SegmentedButton<_Type>(
-            key: const ValueKey('tipo'),
-            showSelectedIcon: false,
-            style: SegmentedButton.styleFrom(
-              selectedBackgroundColor: cor.withValues(alpha: 0.16),
-              selectedForegroundColor: cor,
-            ),
-            segments: [
-              ButtonSegment(
-                value: _Type.expense,
-                label: typeLabel(_Type.expense, l.frmExpense),
-              ),
-              ButtonSegment(
-                value: _Type.income,
-                label: typeLabel(_Type.income, l.frmIncome),
-              ),
-              ButtonSegment(
-                value: _Type.transfer,
-                label: typeLabel(_Type.transfer, l.frmTransfer),
-              ),
-            ],
-            selected: {type},
-            onSelectionChanged: (v) => _setType(v.first, s),
-          ),
-          const SizedBox(height: 20),
-          // montante em destaque, com o sinal e a cor do tipo
-          TextField(
-            controller: amount,
-            focusNode: amountFocus,
-            autofocus: !isEdit,
-            textAlign: TextAlign.center,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: tt.displaySmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: cor,
-            ),
-            onChanged: (_) => setState(() => error = null),
-            decoration: InputDecoration(
-              hintText: zeroHint,
-              prefixText: '$_sign$baseSym  ',
-              prefixStyle: tt.headlineSmall?.copyWith(
-                color: cor,
-                fontWeight: FontWeight.w700,
-              ),
-              suffixIcon: IconButton(
-                tooltip: l.frmCalculator,
-                icon: const Icon(Icons.calculate_outlined),
-                onPressed: _calculator,
-              ),
-              errorText: error,
-              errorMaxLines: 4,
-              helperText: calc,
-              helperMaxLines: 2,
-            ),
-          ),
-          if (original != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.edit_note, size: 18, color: cs.onSurfaceVariant),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      l.edvOriginalValue(fmtMoney(original)),
-                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              children: [
+                if (banner != null) banner,
+                SegmentedButton<_Type>(
+                  key: const ValueKey('tipo'),
+                  showSelectedIcon: false,
+                  style: SegmentedButton.styleFrom(
+                    selectedBackgroundColor: cor.withValues(alpha: 0.16),
+                    selectedForegroundColor: cor,
                   ),
-                ],
-              ),
-            ),
-          SecaoRotulo(l.frm2WhereWhat),
-          TextField(
-            controller: desc,
-            maxLength: 120,
-            buildCounter: (
-              _, {
-              required currentLength,
-              required isFocused,
-              maxLength,
-            }) => null,
-            textCapitalization: TextCapitalization.sentences,
-            onChanged: (v) => _onDescChanged(s),
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.notes),
-              hintText: l.frmDescriptionOptional,
-            ),
-          ),
-          _descSuggestions(s, l),
-          if (!isTransfer) ...[
-            SecaoRotulo(l.frmCategory),
-            TileField(
-              icon: Icons.sell_outlined,
-              text: cat == null
-                  ? l.frmChooseCategory
-                  : '${cat.emoji.isEmpty ? '' : '${cat.emoji} '}${s.path(cat.id)}',
-              isHint: cat == null,
-              onTap: () => _pickCategory(s),
-            ),
-            if (catSuggested && cat != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
-                child: Row(
-                  children: [
-                    Icon(Icons.auto_awesome, size: 14, color: cs.primary),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        l.frm2SuggestedByName,
-                        style: tt.bodySmall?.copyWith(color: cs.primary),
-                      ),
+                  segments: [
+                    ButtonSegment(
+                      value: _Type.expense,
+                      label: typeLabel(_Type.expense, l.frmExpense),
+                    ),
+                    ButtonSegment(
+                      value: _Type.income,
+                      label: typeLabel(_Type.income, l.frmIncome),
+                    ),
+                    ButtonSegment(
+                      value: _Type.transfer,
+                      label: typeLabel(_Type.transfer, l.frmTransfer),
                     ),
                   ],
+                  selected: {type},
+                  onSelectionChanged: (v) => _setType(v.first, s),
                 ),
-              ),
-            if (mostUsed.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Wrap(
-                  key: const ValueKey('mais-usadas'),
-                  spacing: 8,
-                  runSpacing: 0,
-                  children: [
-                    for (final id in mostUsed)
-                      if (s.cat(id) != null)
-                        ChoiceChip(
-                          selected: id == categoryId,
-                          showCheckmark: false,
-                          avatar: s.cat(id)!.emoji.isEmpty
-                              ? null
-                              : Text(s.cat(id)!.emoji),
-                          label: Text(s.cat(id)!.name),
-                          onSelected: (_) => setState(() {
-                            categoryId = id;
-                            catManual = true;
-                            catSuggested = false;
-                          }),
-                        ),
-                  ],
-                ),
-              ),
-            if (type == _Type.income) ...[
-              const SizedBox(height: 12),
-              TileField(
-                icon: Icons.undo,
-                title: l.frmReversesExpense,
-                text: () {
-                  if (reversesId == null) return l.frmNone;
-                  final x = _expenseById(s, reversesId);
-                  return x == null ? l.frmExpenseGone : s.displayName(x);
-                }(),
-                isHint: reversesId == null,
-                onTap: () => _pickExpense(s),
-              ),
-              if (reversesId != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+                // montante em destaque, com o sinal e a cor do tipo
                 TextField(
-                  controller: reversedCtrl,
+                  controller: amount,
+                  focusNode: amountFocus,
+                  autofocus: !isEdit,
+                  textAlign: TextAlign.center,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  style: tt.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cor,
+                  ),
                   onChanged: (_) => setState(() => error = null),
                   decoration: InputDecoration(
-                    labelText: l.frmReversedAmount(baseSym),
-                    prefixText: '$baseSym  ',
-                    helperMaxLines: 3,
-                    helperText: _reversalHelp(s),
+                    hintText: zeroHint,
+                    prefixText: '$_sign$baseSym  ',
+                    prefixStyle: tt.headlineSmall?.copyWith(
+                      color: cor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    suffixIcon: IconButton(
+                      tooltip: l.frmCalculator,
+                      icon: const Icon(Icons.calculate_outlined),
+                      onPressed: _calculator,
+                    ),
+                    errorText: error,
+                    errorMaxLines: 4,
+                    helperText: calc,
+                    helperMaxLines: 2,
                   ),
                 ),
-              ],
-            ],
-          ],
-          SecaoRotulo(l.frm2When),
-          Wrap(
-            spacing: 8,
-            children: [
-              ChoiceChip(
-                label: Text(l.frmToday),
-                selected: _sameDay(date, today),
-                showCheckmark: false,
-                onSelected: (_) => setState(() => date = today),
-              ),
-              ChoiceChip(
-                label: Text(l.frmYesterday),
-                selected: _sameDay(date, yesterday),
-                showCheckmark: false,
-                onSelected: (_) => setState(() => date = yesterday),
-              ),
-              ChoiceChip(
-                avatar: const Icon(Icons.event, size: 18),
-                label: Text(
-                  _sameDay(date, today) || _sameDay(date, yesterday)
-                      ? l.frmOtherDate
-                      : fmtDate(date),
+                if (original != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.edit_note,
+                          size: 18,
+                          color: cs.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            l.edvOriginalValue(fmtMoney(original)),
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                SecaoRotulo(l.frm2WhereWhat),
+                TextField(
+                  controller: desc,
+                  maxLength: 120,
+                  buildCounter: (
+                    _, {
+                    required currentLength,
+                    required isFocused,
+                    maxLength,
+                  }) => null,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (v) => _onDescChanged(s),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.notes),
+                    hintText: l.frmDescriptionOptional,
+                  ),
                 ),
-                selected: !_sameDay(date, today) && !_sameDay(date, yesterday),
-                showCheckmark: false,
-                onSelected: (_) => _pickDate(),
-              ),
-            ],
+                _descSuggestions(s, l),
+                if (!isTransfer) ...[
+                  SecaoRotulo(l.frmCategory),
+                  TileField(
+                    icon: Icons.sell_outlined,
+                    text: cat == null
+                        ? l.frmChooseCategory
+                        : '${cat.emoji.isEmpty ? '' : '${cat.emoji} '}${s.path(cat.id)}',
+                    isHint: cat == null,
+                    onTap: () => _pickCategory(s),
+                  ),
+                  if (catSuggested && cat != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 6, 4, 0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.auto_awesome, size: 14, color: cs.primary),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              l.frm2SuggestedByName,
+                              style: tt.bodySmall?.copyWith(color: cs.primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (mostUsed.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Wrap(
+                        key: const ValueKey('mais-usadas'),
+                        spacing: 8,
+                        runSpacing: 0,
+                        children: [
+                          for (final id in mostUsed)
+                            if (s.cat(id) != null)
+                              ChoiceChip(
+                                selected: id == categoryId,
+                                showCheckmark: false,
+                                avatar: s.cat(id)!.emoji.isEmpty
+                                    ? null
+                                    : Text(s.cat(id)!.emoji),
+                                label: Text(s.cat(id)!.name),
+                                onSelected: (_) => setState(() {
+                                  categoryId = id;
+                                  catManual = true;
+                                  catSuggested = false;
+                                }),
+                              ),
+                        ],
+                      ),
+                    ),
+                  if (type == _Type.income) ...[
+                    const SizedBox(height: 12),
+                    TileField(
+                      icon: Icons.undo,
+                      title: l.frmReversesExpense,
+                      text: () {
+                        if (reversesId == null) return l.frmNone;
+                        final x = _expenseById(s, reversesId);
+                        return x == null ? l.frmExpenseGone : s.displayName(x);
+                      }(),
+                      isHint: reversesId == null,
+                      onTap: () => _pickExpense(s),
+                    ),
+                    if (reversesId != null) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: reversedCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        onChanged: (_) => setState(() => error = null),
+                        decoration: InputDecoration(
+                          labelText: l.frmReversedAmount(baseSym),
+                          prefixText: '$baseSym  ',
+                          helperMaxLines: 3,
+                          helperText: _reversalHelp(s),
+                        ),
+                      ),
+                    ],
+                  ],
+                ],
+                SecaoRotulo(l.frm2When),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      label: Text(l.frmToday),
+                      selected: _sameDay(date, today),
+                      showCheckmark: false,
+                      onSelected: (_) => setState(() => date = today),
+                    ),
+                    ChoiceChip(
+                      label: Text(l.frmYesterday),
+                      selected: _sameDay(date, yesterday),
+                      showCheckmark: false,
+                      onSelected: (_) => setState(() => date = yesterday),
+                    ),
+                    ChoiceChip(
+                      avatar: const Icon(Icons.event, size: 18),
+                      label: Text(
+                        _sameDay(date, today) || _sameDay(date, yesterday)
+                            ? l.frmOtherDate
+                            : fmtDate(date),
+                      ),
+                      selected:
+                          !_sameDay(date, today) && !_sameDay(date, yesterday),
+                      showCheckmark: false,
+                      onSelected: (_) => _pickDate(),
+                    ),
+                  ],
+                ),
+                SecaoRotulo(l.frmAccount),
+                if (isTransfer && !isEdit)
+                  _transferAccounts(s, l)
+                else
+                  _accountChips(s, l),
+                if (isTransfer && isEdit) ...[
+                  const SizedBox(height: 12),
+                  SegmentedButton<bool>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: false,
+                        label: Text(l.frmOutgoing),
+                        icon: const Icon(Icons.north_east),
+                      ),
+                      ButtonSegment(
+                        value: true,
+                        label: Text(l.frmIncoming),
+                        icon: const Icon(Icons.south_west),
+                      ),
+                    ],
+                    selected: {transferIn},
+                    onSelectionChanged: (v) =>
+                        setState(() => transferIn = v.first),
+                  ),
+                ],
+                if (isTransfer)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      l.frmNotCountedNote,
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                _advanced(s, l),
+              ],
+            ),
           ),
-          SecaoRotulo(l.frmAccount),
-          if (isTransfer && !isEdit)
-            _transferAccounts(s, l)
-          else
-            _accountChips(s, l),
-          if (isTransfer && isEdit) ...[
-            const SizedBox(height: 12),
-            SegmentedButton<bool>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(
-                  value: false,
-                  label: Text(l.frmOutgoing),
-                  icon: const Icon(Icons.north_east),
-                ),
-                ButtonSegment(
-                  value: true,
-                  label: Text(l.frmIncoming),
-                  icon: const Icon(Icons.south_west),
-                ),
-              ],
-              selected: {transferIn},
-              onSelectionChanged: (v) => setState(() => transferIn = v.first),
-            ),
-          ],
-          if (isTransfer)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                l.frmNotCountedNote,
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-              ),
-            ),
-          const SizedBox(height: 20),
-          _advanced(s, l),
+          _bottomBar(s, l),
         ],
       ),
-      bottomNavigationBar: _bottomBar(s, l),
     );
   }
 }
