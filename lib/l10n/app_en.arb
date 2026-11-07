@@ -4083,6 +4083,104 @@
   "morAssetFallback": "Asset",
   "morNavMonth": "Month",
   "morNavPortfolio": "Portfolio",
+  "mrgMenu": "Merge into…",
+  "mrgMergeInto": "Merge \"{name}\" into…",
+  "@mrgMergeInto": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgCannot": "You can't merge into this category.",
+  "mrgTitle": "Merge \"{from}\" into \"{to}\"?",
+  "@mrgTitle": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgTransactions": "{count, plural, =0{No transactions change category.} =1{1 transaction moves to \"{to}\".} other{{count} transactions move to \"{to}\".}}",
+  "@mrgTransactions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgSubcategories": "{count, plural, =0{} =1{1 subcategory moves inside \"{to}\".} other{{count} subcategories move inside \"{to}\".}}",
+  "@mrgSubcategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgClashes": "{count, plural, =0{} =1{1 subcategory with the same name merges into the existing one.} other{{count} subcategories with the same name merge into the existing ones.}}",
+  "@mrgClashes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mrgAlsoMoves": "Rules, mandatory periods, planning, recurring items and goals move too.",
+  "mrgBothBudgets": "Both have a budget. Which one stays?",
+  "mrgBudgetSum": "Add them: {a} + {b} = {total}",
+  "@mrgBudgetSum": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgBudgetKeep": "Keep the one of \"{name}\": {amount}",
+  "@mrgBudgetKeep": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgWarning": "\"{from}\" will no longer exist and this can't be undone. Consider making a backup first.",
+  "@mrgWarning": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      }
+    }
+  },
+  "mrgConfirm": "Merge",
+  "mrgDone": "\"{from}\" merged into \"{to}\".",
+  "@mrgDone": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
   "selSelect": "Select",
   "selSelectAll": "Select all",
   "selDeselectAll": "Clear selection",

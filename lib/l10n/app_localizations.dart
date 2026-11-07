@@ -7964,6 +7964,90 @@ abstract class AppLocalizations {
   /// **'Carteira'**
   String get morNavPortfolio;
 
+  /// No description provided for @mrgMenu.
+  ///
+  /// In pt, this message translates to:
+  /// **'Unificar com…'**
+  String get mrgMenu;
+
+  /// No description provided for @mrgMergeInto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Unificar \"{name}\" em…'**
+  String mrgMergeInto(String name);
+
+  /// No description provided for @mrgCannot.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não é possível unificar nesta categoria.'**
+  String get mrgCannot;
+
+  /// No description provided for @mrgTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Unificar \"{from}\" em \"{to}\"?'**
+  String mrgTitle(String from, String to);
+
+  /// No description provided for @mrgTransactions.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{Nenhum movimento muda de categoria.} =1{1 movimento passa para \"{to}\".} other{{count} movimentos passam para \"{to}\".}}'**
+  String mrgTransactions(int count, String to);
+
+  /// No description provided for @mrgSubcategories.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{} =1{1 subcategoria passa para dentro de \"{to}\".} other{{count} subcategorias passam para dentro de \"{to}\".}}'**
+  String mrgSubcategories(int count, String to);
+
+  /// No description provided for @mrgClashes.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{} =1{1 subcategoria com o mesmo nome une-se à que já existe.} other{{count} subcategorias com o mesmo nome unem-se às que já existem.}}'**
+  String mrgClashes(int count);
+
+  /// No description provided for @mrgAlsoMoves.
+  ///
+  /// In pt, this message translates to:
+  /// **'As regras, os períodos obrigatórios, o planeamento, os recorrentes e os objetivos também passam.'**
+  String get mrgAlsoMoves;
+
+  /// No description provided for @mrgBothBudgets.
+  ///
+  /// In pt, this message translates to:
+  /// **'As duas têm orçamento. O que fica?'**
+  String get mrgBothBudgets;
+
+  /// No description provided for @mrgBudgetSum.
+  ///
+  /// In pt, this message translates to:
+  /// **'Somar: {a} + {b} = {total}'**
+  String mrgBudgetSum(String a, String b, String total);
+
+  /// No description provided for @mrgBudgetKeep.
+  ///
+  /// In pt, this message translates to:
+  /// **'Manter o de \"{name}\": {amount}'**
+  String mrgBudgetKeep(String name, String amount);
+
+  /// No description provided for @mrgWarning.
+  ///
+  /// In pt, this message translates to:
+  /// **'\"{from}\" deixa de existir e isto não se pode desfazer. Convém guardar uma cópia de segurança antes.'**
+  String mrgWarning(String from);
+
+  /// No description provided for @mrgConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Unificar'**
+  String get mrgConfirm;
+
+  /// No description provided for @mrgDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'\"{from}\" unificada em \"{to}\".'**
+  String mrgDone(String from, String to);
+
   /// No description provided for @selSelect.
   ///
   /// In pt, this message translates to:

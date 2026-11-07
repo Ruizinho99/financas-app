@@ -16,6 +16,32 @@ import '../util/format.dart';
 import '../util/month_cycle.dart';
 import '../util/receipts.dart';
 
+/// Porque é que duas categorias não se podem unificar.
+enum MergeError { self, intoDescendant }
+
+/// O que fazer aos orçamentos quando as duas categorias unificadas têm um.
+enum BudgetMerge { sum, keepTarget, keepSource }
+
+/// O que vai acontecer ao unificar (para mostrar ao utilizador antes de confirmar).
+class MergePreview {
+  final int transactions; // movimentos que mudam de categoria
+  final int
+  subcategories; // subcategorias da origem que passam para dentro do destino
+  final int
+  clashes; // subcategorias com o mesmo nome no destino, que também se unem
+  final bool bothBudgets; // as duas têm orçamento próprio: o utilizador escolhe
+  final int sourceBudget, targetBudget; // cêntimos por mês (no mês atual)
+  const MergePreview({
+    required this.transactions,
+    required this.subcategories,
+    required this.clashes,
+    required this.bothBudgets,
+    required this.sourceBudget,
+    required this.targetBudget,
+  });
+  int get sumBudget => sourceBudget + targetBudget;
+}
+
 /// Porque é que uma categoria não pode ser movida para um sítio.
 enum MoveError { self, intoDescendant, nameTaken }
 
@@ -490,6 +516,168 @@ class AppState extends ChangeNotifier {
       walk(r, 0);
     }
     return out.join('\n');
+  }
+
+  // ---------- Unificar categorias ----------
+  MergeError? canMergeCategories(int sourceId, int targetId) {
+    if (sourceId == targetId) return MergeError.self;
+    if (inSubtree(targetId, sourceId)) return MergeError.intoDescendant;
+    return null;
+  }
+
+  /// Pares (origem, destino) que se unem: a origem no destino e, a seguir, as subcategorias com o mesmo
+  /// nome nos dois lados (recursivamente). As restantes subcategorias da origem só mudam de mãe.
+  List<(Categoria, Categoria)> _mergePairs(Categoria from, Categoria to) {
+    final out = <(Categoria, Categoria)>[(from, to)];
+    final toKids = _kids[to.id] ?? const <Categoria>[];
+    for (final k in _kids[from.id] ?? const <Categoria>[]) {
+      final twin = toKids
+          .where(
+            (x) => x.name.trim().toLowerCase() == k.name.trim().toLowerCase(),
+          )
+          .firstOrNull;
+      if (twin != null) out.addAll(_mergePairs(k, twin));
+    }
+    return out;
+  }
+
+  MergePreview previewMerge(int sourceId, int targetId) {
+    final from = cat(sourceId)!, to = cat(targetId)!;
+    final pairs = _mergePairs(from, to);
+    final merging = {for (final p in pairs) p.$1.id};
+    final salary = salaryFor(currentMonthKey);
+    final txns = transactions
+        .where((t) => merging.contains(t.categoryId))
+        .length;
+    final toKids = _kids[to.id] ?? const <Categoria>[];
+    final fromKids = _kids[from.id] ?? const <Categoria>[];
+    final direct = fromKids
+        .where(
+          (k) => toKids.any(
+            (x) => x.name.trim().toLowerCase() == k.name.trim().toLowerCase(),
+          ),
+        )
+        .length;
+    return MergePreview(
+      transactions: txns,
+      subcategories: fromKids.length - direct,
+      clashes: pairs.length - 1,
+      bothBudgets: from.hasBudget && to.hasBudget,
+      sourceBudget: from.monthlyTarget(salary),
+      targetBudget: to.monthlyTarget(salary),
+    );
+  }
+
+  /// Orçamento e datas da categoria [to] depois de lhe juntar [from].
+  Categoria _mergedCategory(
+    Categoria from,
+    Categoria to,
+    BudgetMerge mode,
+    int salary,
+  ) {
+    var out = to;
+    if (from.hasBudget) {
+      if (!to.hasBudget || mode == BudgetMerge.keepSource) {
+        out = out.copyWith(
+          budgetType: from.budgetType,
+          budgetPercent: from.budgetPercent,
+          budgetValue: from.budgetValue,
+          hasBudget: true,
+        );
+      } else if (mode == BudgetMerge.sum) {
+        final bothPercent = from.budgetPercent && to.budgetPercent;
+        out = out.copyWith(
+          budgetPercent: bothPercent,
+          budgetValue: bothPercent
+              ? from.budgetValue + to.budgetValue
+              : from.monthlyTarget(salary) + to.monthlyTarget(salary),
+          hasBudget: true,
+        );
+      }
+    }
+    // a categoria unida existe durante todo o tempo das duas
+    String? widen(String? a, String? b, bool min) {
+      if (a == null || b == null) return null;
+      return (a.compareTo(b) <= 0) == min ? a : b;
+    }
+
+    final aFrom = widen(from.activeFrom, to.activeFrom, true);
+    final aTo = widen(from.activeTo, to.activeTo, false);
+    if (aFrom != to.activeFrom || aTo != to.activeTo) {
+      out = Categoria(
+        id: out.id,
+        name: out.name,
+        parentId: out.parentId,
+        isIncome: out.isIncome,
+        both: out.both,
+        isInvestment: out.isInvestment,
+        emoji: out.emoji,
+        description: out.description,
+        budgetType: out.budgetType,
+        budgetPercent: out.budgetPercent,
+        budgetValue: out.budgetValue,
+        hasBudget: out.hasBudget,
+        archived: out.archived,
+        activeFrom: aFrom,
+        activeTo: aTo,
+      );
+    }
+    return out;
+  }
+
+  /// Unifica [sourceId] em [targetId]: os movimentos (e regras, períodos obrigatórios, objetivos,
+  /// planeamento e recorrentes) passam para o destino; as subcategorias da origem passam para dentro dele
+  /// (as que têm o mesmo nome unem-se); a origem deixa de existir. Se as duas tiverem orçamento,
+  /// [budget] decide o que fica. Devolve o motivo se não for possível.
+  MergeError? mergeCategories(
+    int sourceId,
+    int targetId, {
+    BudgetMerge budget = BudgetMerge.sum,
+  }) {
+    final err = canMergeCategories(sourceId, targetId);
+    if (err != null) return err;
+    final from = cat(sourceId), to = cat(targetId);
+    if (from == null || to == null) return MergeError.self;
+    final salary = salaryFor(currentMonthKey);
+    db.inTransaction(() {
+      void mergePair(Categoria f, Categoria t, BudgetMerge mode) {
+        final tKids = _kids[t.id] ?? const <Categoria>[];
+        for (final k in _kids[f.id] ?? const <Categoria>[]) {
+          final twin = tKids
+              .where(
+                (x) =>
+                    x.name.trim().toLowerCase() == k.name.trim().toLowerCase(),
+              )
+              .firstOrNull;
+          if (twin != null) {
+            mergePair(k, twin, BudgetMerge.keepTarget);
+          } else {
+            for (final x in [k, ...descendantsOf(k.id)]) {
+              db.saveCategory(
+                x.copyWith(
+                  isIncome: t.isIncome,
+                  isInvestment: t.isInvestment,
+                  both: t.both,
+                ),
+                id: x.id,
+              );
+            }
+            db.setCategoryParent(k.id, t.id);
+          }
+        }
+        final merged = _mergedCategory(f, t, mode, salary);
+        db.saveCategory(merged, id: t.id);
+        db.repointCategory(f.id, t.id);
+        db.deleteCategory(f.id); // já sem filhas: foram movidas ou unidas
+      }
+
+      mergePair(from, to, budget);
+      if (salaryCategoryId == from.id) {
+        db.putSetting('salary_category_id', '${to.id}');
+      }
+    });
+    reload();
+    return null;
   }
 
   /// "Avó › Mãe › Filha" – permite distinguir categorias com o mesmo nome.

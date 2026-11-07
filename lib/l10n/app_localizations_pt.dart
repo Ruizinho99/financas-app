@@ -5273,6 +5273,88 @@ class AppLocalizationsPt extends AppLocalizations {
   String get morNavPortfolio => 'Carteira';
 
   @override
+  String get mrgMenu => 'Unificar com…';
+
+  @override
+  String mrgMergeInto(String name) {
+    return 'Unificar \"$name\" em…';
+  }
+
+  @override
+  String get mrgCannot => 'Não é possível unificar nesta categoria.';
+
+  @override
+  String mrgTitle(String from, String to) {
+    return 'Unificar \"$from\" em \"$to\"?';
+  }
+
+  @override
+  String mrgTransactions(int count, String to) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count movimentos passam para \"$to\".',
+      one: '1 movimento passa para \"$to\".',
+      zero: 'Nenhum movimento muda de categoria.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mrgSubcategories(int count, String to) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategorias passam para dentro de \"$to\".',
+      one: '1 subcategoria passa para dentro de \"$to\".',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mrgClashes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategorias com o mesmo nome unem-se às que já existem.',
+      one: '1 subcategoria com o mesmo nome une-se à que já existe.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mrgAlsoMoves =>
+      'As regras, os períodos obrigatórios, o planeamento, os recorrentes e os objetivos também passam.';
+
+  @override
+  String get mrgBothBudgets => 'As duas têm orçamento. O que fica?';
+
+  @override
+  String mrgBudgetSum(String a, String b, String total) {
+    return 'Somar: $a + $b = $total';
+  }
+
+  @override
+  String mrgBudgetKeep(String name, String amount) {
+    return 'Manter o de \"$name\": $amount';
+  }
+
+  @override
+  String mrgWarning(String from) {
+    return '\"$from\" deixa de existir e isto não se pode desfazer. Convém guardar uma cópia de segurança antes.';
+  }
+
+  @override
+  String get mrgConfirm => 'Unificar';
+
+  @override
+  String mrgDone(String from, String to) {
+    return '\"$from\" unificada em \"$to\".';
+  }
+
+  @override
   String get selSelect => 'Selecionar';
 
   @override
