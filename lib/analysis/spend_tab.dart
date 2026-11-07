@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart';
@@ -442,13 +443,20 @@ class _SliceDetail extends StatelessWidget {
     // de onde vem: subcategorias (se for uma categoria) ou meses
     final bySub = <String, int>{};
     for (final e in slice.items) {
+      // agrupa pela subcategoria de topo da categoria da fatia (o que está mais fundo conta nela)
+      final chain = e.cat == null
+          ? const <Categoria>[]
+          : [e.cat!, ...s.ancestorsOf(e.cat!)];
+      final top = chain
+          .where((x) => x.parentId == slice.categoryId)
+          .firstOrNull;
       final label = e.cat == null
           ? l.uncLabel
-          : (e.cat!.parentId == null
-                ? (s.childrenOf(e.cat!.id).isEmpty
+          : (top != null
+                ? top.name
+                : (s.childrenOf(e.cat!.id).isEmpty
                       ? e.cat!.name
-                      : l.anGeneralCat(e.cat!.name))
-                : e.cat!.name);
+                      : l.anGeneralCat(e.cat!.name)));
       bySub[label] = (bySub[label] ?? 0) + e.amount;
     }
     final parts = bySub.entries.toList()

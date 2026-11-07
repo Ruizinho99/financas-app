@@ -2762,6 +2762,108 @@ abstract class AppLocalizations {
   /// **'Dia {day}'**
   String dayOfMonthItem(int day);
 
+  /// No description provided for @ctbPickParentTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher categoria-mãe'**
+  String get ctbPickParentTitle;
+
+  /// No description provided for @ctbMoveTo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover “{name}” para…'**
+  String ctbMoveTo(String name);
+
+  /// No description provided for @ctbSearch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pesquisar categoria'**
+  String get ctbSearch;
+
+  /// No description provided for @ctbNoMatches.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma categoria encontrada'**
+  String get ctbNoMatches;
+
+  /// No description provided for @ctbMoveMenu.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover para…'**
+  String get ctbMoveMenu;
+
+  /// No description provided for @ctbMoveButton.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover'**
+  String get ctbMoveButton;
+
+  /// No description provided for @ctbMainLevel.
+  ///
+  /// In pt, this message translates to:
+  /// **'o nível principal'**
+  String get ctbMainLevel;
+
+  /// No description provided for @ctbMoveConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{“{name}” passa para dentro de “{dest}”.} =1{“{name}” e a sua subcategoria passam para dentro de “{dest}”.} other{“{name}” e as suas {count} subcategorias passam para dentro de “{dest}”.}}'**
+  String ctbMoveConfirm(String name, int count, String dest);
+
+  /// No description provided for @ctbMoveConfirmTop.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{“{name}” passa a ser uma categoria principal.} =1{“{name}” e a sua subcategoria passam para o nível principal.} other{“{name}” e as suas {count} subcategorias passam para o nível principal.}}'**
+  String ctbMoveConfirmTop(String name, int count);
+
+  /// No description provided for @ctbMoved.
+  ///
+  /// In pt, this message translates to:
+  /// **'“{name}” foi movida.'**
+  String ctbMoved(String name);
+
+  /// No description provided for @ctbMoveErrSelf.
+  ///
+  /// In pt, this message translates to:
+  /// **'Uma categoria não pode ficar dentro de si mesma.'**
+  String get ctbMoveErrSelf;
+
+  /// No description provided for @ctbMoveErrDescendant.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não dá para mover uma categoria para dentro de uma das suas próprias subcategorias.'**
+  String get ctbMoveErrDescendant;
+
+  /// No description provided for @ctbMoveErrNameTaken.
+  ///
+  /// In pt, this message translates to:
+  /// **'Já existe “{name}” em {dest}. Muda o nome antes de mover.'**
+  String ctbMoveErrNameTaken(String name, String dest);
+
+  /// No description provided for @ctbSubCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} subcategorias} =1{1 subcategoria} other{{count} subcategorias}}'**
+  String ctbSubCount(int count);
+
+  /// No description provided for @ctbExpand.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mostrar subcategorias'**
+  String get ctbExpand;
+
+  /// No description provided for @ctbCollapse.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esconder subcategorias'**
+  String get ctbCollapse;
+
+  /// No description provided for @ctbDeleteQuestion.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar “{name}”? {subs, plural, =0{} =1{Apaga também 1 subcategoria. } other{Apaga também as {subs} subcategorias. }}{txns, plural, =0{Não há movimentos nesta categoria.} =1{O movimento fica sem categoria.} other{Os {txns} movimentos ficam sem categoria.}}'**
+  String ctbDeleteQuestion(String name, int subs, int txns);
+
   /// No description provided for @edvFixAmount.
   ///
   /// In pt, this message translates to:
@@ -4835,7 +4937,7 @@ abstract class AppLocalizations {
   /// No description provided for @impfixMismatchTitle.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}'**
+  /// **'{count, plural, =0{{count} movimentos não batem certo com o saldo} =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}'**
   String impfixMismatchTitle(int count);
 
   /// No description provided for @impfixMismatchHelp.
@@ -7877,7 +7979,7 @@ abstract class AppLocalizations {
   /// No description provided for @uncBudgetSubtitle.
   ///
   /// In pt, this message translates to:
-  /// **'{count, plural, =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares'**
+  /// **'{count, plural, =0{{count} movimentos sem categoria} =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares'**
   String uncBudgetSubtitle(int count);
 }
 

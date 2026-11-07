@@ -12,6 +12,7 @@ import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
+import '../widgets/category_editor.dart';
 import '../widgets/common.dart';
 import 'accounts_screen.dart';
 import 'appearance_screen.dart';
@@ -96,13 +97,13 @@ class MoreScreen extends StatelessWidget {
           if (selfUpdateSupported)
             ListTile(
               leading: const Icon(Icons.system_update_alt),
-            title: Text(l.morUpdatesTitle),
-            subtitle: Text(l.morUpdatesSubtitle),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const UpdateScreen()),
+              title: Text(l.morUpdatesTitle),
+              subtitle: Text(l.morUpdatesSubtitle),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UpdateScreen()),
+              ),
             ),
-          ),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
             title: Text(l.appearanceTitle),
@@ -198,7 +199,9 @@ class MoreScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.backup_outlined),
             title: Text(l.morBackupTitle),
-            subtitle: Text(isIosPlatform ? l.iosBackupSubtitle : l.morBackupSubtitle),
+            subtitle: Text(
+              isIosPlatform ? l.iosBackupSubtitle : l.morBackupSubtitle,
+            ),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BackupScreen()),
@@ -277,12 +280,42 @@ class ImportsScreen extends StatelessWidget {
   }
 }
 
-class CategoriesScreen extends StatelessWidget {
+/// Árvore de categorias com profundidade ilimitada: cada ramo expande/recolhe.
+class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> {
+  // ramos recolhidos (estado local); por omissão a árvore aparece toda aberta
+  final collapsed = <int>{};
+
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final l = AppLocalizations.of(context)!;
+    // filhas diretas, incluindo as arquivadas (aparecem esbatidas)
+    final kids = <int?, List<Categoria>>{};
+    for (final c in s.categories) {
+      (kids[c.parentId] ??= []).add(c);
+    }
+    final tiles = <Widget>[];
+    final seen = <int>{};
+    void walk(Categoria c, int depth) {
+      if (!seen.add(c.id)) return;
+      final sub = kids[c.id] ?? const <Categoria>[];
+      tiles.add(_tile(context, s, c, depth, sub.length));
+      if (!collapsed.contains(c.id)) {
+        for (final k in sub) {
+          walk(k, depth + 1);
+        }
+      }
+    }
+
+    for (final r in kids[null] ?? const <Categoria>[]) {
+      walk(r, 0);
+    }
     return Scaffold(
       appBar: AppBar(title: Text(l.morCategoriesScreenTitle)),
       floatingActionButton: FloatingActionButton.extended(
@@ -292,18 +325,18 @@ class CategoriesScreen extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 90),
-        children: [
-          for (final r in s.categories.where((c) => c.parentId == null)) ...[
-            _tile(context, s, r, 0),
-            for (final k in s.categories.where((c) => c.parentId == r.id))
-              _tile(context, s, k, 1),
-          ],
-        ],
+        children: tiles,
       ),
     );
   }
 
-  Widget _tile(BuildContext context, AppState s, Categoria c, int depth) {
+  Widget _tile(
+    BuildContext context,
+    AppState s,
+    Categoria c,
+    int depth,
+    int kidCount,
+  ) {
     final l = AppLocalizations.of(context)!;
     final count = s.transactions.where((t) => t.categoryId == c.id).length;
     final now = s.currentMonthKey;
@@ -313,11 +346,38 @@ class CategoriesScreen extends StatelessWidget {
     final dates = !c.hasDates
         ? null
         : '${c.activeFrom == null ? l.morFromStart : l.morFromMonth(m(c.activeFrom!))} ${c.activeTo == null ? l.morOpenEnded : l.morToMonth(m(c.activeTo!))}${ended ? ' · ${l.morEnded}' : (future ? ' · ${l.morFuture}' : '')}';
+    final isCollapsed = collapsed.contains(c.id);
+    // a indentação para de crescer a partir de certa profundidade, para não esmagar o nome
+    final indent = (depth > 6 ? 6 : depth) * 20.0;
     return Opacity(
+      key: ValueKey('cat-tile-${c.id}'),
       opacity: (ended || c.archived) ? 0.55 : 1,
       child: ListTile(
-        contentPadding: EdgeInsets.only(left: 16.0 + depth * 32, right: 8),
-        leading: CatBadge(c, size: depth == 0 ? 24 : 20),
+        contentPadding: EdgeInsets.only(left: 8.0 + indent, right: 4),
+        // seta para expandir/recolher (espaço reservado nas folhas, para alinhar)
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 32,
+              child: kidCount == 0
+                  ? null
+                  : IconButton(
+                      key: ValueKey('cat-toggle-${c.id}'),
+                      padding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      tooltip: isCollapsed ? l.ctbExpand : l.ctbCollapse,
+                      icon: Icon(
+                        isCollapsed ? Icons.chevron_right : Icons.expand_more,
+                      ),
+                      onPressed: () => setState(() {
+                        if (!collapsed.remove(c.id)) collapsed.add(c.id);
+                      }),
+                    ),
+            ),
+            CatBadge(c, size: depth == 0 ? 24 : 20),
+          ],
+        ),
         title: Text(
           c.name,
           style: TextStyle(
@@ -327,6 +387,7 @@ class CategoriesScreen extends StatelessWidget {
         ),
         subtitle: Text(
           [
+            if (kidCount > 0) l.ctbSubCount(kidCount),
             if (c.isInvestment) l.morInvestmentKind,
             if (dates != null) dates,
             l.morTxnCount(count),
@@ -337,28 +398,39 @@ class CategoriesScreen extends StatelessWidget {
         ),
         onTap: () => showCategoryEditor(context, edit: c),
         trailing: PopupMenuButton<String>(
+          key: ValueKey('cat-menu-${c.id}'),
           onSelected: (v) async {
-            if (v == 'sub') showCategoryEditor(context, parentId: c.id);
+            if (v == 'sub') {
+              await showCategoryEditor(context, parentId: c.id);
+              // a nova filha fica à vista
+              if (mounted) setState(() => collapsed.remove(c.id));
+            }
+            if (v == 'move') await moveCategoryFlow(context, s, c);
+            if (v == 'edit') showCategoryEditor(context, edit: c);
             if (v == 'budget') showBudgetEditor(context, c);
-            if (v == 'archive')
+            if (v == 'archive') {
               s.updateCategory(c.copyWith(archived: !c.archived));
+            }
             if (v == 'dup') {
               final id = s.duplicateForNextYear(c);
-              if (context.mounted)
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(l.morCreatedCategory('${s.cat(id)?.name}')),
                   ),
                 );
+              }
             }
             if (v == 'delete') {
+              // apagar leva a subárvore toda; os movimentos de todas ficam sem categoria
+              final sub = s.subtreeIds(c.id);
+              final subs = sub.length - 1;
+              final txns = s.transactions
+                  .where((t) => sub.contains(t.categoryId))
+                  .length;
               if (await confirm(
                     context,
-                    l.morDeleteCategoryQuestion(
-                      c.name,
-                      count,
-                      depth == 0 ? l.morSubcategoriesDeleted : '',
-                    ),
+                    l.ctbDeleteQuestion(c.name, subs, txns),
                   ) &&
                   context.mounted) {
                 s.deleteCategory(c.id);
@@ -366,11 +438,11 @@ class CategoriesScreen extends StatelessWidget {
             }
           },
           itemBuilder: (_) => [
-            if (depth == 0)
-              PopupMenuItem(value: 'sub', child: Text(l.morNewSubcategory)),
+            PopupMenuItem(value: 'sub', child: Text(l.morNewSubcategory)),
+            PopupMenuItem(value: 'move', child: Text(l.ctbMoveMenu)),
+            PopupMenuItem(value: 'edit', child: Text(l.bpEdit)),
             PopupMenuItem(value: 'budget', child: Text(l.budget)),
-            if (c.hasDates)
-              PopupMenuItem(value: 'dup', child: Text(l.morDuplicateNextYear)),
+            PopupMenuItem(value: 'dup', child: Text(l.morDuplicateNextYear)),
             PopupMenuItem(
               value: 'archive',
               child: Text(c.archived ? l.morReactivate : l.morArchive),

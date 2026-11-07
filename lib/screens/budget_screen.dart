@@ -7,6 +7,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../invest/plan_widgets.dart';
+import '../widgets/category_editor.dart';
 import '../widgets/common.dart';
 import 'classify_screen.dart';
 
@@ -744,10 +745,14 @@ class _CategorySheet extends StatelessWidget {
     final spent = row?.spent ?? 0;
     final target = row?.target ?? 0;
     final type = row?.type ?? c.budgetType;
-    final kids = s
-        .childrenOf(c.id)
-        .where((k) => s.isCategoryActive(k, monthKey) || (own[k.id] ?? 0) != 0)
+    // gasto agregado (rollup) de uma categoria: ela e tudo o que tem dentro
+    int agg(Categoria k) => s.rollup(k, own);
+    // filhas diretas visíveis neste mês (ativas ou com gasto), a qualquer profundidade
+    List<Categoria> visibleKids(Categoria p) => s
+        .childrenOf(p.id)
+        .where((k) => s.isCategoryActive(k, monthKey) || agg(k) != 0)
         .toList();
+    final kids = visibleKids(c);
     final hist = history(s, c, monthKey);
     final hist0 = hist.map((e) => e.$2).fold(0, (a, b) => a > b ? a : b);
     final scale = [hist0, target, 1].reduce((a, b) => a > b ? a : b);
@@ -756,8 +761,8 @@ class _CategorySheet extends StatelessWidget {
       int.parse(monthKey.substring(5, 7)),
     );
 
-    Widget kidRow(Categoria k) {
-      final ks = (own[k.id] ?? 0) < 0 ? 0 : (own[k.id] ?? 0);
+    Widget kidRow(Categoria k, int depth) {
+      final ks = agg(k) < 0 ? 0 : agg(k);
       final kt = k.monthlyTarget(salary);
       final kr = CatBudget(
         k,
@@ -767,9 +772,15 @@ class _CategorySheet extends StatelessWidget {
         stateOf(k.budgetType, ks, kt),
       );
       return InkWell(
+        key: ValueKey('kid-row-${k.id}'),
         onTap: () => showBudgetEditor(context, k),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          // cada nível desce um degrau; a indentação para de crescer ao fim de 5
+          padding: EdgeInsets.only(
+            left: (depth > 5 ? 5 : depth) * 14.0,
+            top: 6,
+            bottom: 6,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -876,7 +887,21 @@ class _CategorySheet extends StatelessWidget {
                 l.budSubcategories,
                 style: tt.titleSmall?.copyWith(color: cs.onSurfaceVariant),
               ),
-              for (final k in kids) kidRow(k),
+              // árvore recursiva: cada filha com o seu valor agregado, indentada pelo nível
+              ...() {
+                final out = <Widget>[];
+                void add(Categoria k, int depth) {
+                  out.add(kidRow(k, depth));
+                  for (final g in visibleKids(k)) {
+                    add(g, depth + 1);
+                  }
+                }
+
+                for (final k in kids) {
+                  add(k, 0);
+                }
+                return out;
+              }(),
             ],
             const SizedBox(height: 16),
             Row(

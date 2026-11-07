@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
+import '../widgets/category_tree.dart';
 import 'analytics.dart';
 
 String _typeLabel(AppLocalizations l, SpendType t) => switch (t) {
@@ -34,7 +35,7 @@ class FilterBar extends StatelessWidget {
         InputChip(
           label: Text(
             f.categoryIds.length == 1
-                ? (s.cat(f.categoryIds.first)?.name ?? l.anCategory)
+                ? (s.cat(f.categoryIds.first) == null ? l.anCategory : s.path(f.categoryIds.first))
                 : l.anCategoriesCount(f.categoryIds.length),
           ),
           onDeleted: () => onChanged(f.copyWith(categoryIds: {})),
@@ -167,7 +168,6 @@ class _FilterSheetState extends State<_FilterSheet> {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final l = AppLocalizations.of(context)!;
-    final roots = s.roots.toList();
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.9,
@@ -276,66 +276,11 @@ class _FilterSheetState extends State<_FilterSheet> {
                   ),
                 ],
                 _label(l.anCategories),
-                if (roots.isEmpty) Text(l.anNoCategoriesYet),
-                for (final r in roots)
-                  Builder(
-                    builder: (_) {
-                      final kids = s.childrenOf(r.id);
-                      final rootOn = cats.contains(r.id);
-                      final anyKid = kids.any((k) => cats.contains(k.id));
-                      return Theme(
-                        data: Theme.of(context)
-                            .copyWith(dividerColor: Colors.transparent),
-                        child: ExpansionTile(
-                          tilePadding: EdgeInsets.zero,
-                          childrenPadding: const EdgeInsets.only(left: 32),
-                          initiallyExpanded: anyKid,
-                          shape: const Border(),
-                          collapsedShape: const Border(),
-                          leading: Checkbox(
-                            value: rootOn ? true : (anyKid ? null : false),
-                            tristate: true,
-                            onChanged: (_) => setState(() {
-                              if (rootOn || anyKid) {
-                                cats.remove(r.id);
-                                for (final k in kids) {
-                                  cats.remove(k.id);
-                                }
-                              } else {
-                                cats.add(r.id);
-                                for (final k in kids) {
-                                  cats.remove(k.id);
-                                }
-                              }
-                            }),
-                          ),
-                          title: Text(
-                            '${r.emoji.isEmpty ? '🏷️' : r.emoji}  ${r.name}',
-                          ),
-                          children: [
-                            for (final k in kids)
-                              CheckboxListTile(
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                                value: rootOn || cats.contains(k.id),
-                                onChanged: rootOn
-                                    ? null
-                                    : (v) => setState(
-                                        () => v!
-                                            ? cats.add(k.id)
-                                            : cats.remove(k.id),
-                                      ),
-                                title: Text(
-                                  '${k.emoji.isEmpty ? '' : '${k.emoji}  '}${k.name}',
-                                ),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                if (s.roots.isEmpty) Text(l.anNoCategoriesYet),
+                CategoryTreeChecks(
+                  selected: cats,
+                  onChanged: (v) => setState(() => cats = {...v}),
+                ),
               ],
             ),
           ),

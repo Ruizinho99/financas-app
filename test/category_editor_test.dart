@@ -208,7 +208,7 @@ void main() {
   });
 
   testWidgets(
-    'modal: editar mostra as subcategorias existentes e bloqueia a categoria-mãe',
+    'modal: editar mostra as subcategorias existentes e deixa mover a categoria (sem limite de níveis)',
     (tester) async {
       tester.view.physicalSize = const Size(1080, 1920);
       tester.view.devicePixelRatio = 3;
@@ -224,10 +224,12 @@ void main() {
       expect(find.text('Editar categoria'), findsOneWidget);
       expect(find.text('Água'), findsOneWidget);
       expect(find.text('Luz'), findsOneWidget);
+      // já não há bloqueio: uma categoria com subcategorias pode ir para dentro de outra
       expect(
         find.text('Tem subcategorias, por isso não pode ser uma subcategoria.'),
-        findsOneWidget,
+        findsNothing,
       );
+      expect(find.byKey(const ValueKey('parent-field')), findsOneWidget);
     },
   );
 

@@ -493,6 +493,12 @@ class Db {
   void deleteMandatoryRange(int id) =>
       _db.execute('DELETE FROM mandatory_ranges WHERE id=?', [id]);
 
+  /// Muda a categoria-mãe (nulo = categoria principal). O apagar em cascata e os movimentos não mudam.
+  void setCategoryParent(int id, int? parentId) => _db.execute(
+    'UPDATE categories SET parent_id=? WHERE id=?',
+    [parentId, id],
+  );
+
   void deleteCategory(int id) =>
       _db.execute('DELETE FROM categories WHERE id=?', [id]);
 
