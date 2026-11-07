@@ -6,6 +6,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../screens/txn_form_screen.dart';
 import '../util/format.dart';
+import 'category_icons.dart';
 import 'category_picker.dart';
 import 'form_kit.dart';
 
@@ -39,10 +40,14 @@ class CatBadge extends StatelessWidget {
     return SizedBox(
       width: size * 1.3,
       child: Center(
-        child: Text(
-          e.isEmpty ? '🏷️' : e,
-          style: TextStyle(fontSize: size * 0.9),
-        ),
+        // o emoji escolhido pelo utilizador manda; sem emoji, um ícone de linha pelo nome da categoria
+        child: e.isEmpty
+            ? Icon(
+                categoryIconFor(category!.name),
+                size: size,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              )
+            : Text(e, style: TextStyle(fontSize: size * 0.9)),
       ),
     );
   }
@@ -125,6 +130,11 @@ class CategorySelector extends StatelessWidget {
   /// Intervalo de datas dos movimentos: só mostra categorias que existiam nessa altura
   /// (por omissão, as que existem hoje).
   final DateTimeRange? when;
+
+  /// Categoria sugerida (ex.: pelo nome do movimento) e descrição de onde tirar a sugestão:
+  /// passam para o seletor, que as mostra no topo.
+  final int? suggestedId;
+  final String? description;
   const CategorySelector({
     super.key,
     required this.value,
@@ -133,6 +143,8 @@ class CategorySelector extends StatelessWidget {
     this.form = false,
     this.income,
     this.when,
+    this.suggestedId,
+    this.description,
   });
 
   @override
@@ -148,6 +160,8 @@ class CategorySelector extends StatelessWidget {
         selected: value,
         income: income,
         when: when,
+        suggestedId: suggestedId,
+        description: description,
       );
       if (id == null) return;
       onChanged(id == -1 ? null : id);
@@ -159,19 +173,34 @@ class CategorySelector extends StatelessWidget {
       child: InputDecorator(
         isEmpty: text.isEmpty && !form,
         decoration: form
-            ? const InputDecoration(prefixIcon: Icon(Icons.sell_outlined))
+            ? InputDecoration(
+                prefixIcon: s.cat(value) == null
+                    ? const Icon(Icons.sell_outlined)
+                    : CatBadge(s.cat(value), size: 22),
+              )
             : InputDecoration(
                 labelText: l.frmCategory,
                 isDense: compact,
                 suffixIcon: const Icon(Icons.arrow_drop_down),
               ),
-        child: Text(
-          text.isEmpty && form ? l.frmSelectCategory : text,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: text.isEmpty && form
-              ? TextStyle(color: cs.onSurfaceVariant)
-              : null,
+        child: Row(
+          children: [
+            // fora do formato "form" o ícone vai dentro do texto; no "form" fica no prefixo
+            if (!form && text.isNotEmpty) ...[
+              CatBadge(s.cat(value), size: 18),
+              const SizedBox(width: 8),
+            ],
+            Expanded(
+              child: Text(
+                text.isEmpty && form ? l.frmSelectCategory : text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: text.isEmpty && form
+                    ? TextStyle(color: cs.onSurfaceVariant)
+                    : null,
+              ),
+            ),
+          ],
         ),
       ),
     );

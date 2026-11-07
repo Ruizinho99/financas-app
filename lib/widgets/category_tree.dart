@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models.dart';
 import '../state/app_state.dart';
+import 'common.dart';
 
 /// Árvore expansível de categorias com caixas, a qualquer profundidade.
 /// Escolher uma categoria inclui tudo o que está dentro dela (as descendentes ficam
@@ -21,9 +22,7 @@ class CategoryTreeChecks extends StatelessWidget {
     final s = context.watch<AppState>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final r in s.roots) _node(context, s, r, covered: false),
-      ],
+      children: [for (final r in s.roots) _node(context, s, r, covered: false)],
     );
   }
 
@@ -37,7 +36,13 @@ class CategoryTreeChecks extends StatelessWidget {
     final own = selected.contains(c.id);
     final on = covered || own;
     final partial = !on && kids.any((k) => _touched(s, k));
-    final title = Text('${c.emoji.isEmpty ? '🏷️' : c.emoji}  ${c.name}');
+    final title = Row(
+      children: [
+        CatBadge(c, size: 18),
+        const SizedBox(width: 8),
+        Expanded(child: Text(c.name)),
+      ],
+    );
 
     void toggle() {
       final next = {...selected};
@@ -81,15 +86,12 @@ class CategoryTreeChecks extends StatelessWidget {
         collapsedShape: const Border(),
         leading: box,
         title: title,
-        children: [
-          for (final k in kids) _node(context, s, k, covered: on),
-        ],
+        children: [for (final k in kids) _node(context, s, k, covered: on)],
       ),
     );
   }
 
   /// Esta categoria ou alguma das suas descendentes está escolhida.
   bool _touched(AppState s, Categoria c) =>
-      selected.contains(c.id) ||
-      s.childrenOf(c.id).any((k) => _touched(s, k));
+      selected.contains(c.id) || s.childrenOf(c.id).any((k) => _touched(s, k));
 }

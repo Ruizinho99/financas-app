@@ -409,10 +409,10 @@ void main() {
         );
         await tester.tap(find.text('d'));
         await tester.pumpAndSettle();
-        expect(find.widgetWithText(ChoiceChip, 'OLX'), findsOneWidget);
-        expect(find.widgetWithText(ChoiceChip, 'Lazer'), findsOneWidget);
+        expect(find.text('OLX'), findsOneWidget);
+        expect(find.text('Lazer'), findsOneWidget);
         // as categorias antigas só de receita também servem para despesas
-        expect(find.widgetWithText(ChoiceChip, 'Salário'), findsOneWidget);
+        expect(find.text('Salário'), findsOneWidget);
         Navigator.of(tester.element(find.byType(Scaffold).first)).pop();
       },
     );

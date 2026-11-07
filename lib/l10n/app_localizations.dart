@@ -2906,6 +2906,132 @@ abstract class AppLocalizations {
   /// **'Este valor fica abaixo da parte que esta receita anula ({valor}). Reduz primeiro o valor anulado.'**
   String edvBelowOwnReversal(String valor);
 
+  /// No description provided for @frm2WhereWhat.
+  ///
+  /// In pt, this message translates to:
+  /// **'Onde / o quê'**
+  String get frm2WhereWhat;
+
+  /// No description provided for @frm2When.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quando'**
+  String get frm2When;
+
+  /// No description provided for @frm2Advanced.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avançado'**
+  String get frm2Advanced;
+
+  /// No description provided for @frm2AdvancedHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nota, recibo, ligar a outro movimento…'**
+  String get frm2AdvancedHint;
+
+  /// No description provided for @frm2SuggestedByName.
+  ///
+  /// In pt, this message translates to:
+  /// **'sugerida pelo nome · toca para mudar'**
+  String get frm2SuggestedByName;
+
+  /// No description provided for @frm2NoAccount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem conta'**
+  String get frm2NoAccount;
+
+  /// No description provided for @frm2SaveAndNew.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardar e novo'**
+  String get frm2SaveAndNew;
+
+  /// No description provided for @frm2Saved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardado'**
+  String get frm2Saved;
+
+  /// No description provided for @frm2ImportedFrom.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importado de {file}'**
+  String frm2ImportedFrom(String file);
+
+  /// No description provided for @frm2ImportedStatement.
+  ///
+  /// In pt, this message translates to:
+  /// **'Importado de extrato'**
+  String get frm2ImportedStatement;
+
+  /// No description provided for @frm2OriginalDesc.
+  ///
+  /// In pt, this message translates to:
+  /// **'descrição original: {desc}'**
+  String frm2OriginalDesc(String desc);
+
+  /// No description provided for @frm2BalanceAfter.
+  ///
+  /// In pt, this message translates to:
+  /// **'saldo {amount}'**
+  String frm2BalanceAfter(String amount);
+
+  /// No description provided for @frm2SwapAccounts.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trocar as contas'**
+  String get frm2SwapAccounts;
+
+  /// No description provided for @frm2Note.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nota'**
+  String get frm2Note;
+
+  /// No description provided for @frm2NoteHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acrescenta uma nota'**
+  String get frm2NoteHint;
+
+  /// No description provided for @frm2GoalsHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Divide este valor por objetivos'**
+  String get frm2GoalsHint;
+
+  /// No description provided for @frm2GoalsAllocated.
+  ///
+  /// In pt, this message translates to:
+  /// **'{amount} em objetivos'**
+  String frm2GoalsAllocated(String amount);
+
+  /// No description provided for @frm2SuggestionTimes.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} vezes} =1{1 vez} other{{count} vezes}}'**
+  String frm2SuggestionTimes(int count);
+
+  /// No description provided for @frm2CalcResult.
+  ///
+  /// In pt, this message translates to:
+  /// **'= {amount}'**
+  String frm2CalcResult(String amount);
+
+  /// No description provided for @frm2FromAccount.
+  ///
+  /// In pt, this message translates to:
+  /// **'De'**
+  String get frm2FromAccount;
+
+  /// No description provided for @frm2ToAccount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para'**
+  String get frm2ToAccount;
+
   /// No description provided for @frmReceipt.
   ///
   /// In pt, this message translates to:
@@ -8047,6 +8173,60 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'\"{from}\" unificada em \"{to}\".'**
   String mrgDone(String from, String to);
+
+  /// No description provided for @pksAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todas'**
+  String get pksAll;
+
+  /// No description provided for @pksSuggested.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sugerida pelo nome'**
+  String get pksSuggested;
+
+  /// No description provided for @pksMostUsed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mais usadas'**
+  String get pksMostUsed;
+
+  /// No description provided for @pksSearchIn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pesquisar em {name}'**
+  String pksSearchIn(String name);
+
+  /// No description provided for @pksOnlyThis.
+  ///
+  /// In pt, this message translates to:
+  /// **'Só {name} — escolher esta categoria'**
+  String pksOnlyThis(String name);
+
+  /// No description provided for @pksNewSub.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova subcategoria em {name}'**
+  String pksNewSub(String name);
+
+  /// No description provided for @pksResults.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} resultados, em todos os níveis} =1{1 resultado, em todos os níveis} other{{count} resultados, em todos os níveis}}'**
+  String pksResults(int count);
+
+  /// No description provided for @pksCreateNamed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar \"{text}\"…'**
+  String pksCreateNamed(String text);
+
+  /// No description provided for @pksOpen.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir {name}'**
+  String pksOpen(String name);
 
   /// No description provided for @selSelect.
   ///

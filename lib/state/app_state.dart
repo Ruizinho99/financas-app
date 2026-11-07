@@ -16,6 +16,20 @@ import '../util/format.dart';
 import '../util/month_cycle.dart';
 import '../util/receipts.dart';
 
+/// Sugestão ao escrever a descrição de um movimento.
+class DescSuggestion {
+  final String text;
+  final int? categoryId; // a categoria mais usada com este texto
+  final int count; // quantas vezes já apareceu
+  final int? accountId; // a conta do mais recente
+  const DescSuggestion({
+    required this.text,
+    required this.categoryId,
+    required this.count,
+    required this.accountId,
+  });
+}
+
 /// Porque é que duas categorias não se podem unificar.
 enum MergeError { self, intoDescendant }
 
@@ -516,6 +530,126 @@ class AppState extends ChangeNotifier {
       walk(r, 0);
     }
     return out.join('\n');
+  }
+
+  // ---------- Sugestões para o formulário de movimento ----------
+  static String _fold(String s) {
+    const from = 'àáâãäåçèéêëìíîïñòóôõöùúûüýÿ';
+    const to = 'aaaaaaceeeeiiiinooooouuuuyy';
+    final b = StringBuffer();
+    for (final c in s.toLowerCase().trim().split('')) {
+      final i = from.indexOf(c);
+      b.write(i >= 0 ? to[i] : c);
+    }
+    return b.toString();
+  }
+
+  /// Movimentos anteriores com este texto, para sugerir ao escrever "Onde / o quê".
+  /// Junta pelo nome mostrado, com a categoria mais usada e quantas vezes apareceu.
+  /// [income]: só entradas (true), só saídas (false) ou todos (nulo). Pede pelo menos 2 letras.
+  List<DescSuggestion> suggestDescriptions(
+    String query, {
+    int limit = 5,
+    bool? income,
+  }) {
+    final q = _fold(query);
+    if (q.length < 2) return const [];
+    final groups = <String, List<Txn>>{};
+    for (final t in transactions) {
+      if (t.isTransfer) continue;
+      if (income != null && (t.amount > 0) != income) continue;
+      final name = displayName(t).trim();
+      if (name.isEmpty || !_fold(name).contains(q)) continue;
+      (groups[_fold(name)] ??= []).add(t);
+    }
+    final out = <DescSuggestion>[];
+    groups.forEach((_, l) {
+      final cats = <int, int>{};
+      for (final t in l) {
+        if (t.categoryId != null && cat(t.categoryId) != null) {
+          cats[t.categoryId!] = (cats[t.categoryId!] ?? 0) + 1;
+        }
+      }
+      final best = cats.entries.isEmpty
+          ? null
+          : (cats.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
+                .first
+                .key;
+      l.sort((a, b) => b.date.compareTo(a.date));
+      out.add(
+        DescSuggestion(
+          text: displayName(l.first).trim(),
+          categoryId: best,
+          count: l.length,
+          accountId: l.first.accountId,
+        ),
+      );
+    });
+    out.sort((a, b) {
+      final starts = _fold(b.text).startsWith(q) ? 1 : 0;
+      final starts2 = _fold(a.text).startsWith(q) ? 1 : 0;
+      if (starts != starts2) return starts - starts2;
+      return b.count.compareTo(a.count);
+    });
+    return out.take(limit).toList();
+  }
+
+  /// A categoria que o app sugere para uma descrição: a da regra memorizada ou, sem regra, a mais usada
+  /// nos movimentos com a mesma descrição. Nulo se não souber.
+  int? suggestCategoryFor(String description) {
+    final d = description.trim();
+    if (d.isEmpty) return null;
+    final key = merchantKey(d);
+    final r = ruleFor(key);
+    if (r?.categoryId != null && cat(r!.categoryId) != null)
+      return r.categoryId;
+    final cats = <int, int>{};
+    for (final t in transactions) {
+      if (t.merchantKey != key || t.isTransfer) continue;
+      final c = t.categoryId;
+      if (c != null && cat(c) != null) cats[c] = (cats[c] ?? 0) + 1;
+    }
+    if (cats.isEmpty) return null;
+    return (cats.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
+        .first
+        .key;
+  }
+
+  /// As categorias mais usadas nos últimos [days] dias, da mais para a menos usada.
+  /// [income]: só em entradas (true), só em saídas (false) ou todos (nulo).
+  List<int> mostUsedCategoryIds({
+    int limit = 5,
+    bool? income,
+    int days = 180,
+    DateTime? today,
+  }) {
+    final from = (today ?? DateTime.now()).subtract(Duration(days: days));
+    final counts = <int, int>{};
+    for (final t in transactions) {
+      final c = t.categoryId;
+      if (c == null || t.isTransfer || t.date.isBefore(from)) continue;
+      if (income != null && (t.amount > 0) != income) continue;
+      final cc = cat(c);
+      if (cc == null || cc.archived) continue;
+      counts[c] = (counts[c] ?? 0) + 1;
+    }
+    final l = counts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return l.take(limit).map((e) => e.key).toList();
+  }
+
+  /// A conta do movimento mais recente que tem conta (nulo se nenhum).
+  int? get lastUsedAccountId {
+    Txn? best;
+    for (final t in transactions) {
+      if (t.accountId == null || account(t.accountId) == null) continue;
+      if (best == null ||
+          t.date.isAfter(best.date) ||
+          (t.date == best.date && t.id > best.id)) {
+        best = t;
+      }
+    }
+    return best?.accountId;
   }
 
   // ---------- Unificar categorias ----------

@@ -43,93 +43,234 @@ void main() {
     ),
   );
 
-  testWidgets('picker: navega em profundidade e escolhe uma sub-sub-categoria', (
+  Widget abrir(
+    void Function(int?) onRes, {
+    int? selected,
+    bool allowNew = true,
+    int? suggestedId,
+    List<int>? mostUsed,
+    bool? income,
+    DateTimeRange? when,
+  }) => app(
+    Builder(
+      builder: (ctx) => TextButton(
+        onPressed: () async => onRes(
+          await chooseCategory(
+            ctx,
+            selected: selected,
+            allowNew: allowNew,
+            suggestedId: suggestedId,
+            mostUsed: mostUsed,
+            income: income,
+            when: when,
+          ),
+        ),
+        child: const Text('abrir'),
+      ),
+    ),
+  );
+
+  Future<void> open(WidgetTester tester) async {
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> tapScrolled(WidgetTester tester, Finder f) async {
+    await tester.scrollUntilVisible(
+      f,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(f);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('picker: abre com a lista; tocar na linha escolhe, na seta entra', (
     tester,
   ) async {
     int? res;
-    await tester.pumpWidget(
-      app(
-        Builder(
-          builder: (ctx) => TextButton(
-            onPressed: () async => res = await chooseCategory(ctx),
-            child: const Text('abrir'),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('abrir'));
+    await tester.pumpWidget(abrir((v) => res = v));
+    await open(tester);
+    expect(find.byKey(ValueKey('cat-pick-$a')), findsOneWidget);
+    expect(find.byKey(ValueKey('cat-pick-$outra')), findsOneWidget);
+    // sem histórico nem sugestão: não há essas secções
+    expect(find.text('Mais usadas'), findsNothing);
+    expect(find.text('Sugerida pelo nome'), findsNothing);
+    // só A tem filhas: seta e contagem; Outra não
+    expect(find.byKey(ValueKey('cat-open-$a')), findsOneWidget);
+    expect(find.byKey(ValueKey('cat-open-$outra')), findsNothing);
+    await tester.tap(find.byKey(ValueKey('cat-open-$a')));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'A ›'), findsOneWidget);
-    expect(find.widgetWithText(ChoiceChip, 'Outra'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'A ›'));
+    expect(find.text('Só A — escolher esta categoria'), findsOneWidget);
+    expect(find.text('Pesquisar em A'), findsOneWidget);
+    expect(find.text('Nova subcategoria em A'), findsOneWidget);
+    await tester.tap(find.byKey(ValueKey('cat-open-$b')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ChoiceChip, 'B ›'));
+    await tester.tap(find.byKey(ValueKey('cat-open-$c')));
     await tester.pumpAndSettle();
-    // caminho clicável: Principais › A › B, e "Só B" para escolher o próprio B
-    expect(find.byKey(ValueKey('crumb-$a')), findsOneWidget);
-    expect(find.widgetWithText(ChoiceChip, 'Só B'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'C ›'));
-    await tester.pumpAndSettle();
-    // no último nível, D é folha: escolhe-se de imediato
-    await tester.tap(find.widgetWithText(ChoiceChip, 'D'));
+    // D é folha: tocar na linha escolhe
+    expect(find.byKey(ValueKey('cat-open-$d')), findsNothing);
+    await tester.tap(find.byKey(ValueKey('cat-pick-$d')));
     await tester.pumpAndSettle();
     expect(res, d);
   });
 
-  testWidgets('picker: o caminho do topo volta a um nível anterior e "Só A" escolhe A', (
+  testWidgets('picker: tocar na linha de uma categoria com filhas escolhe-a', (
     tester,
   ) async {
     int? res;
-    await tester.pumpWidget(
-      app(
-        Builder(
-          builder: (ctx) => TextButton(
-            onPressed: () async => res = await chooseCategory(ctx, selected: d),
-            child: const Text('abrir'),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('abrir'));
-    await tester.pumpAndSettle();
-    // abre já no nível da seleção (filhas de C), com D marcado
-    expect(find.widgetWithText(ChoiceChip, 'D'), findsOneWidget);
-    expect(tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'D')).selected, isTrue);
-    await tester.tap(find.byKey(ValueKey('crumb-$a')));
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'B ›'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('cat-back')));
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'A ›'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'A ›'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Só A'));
+    await tester.pumpWidget(abrir((v) => res = v));
+    await open(tester);
+    await tester.tap(find.byKey(ValueKey('cat-pick-$a')));
     await tester.pumpAndSettle();
     expect(res, a);
   });
 
-  testWidgets('picker: a pesquisa procura em todos os níveis e mostra o caminho', (
+  testWidgets('picker: migalhas voltam, "Só B" escolhe B', (tester) async {
+    int? res;
+    await tester.pumpWidget(abrir((v) => res = v, selected: d));
+    await open(tester);
+    // abre já no nível da seleção (filhas de C), com D marcado
+    expect(find.byKey(ValueKey('cat-pick-$d')), findsOneWidget);
+    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    await tester.tap(find.byKey(ValueKey('crumb-$a')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(ValueKey('cat-open-$b')), findsOneWidget);
+    await tester.tap(find.byKey(ValueKey('cat-open-$b')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('cat-self')));
+    await tester.pumpAndSettle();
+    expect(res, b);
+  });
+
+  testWidgets('picker: a migalha "Todas" volta ao início', (tester) async {
+    await tester.pumpWidget(abrir((_) {}, selected: d));
+    await open(tester);
+    await tester.tap(find.byKey(const ValueKey('crumb-root')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(ValueKey('cat-pick-$outra')), findsOneWidget);
+    expect(find.byKey(const ValueKey('cat-self')), findsNothing);
+    expect(find.text('Procurar categoria'), findsOneWidget);
+  });
+
+  testWidgets('picker: a pesquisa mostra caminho completo e realce, sem acentos', (
+    tester,
+  ) async {
+    final ed = s.addCategory(
+      Categoria(id: 0, name: 'Eletrodomésticos', parentId: b),
+    );
+    int? res;
+    await tester.pumpWidget(abrir((v) => res = v));
+    await open(tester);
+    await tester.enterText(find.byType(TextField), 'ELETRODOM');
+    await tester.pumpAndSettle();
+    expect(find.text('1 resultado, em todos os níveis'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(ValueKey('cat-path-$ed'))).data,
+      'A › B',
+    );
+    // o troço que coincide está realçado num TextSpan próprio
+    final rich = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(ValueKey('cat-pick-$ed')),
+        matching: find.byWidgetPredicate(
+          (w) => w is Text && w.textSpan != null,
+        ),
+      ),
+    );
+    final spans = (rich.textSpan! as TextSpan).children!.cast<TextSpan>();
+    expect(spans[1].text, 'Eletrodom');
+    await tester.enterText(find.byType(TextField), 'd');
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byKey(ValueKey('cat-path-$d'))).data,
+      'A › B › C',
+    );
+    await tester.tap(find.byKey(ValueKey('cat-pick-$d')));
+    await tester.pumpAndSettle();
+    expect(res, d);
+  });
+
+  testWidgets('picker: sem resultados oferece criar o texto escrito', (
+    tester,
+  ) async {
+    int? res;
+    await tester.pumpWidget(abrir((v) => res = v));
+    await open(tester);
+    await tester.enterText(find.byType(TextField).first, 'Viagens');
+    await tester.pumpAndSettle();
+    expect(find.text('Nenhuma categoria encontrada.'), findsOneWidget);
+    await tester.tap(find.text('Criar "Viagens"…'));
+    await tester.pumpAndSettle();
+    // o editor abre com o nome preenchido
+    expect(find.widgetWithText(TextField, 'Viagens'), findsNWidgets(2)); // pesquisa + editor
+    await tester.tap(find.text('Guardar'));
+    await tester.pumpAndSettle();
+    final nova = s.categories.firstWhere((x) => x.name == 'Viagens');
+    expect(res, nova.id);
+  });
+
+  testWidgets('picker: sugerida e mais usadas só aparecem com dados', (
+    tester,
+  ) async {
+    int? res;
+    final hoje = DateTime.now();
+    for (var i = 0; i < 3; i++) {
+      s.addManual(date: hoje, description: 'x$i', amount: -100, categoryId: d);
+    }
+    s.addManual(date: hoje, description: 'y', amount: -100, categoryId: outra);
+    await tester.pumpWidget(abrir((v) => res = v, suggestedId: outra));
+    await open(tester);
+    expect(find.text('Sugerida pelo nome'), findsOneWidget);
+    expect(find.text('Mais usadas'), findsOneWidget);
+    expect(find.byKey(ValueKey('cat-sug-$outra')), findsOneWidget);
+    // a sugerida não se repete nas mais usadas
+    expect(find.byKey(ValueKey('cat-top-$outra')), findsNothing);
+    expect(find.byKey(ValueKey('cat-top-$d')), findsOneWidget);
+    await tester.tap(find.byKey(ValueKey('cat-top-$d')));
+    await tester.pumpAndSettle();
+    expect(res, d);
+  });
+
+  testWidgets('picker: mais usadas distingue entradas de saídas', (tester) async {
+    final hoje = DateTime.now();
+    s.addManual(date: hoje, description: 'x', amount: -100, categoryId: d);
+    s.addManual(date: hoje, description: 'y', amount: 500, categoryId: outra);
+    await tester.pumpWidget(abrir((_) {}, income: true));
+    await open(tester);
+    expect(find.byKey(ValueKey('cat-top-$outra')), findsOneWidget);
+    expect(find.byKey(ValueKey('cat-top-$d')), findsNothing);
+  });
+
+  testWidgets('picker: categorias terminadas ficam escondidas até "mostrar"', (
+    tester,
+  ) async {
+    final velha = s.addCategory(
+      const Categoria(
+        id: 0,
+        name: 'Velha',
+        activeFrom: '2020-01',
+        activeTo: '2020-12',
+      ),
+    );
+    await tester.pumpWidget(abrir((_) {}));
+    await open(tester);
+    expect(find.byKey(ValueKey('cat-pick-$velha')), findsNothing);
+    await tapScrolled(tester, find.text('👁  Mostrar terminadas e futuras'));
+    expect(find.byKey(ValueKey('cat-pick-$velha')), findsOneWidget);
+  });
+
+  testWidgets('picker: "Sem categoria" só com seleção; allowNew=false esconde criar', (
     tester,
   ) async {
     int? res;
     await tester.pumpWidget(
-      app(
-        Builder(
-          builder: (ctx) => TextButton(
-            onPressed: () async => res = await chooseCategory(ctx),
-            child: const Text('abrir'),
-          ),
-        ),
-      ),
+      abrir((v) => res = v, selected: outra, allowNew: false),
     );
-    await tester.tap(find.text('abrir'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'd');
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'A › B › C › D'), findsOneWidget);
-    await tester.tap(find.widgetWithText(ChoiceChip, 'A › B › C › D'));
-    await tester.pumpAndSettle();
-    expect(res, d);
+    await open(tester);
+    expect(find.text('Nova categoria'), findsNothing);
+    await tapScrolled(tester, find.text('Sem categoria'));
+    expect(res, -1);
   });
 
   testWidgets('seletor: mostra o caminho completo e abre a escolha ao tocar', (
@@ -147,19 +288,19 @@ void main() {
       ),
     );
     expect(find.text('A › B › C › D'), findsOneWidget);
+    expect(find.byType(CatBadge), findsOneWidget);
     await tester.tap(find.text('A › B › C › D'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('crumb-root')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Outra'));
+    await tester.tap(find.byKey(ValueKey('cat-pick-$outra')));
     await tester.pumpAndSettle();
     expect(value, outra);
     expect(find.text('Outra'), findsOneWidget);
     // "Sem categoria" limpa
     await tester.tap(find.text('Outra'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Sem categoria'));
-    await tester.pumpAndSettle();
+    await tapScrolled(tester, find.text('Sem categoria'));
     expect(value, isNull);
   });
 
@@ -183,9 +324,9 @@ void main() {
     await tester.tap(find.text('abrir'));
     await tester.pumpAndSettle();
     // expande A e B
-    await tester.tap(find.text('🏷️  A'));
+    await tester.tap(find.text('A'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('🏷️  B'));
+    await tester.tap(find.text('B'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(ValueKey('tree-check-$b')));
     await tester.pumpAndSettle();
@@ -193,7 +334,7 @@ void main() {
         tester.widget<Checkbox>(find.byKey(ValueKey('tree-check-$id'))).value;
     expect(val(b), isTrue);
     expect(val(a), isNull); // meio marcada
-    await tester.tap(find.text('🏷️  C'));
+    await tester.tap(find.text('C'));
     await tester.pumpAndSettle();
     expect(val(c), isTrue);
     expect(val(d), isTrue);

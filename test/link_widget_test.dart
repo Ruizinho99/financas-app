@@ -62,6 +62,8 @@ void main() {
     await tester.pumpWidget(_app(s, TxnFormScreen(edit: envio)));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.text('Avançado')); // o bloco começa recolhido
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Ligar a outro movimento'));
     await tester.pumpAndSettle();
     // o movimento de sinal oposto aparece nos sugeridos

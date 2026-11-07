@@ -1844,6 +1844,88 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get frm2WhereWhat => 'Onde / o quê';
+
+  @override
+  String get frm2When => 'Quando';
+
+  @override
+  String get frm2Advanced => 'Avançado';
+
+  @override
+  String get frm2AdvancedHint => 'Nota, recibo, ligar a outro movimento…';
+
+  @override
+  String get frm2SuggestedByName => 'sugerida pelo nome · toca para mudar';
+
+  @override
+  String get frm2NoAccount => 'Sem conta';
+
+  @override
+  String get frm2SaveAndNew => 'Guardar e novo';
+
+  @override
+  String get frm2Saved => 'Guardado';
+
+  @override
+  String frm2ImportedFrom(String file) {
+    return 'Importado de $file';
+  }
+
+  @override
+  String get frm2ImportedStatement => 'Importado de extrato';
+
+  @override
+  String frm2OriginalDesc(String desc) {
+    return 'descrição original: $desc';
+  }
+
+  @override
+  String frm2BalanceAfter(String amount) {
+    return 'saldo $amount';
+  }
+
+  @override
+  String get frm2SwapAccounts => 'Trocar as contas';
+
+  @override
+  String get frm2Note => 'Nota';
+
+  @override
+  String get frm2NoteHint => 'Acrescenta uma nota';
+
+  @override
+  String get frm2GoalsHint => 'Divide este valor por objetivos';
+
+  @override
+  String frm2GoalsAllocated(String amount) {
+    return '$amount em objetivos';
+  }
+
+  @override
+  String frm2SuggestionTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vezes',
+      one: '1 vez',
+      zero: '$count vezes',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String frm2CalcResult(String amount) {
+    return '= $amount';
+  }
+
+  @override
+  String get frm2FromAccount => 'De';
+
+  @override
+  String get frm2ToAccount => 'Para';
+
+  @override
   String get frmReceipt => 'Recibo';
 
   @override
@@ -5352,6 +5434,52 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String mrgDone(String from, String to) {
     return '\"$from\" unificada em \"$to\".';
+  }
+
+  @override
+  String get pksAll => 'Todas';
+
+  @override
+  String get pksSuggested => 'Sugerida pelo nome';
+
+  @override
+  String get pksMostUsed => 'Mais usadas';
+
+  @override
+  String pksSearchIn(String name) {
+    return 'Pesquisar em $name';
+  }
+
+  @override
+  String pksOnlyThis(String name) {
+    return 'Só $name — escolher esta categoria';
+  }
+
+  @override
+  String pksNewSub(String name) {
+    return 'Nova subcategoria em $name';
+  }
+
+  @override
+  String pksResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count resultados, em todos os níveis',
+      one: '1 resultado, em todos os níveis',
+      zero: '$count resultados, em todos os níveis',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pksCreateNamed(String text) {
+    return 'Criar \"$text\"…';
+  }
+
+  @override
+  String pksOpen(String name) {
+    return 'Abrir $name';
   }
 
   @override
