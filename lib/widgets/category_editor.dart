@@ -920,8 +920,7 @@ class _TreePickerSheetState extends State<_TreePickerSheet> {
                       trailing: widget.selected == c.id
                           ? Icon(Icons.check, color: cs.primary)
                           : null,
-                      onTap: () =>
-                          Navigator.pop<TreePick>(context, (id: c.id)),
+                      onTap: () => Navigator.pop<TreePick>(context, (id: c.id)),
                     ),
                   if (shown.isEmpty)
                     Padding(

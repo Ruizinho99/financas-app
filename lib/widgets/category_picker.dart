@@ -49,7 +49,8 @@ class _CategorySheet extends StatefulWidget {
 class _CategorySheetState extends State<_CategorySheet> {
   String q = '';
   bool showAll = false; // inclui categorias terminadas e futuras
-  int? level; // categoria cujo conteúdo se mostra (null = o nível das principais)
+  int?
+  level; // categoria cujo conteúdo se mostra (null = o nível das principais)
   bool _init = false;
 
   @override
@@ -76,7 +77,9 @@ class _CategorySheetState extends State<_CategorySheet> {
     // mostra-se no nível se for visível ou se tiver algo visível lá dentro
     bool shown(Categoria c) => visible(c) || s.descendantsOf(c.id).any(visible);
     List<Categoria> kidsOf(int? id) =>
-        (id == null ? s.roots.toList() : s.childrenOf(id)).where(shown).toList();
+        (id == null ? s.roots.toList() : s.childrenOf(id))
+            .where(shown)
+            .toList();
     bool hasShownKids(Categoria c) => s.childrenOf(c.id).any(shown);
 
     final query = q.trim().toLowerCase();

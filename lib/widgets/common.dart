@@ -6,6 +6,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../screens/txn_form_screen.dart';
 import '../util/format.dart';
+import 'category_icons.dart';
 import 'category_picker.dart';
 import 'form_kit.dart';
 
@@ -39,10 +40,14 @@ class CatBadge extends StatelessWidget {
     return SizedBox(
       width: size * 1.3,
       child: Center(
-        child: Text(
-          e.isEmpty ? '🏷️' : e,
-          style: TextStyle(fontSize: size * 0.9),
-        ),
+        // o emoji escolhido pelo utilizador manda; sem emoji, um ícone de linha pelo nome da categoria
+        child: e.isEmpty
+            ? Icon(
+                categoryIconFor(category!.name),
+                size: size,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              )
+            : Text(e, style: TextStyle(fontSize: size * 0.9)),
       ),
     );
   }

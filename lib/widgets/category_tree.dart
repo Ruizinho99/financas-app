@@ -21,9 +21,7 @@ class CategoryTreeChecks extends StatelessWidget {
     final s = context.watch<AppState>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final r in s.roots) _node(context, s, r, covered: false),
-      ],
+      children: [for (final r in s.roots) _node(context, s, r, covered: false)],
     );
   }
 
@@ -81,15 +79,12 @@ class CategoryTreeChecks extends StatelessWidget {
         collapsedShape: const Border(),
         leading: box,
         title: title,
-        children: [
-          for (final k in kids) _node(context, s, k, covered: on),
-        ],
+        children: [for (final k in kids) _node(context, s, k, covered: on)],
       ),
     );
   }
 
   /// Esta categoria ou alguma das suas descendentes está escolhida.
   bool _touched(AppState s, Categoria c) =>
-      selected.contains(c.id) ||
-      s.childrenOf(c.id).any((k) => _touched(s, k));
+      selected.contains(c.id) || s.childrenOf(c.id).any((k) => _touched(s, k));
 }
