@@ -146,10 +146,7 @@ class _CorrigirValorDialogState extends State<_CorrigirValorDialog> {
   void _guardar() {
     final l = AppLocalizations.of(context)!;
     final s = context.read<AppState>();
-    final txt = ctrl.text.trim();
-    var v = parseCents(txt)?.abs();
-    final e = v == null ? evalExpression(txt) : null;
-    if (v == null && e != null) v = (e * 100).round().abs();
+    final v = centsFromText(ctrl.text);
     if (v == null || v == 0) {
       setState(() => erro = l.frmEnterValidAmount);
       return;
@@ -217,4 +214,21 @@ class _CorrigirValorDialogState extends State<_CorrigirValorDialog> {
       ],
     );
   }
+}
+
+/// Valor em cêntimos (sempre positivo) de um texto que pode ser uma conta ("12,50 + 11"). Uma conta
+/// avalia-se antes de ler como número, porque senão os operadores eram ignorados e os dígitos juntados.
+int? centsFromText(String text) {
+  final t = text.trim();
+  if (t.isEmpty) return null;
+  if (RegExp(r'\d\s*[+\-*/×÷x]\s*[\d(]').hasMatch(t)) {
+    final e = evalExpression(
+      t.replaceAll(RegExp(r'(?<=\d)\s*x\s*(?=[\d(])'), '*'),
+    );
+    if (e != null) return (e * 100).round().abs();
+  }
+  final v = parseCents(t);
+  if (v != null) return v.abs();
+  final e = evalExpression(t);
+  return e == null ? null : (e * 100).round().abs();
 }

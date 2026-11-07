@@ -151,20 +151,7 @@ class _TxnFormScreenState extends State<TxnFormScreen> {
 
   /// Valor em cêntimos de um texto: número simples ou conta ("12,50 + 11"). Nulo se inválido.
   /// Uma conta tem de ser avaliada primeiro: o leitor de números ignora os sinais e juntaria os dígitos.
-  static int? _centsOf(String text) {
-    final t = text.trim();
-    if (t.isEmpty) return null;
-    if (RegExp(r'\d\s*[+\-*/×÷x]\s*[\d(]').hasMatch(t)) {
-      final e = evalExpression(
-        t.replaceAll(RegExp(r'(?<=\d)\s*x\s*(?=[\d(])'), '*'),
-      );
-      if (e != null) return (e * 100).round().abs();
-    }
-    final v = parseCents(t);
-    if (v != null) return v.abs();
-    final e = evalExpression(t);
-    return e == null ? null : (e * 100).round().abs();
-  }
+  static int? _centsOf(String text) => centsFromText(text);
 
   int? _cents() => _centsOf(amount.text);
 

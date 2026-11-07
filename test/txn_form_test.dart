@@ -99,10 +99,10 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '12,5');
       await tester.tap(find.text('Escolher categoria'));
       await tester.pumpAndSettle();
-      // passo 1: a categoria principal; passo 2: a subcategoria
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Alimentação ›'));
+      // lista de categorias: a seta abre o que tem dentro e tocar na linha escolhe
+      await tester.tap(find.byKey(ValueKey('cat-open-${d.alim}')));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Restaurantes').last);
+      await tester.tap(find.byKey(ValueKey('cat-pick-${d.rest}')));
       await tester.pumpAndSettle();
       expect(find.textContaining('Alimentação › Restaurantes'), findsOneWidget);
       await tester.tap(find.text('Guardar'));
@@ -161,9 +161,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Escolher categoria'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ChoiceChip, 'Salário'), findsWidgets);
+    expect(find.text('Salário'), findsWidgets);
     // a categoria de despesa também serve para uma receita (ex.: um reembolso)
-    expect(find.widgetWithText(ChoiceChip, 'Casa'), findsWidgets);
+    expect(find.text('Casa'), findsWidgets);
   });
 
   testWidgets(
@@ -177,7 +177,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '150');
       await tester.tap(find.text('Escolher categoria'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'OLX').last);
+      await tester.tap(find.text('OLX').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Receita'));
       await tester.pumpAndSettle();
