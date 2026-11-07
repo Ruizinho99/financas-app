@@ -1,0 +1,66 @@
+{
+  "@@locale": "en",
+  "frm2WhereWhat": "Where / what",
+  "frm2When": "When",
+  "frm2Advanced": "Advanced",
+  "frm2AdvancedHint": "Note, receipt, link to another transaction…",
+  "frm2SuggestedByName": "suggested from the name · tap to change",
+  "frm2NoAccount": "No account",
+  "frm2SaveAndNew": "Save and new",
+  "frm2Saved": "Saved",
+  "frm2ImportedFrom": "Imported from {file}",
+  "@frm2ImportedFrom": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2ImportedStatement": "Imported from a statement",
+  "frm2OriginalDesc": "original description: {desc}",
+  "@frm2OriginalDesc": {
+    "placeholders": {
+      "desc": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2BalanceAfter": "balance {amount}",
+  "@frm2BalanceAfter": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2SwapAccounts": "Swap accounts",
+  "frm2Note": "Note",
+  "frm2NoteHint": "Add a note",
+  "frm2GoalsHint": "Split this amount across goals",
+  "frm2GoalsAllocated": "{amount} in goals",
+  "@frm2GoalsAllocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2SuggestionTimes": "{count, plural, =0{{count} times} =1{1 time} other{{count} times}}",
+  "@frm2SuggestionTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frm2CalcResult": "= {amount}",
+  "@frm2CalcResult": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2FromAccount": "From",
+  "frm2ToAccount": "To"
+}

@@ -1,0 +1,66 @@
+{
+  "@@locale": "pt",
+  "frm2WhereWhat": "Onde / o quê",
+  "frm2When": "Quando",
+  "frm2Advanced": "Avançado",
+  "frm2AdvancedHint": "Nota, recibo, ligar a outro movimento…",
+  "frm2SuggestedByName": "sugerida pelo nome · toca para mudar",
+  "frm2NoAccount": "Sem conta",
+  "frm2SaveAndNew": "Guardar e novo",
+  "frm2Saved": "Guardado",
+  "frm2ImportedFrom": "Importado de {file}",
+  "@frm2ImportedFrom": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2ImportedStatement": "Importado de extrato",
+  "frm2OriginalDesc": "descrição original: {desc}",
+  "@frm2OriginalDesc": {
+    "placeholders": {
+      "desc": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2BalanceAfter": "saldo {amount}",
+  "@frm2BalanceAfter": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2SwapAccounts": "Trocar as contas",
+  "frm2Note": "Nota",
+  "frm2NoteHint": "Acrescenta uma nota",
+  "frm2GoalsHint": "Divide este valor por objetivos",
+  "frm2GoalsAllocated": "{amount} em objetivos",
+  "@frm2GoalsAllocated": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2SuggestionTimes": "{count, plural, =0{{count} vezes} =1{1 vez} other{{count} vezes}}",
+  "@frm2SuggestionTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "frm2CalcResult": "= {amount}",
+  "@frm2CalcResult": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "frm2FromAccount": "De",
+  "frm2ToAccount": "Para"
+}
