@@ -99,6 +99,7 @@ class Holding {
   final double? lastFx; // moeda de base por 1 unidade da moeda do ativo, no momento do último preço
   final Uint8List?
   logo; // imagem do ativo, obtida uma vez e guardada na base de dados
+  final String analysisSymbol; // símbolo usado na análise fundamental (vazio = resolver automaticamente)
   Holding({
     required this.id,
     required this.accountId,
@@ -114,6 +115,7 @@ class Holding {
     this.lastPriceOrig,
     this.lastFx,
     this.logo,
+    this.analysisSymbol = '',
   }) : currency = currency ?? baseCcy;
 
   bool get foreign => currency != baseCcy;
@@ -141,6 +143,7 @@ class Holding {
     Object? lastPriceOrig = _k,
     Object? lastFx = _k,
     Object? logo = _k,
+    String? analysisSymbol,
   }) => Holding(
     id: id,
     accountId: accountId ?? this.accountId,
@@ -160,6 +163,7 @@ class Holding {
         : lastPriceOrig as double?,
     lastFx: identical(lastFx, _k) ? this.lastFx : lastFx as double?,
     logo: identical(logo, _k) ? this.logo : logo as Uint8List?,
+    analysisSymbol: analysisSymbol ?? this.analysisSymbol,
   );
 }
 

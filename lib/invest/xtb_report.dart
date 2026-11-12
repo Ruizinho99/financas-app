@@ -302,7 +302,10 @@ String _f(double v, [int decimals = 4]) {
     var c = a.$1.compareTo(b.$1);
     if (c == 0) c = a.$2.compareTo(b.$2);
     if (c == 0) c = a.$3[2].compareTo(b.$3[2]);
-    if (c == 0) c = (double.tryParse(a.$3[5].replaceAll(',', '.')) ?? 0).compareTo(double.tryParse(b.$3[5].replaceAll(',', '.')) ?? 0);
+    if (c == 0)
+      c = (double.tryParse(a.$3[5].replaceAll(',', '.')) ?? 0).compareTo(
+        double.tryParse(b.$3[5].replaceAll(',', '.')) ?? 0,
+      );
     return c;
   });
   return (

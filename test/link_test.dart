@@ -188,12 +188,12 @@ void main() {
     expect(s2.transactions.every((t) => t.linkGroup == null), isTrue);
     expect(s2.transactions.map((t) => t.amount).toSet(), {-1000, 1100});
     expect(s2.linkTxns(s2.transactions[0].id, s2.transactions[1].id), isTrue);
-    // a cópia gravada leva a versão 22
+    // a cópia gravada leva a versão atual (23)
     final dir2 = Directory.systemTemp.createTempSync('lnk');
     try {
       final f = File('${dir2.path}/d.db')..writeAsBytesSync(db.snapshotBytes());
       final raw = sqlite3.open(f.path);
-      expect(raw.select('PRAGMA user_version').first.values.first, 22);
+      expect(raw.select('PRAGMA user_version').first.values.first, 23);
       raw.close();
     } finally {
       dir2.deleteSync(recursive: true);
