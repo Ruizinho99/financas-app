@@ -44,10 +44,6 @@ AltmanZone altmanZone(double? z, AltmanModel model) {
 // ---------------------------------------------------------------------------
 // Auxiliares
 
-/// EBIT para as fórmulas: resultado operacional e, se faltar, o campo `ebit` (Parte 2.0).
-/// Não se usa `FinPeriod.ebitOrOperating`: a sua prioridade é a inversa (`ebit ?? operatingIncome`).
-double? _ebitOf(FinPeriod p) => p.operatingIncome ?? p.ebit;
-
 /// Soma ponderada; nulo se algum termo for nulo (nada de `?? 0`).
 double? _comb(List<(double?, double)> termos) {
   var s = 0.0;
@@ -101,7 +97,8 @@ List<Metric> altmanMetrics(Financials f, MarketSnapshot m, {FinPeriod? cur}) {
   final tl = p.totalLiabilities;
   final x1 = safeDiv(_sub(p.currentAssets, p.currentLiabilities), ta);
   final x2 = safeDiv(p.retainedEarnings, ta);
-  final x3 = safeDiv(_ebitOf(p), ta);
+  // EBIT = operatingIncome ?? ebit (getter do contrato: ebitOrOperating).
+  final x3 = safeDiv(p.ebitOrOperating, ta);
   final x4 = safeDiv(m.marketCap, tl);
   final x4b = safeDiv(p.equity, tl);
   final x5 = safeDiv(p.revenue, ta);
