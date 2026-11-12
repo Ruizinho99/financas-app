@@ -200,6 +200,9 @@ class Financials {
   final List<FinPeriod> annual;
   final List<FinPeriod> quarterly;
 
+  /// A fonte falhou (rede, limite de pedidos...): as listas vazias NÃO significam "sem dados".
+  final bool failed;
+
   /// Fluxos dos últimos 12 meses + balanço do último trimestre. Conta como um período de 12 meses
   /// (`annual: true`) para as fórmulas que dividem por receita ou resultado.
   final FinPeriod? ttm;
@@ -209,6 +212,7 @@ class Financials {
     this.annual = const [],
     this.quarterly = const [],
     this.ttm,
+    this.failed = false,
   });
 
   FinPeriod? get lastAnnual => annual.isEmpty ? null : annual.last;
@@ -220,7 +224,17 @@ class Financials {
 }
 
 /// Que tipo de valor é uma métrica (para formatar na interface).
-enum MetricKind { percent, ratio, days, money, perShare, score, years }
+enum MetricKind {
+  percent,
+  ratio,
+  days,
+  money,
+  perShare,
+  score,
+  years,
+  months,
+  count,
+}
 
 /// Uma métrica calculada. [value] é nulo quando faltam dados. Percentagens e taxas em fração (0,25 = 25 %).
 class Metric {
