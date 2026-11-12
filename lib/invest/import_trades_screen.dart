@@ -15,6 +15,7 @@ import 'forms.dart' show showInvestAccountEditor;
 import 'invest.dart';
 import 'price_service.dart';
 import 'trade_import.dart';
+import 'xtb_report.dart';
 
 /// Importa compras, vendas e dividendos de um ficheiro da corretora (PDF, CSV ou Excel).
 /// Tudo é lido no telemóvel; a internet só é usada se carregares no botão do câmbio.
@@ -36,6 +37,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
   TradeMapping mapping = TradeMapping();
   Map<String, List<List<String>>> sheets = {}; // folhas do Excel
   String? sheet;
+  XtbSummary? xtb; // o ficheiro é um relatório da XTB (convertido em operações)
   TradeReport? report; // validação da última leitura da tabela
   final Map<String, String> typeOverrides =
       {}; // tipo não reconhecido -> o que fazer
@@ -116,24 +118,35 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
         if (ext == 'xlsx') {
           sheets = parseXlsxSheets(bytes);
           if (sheets.isEmpty) throw FormatException(l.invfExcelNoData);
-          // escolhe a folha onde as colunas são melhor reconhecidas
-          var bestScore = -1;
-          for (final e in sheets.entries) {
-            final m = guessTradeMapping(e.value);
-            final score =
-                (m.usable ? 1000 : 0) +
-                [for (final (f, _) in TradeMapping.fields) m.get_(f)]
-                        .where((x) => x != null)
-                        .length *
-                    10 +
-                (e.value.length > 9 ? 9 : e.value.length);
-            if (score > bestScore) {
-              bestScore = score;
-              sheet = e.key;
+          xtb = null;
+          if (isXtbReport(sheets)) {
+            // relatório da XTB: converte-se em operações (compras, vendas e dividendos) e segue o fluxo normal
+            final x = xtbReportToTable(sheets);
+            xtb = x.summary;
+            sheets = {};
+            sheet = null;
+            table = x.table;
+          } else {
+            // escolhe a folha onde as colunas são melhor reconhecidas
+            var bestScore = -1;
+            for (final e in sheets.entries) {
+              final m = guessTradeMapping(e.value);
+              final score =
+                  (m.usable ? 1000 : 0) +
+                  [for (final (f, _) in TradeMapping.fields) m.get_(f)]
+                          .where((x) => x != null)
+                          .length *
+                      10 +
+                  (e.value.length > 9 ? 9 : e.value.length);
+              if (score > bestScore) {
+                bestScore = score;
+                sheet = e.key;
+              }
             }
+            table = sheets[sheet];
           }
-          table = sheets[sheet];
         } else {
+          xtb = null;
           sheet = null;
           table = parseCsv(decodeText(bytes));
         }
@@ -764,7 +777,55 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             ],
           ),
         ),
-        if (!mappingOpen)
+        if (xtb != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Card(
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            l.xtbRecognized(
+                              xtb!.buys,
+                              xtb!.sells,
+                              xtb!.dividends,
+                              xtb!.instruments,
+                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                    for (final w in [
+                      if (xtb!.zeroDividends > 0)
+                        l.xtbDividendsZero(xtb!.zeroDividends),
+                      if (xtb!.unmatchedWithholdings > 0)
+                        l.xtbUnmatched(xtb!.unmatchedWithholdings),
+                      if (xtb!.skippedPositions > 0)
+                        l.xtbSkipped(xtb!.skippedPositions),
+                      l.xtbCashHint,
+                    ])
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          w,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        if (!mappingOpen && xtb == null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(

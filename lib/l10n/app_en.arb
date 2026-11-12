@@ -4306,5 +4306,48 @@
         "type": "int"
       }
     }
-  }
+  },
+  "xtbRecognized": "XTB report recognised: {buys} buys, {sells} sells and {dividends} dividends across {instruments} instruments.",
+  "@xtbRecognized": {
+    "placeholders": {
+      "buys": {
+        "type": "int"
+      },
+      "sells": {
+        "type": "int"
+      },
+      "dividends": {
+        "type": "int"
+      },
+      "instruments": {
+        "type": "int"
+      }
+    }
+  },
+  "xtbDividendsZero": "{count, plural, =0{} =1{1 dividend is 0.00 € after withholding tax and is not imported.} other{{count} dividends are 0.00 € after withholding tax and are not imported.}}",
+  "@xtbDividendsZero": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "xtbUnmatched": "{count, plural, =0{} =1{1 withholding tax without a matching dividend was ignored.} other{{count} withholding taxes without a matching dividend were ignored.}}",
+  "@xtbUnmatched": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "xtbSkipped": "{count, plural, =0{} =1{1 position that is not a share purchase was ignored.} other{{count} positions that are not share purchases were ignored.}}",
+  "@xtbSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "xtbCashHint": "Deposits and withdrawals are not in this report: record them as transfers to the platform, otherwise the platform cash goes negative.",
+  "xtbWrongPlace": "This file is an XTB report, not a bank statement. Import it in Portfolio, with the card to import the broker file."
 }

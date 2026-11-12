@@ -5505,4 +5505,54 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0 · conta como despesa/receita até classificares';
   }
+
+  @override
+  String xtbRecognized(int buys, int sells, int dividends, int instruments) {
+    return 'Relatório da XTB reconhecido: $buys compras, $sells vendas e $dividends dividendos de $instruments títulos.';
+  }
+
+  @override
+  String xtbDividendsZero(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count dividendos ficaram a 0,00 € depois da retenção e não se importam.',
+      one: '1 dividendo ficou a 0,00 € depois da retenção e não se importa.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String xtbUnmatched(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count retenções sem dividendo correspondente foram ignoradas.',
+      one: '1 retenção sem dividendo correspondente foi ignorada.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String xtbSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count posições que não são compras de ações foram ignoradas.',
+      one: '1 posição que não é compra de ações foi ignorada.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get xtbCashHint =>
+      'Os depósitos e levantamentos não vêm neste relatório: regista-os como transferências para a plataforma, senão o dinheiro na plataforma fica negativo.';
+
+  @override
+  String get xtbWrongPlace =>
+      'Este ficheiro é um relatório da XTB, não um extrato do banco. Importa-o em Carteira, no cartão para importar o ficheiro da corretora.';
 }
