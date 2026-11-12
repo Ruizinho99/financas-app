@@ -399,20 +399,30 @@ class Db {
       _db.execute('PRAGMA user_version = 22');
     }
     if (v < 23) {
-      // v23: cache de dados de mercado (respostas do Yahoo) e símbolo de análise de cada ativo
-      _db.execute('''
-        CREATE TABLE IF NOT EXISTS market_cache(
-          key TEXT PRIMARY KEY,
-          json TEXT NOT NULL,
-          fetched_at TEXT NOT NULL
-        )''');
-      try {
-        _db.execute(
-          "ALTER TABLE holdings ADD COLUMN analysis_symbol TEXT NOT NULL DEFAULT ''",
-        );
-      } catch (_) {}
-      _db.execute('PRAGMA user_version = 23');
+      // v23: cache de dados de mercado (respostas do Yahoo) e símbolo de análise de cada ativo.
+      // Tudo numa transação (ou grava tudo ou nada) e sem engolir erros: a coluna só se acrescenta se
+      // ainda não existir (verificado com PRAGMA table_info), por isso um erro real do ALTER propaga.
+      inTransaction(() {
+        _db.execute('''
+          CREATE TABLE IF NOT EXISTS market_cache(
+            key TEXT PRIMARY KEY,
+            json TEXT NOT NULL,
+            fetched_at TEXT NOT NULL
+          )''');
+        final cols = _db
+            .select('PRAGMA table_info(holdings)')
+            .map((r) => r['name'])
+            .toSet();
+        if (!cols.contains('analysis_symbol')) {
+          _db.execute(
+            "ALTER TABLE holdings ADD COLUMN analysis_symbol TEXT NOT NULL DEFAULT ''",
+          );
+        }
+        _db.execute('PRAGMA user_version = 23');
+      });
     }
+    // a cache de mercado só serve para evitar pedidos repetidos: ao abrir, apaga o que tem mais de 7 dias
+    purgeMarketCache();
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -1279,6 +1289,17 @@ class Db {
     [key, json, at.toIso8601String()],
   );
 
+  /// Apaga as entradas da cache de mercado com mais de [maxAge] (por omissão 7 dias).
+  void purgeMarketCache({
+    DateTime? now,
+    Duration maxAge = const Duration(days: 7),
+  }) {
+    final cutoff = (now ?? DateTime.now()).subtract(maxAge);
+    _db.execute('DELETE FROM market_cache WHERE fetched_at < ?', [
+      cutoff.toIso8601String(),
+    ]);
+  }
+
   void deleteHolding(int id) =>
       _db.execute('DELETE FROM holdings WHERE id=?', [id]);
 
@@ -1395,7 +1416,7 @@ class Db {
   }
 
   void wipeInvestments() => _db.execute(
-    'DELETE FROM invest_ops; DELETE FROM holdings; DELETE FROM invest_patterns; DELETE FROM invest_accounts;',
+    'DELETE FROM invest_ops; DELETE FROM holdings; DELETE FROM invest_patterns; DELETE FROM invest_accounts; DELETE FROM market_cache;',
   );
 
   void wipeAll() {
@@ -1474,11 +1495,21 @@ class Db {
   void close() => _db.close();
 
   /// Cópia consistente de toda a base de dados (um ficheiro SQLite), para cópias de segurança.
+  /// A cache de mercado (`market_cache`) fica de fora: é descartável e só aumentaria a cópia.
   Uint8List snapshotBytes() {
     final dir = Directory.systemTemp.createTempSync('financas');
     try {
       final f = File(p.join(dir.path, 'copia.db'));
       _db.execute('VACUUM INTO ?', [f.path]);
+      final copia = sqlite3.open(f.path);
+      try {
+        copia.execute('DELETE FROM market_cache');
+        copia.execute('VACUUM');
+      } on SqliteException {
+        // base sem a tabela (esquema antigo ou migração desfeita): nada a esvaziar
+      } finally {
+        copia.close();
+      }
       return f.readAsBytesSync();
     } finally {
       dir.deleteSync(recursive: true);

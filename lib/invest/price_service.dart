@@ -27,7 +27,16 @@ class SymbolHit {
   final String name;
   final String exchange;
   final PriceProvider provider;
-  const SymbolHit(this.symbol, this.name, this.exchange, this.provider);
+
+  /// Tipo do instrumento segundo a pesquisa do Yahoo (EQUITY, ETF, FUTURE, OPTION, INDEX...); vazio se não vier.
+  final String quoteType;
+  const SymbolHit(
+    this.symbol,
+    this.name,
+    this.exchange,
+    this.provider, [
+    this.quoteType = '',
+  ]);
 }
 
 class PriceException implements Exception {
@@ -38,7 +47,9 @@ class PriceException implements Exception {
 }
 
 /// Preços através de APIs gratuitas e sem chave: Yahoo Finance (ETFs, ações, câmbios) e CoinGecko
-/// (criptomoedas). Só é usado quando o utilizador pede para atualizar; envia apenas o símbolo do ativo.
+/// (criptomoedas). Só é usado quando o utilizador pede para atualizar. A atualização de preços envia apenas
+/// o símbolo do ativo; a pesquisa de símbolos (`search`, usada para resolver o símbolo de análise) envia
+/// ao Yahoo o texto procurado, que pode ser o nome do ativo ou o seu ISIN.
 class PriceService {
   PriceService({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
@@ -205,6 +216,8 @@ class PriceService {
                 (e['shortname'] ?? e['longname'] ?? e['symbol']) as String,
                 (e['exchDisp'] ?? e['exchange'] ?? '') as String,
                 provider,
+                (e['quoteType'] is String ? e['quoteType'] as String : '')
+                    .toUpperCase(),
               ),
         ];
       case PriceProvider.coingecko:

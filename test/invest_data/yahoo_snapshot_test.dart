@@ -24,6 +24,10 @@ class _Fake {
       false; // fc.yahoo.com redireciona para a página de consentimento
   var invalidCrumbOnce = false; // o 1.º crumb é recusado uma vez
   String chart = 'chart_NVD_DE_2y.json';
+  // alterações ao texto da fixture do quoteSummary (ex.: valores de teste)
+  final qsReplace = <String, String>{};
+  // gráfico à medida (por pedido); se nulo, usa a fixture `chart`
+  String Function(http.Request)? chartBody;
 
   http.Response handle(http.Request r) {
     final p = r.url.path;
@@ -54,7 +58,9 @@ class _Fake {
           401,
         );
       }
-      return jsonResp(yahooFixture('quotesummary_NVDA.json'));
+      var body = yahooFixture('quotesummary_NVDA.json');
+      qsReplace.forEach((a, b) => body = body.replaceAll(a, b));
+      return jsonResp(body);
     }
     if (p.endsWith('EURUSD=X')) {
       calls.add('fx');
@@ -62,7 +68,7 @@ class _Fake {
     }
     if (p.contains('/chart/')) {
       calls.add('chart');
-      return jsonResp(yahooFixture(chart));
+      return jsonResp(chartBody != null ? chartBody!(r) : yahooFixture(chart));
     }
     return http.Response('', 404);
   }
@@ -243,6 +249,73 @@ void main() {
       final s = await y.snapshot('NVD.DE');
       expect(s.price, 150.08);
       expect(s.sector, '');
+    });
+  });
+
+  group('Correções F3', () {
+    // gráfico mínimo em USD com o preço e eventos de dividendos (data em segundos)
+    String chartWith({String events = '', double price = 100}) =>
+        '{"chart":{"result":[{"meta":{"currency":"USD","gmtoffset":0,'
+        '"regularMarketPrice":$price,"fiftyTwoWeekHigh":120,"fiftyTwoWeekLow":80,'
+        '"instrumentType":"EQUITY"},"timestamp":[1700000000],$events'
+        '"indicators":{"quote":[{"close":[$price]}]}}]}}';
+    int secs(int y, int m, int d) =>
+        DateTime.utc(y, m, d).millisecondsSinceEpoch ~/ 1000;
+    String div(int y, int m, int d, double a) =>
+        '"${secs(y, m, d)}":{"amount":$a,"date":${secs(y, m, d)}}';
+
+    test('R4: dividendo a 12 meses usa 2 anos de eventos (a janela 1y perdia o mais antigo)', () async {
+      final ranges = <String>[];
+      final f = _Fake()
+        ..chartBody = (r) {
+          final range = r.url.queryParameters['range']!;
+          ranges.add(range);
+          // o Yahoo devolve na janela de 1 ano só 3 das 4 ex-datas
+          final ds = [
+            if (range != '1y') div(2025, 11, 14, 0.26),
+            div(2026, 2, 10, 0.26),
+            div(2026, 5, 12, 0.27),
+            div(2026, 8, 11, 0.27),
+          ];
+          return chartWith(events: '"events":{"dividends":{${ds.join(',')}}},');
+        };
+      final s = await _yahoo(f).snapshot('AAPL');
+      expect(s.dividendPerShare, closeTo(1.06, 1e-9));
+      expect(ranges, isNot(contains('1y')));
+    });
+
+    test('R5: EV com base diferente da capitalização (fora de 0,3x a 3x) fica nulo', () async {
+      // preço 150,08 EUR x 24,1 mil M de ações = ~3,6 bn; EV 6,6x maior
+      final f = _Fake()
+        ..qsReplace['"enterpriseValue":{"raw":4163283976192'] =
+            '"enterpriseValue":{"raw":26000000000000';
+      final s = await _yahoo(f).snapshot('NVD.DE');
+      expect(s.marketCap, isNotNull);
+      expect(s.enterpriseValue, isNull);
+      // o caso normal (EV ~ 1,07x a capitalização) continua a passar (teste do NVD.DE acima)
+    });
+
+    test('E1: EPS esperado só com moeda de reporte igual à de cotação', () async {
+      final f = _Fake();
+      // NVD.DE: cota em EUR, reporta em USD -> EPS esperado (USD?) não é fiável
+      final a = await _yahoo(f).snapshot('NVD.DE', reportingCurrency: 'USD');
+      expect(a.forwardEps, isNull);
+      // mesma moeda: preenchido
+      final b = await _yahoo(f).snapshot('NVD.DE', reportingCurrency: 'EUR');
+      expect(b.forwardEps, closeTo(15.91078, 1e-9));
+      // sem moeda de reporte conhecida: assume a de cotação
+      final c = await _yahoo(f).snapshot('NVD.DE');
+      expect(c.forwardEps, closeTo(15.91078, 1e-9));
+    });
+
+    test('R13: dois snapshots em simultâneo fazem um só login', () async {
+      final f = _Fake();
+      final y = _yahoo(f);
+      final r = await Future.wait([y.snapshot('NVD.DE'), y.snapshot('AAPL')]);
+      expect(f.calls.where((c) => c == 'cookie').length, 1);
+      expect(f.calls.where((c) => c == 'crumb').length, 1);
+      expect(f.calls.where((c) => c.startsWith('quoteSummary')).length, 2);
+      expect(r.every((s) => s.sector == 'Technology'), isTrue);
     });
   });
 }

@@ -2,7 +2,8 @@
 /// financeiras e dados de mercado/perfil, já convertidos para o contrato `metrics/financials.dart`.
 ///
 /// Regras:
-///  - `financials()` nunca lança: sem dados ou com erro devolve listas vazias.
+///  - `financials()` nunca lança: sem dados devolve listas vazias; com erro (rede, 429, timeout, resposta
+///    ilegível) devolve `Financials(failed: true)`, para não se confundir "falhou" com "sem dados".
 ///  - `snapshot()` e `history()` só lançam [PriceException] se o pedido do preço (chart) falhar; o perfil
 ///    (quoteSummary, com cookie e crumb) é melhor esforço: se falhar, esses campos ficam nulos/vazios.
 ///  - Todos os valores monetários do snapshot saem na moeda de reporte (ver [MarketSnapshot]).
@@ -50,7 +51,7 @@ const _fields = <_Field>[
   _Field('specialItems', ['SpecialIncomeCharges'], true),
   _Field('impairment', ['ImpairmentOfCapitalAssets'], true),
   _Field('dilutedEps', ['DilutedEPS'], true),
-  // média de ações: não se soma; o TTM usa o valor do `trailing` ou do último trimestre
+  // média de ações: não se soma. O pedido `trailing` só inclui fluxos, por isso o TTM usa o valor do último trimestre
   _Field('dilutedShares', ['DilutedAverageShares'], false),
   // balanço (no fecho)
   _Field('totalAssets', ['TotalAssets'], false),
@@ -104,6 +105,9 @@ const _coreTypes = {
 class _Series {
   final Map<String, Map<String, double>> byType = {};
   String? currency;
+
+  /// O pedido falhou (rede, limite, resposta ilegível): a série vazia NÃO significa "sem dados".
+  bool failed = false;
   bool get isEmpty => byType.isEmpty;
 
   double? at(_Field f, String date) {
@@ -326,8 +330,38 @@ class YahooMarketData {
 
   // ----------------------------------------------------------- demonstrações
 
-  Future<_Series> _series(String symbol, String prefix) async {
+  /// Lê um pedido fundamentals-timeseries para a série (só os tipos com o [prefix]).
+  static _Series _parseSeries(Object? j, String prefix) {
     final s = _Series();
+    final ts = j is Map ? j['timeseries'] : null;
+    final result = ts is Map ? ts['result'] : null;
+    if (result is! List) return s;
+    for (final item in result) {
+      if (item is! Map) continue;
+      final meta = item['meta'];
+      final tl = meta is Map ? meta['type'] : null;
+      if (tl is! List || tl.isEmpty || tl.first is! String) continue;
+      final full = tl.first as String;
+      if (!full.startsWith(prefix)) continue;
+      final type = full.substring(prefix.length);
+      final entries = item[full];
+      if (entries is! List) continue;
+      for (final e in entries) {
+        if (e is! Map) continue; // o Yahoo pode devolver entradas nulas
+        final date = e['asOfDate'];
+        final v = _num(e['reportedValue']);
+        if (date is! String || v == null) continue;
+        (s.byType[type] ??= {})[date] = v;
+        final c = e['currencyCode'];
+        if (s.currency == null && c is String && c.isNotEmpty) s.currency = c;
+      }
+    }
+    return s;
+  }
+
+  /// Séries de um prefixo (`annual`, `quarterly`, `trailing`). Um erro de pedido marca `failed`.
+  /// Só se guarda em cache a resposta que traz dados (uma resposta vazia não fica 24 h em cache).
+  Future<_Series> _series(String symbol, String prefix) async {
     try {
       final types = <String>[
         for (final f in _fields)
@@ -353,37 +387,16 @@ class YahooMarketData {
         'ts:$symbol:$prefix',
         MarketCache.fundamentalsTtl,
         () => _fetchJson(uri),
+        worthCaching: (v) => !_parseSeries(v, prefix).isEmpty,
       );
-      final ts = j is Map ? j['timeseries'] : null;
-      final result = ts is Map ? ts['result'] : null;
-      if (result is! List) return s;
-      for (final item in result) {
-        if (item is! Map) continue;
-        final meta = item['meta'];
-        final tl = meta is Map ? meta['type'] : null;
-        if (tl is! List || tl.isEmpty || tl.first is! String) continue;
-        final full = tl.first as String;
-        if (!full.startsWith(prefix)) continue;
-        final type = full.substring(prefix.length);
-        final entries = item[full];
-        if (entries is! List) continue;
-        for (final e in entries) {
-          if (e is! Map) continue; // o Yahoo pode devolver entradas nulas
-          final date = e['asOfDate'];
-          final v = _num(e['reportedValue']);
-          if (date is! String || v == null) continue;
-          (s.byType[type] ??= {})[date] = v;
-          final c = e['currencyCode'];
-          if (s.currency == null && c is String && c.isNotEmpty) s.currency = c;
-        }
-      }
+      return _parseSeries(j, prefix);
     } catch (_) {
-      // sem dados ou erro de rede: série vazia
+      return _Series()..failed = true;
     }
-    return s;
   }
 
-  /// Demonstrações financeiras (anuais, trimestrais e TTM). Nunca lança: sem dados, listas vazias.
+  /// Demonstrações financeiras (anuais, trimestrais e TTM). Nunca lança: sem dados, listas vazias;
+  /// se algum dos pedidos falhar (rede, limite do serviço, resposta ilegível), `failed: true`.
   Future<Financials> financials(String symbol) async {
     final res = await Future.wait([
       _series(symbol, 'annual'),
@@ -391,6 +404,7 @@ class YahooMarketData {
       _series(symbol, 'trailing'),
     ]);
     final annual = res[0], quarterly = res[1], trailing = res[2];
+    final failed = annual.failed || quarterly.failed || trailing.failed;
     final currency =
         annual.currency ?? quarterly.currency ?? trailing.currency ?? '';
 
@@ -471,9 +485,8 @@ class YahooMarketData {
     // TTM: fluxos = `trailing*` da fonte se estiver em dia com o último trimestre; senão a soma dos últimos
     // 4 trimestres. Balanço = último trimestre (sem trimestres, o último exercício anual).
     FinPeriod? ttm;
-    final last4 = qDates.length >= 4
-        ? qDates.sublist(qDates.length - 4)
-        : const <String>[];
+    // só 4 trimestres CONSECUTIVOS formam um TTM (um buraco daria 15 meses de fluxos)
+    final last4 = _consecutiveQuarters(qDates);
     // data mais recente do `trailing` de cada campo (alguns tipos, como as ações, trazem uma série)
     String? tLatest(_Field f) {
       String? best;
@@ -523,13 +536,33 @@ class YahooMarketData {
       annual: annualPeriods,
       quarterly: quarterlyPeriods,
       ttm: ttm,
+      failed: failed,
     );
+  }
+
+  /// Os últimos 4 trimestres de [dates] (AAAA-MM-DD, ordenadas) se forem consecutivos: do primeiro ao último
+  /// 250-290 dias (~273) e cada intervalo de ~3 meses (75-110 dias). Senão lista vazia.
+  static List<String> _consecutiveQuarters(List<String> dates) {
+    if (dates.length < 4) return const [];
+    final l = dates.sublist(dates.length - 4);
+    final d = [for (final x in l) DateTime.parse(x)];
+    final span = d.last.difference(d.first).inDays;
+    if (span < 250 || span > 290) return const [];
+    for (var i = 1; i < 4; i++) {
+      final gap = d[i].difference(d[i - 1]).inDays;
+      if (gap < 75 || gap > 110) return const [];
+    }
+    return l;
   }
 
   // ------------------------------------------------------ cookie e crumb
 
   /// Obtém cookie e crumb (à mão: o `http` do Dart não tem cookie jar). Devolve falso em qualquer falha
-  /// (página de consentimento da UE, 429, resposta estranha...): a análise segue sem o perfil.
+  /// (429, resposta estranha...): a análise segue sem o perfil.
+  ///
+  /// Não se deteta a página de consentimento da UE por redireção: o `IOClient` segue os redirecionamentos e
+  /// devolve o pedido original, por isso `r.request.url` nunca mostraria o host de consentimento. O caso fica
+  /// coberto porque, sem o cookie `Set-Cookie` ou sem crumb válido, o login falha e o perfil vem vazio (sem lançar).
   Future<bool> _login() async {
     try {
       final r = await _client
@@ -538,13 +571,6 @@ class YahooMarketData {
             headers: const {'User-Agent': _ua},
           )
           .timeout(_timeout);
-      if (r.isRedirect || (r.statusCode >= 300 && r.statusCode < 400)) {
-        return false;
-      }
-      final host = r.request?.url.host ?? 'fc.yahoo.com';
-      if (host.contains('consent') || !host.endsWith('yahoo.com')) {
-        return false; // redirecionado para a página de consentimento
-      }
       final raw = r.headers['set-cookie'];
       if (raw == null || raw.isEmpty) return false;
       // vários Set-Cookie chegam juntos, separados por vírgula (as datas Expires também têm vírgulas)
@@ -578,18 +604,28 @@ class YahooMarketData {
     }
   }
 
+  Future<bool>? _loginInFlight;
+
   /// Garante uma sessão (cookie+crumb). Depois de uma falha só volta a tentar passados 10 minutos.
-  Future<bool> _ensureSession({bool force = false}) async {
-    if (!force && _crumb != null && _cookie != null) return true;
+  /// Chamadas simultâneas partilham o mesmo login em curso (um só pedido de cookie e de crumb).
+  Future<bool> _ensureSession({bool force = false}) {
+    final running = _loginInFlight;
+    if (running != null) return running;
+    if (!force && _crumb != null && _cookie != null) {
+      return Future.value(true);
+    }
     final failed = _authFailedAt;
     if (!force && failed != null && _now().difference(failed) < _authRetry) {
-      return false;
+      return Future.value(false);
     }
     _cookie = null;
     _crumb = null;
-    final ok = await _login();
-    _authFailedAt = ok ? null : _now();
-    return ok;
+    return _loginInFlight = _login()
+        .then((ok) {
+          _authFailedAt = ok ? null : _now();
+          return ok;
+        })
+        .whenComplete(() => _loginInFlight = null);
   }
 
   static const _modules =
@@ -638,7 +674,9 @@ class YahooMarketData {
     String symbol, {
     String? reportingCurrency,
   }) async {
-    final r = await _chartResult(symbol, '1y');
+    // 2 anos: a janela de 1 ano do Yahoo pode deixar de fora a ex-data mais antiga dos últimos 12 meses.
+    // Os máximos/mínimos de 52 semanas vêm do `meta` (e do resumo), não da série.
+    final r = await _chartResult(symbol, '2y');
     final meta = r['meta'] is Map ? r['meta'] as Map : const {};
     final (quoteCcy, div) = _ccy(meta['currency']);
     final off = (_num(meta['gmtoffset']) ?? 0).toInt();
@@ -683,7 +721,12 @@ class YahooMarketData {
     final marketCap = (price != null && shares != null)
         ? price * shares
         : money(_num(priceMod?['marketCap']) ?? _num(detail?['marketCap']));
-    final ev = money(_num(stats?['enterpriseValue']));
+    var ev = money(_num(stats?['enterpriseValue']));
+    // o EV do Yahoo pode vir noutra base/moeda (TSM: 6,6x a capitalização): fora de 0,3x a 3x não é fiável
+    if (ev != null && marketCap != null && marketCap > 0) {
+      final ratio = ev / marketCap;
+      if (!(ratio > 0.3 && ratio < 3)) ev = null;
+    }
 
     // dividendo por ação dos últimos 12 meses, pelos eventos do gráfico (senão pelo resumo)
     var dps = 0.0;
@@ -753,8 +796,9 @@ class YahooMarketData {
       fiftyTwoWeekLow: low,
       averageVolume: avgVol,
       dividendPerShare: dividendPerShare,
-      // EPS esperado: já vem na moeda das demonstrações (a de reporte); nulo em muitos títulos locais
-      forwardEps: _num(stats?['forwardEps']),
+      // EPS esperado: o Yahoo dá-o na moeda de cotação (TSM: USD, com demonstrações em TWD), por isso só se
+      // usa quando a moeda de reporte é a de cotação; senão fica nulo. Nulo também em muitos títulos locais.
+      forwardEps: reporting == quoteCcy ? _num(stats?['forwardEps']) : null,
       shortPercentOfFloat: _num(stats?['shortPercentOfFloat']),
       insidersPercentHeld: _num(holders?['insidersPercentHeld']),
       sector: (profile?['sector'] ?? '').toString(),

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:financas/invest/data/market_cache.dart';
 import 'package:financas/invest/data/yahoo_market_data.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -236,6 +238,154 @@ void main() {
       expect(f.currency, 'EUR');
       expect(f.annual.length, 1);
       expect(f.annual.single.revenue, 100);
+    });
+  });
+
+  group('Correções F3', () {
+    String tsBody(String prefix, Map<String, List<(String, double)>> series) {
+      final items = [
+        for (final e in series.entries)
+          '{"meta":{"symbol":["X"],"type":["$prefix${e.key}"]},"$prefix${e.key}":['
+              '${e.value.map((v) => '{"asOfDate":"${v.$1}","currencyCode":"USD","reportedValue":{"raw":${v.$2}}}').join(',')}]}',
+      ];
+      return '{"timeseries":{"result":[${items.join(',')}],"error":null}}';
+    }
+
+    YahooMarketData quarterlyOnly(List<String> dates, {MarketCache? cache}) {
+      final q = tsBody('quarterly', {
+        'TotalRevenue': [for (final d in dates) (d, 100.0)],
+        'NetIncome': [for (final d in dates) (d, 10.0)],
+      });
+      return YahooMarketData(
+        cache: cache,
+        client: mock((r) {
+          final t = r.url.queryParameters['type']!;
+          return jsonResp(
+            t.startsWith('quarterly')
+                ? q
+                : '{"timeseries":{"result":[],"error":null}}',
+          );
+        }),
+      );
+    }
+
+    test('R6: TTM exige 4 trimestres consecutivos (um buraco dá nulo)', () async {
+      // falta 2025-12-31: os últimos 4 registos abrangem 15 meses
+      final f = await quarterlyOnly([
+        '2025-06-30',
+        '2025-09-30',
+        '2026-03-31',
+        '2026-06-30',
+      ]).financials('X');
+      expect(f.quarterly.length, 4);
+      expect(f.ttm, isNotNull); // o balanço continua a vir do último trimestre
+      expect(f.ttm!.revenue, isNull);
+      expect(f.ttm!.netIncome, isNull);
+    });
+
+    test('R6: 4 trimestres consecutivos somam; o buraco antigo não conta', () async {
+      final f = await quarterlyOnly([
+        '2024-06-30', // buraco antes dos últimos 4
+        '2025-03-31',
+        '2025-06-30',
+        '2025-09-30',
+        '2025-12-31',
+      ]).financials('X');
+      expect(f.ttm!.revenue, 400);
+    });
+
+    test('R6: datas de fim de mês irregulares (28/29 fev., 30/31) continuam consecutivas', () async {
+      final f = await quarterlyOnly([
+        '2025-02-28',
+        '2025-05-31',
+        '2025-08-31',
+        '2025-11-30',
+      ]).financials('X');
+      expect(f.ttm!.revenue, 400);
+    });
+
+    test('R1: erro de rede, 429, timeout e JSON inválido -> failed', () async {
+      for (final h in <http.Response Function(http.Request)>[
+        (r) => http.Response('', 429),
+        (r) => http.Response('', 500),
+        (r) => http.Response('isto não é json', 200),
+        (r) => throw const SocketException('sem rede'),
+        (r) => throw TimeoutException('lento'),
+      ]) {
+        final f = await YahooMarketData(client: mock(h)).financials('AAPL');
+        expect(f.failed, isTrue);
+        expect(f.annual, isEmpty);
+      }
+    });
+
+    test('R1: um prefixo falhado (429 só nos trimestres) também é failed', () async {
+      final y = YahooMarketData(
+        client: mock((r) {
+          if (r.url.queryParameters['type']!.startsWith('quarterly')) {
+            return http.Response('', 429);
+          }
+          return timeseriesRoute(r)!;
+        }),
+      );
+      final f = await y.financials('AAPL');
+      expect(f.failed, isTrue);
+    });
+
+    test('R1: resposta válida sem dados NÃO é failed; com dados também não', () async {
+      expect((await _yahoo().financials('AMZN.DE')).failed, isFalse);
+      expect((await _yahoo().financials('AAPL')).failed, isFalse);
+    });
+
+    test('R1: um erro não fica em cache', () async {
+      final cache = MarketCache.memory();
+      var n = 0;
+      final y = YahooMarketData(
+        cache: cache,
+        client: mock((r) {
+          n++;
+          return http.Response('', 429);
+        }),
+      );
+      await y.financials('AAPL');
+      await y.financials('AAPL');
+      expect(n, 6);
+    });
+
+    test('R2: resposta válida mas vazia não fica em cache', () async {
+      final cache = MarketCache.memory();
+      var n = 0;
+      const vazio = '{"timeseries":{"result":[],"error":null}}';
+      // itens com meta mas sem nenhuma entrada também são "vazios"
+      const semEntradas =
+          '{"timeseries":{"result":[{"meta":{"symbol":["X"],"type":["annualTotalRevenue"]}}],"error":null}}';
+      for (final body in [vazio, semEntradas]) {
+        n = 0;
+        final y = YahooMarketData(
+          cache: cache,
+          client: mock((r) {
+            n++;
+            return jsonResp(body);
+          }),
+        );
+        await y.financials('AMZN.DE');
+        await y.financials('AMZN.DE');
+        expect(n, 6, reason: 'as 3 séries pedidas duas vezes: sem cache');
+      }
+    });
+
+    test('R2: resposta com dados fica em cache (24 h)', () async {
+      final cache = MarketCache.memory();
+      var n = 0;
+      final y = YahooMarketData(
+        cache: cache,
+        client: mock((r) {
+          n++;
+          return timeseriesRoute(r)!;
+        }),
+      );
+      await y.financials('AAPL');
+      await y.financials('AAPL');
+      expect(n, 3);
     });
   });
 }

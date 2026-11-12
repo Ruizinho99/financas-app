@@ -148,4 +148,104 @@ void main() {
     expect(c.get('k', MarketCache.fundamentalsTtl), {'a': 2});
     db.close();
   });
+
+  group('Correções F3', () {
+    test('R3: a purga apaga entradas com mais de 7 dias e mantém as recentes', () {
+      final db = Db.memory();
+      final agora = DateTime(2026, 11, 12, 10);
+      db.marketCacheWrite('velha', '{}', agora.subtract(const Duration(days: 8)));
+      db.marketCacheWrite('limite', '{}', agora.subtract(const Duration(days: 6)));
+      db.marketCacheWrite('nova', '{}', agora);
+      db.purgeMarketCache(now: agora);
+      expect(db.marketCacheRead('velha'), isNull);
+      expect(db.marketCacheRead('limite'), isNotNull);
+      expect(db.marketCacheRead('nova'), isNotNull);
+      db.close();
+    });
+
+    test('R3: abrir uma base (migração) purga a cache antiga', () async {
+      final s = AppState(Db.memory());
+      s.addInvestAccount('XTB');
+      final com = _alterar(s.backupBytes(), '''
+        INSERT INTO market_cache VALUES('velha','{}','2020-01-01T00:00:00');
+        INSERT INTO market_cache VALUES('nova','{}','${DateTime.now().toIso8601String()}');
+      ''');
+      final db = Db.memory();
+      await db.restoreBytes(com);
+      expect(db.marketCacheRead('velha'), isNull);
+      expect(db.marketCacheRead('nova'), isNotNull);
+      db.close();
+    });
+
+    test('R3: a cópia de segurança não leva a market_cache (mas a tabela existe)', () {
+      final db = Db.memory();
+      db.marketCacheWrite('k', '{"a":1}', DateTime.now());
+      final raw = db.snapshotBytes();
+      _comCopia(raw, (r) {
+        expect(r.select('SELECT count(*) c FROM market_cache').first['c'], 0);
+        expect(r.select('PRAGMA user_version').first.values.first, 23);
+      });
+      // a base original mantém a cache
+      expect(db.marketCacheRead('k'), isNotNull);
+      db.close();
+    });
+
+    test('R3: apagar investimentos esvazia a cache de mercado', () {
+      final s = AppState(Db.memory());
+      s.db.marketCacheWrite('k', '{}', DateTime.now());
+      s.wipe(categories: true);
+      expect(s.db.marketCacheRead('k'), isNull);
+      s.db.marketCacheWrite('k', '{}', DateTime.now());
+      s.db.wipeInvestments();
+      expect(s.db.marketCacheRead('k'), isNull);
+    });
+
+    test('R9: base v22 com a coluna já criada migra sem erro', () async {
+      final s = AppState(Db.memory());
+      final conta = s.addInvestAccount('XTB');
+      s.addHolding(
+        Holding(
+          id: 0,
+          accountId: conta,
+          name: 'Apple',
+          symbol: 'AAPL',
+          analysisSymbol: 'AAPL',
+        ),
+      );
+      // v22 "a meio": coluna já existe, sem tabela
+      final meio = _alterar(
+        s.backupBytes(),
+        'DROP TABLE market_cache; PRAGMA user_version = 22;',
+      );
+      final db = Db.memory();
+      await db.restoreBytes(meio);
+      expect(db.holdings().single.analysisSymbol, 'AAPL'); // intacto
+      _comCopia(db.snapshotBytes(), (r) {
+        expect(r.select('PRAGMA user_version').first.values.first, 23);
+      });
+      db.close();
+    });
+
+    test('R9: erro real na migração propaga e desfaz tudo (nada de v23 a meio)', () async {
+      final s = AppState(Db.memory());
+      s.addInvestAccount('XTB');
+      // v22 sem a tabela holdings: o ALTER falha de verdade
+      final estragada = _alterar(
+        s.backupBytes(),
+        'DROP TABLE market_cache; DROP TABLE holdings; PRAGMA user_version = 22;',
+      );
+      final db = Db.memory();
+      await expectLater(db.restoreBytes(estragada), throwsA(anything));
+      _comCopia(db.snapshotBytes(), (r) {
+        // a transação foi desfeita: sem market_cache e ainda v22
+        final tabelas = r
+            .select("SELECT name FROM sqlite_master WHERE type='table'")
+            .map((x) => x['name'])
+            .toSet();
+        expect(tabelas, isNot(contains('market_cache')));
+        expect(r.select('PRAGMA user_version').first.values.first, 22);
+      });
+      db.close();
+    });
+  });
 }
