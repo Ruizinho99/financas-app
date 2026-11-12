@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../import/parsers.dart';
+import '../invest/xtb_report.dart' show isXtbReport;
 import '../l10n/app_localizations.dart';
 import '../models.dart';
 import '../state/app_state.dart';
@@ -74,11 +75,21 @@ class _ImportScreenState extends State<ImportScreen> {
         _afterParse();
         if (rows.isNotEmpty) year = rows.first.date.year;
       } else {
-        table = ext == 'xlsx' ? parseXlsx(bytes) : parseCsv(decodeText(bytes));
-        mapping = guessMapping(table!);
-        _rebuild();
+        // um relatório da XTB não é um extrato do banco: leva-se para a Carteira
+        final xtbFile = ext == 'xlsx' && isXtbReport(parseXlsxSheets(bytes));
+        if (xtbFile) {
+          table = null;
+          rows = [];
+          error = l.xtbWrongPlace;
+        } else {
+          table = ext == 'xlsx'
+              ? parseXlsx(bytes)
+              : parseCsv(decodeText(bytes));
+          mapping = guessMapping(table!);
+          _rebuild();
+        }
       }
-      if (rows.isEmpty) {
+      if (rows.isEmpty && error == null) {
         error = ext == 'pdf' ? l.impPdfNoRows : l.impCsvNoRows;
       }
     } catch (e) {

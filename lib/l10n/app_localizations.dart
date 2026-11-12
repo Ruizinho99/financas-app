@@ -8257,6 +8257,42 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'{count, plural, =0{{count} movimentos sem categoria} =1{1 movimento sem categoria} other{{count} movimentos sem categoria}} · conta como despesa/receita até classificares'**
   String uncBudgetSubtitle(int count);
+
+  /// No description provided for @xtbRecognized.
+  ///
+  /// In pt, this message translates to:
+  /// **'Relatório da XTB reconhecido: {buys} compras, {sells} vendas e {dividends} dividendos de {instruments} títulos.'**
+  String xtbRecognized(int buys, int sells, int dividends, int instruments);
+
+  /// No description provided for @xtbDividendsZero.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{} =1{1 dividendo ficou a 0,00 € depois da retenção e não se importa.} other{{count} dividendos ficaram a 0,00 € depois da retenção e não se importam.}}'**
+  String xtbDividendsZero(int count);
+
+  /// No description provided for @xtbUnmatched.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{} =1{1 retenção sem dividendo correspondente foi ignorada.} other{{count} retenções sem dividendo correspondente foram ignoradas.}}'**
+  String xtbUnmatched(int count);
+
+  /// No description provided for @xtbSkipped.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{} =1{1 posição que não é compra de ações foi ignorada.} other{{count} posições que não são compras de ações foram ignoradas.}}'**
+  String xtbSkipped(int count);
+
+  /// No description provided for @xtbCashHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Os depósitos e levantamentos não vêm neste relatório: regista-os como transferências para a plataforma, senão o dinheiro na plataforma fica negativo.'**
+  String get xtbCashHint;
+
+  /// No description provided for @xtbWrongPlace.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este ficheiro é um relatório da XTB, não um extrato do banco. Importa-o em Carteira, no cartão para importar o ficheiro da corretora.'**
+  String get xtbWrongPlace;
 }
 
 class _AppLocalizationsDelegate

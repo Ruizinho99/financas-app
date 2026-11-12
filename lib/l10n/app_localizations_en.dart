@@ -5513,4 +5513,55 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0 · counted as spending/income until you classify';
   }
+
+  @override
+  String xtbRecognized(int buys, int sells, int dividends, int instruments) {
+    return 'XTB report recognised: $buys buys, $sells sells and $dividends dividends across $instruments instruments.';
+  }
+
+  @override
+  String xtbDividendsZero(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count dividends are 0.00 € after withholding tax and are not imported.',
+      one: '1 dividend is 0.00 € after withholding tax and is not imported.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String xtbUnmatched(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count withholding taxes without a matching dividend were ignored.',
+      one: '1 withholding tax without a matching dividend was ignored.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String xtbSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count positions that are not share purchases were ignored.',
+      one: '1 position that is not a share purchase was ignored.',
+      zero: '',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get xtbCashHint =>
+      'Deposits and withdrawals are not in this report: record them as transfers to the platform, otherwise the platform cash goes negative.';
+
+  @override
+  String get xtbWrongPlace =>
+      'This file is an XTB report, not a bank statement. Import it in Portfolio, with the card to import the broker file.';
 }

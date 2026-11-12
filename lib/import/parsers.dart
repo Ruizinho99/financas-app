@@ -555,7 +555,13 @@ String _xlsxCell(Data? d) {
     return t;
   }
   if (v is DateCellValue) return '${v.year}-${two(v.month)}-${two(v.day)}';
-  if (v is DateTimeCellValue) return '${v.year}-${two(v.month)}-${two(v.day)}';
+  if (v is DateTimeCellValue) {
+    final d = '${v.year}-${two(v.month)}-${two(v.day)}';
+    // com hora (ex.: relatórios da XTB) mantém-se a hora; à meia-noite é só a data
+    return v.hour == 0 && v.minute == 0
+        ? d
+        : '$d ${two(v.hour)}:${two(v.minute)}';
+  }
   if (v is BoolCellValue) return v.value ? 'true' : 'false';
   if (v is FormulaCellValue)
     return v.formula; // o Excel não guarda aqui o resultado
