@@ -1,3 +1,4 @@
+import '../invest/category_link.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -592,6 +593,28 @@ class _BudgetRow extends StatelessWidget {
     required this.salary,
   });
 
+  /// Compras de ativos associados a esta categoria neste mês (ex.: "Compras: 110 € · 0,8 NVDA · 2 compras").
+  List<Widget> _purchasesLine(BuildContext context, AppState s, TextTheme tt) {
+    final p = purchasesForCategory(s, row.category.id, monthKey);
+    if (p.isEmpty) return const [];
+    final en = Localizations.localeOf(context).languageCode == 'en';
+    final qty = p.quantityByAsset.entries
+        .map((e) => '${fmtQty(e.value)} ${e.key}')
+        .join(', ');
+    return [
+      Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Text(
+          '${en ? 'Purchases' : 'Compras'}: ${fmtMoney(p.cents)} · $qty · '
+          '${p.count} ${en ? (p.count == 1 ? 'purchase' : 'purchases') : (p.count == 1 ? 'compra' : 'compras')}',
+          style: tt.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
@@ -688,6 +711,7 @@ class _BudgetRow extends StatelessWidget {
                         style: tt.bodySmall,
                       ),
                     ),
+                  ..._purchasesLine(context, s, tt),
                 ],
               ),
             ),

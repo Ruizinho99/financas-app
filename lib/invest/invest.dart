@@ -100,6 +100,7 @@ class Holding {
   final Uint8List?
   logo; // imagem do ativo, obtida uma vez e guardada na base de dados
   final String analysisSymbol; // símbolo usado na análise fundamental (vazio = resolver automaticamente)
+  final int? categoryId; // categoria do orçamento a que este ativo está associado (opcional)
   Holding({
     required this.id,
     required this.accountId,
@@ -116,6 +117,7 @@ class Holding {
     this.lastFx,
     this.logo,
     this.analysisSymbol = '',
+    this.categoryId,
   }) : currency = currency ?? baseCcy;
 
   bool get foreign => currency != baseCcy;
@@ -144,6 +146,7 @@ class Holding {
     Object? lastFx = _k,
     Object? logo = _k,
     String? analysisSymbol,
+    Object? categoryId = _k,
   }) => Holding(
     id: id,
     accountId: accountId ?? this.accountId,
@@ -164,6 +167,7 @@ class Holding {
     lastFx: identical(lastFx, _k) ? this.lastFx : lastFx as double?,
     logo: identical(logo, _k) ? this.logo : logo as Uint8List?,
     analysisSymbol: analysisSymbol ?? this.analysisSymbol,
+    categoryId: identical(categoryId, _k) ? this.categoryId : categoryId as int?,
   );
 }
 

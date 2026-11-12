@@ -421,6 +421,18 @@ class Db {
         _db.execute('PRAGMA user_version = 23');
       });
     }
+    if (v < 24) {
+      inTransaction(() {
+        final cols = _db
+            .select('PRAGMA table_info(holdings)')
+            .map((r) => r['name'])
+            .toSet();
+        if (!cols.contains('category_id')) {
+          _db.execute('ALTER TABLE holdings ADD COLUMN category_id INTEGER');
+        }
+        _db.execute('PRAGMA user_version = 24');
+      });
+    }
     // a cache de mercado só serve para evitar pedidos repetidos: ao abrir, apaga o que tem mais de 7 dias
     purgeMarketCache();
   }
@@ -1237,6 +1249,7 @@ class Db {
           lastFx: (r['last_fx'] as num?)?.toDouble(),
           logo: r['logo'] as Uint8List?,
           analysisSymbol: (r['analysis_symbol'] as String?) ?? '',
+          categoryId: r['category_id'] as int?,
         );
       })
       .toList();
@@ -1257,16 +1270,17 @@ class Db {
       h.currencyManual ? 1 : 0,
       h.logo,
       h.analysisSymbol,
+      h.categoryId,
     ];
     if (isNew) {
       _db.execute(
-        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual,logo,analysis_symbol) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual,logo,analysis_symbol,category_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         vals,
       );
       return _db.lastInsertRowId;
     }
     _db.execute(
-      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=?,logo=?,analysis_symbol=? WHERE id=?',
+      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=?,logo=?,analysis_symbol=?,category_id=? WHERE id=?',
       [...vals, h.id],
     );
     return h.id;
@@ -1327,11 +1341,15 @@ class Db {
       )
       .toList();
 
+  /// Data da operação: só o dia se não houver hora (compatível com o que já está guardado), senão dia e hora.
+  static String _opDate(DateTime d) =>
+      d.hour == 0 && d.minute == 0 ? isoDate(d) : '${isoDate(d)}T${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
   int saveInvestOp(InvestOp o, {bool isNew = false}) {
     final vals = [
       o.accountId,
       o.holdingId,
-      isoDate(o.date),
+      _opDate(o.date),
       o.type.name,
       o.quantity,
       o.price,
@@ -1559,7 +1577,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 23;
+  static const _schemaVersion = 24;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();
