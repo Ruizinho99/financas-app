@@ -36,6 +36,16 @@ Sem histórico de 10 anos no Yahoo: CAGR a 3 anos com os dados anuais; 5/10 anos
 | `sector_redflags.dart` | 16 Específicas por setor (bancos, seguradoras, REITs, utilities, petróleo, SaaS, retalho, farma, holdings, sem lucros) com o que houver nos dados e `null` no resto; 17 Alertas (red flags) a partir das outras métricas |
 | `data/yahoo_market_data.dart` + `data/market_cache.dart` | cliente Yahoo (chart, timeseries, quoteSummary com crumb), mapeamento de símbolos (XTB `NVD.DE` -> dados; `AMZN.DE` -> `AMZN` se vazio), cache com validade (preços 15 min, fundamentais 24 h), conversão para o contrato; testes com respostas gravadas |
 
+## Explicação escondida de cada métrica (requisito do utilizador, obrigatório)
+Toda a métrica tem uma explicação escondida (ícone "i" ao lado do valor; toque longo também): nome, o que mede, fórmula, como ler
+(valores típicos e a ressalva de que depende do setor) e armadilhas. Contrato: `metrics/metric_info.dart` (`MetricInfo`, bilingue PT/EN).
+- Cada ficheiro de fórmulas tem um ficheiro irmão `*_info.dart` com `const List<MetricInfo> <grupo>Info = [...]` para TODAS as chaves
+  que as suas funções devolvem, incluindo as "não disponíveis" (`MetricAvailability.unavailable`, a explicação diz porquê).
+- Os textos usam as frases e os limiares da lista do utilizador (ex.: "Dívida líquida / EBITDA acima de 3 a 4 exige cautela, exceto em utilities").
+- Teste obrigatório por grupo: correr as funções com a fixture e verificar que cada `Metric.key` devolvida (mesmo com valor `null`)
+  tem entrada no catálogo, com todos os textos não vazios nas duas línguas. A interface nunca mostra uma métrica sem explicação.
+- A lista central `metric_catalog.dart` junta as listas de todos os grupos (feita na integração pelo orquestrador).
+
 ## Regras para todos os agentes
 - Sem rede nas fórmulas. Testes com números conhecidos (exemplos de manual) e casos `null`/divisão por zero.
 - Nomes de métricas = chaves estáveis em inglês snake_case (`gross_margin`, `roic`, `altman_z`...); a interface traduz.
