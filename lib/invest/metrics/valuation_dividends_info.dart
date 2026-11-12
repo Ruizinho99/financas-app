@@ -11,8 +11,10 @@ const List<MetricInfo> valuationDividendsInfo = [
     namePt: 'Capitalização bolsista',
     nameEn: 'Market capitalisation',
     formula: 'Preço × ações em circulação',
-    meaningPt: 'Valor de mercado de todas as ações da empresa, na moeda de reporte.',
-    meaningEn: 'Market value of all the company\'s shares, in the reporting currency.',
+    meaningPt:
+        'Valor de mercado de todas as ações da empresa, na moeda de reporte.',
+    meaningEn:
+        'Market value of all the company\'s shares, in the reporting currency.',
     readPt: 'Base do EV e dos rácios de preço. Não diz por si se a empresa está cara ou barata; lê-se com a receita e os lucros. Compara com pares e com a história da empresa.',
     readEn: 'Base for EV and the price ratios. On its own it does not say whether the company is expensive or cheap; read it against revenue and earnings. Compare with peers and the company\'s own history.',
     cautionPt: 'Usa a cotação atual e o número de ações da fonte, que pode estar desatualizado.',
@@ -110,10 +112,12 @@ const List<MetricInfo> valuationDividendsInfo = [
     nameEn: 'P/B',
     formula: 'Preço / (capitais próprios / ações)',
     meaningPt: 'Quanto se paga por cada unidade de valor contabilístico dos capitais próprios.',
-    meaningEn: 'How much you pay per unit of book value of shareholders\' equity.',
+    meaningEn:
+        'How much you pay per unit of book value of shareholders\' equity.',
     readPt: 'Relevante em empresas com muitos ativos tangíveis, como bancos e industriais. Em empresas com ativos intangíveis, o rácio costuma ser alto e diz pouco.',
     readEn: 'Relevant for companies with many tangible assets, such as banks and industrials. For companies with intangible assets the ratio is often high and says little.',
-    cautionPt: 'As recompras reduzem os capitais próprios e inflacionam o rácio.',
+    cautionPt:
+        'As recompras reduzem os capitais próprios e inflacionam o rácio.',
     cautionEn: 'Buybacks reduce equity and inflate the ratio.',
   ),
   MetricInfo(
@@ -124,7 +128,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningPt: 'Como o P/VPA, mas sem goodwill nem intangíveis: o valor dos ativos que se conseguiriam vender.',
     meaningEn: 'Like P/B, but without goodwill or intangibles: the value of the assets that could actually be sold.',
     readPt: 'Usa-se sobretudo em bancos, em que o valor tangível é o principal referencial.',
-    readEn: 'Mainly used for banks, where tangible value is the main reference.',
+    readEn:
+        'Mainly used for banks, where tangible value is the main reference.',
     cautionPt: 'Não se calcula se o capital tangível for negativo.',
     cautionEn: 'Not calculated if tangible capital is negative.',
   ),
@@ -159,7 +164,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     formula: 'FCF / capitalização',
     meaningPt: 'O inverso do P/FCF: quanto fluxo de caixa livre a empresa gera face ao seu valor de mercado.',
     meaningEn: 'The inverse of P/FCF: how much free cash flow the company generates against its market value.',
-    readPt: 'Compara-se com a taxa sem risco e com o custo dos capitais próprios.',
+    readPt:
+        'Compara-se com a taxa sem risco e com o custo dos capitais próprios.',
     readEn: 'Compare it with the risk-free rate and with the cost of equity.',
     cautionPt: 'Com FCF negativo o valor é negativo.',
     cautionEn: 'With negative FCF the value is negative.',
@@ -185,7 +191,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'Enterprise value against EBITDA, that is, before depreciation and amortisation.',
     readPt: 'Útil para comparar empresas com níveis de investimento e amortização diferentes. Lê-se contra pares do mesmo setor.',
     readEn: 'Useful for comparing companies with different levels of investment and amortisation. Read against sector peers.',
-    cautionPt: 'Ignora o capex: uma empresa com muito capex pode parecer barata.',
+    cautionPt:
+        'Ignora o capex: uma empresa com muito capex pode parecer barata.',
     cautionEn: 'Ignores capex: a company with heavy capex can look cheap.',
   ),
   MetricInfo(
@@ -255,11 +262,14 @@ const List<MetricInfo> valuationDividendsInfo = [
     nameEn: 'Dividend yield',
     formula: 'DPS / preço',
     meaningPt: 'Quanto dividendo por ação se recebe por cada unidade de preço.',
-    meaningEn: 'How much dividend per share you receive for each unit of price.',
+    meaningEn:
+        'How much dividend per share you receive for each unit of price.',
     readPt: 'Um yield muito alto pode significar que o preço caiu ou que o dividendo não é sustentável. Confirma-se com o payout.',
     readEn: 'A very high yield can mean the price has fallen or that the dividend is not sustainable. Check it against the payout.',
-    cautionPt: 'Usa o dividendo dos últimos 12 meses, que pode já ter sido cortado.',
-    cautionEn: 'Uses the last 12 months\' dividend, which may already have been cut.',
+    cautionPt:
+        'Usa o dividendo dos últimos 12 meses, que pode já ter sido cortado.',
+    cautionEn:
+        'Uses the last 12 months\' dividend, which may already have been cut.',
   ),
   MetricInfo(
     key: 'payout_ratio',
@@ -290,7 +300,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     namePt: 'Crescimento do dividendo',
     nameEn: 'Dividend growth',
     formula: 'DPS do último ano civil completo / DPS do ano anterior − 1',
-    meaningPt: 'Quanto cresceu o dividendo por ação no último ano civil completo.',
+    meaningPt:
+        'Quanto cresceu o dividendo por ação no último ano civil completo.',
     meaningEn: 'How much the dividend per share grew in the last complete calendar year.',
     readPt: 'Um crescimento consistente, ano após ano, indica uma política de dividendos estável. Lê-se junto com os anos consecutivos de aumento.',
     readEn: 'Consistent growth, year after year, indicates a stable dividend policy. Read together with the consecutive years of increase.',

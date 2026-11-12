@@ -42,7 +42,8 @@ SectorGroup sectorGroupOf(MarketSnapshot m) {
   }
   if (ind.contains('software')) return SectorGroup.software;
   if (ind.contains('retail')) return SectorGroup.retail;
-  if (ind.contains('drug') || ind.contains('biotech')) return SectorGroup.pharma;
+  if (ind.contains('drug') || ind.contains('biotech'))
+    return SectorGroup.pharma;
   if (ind.contains('conglomerate') ||
       ind.contains('holding') ||
       name.contains('holding')) {
@@ -427,13 +428,15 @@ List<Metric> _semLucros(Financials f) {
 // ---------------------------------------------------------------------------------------------------------------
 
 /// Limiares dos alertas (iguais aos das fichas em `sector_redflags_info.dart`).
-const double _limiteCrescimentoWc = 0.05; // DSO / DIO a subir mais de 5 % num ano
+const double _limiteCrescimentoWc =
+    0.05; // DSO / DIO a subir mais de 5 % num ano
 const double _limiteItensEspeciais = 0.01; // |itens especiais| ≥ 1 % da receita
 const double _limiteGoodwill = 0.30; // goodwill > 30 % do ativo total
 const double _limiteImparidade = 0.01; // imparidade ≥ 1 % do ativo total
 const double _limiteCaixa = 0.20; // caixa ≥ 20 % do ativo total
 const double _limiteDivida = 0.25; // dívida ≥ 25 % do ativo total
-const double _limiteImpostoPago = 0.50; // imposto pago < 50 % do imposto reportado
+const double _limiteImpostoPago =
+    0.50; // imposto pago < 50 % do imposto reportado
 
 /// Red flags (secção 17 da Parte 1). `m` está na assinatura para as regras futuras que precisem de mercado;
 /// as regras atuais usam só as demonstrações. Os alertas sem fonte de dados (ajustados vs GAAP, mudanças de

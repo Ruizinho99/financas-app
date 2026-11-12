@@ -12,7 +12,8 @@ import 'financials.dart';
 /// Divisão que exige denominador positivo: nulo se faltar um valor ou se o denominador for ≤ 0.
 /// Usa-se nos múltiplos (EPS, VPA, FCF, EBIT, EBITDA, receita ≤ 0 dão `null`).
 double? _dividirPositivo(double? a, double? b) {
-  if (a == null || b == null || !a.isFinite || !b.isFinite || b <= 0) return null;
+  if (a == null || b == null || !a.isFinite || !b.isFinite || b <= 0)
+    return null;
   return a / b;
 }
 
@@ -20,7 +21,8 @@ double? _dividirPositivo(double? a, double? b) {
 double? _ebit(FinPeriod p) => p.operatingIncome ?? p.ebit;
 
 /// EPS diluído: `dilutedEps ?? netIncome / dilutedShares` (Parte 2.3).
-double? _eps(FinPeriod p) => p.dilutedEps ?? _dividirPositivo(p.netIncome, p.dilutedShares);
+double? _eps(FinPeriod p) =>
+    p.dilutedEps ?? _dividirPositivo(p.netIncome, p.dilutedShares);
 
 /// FCF = operatingCashFlow − |capex|; se faltar um dos dois, o `freeCashFlow` da fonte (Parte 2.0).
 double? _fcf(FinPeriod p) {
@@ -49,7 +51,11 @@ double? _capitalizacao(MarketSnapshot m) {
 /// Dívida ou caixa nulos → `null`. Não se usa `MarketSnapshot.enterpriseValue` (mistura moedas e definições).
 double? _ev(FinPeriod c, double? mcap) {
   if (mcap == null || c.totalDebt == null || c.cash == null) return null;
-  return mcap + c.totalDebt! - c.cash! + (c.minorityInterest ?? 0) + (c.preferredStock ?? 0);
+  return mcap +
+      c.totalDebt! -
+      c.cash! +
+      (c.minorityInterest ?? 0) +
+      (c.preferredStock ?? 0);
 }
 
 /// Capital investido de um período: capitais próprios + dívida total − caixa (Parte 2.2).
@@ -95,8 +101,12 @@ double? _roic(Financials f, FinPeriod? c) {
 /// Fundo de maneio líquido = (AC − caixa) − (PC − dívida corrente), com a dívida corrente `null` → 0.
 double? _rocGreenblatt(FinPeriod c) {
   final ebit = _ebit(c);
-  final ac = c.currentAssets, pc = c.currentLiabilities, caixa = c.cash, ppe = c.netPpe;
-  if (ebit == null || ac == null || pc == null || caixa == null || ppe == null) return null;
+  final ac = c.currentAssets,
+      pc = c.currentLiabilities,
+      caixa = c.cash,
+      ppe = c.netPpe;
+  if (ebit == null || ac == null || pc == null || caixa == null || ppe == null)
+    return null;
   final fundoManeio = (ac - caixa) - (pc - (c.currentDebt ?? 0));
   return _dividirPositivo(ebit, math.max(fundoManeio, 0.0) + ppe);
 }
@@ -124,7 +134,10 @@ List<Metric> valuationMetrics(Financials f, MarketSnapshot m) {
   // P/E: preço / EPS (EPS ≤ 0 → null). Trailing = último anual; TTM = período atual.
   final epsTtm = c == null ? null : _eps(c);
   final peTtm = _dividirPositivo(preco, epsTtm);
-  final peTrailing = _dividirPositivo(preco, ultimo == null ? null : _eps(ultimo));
+  final peTrailing = _dividirPositivo(
+    preco,
+    ultimo == null ? null : _eps(ultimo),
+  );
   // P/E esperado: melhor esforço, a partir do EPS esperado da fonte (`forwardEps`).
   final peForward = _dividirPositivo(preco, m.forwardEps);
   // PEG = P/E TTM / (g × 100), g = CAGR do EPS.
@@ -132,8 +145,12 @@ List<Metric> valuationMetrics(Financials f, MarketSnapshot m) {
   final peg = (peTtm == null || g == null || g <= 0) ? null : peTtm / (g * 100);
 
   // Valores por ação: VPA = capitais próprios / ações; VPTA = capital tangível / ações.
-  final vpa = c == null ? null : _dividirPositivo(c.equity, c.sharesOutstanding);
-  final vpta = c == null ? null : _dividirPositivo(c.tangibleBookValue, c.sharesOutstanding);
+  final vpa = c == null
+      ? null
+      : _dividirPositivo(c.equity, c.sharesOutstanding);
+  final vpta = c == null
+      ? null
+      : _dividirPositivo(c.tangibleBookValue, c.sharesOutstanding);
 
   return [
     Metric('market_cap', mcap, MetricKind.money),
@@ -145,7 +162,11 @@ List<Metric> valuationMetrics(Financials f, MarketSnapshot m) {
     const Metric('cape', null, MetricKind.ratio),
     // Rendimento dos lucros = EPS / preço (o inverso do P/E).
     // (o EPS pode ser negativo: só o preço tem de ser positivo)
-    Metric('earnings_yield', _dividirPositivo(epsTtm, preco), MetricKind.percent),
+    Metric(
+      'earnings_yield',
+      _dividirPositivo(epsTtm, preco),
+      MetricKind.percent,
+    ),
     Metric('peg', peg, MetricKind.ratio),
     Metric('pb', _dividirPositivo(preco, vpa), MetricKind.ratio),
     Metric('p_tbv', _dividirPositivo(preco, vpta), MetricKind.ratio),
@@ -158,7 +179,11 @@ List<Metric> valuationMetrics(Financials f, MarketSnapshot m) {
     Metric('ev_fcf', _dividirPositivo(ev, fcf), MetricKind.ratio),
     // Fórmula mágica (Greenblatt): a revisão da spec usa o ROC de Greenblatt; a lista do utilizador pede o ROIC
     // (o ranking combina o rendimento EV/EBIT com o ROIC). Devolve-se cada componente.
-    Metric('magic_formula_roc', c == null ? null : _rocGreenblatt(c), MetricKind.percent),
+    Metric(
+      'magic_formula_roc',
+      c == null ? null : _rocGreenblatt(c),
+      MetricKind.percent,
+    ),
     Metric('magic_formula_roic', _roic(f, c), MetricKind.percent),
     Metric('earnings_yield_ev', _dividirPositivo(ebit, ev), MetricKind.percent),
   ];
@@ -182,7 +207,11 @@ double? _crescimentoDividendo(Map<int, double> dps, int ultimo, int primeiro) {
 }
 
 /// Anos consecutivos de aumento do dividendo, a contar para trás a partir do último ano completo.
-double? _anosConsecutivosAumento(Map<int, double> dps, int ultimo, int primeiro) {
+double? _anosConsecutivosAumento(
+  Map<int, double> dps,
+  int ultimo,
+  int primeiro,
+) {
   if (ultimo - 1 < primeiro) return null;
   var anos = 0;
   for (var y = ultimo; y - 1 >= primeiro; y--) {
@@ -226,17 +255,31 @@ List<Metric> dividendMetrics(
   }
 
   return [
-    Metric('dividend_yield', _dividirPositivo(m.dividendPerShare, preco), MetricKind.percent),
-    Metric('payout_ratio', _dividirPositivo(divPago, c?.netIncome), MetricKind.percent),
+    Metric(
+      'dividend_yield',
+      _dividirPositivo(m.dividendPerShare, preco),
+      MetricKind.percent,
+    ),
+    Metric(
+      'payout_ratio',
+      _dividirPositivo(divPago, c?.netIncome),
+      MetricKind.percent,
+    ),
     Metric('payout_fcf', _dividirPositivo(divPago, fcf), MetricKind.percent),
     Metric('dividend_growth', crescimento, MetricKind.percent),
     Metric('dividend_consecutive_years', anos, MetricKind.years),
     // Recompras líquidas / capitalização.
-    Metric('buyback_yield', _dividirPositivo(recompras, mcap), MetricKind.percent),
+    Metric(
+      'buyback_yield',
+      _dividirPositivo(recompras, mcap),
+      MetricKind.percent,
+    ),
     // Shareholder yield = (dividendos + recompras líquidas) / capitalização; pode ser negativo.
     Metric(
       'shareholder_yield',
-      recompras == null ? null : _dividirPositivo((divPago ?? 0) + recompras, mcap),
+      recompras == null
+          ? null
+          : _dividirPositivo((divPago ?? 0) + recompras, mcap),
       MetricKind.percent,
     ),
   ];

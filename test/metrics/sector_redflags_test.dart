@@ -71,7 +71,8 @@ Metric met(List<Metric> ms, String key) =>
     ms.firstWhere((x) => x.key == key, orElse: () => throw StateError(key));
 
 /// Valor de uma chave de red flag (com o teste de que existe e é um alerta de 0/1 ou nulo).
-double? flag(Financials f, String key) => met(redFlags(f, const MarketSnapshot(symbol: 'TEST')), key).value;
+double? flag(Financials f, String key) =>
+    met(redFlags(f, const MarketSnapshot(symbol: 'TEST')), key).value;
 
 /// Exercícios com todos os campos preenchidos (para o teste de cobertura).
 Financials rico({bool prejuizo = false}) => fin([
@@ -115,7 +116,12 @@ void main() {
       // ROIC anual (anos 2 a 4): 120×0,8/100 = 0,96; 100×0,8/100 = 0,80; 120×0,8/100 = 0,96.
       // Média 0,906667; desvio amostral sqrt(0,0170667/2) = 0,092376; variação 0,96 − 0,96 = 0.
       final f = fin([
-        for (final (y, ebit) in [(2021, 100.0), (2022, 120.0), (2023, 100.0), (2024, 120.0)])
+        for (final (y, ebit) in [
+          (2021, 100.0),
+          (2022, 120.0),
+          (2023, 100.0),
+          (2024, 120.0),
+        ])
           fp(
             y,
             revenue: 1000,
@@ -138,14 +144,40 @@ void main() {
       expect(met(ms, 'quality_gross_margin_change').value, closeTo(0, 1e-12));
       // Margem operacional 0,10; 0,12; 0,10; 0,12: média 0,11, desvio amostral sqrt(0,0004/3) = 0,011547,
       // variação 0,12 − 0,10 = 0,02.
-      expect(met(ms, 'quality_operating_margin_stdev').value, closeTo(0.011547, 1e-6));
-      expect(met(ms, 'quality_operating_margin_change').value, closeTo(0.02, 1e-9));
+      expect(
+        met(ms, 'quality_operating_margin_stdev').value,
+        closeTo(0.011547, 1e-6),
+      );
+      expect(
+        met(ms, 'quality_operating_margin_change').value,
+        closeTo(0.02, 1e-9),
+      );
     });
 
     test('com dois anos não há desvio (mínimo de 3 valores) nem variação de margens com um só valor', () {
       final f = fin([
-        fp(2023, revenue: 1000, operatingIncome: 100, netIncome: 80, pretaxIncome: 100, taxProvision: 20, equity: 100, totalDebt: 0, cash: 0),
-        fp(2024, revenue: 1000, operatingIncome: 120, netIncome: 96, pretaxIncome: 100, taxProvision: 20, equity: 100, totalDebt: 0, cash: 0),
+        fp(
+          2023,
+          revenue: 1000,
+          operatingIncome: 100,
+          netIncome: 80,
+          pretaxIncome: 100,
+          taxProvision: 20,
+          equity: 100,
+          totalDebt: 0,
+          cash: 0,
+        ),
+        fp(
+          2024,
+          revenue: 1000,
+          operatingIncome: 120,
+          netIncome: 96,
+          pretaxIncome: 100,
+          taxProvision: 20,
+          equity: 100,
+          totalDebt: 0,
+          cash: 0,
+        ),
       ]);
       final ms = qualityMetrics(f);
       // Só há 1 ROIC (o 2.º ano), logo média sim e desvio/variação não.
@@ -156,7 +188,10 @@ void main() {
 
     test('percentagem de insiders vem do snapshot; sem snapshot fica nula', () {
       final f = rico();
-      final com = qualityMetrics(f, m: const MarketSnapshot(symbol: 'TEST', insidersPercentHeld: 0.0123));
+      final com = qualityMetrics(
+        f,
+        m: const MarketSnapshot(symbol: 'TEST', insidersPercentHeld: 0.0123),
+      );
       expect(met(com, 'gov_insider_ownership').value, closeTo(0.0123, 1e-12));
       expect(met(qualityMetrics(f), 'gov_insider_ownership').value, isNull);
     });
@@ -207,7 +242,9 @@ void main() {
       ];
       for (final (ind, sec, grupo) in casos) {
         expect(
-          sectorGroupOf(MarketSnapshot(symbol: 'X', sector: sec, industry: ind)),
+          sectorGroupOf(
+            MarketSnapshot(symbol: 'X', sector: sec, industry: ind),
+          ),
           grupo,
           reason: '$sec / $ind',
         );
@@ -216,7 +253,9 @@ void main() {
 
     test('uma holding pelo nome (sem indústria) também é holding', () {
       expect(
-        sectorGroupOf(const MarketSnapshot(symbol: 'X', name: 'Alfa Holdings SA')),
+        sectorGroupOf(
+          const MarketSnapshot(symbol: 'X', name: 'Alfa Holdings SA'),
+        ),
         SectorGroup.holdings,
       );
     });
@@ -226,24 +265,65 @@ void main() {
   group('sectorMetrics (secção 16)', () {
     test('bancos: margem financeira, ROTE e P/TBV calculados; o resto não disponível', () {
       final f = fin([
-        fp(2022, netInterestIncome: 100, netIncome: 40, tangibleBookValue: 340, sharesOutstanding: 100),
-        fp(2023, netInterestIncome: 110, netIncome: 45, tangibleBookValue: 360, sharesOutstanding: 100),
-        fp(2024, netInterestIncome: 121, netIncome: 50, tangibleBookValue: 400, sharesOutstanding: 100),
+        fp(
+          2022,
+          netInterestIncome: 100,
+          netIncome: 40,
+          tangibleBookValue: 340,
+          sharesOutstanding: 100,
+        ),
+        fp(
+          2023,
+          netInterestIncome: 110,
+          netIncome: 45,
+          tangibleBookValue: 360,
+          sharesOutstanding: 100,
+        ),
+        fp(
+          2024,
+          netInterestIncome: 121,
+          netIncome: 50,
+          tangibleBookValue: 400,
+          sharesOutstanding: 100,
+        ),
       ]);
-      final ms = sectorMetrics(f, const MarketSnapshot(symbol: 'B', sector: 'Financial Services', industry: 'Banks - Regional', price: 20));
+      final ms = sectorMetrics(
+        f,
+        const MarketSnapshot(
+          symbol: 'B',
+          sector: 'Financial Services',
+          industry: 'Banks - Regional',
+          price: 20,
+        ),
+      );
       expect(met(ms, 'bank_nii').value, 121);
-      expect(met(ms, 'bank_nii_growth').value, closeTo(0.1, 1e-9)); // 121 / 110 − 1
+      expect(
+        met(ms, 'bank_nii_growth').value,
+        closeTo(0.1, 1e-9),
+      ); // 121 / 110 − 1
       // ROTE = 50 / média(400, 360) = 50 / 380.
       expect(met(ms, 'bank_rote').value, closeTo(50 / 380, 1e-9));
       // P/TBV = 20 / (400 / 100) = 5.
       expect(met(ms, 'bank_p_tbv').value, closeTo(5, 1e-9));
-      for (final k in ['bank_nim', 'bank_cost_to_income', 'bank_cost_of_risk', 'bank_cet1', 'bank_npl', 'bank_npl_coverage', 'bank_lcr']) {
+      for (final k in [
+        'bank_nim',
+        'bank_cost_to_income',
+        'bank_cost_of_risk',
+        'bank_cet1',
+        'bank_npl',
+        'bank_npl_coverage',
+        'bank_lcr',
+      ]) {
         expect(met(ms, k).value, isNull, reason: k);
       }
       // Banco com prejuízo não entra no grupo "sem lucros".
       final prej = sectorMetrics(
         fin([fp(2024, netIncome: -10, netInterestIncome: 5)]),
-        const MarketSnapshot(symbol: 'B', sector: 'Financial Services', industry: 'Banks - Regional'),
+        const MarketSnapshot(
+          symbol: 'B',
+          sector: 'Financial Services',
+          industry: 'Banks - Regional',
+        ),
       );
       expect(prej.any((x) => x.key.startsWith('nolp_')), isFalse);
     });
@@ -251,11 +331,29 @@ void main() {
     test('software: regra dos 40, SBC/receita e margem bruta', () {
       final f = fin([
         fp(2023, revenue: 1000, netIncome: -10),
-        fp(2024, revenue: 1200, grossProfit: 960, operatingCashFlow: 300, capex: -60, stockBasedComp: 120, netIncome: -5),
+        fp(
+          2024,
+          revenue: 1200,
+          grossProfit: 960,
+          operatingCashFlow: 300,
+          capex: -60,
+          stockBasedComp: 120,
+          netIncome: -5,
+        ),
       ]);
-      final ms = sectorMetrics(f, const MarketSnapshot(symbol: 'S', sector: 'Technology', industry: 'Software - Application'));
+      final ms = sectorMetrics(
+        f,
+        const MarketSnapshot(
+          symbol: 'S',
+          sector: 'Technology',
+          industry: 'Software - Application',
+        ),
+      );
       expect(met(ms, 'saas_revenue_growth').value, closeTo(0.2, 1e-9));
-      expect(met(ms, 'saas_fcf_margin').value, closeTo(0.2, 1e-9)); // (300 − 60) / 1200
+      expect(
+        met(ms, 'saas_fcf_margin').value,
+        closeTo(0.2, 1e-9),
+      ); // (300 − 60) / 1200
       expect(met(ms, 'saas_rule_of_40').value, closeTo(0.4, 1e-9));
       expect(met(ms, 'saas_sbc_to_revenue').value, closeTo(0.1, 1e-9));
       expect(met(ms, 'saas_gross_margin').value, closeTo(0.8, 1e-9));
@@ -267,38 +365,58 @@ void main() {
     test('farma: I&D / receita', () {
       final ms = sectorMetrics(
         fin([fp(2024, revenue: 1000, researchDevelopment: 300, netIncome: 50)]),
-        const MarketSnapshot(symbol: 'P', sector: 'Healthcare', industry: 'Drug Manufacturers - General'),
+        const MarketSnapshot(
+          symbol: 'P',
+          sector: 'Healthcare',
+          industry: 'Drug Manufacturers - General',
+        ),
       );
       expect(met(ms, 'pharma_rd_to_revenue').value, closeTo(0.3, 1e-9));
       expect(met(ms, 'pharma_pipeline').value, isNull);
       expect(met(ms, 'pharma_rnpv').value, isNull);
     });
 
-    test('empresa sem lucros: receita, margem bruta, cash runway e diluição', () {
-      final f = fin([
-        fp(2023, revenue: 800, sharesOutstanding: 100),
-        fp(
-          2024,
-          revenue: 1000,
-          costOfRevenue: 400,
-          netIncome: -50,
-          operatingCashFlow: -100,
-          capex: -20,
-          cashAndShortTermInvestments: 600,
-          sharesOutstanding: 110,
-        ),
-      ]);
-      final ms = sectorMetrics(f, const MarketSnapshot(symbol: 'N', sector: '', industry: ''));
-      expect(met(ms, 'nolp_revenue').value, 1000);
-      expect(met(ms, 'nolp_gross_margin').value, closeTo(0.6, 1e-9)); // (1000 − 400) / 1000
-      // FCF = −100 − 20 = −120 por ano → queima mensal 10 → 600 / 10 = 60 meses.
-      expect(met(ms, 'nolp_cash_runway_months').value, closeTo(60, 1e-9));
-      expect(met(ms, 'nolp_dilution').value, closeTo(0.1, 1e-9));
-    });
+    test(
+      'empresa sem lucros: receita, margem bruta, cash runway e diluição',
+      () {
+        final f = fin([
+          fp(2023, revenue: 800, sharesOutstanding: 100),
+          fp(
+            2024,
+            revenue: 1000,
+            costOfRevenue: 400,
+            netIncome: -50,
+            operatingCashFlow: -100,
+            capex: -20,
+            cashAndShortTermInvestments: 600,
+            sharesOutstanding: 110,
+          ),
+        ]);
+        final ms = sectorMetrics(
+          f,
+          const MarketSnapshot(symbol: 'N', sector: '', industry: ''),
+        );
+        expect(met(ms, 'nolp_revenue').value, 1000);
+        expect(
+          met(ms, 'nolp_gross_margin').value,
+          closeTo(0.6, 1e-9),
+        ); // (1000 − 400) / 1000
+        // FCF = −100 − 20 = −120 por ano → queima mensal 10 → 600 / 10 = 60 meses.
+        expect(met(ms, 'nolp_cash_runway_months').value, closeTo(60, 1e-9));
+        expect(met(ms, 'nolp_dilution').value, closeTo(0.1, 1e-9));
+      },
+    );
 
     test('runway nulo quando o FCF é positivo (não há queima)', () {
       final f = fin([
-        fp(2024, revenue: 1000, netIncome: -5, operatingCashFlow: 50, capex: -20, cashAndShortTermInvestments: 600),
+        fp(
+          2024,
+          revenue: 1000,
+          netIncome: -5,
+          operatingCashFlow: 50,
+          capex: -20,
+          cashAndShortTermInvestments: 600,
+        ),
       ]);
       final ms = sectorMetrics(f, const MarketSnapshot(symbol: 'N'));
       expect(met(ms, 'nolp_cash_runway_months').value, isNull);
@@ -307,7 +425,11 @@ void main() {
     test('empresa genérica com lucro não devolve métricas setoriais', () {
       final ms = sectorMetrics(
         fin([fp(2024, revenue: 1000, netIncome: 50)]),
-        const MarketSnapshot(symbol: 'G', sector: 'Industrials', industry: 'Farm & Heavy Construction Machinery'),
+        const MarketSnapshot(
+          symbol: 'G',
+          sector: 'Industrials',
+          industry: 'Farm & Heavy Construction Machinery',
+        ),
       );
       expect(ms, isEmpty);
     });
@@ -315,15 +437,65 @@ void main() {
     test('REIT, seguradora, utility, matérias-primas, retalho e holding: tudo não disponível', () {
       final f = rico();
       final casos = <(String, String, String, List<String>)>[
-        ('Insurance - Life', 'Financial Services', 'I', ['insurer_combined_ratio', 'insurer_float', 'insurer_reserves']),
-        ('REIT - Office', 'Real Estate', 'R', ['reit_ffo', 'reit_affo', 'reit_nav', 'reit_cap_rate', 'reit_ltv', 'reit_occupancy']),
-        ('Utilities - Regulated', 'Utilities', 'U', ['utility_rab', 'utility_allowed_return']),
-        ('Gold', 'Basic Materials', 'C', ['commodity_breakeven', 'commodity_reserves', 'commodity_cost_per_unit', 'commodity_fcf_cycle', 'commodity_normalized_earnings']),
-        ('Specialty Retail', 'Consumer Cyclical', 'T', ['retail_like_for_like', 'retail_sales_per_sqm', 'retail_store_margin']),
-        ('Conglomerates', 'Industrials', 'H', ['holding_sotp', 'holding_discount']),
+        (
+          'Insurance - Life',
+          'Financial Services',
+          'I',
+          ['insurer_combined_ratio', 'insurer_float', 'insurer_reserves'],
+        ),
+        (
+          'REIT - Office',
+          'Real Estate',
+          'R',
+          [
+            'reit_ffo',
+            'reit_affo',
+            'reit_nav',
+            'reit_cap_rate',
+            'reit_ltv',
+            'reit_occupancy',
+          ],
+        ),
+        (
+          'Utilities - Regulated',
+          'Utilities',
+          'U',
+          ['utility_rab', 'utility_allowed_return'],
+        ),
+        (
+          'Gold',
+          'Basic Materials',
+          'C',
+          [
+            'commodity_breakeven',
+            'commodity_reserves',
+            'commodity_cost_per_unit',
+            'commodity_fcf_cycle',
+            'commodity_normalized_earnings',
+          ],
+        ),
+        (
+          'Specialty Retail',
+          'Consumer Cyclical',
+          'T',
+          [
+            'retail_like_for_like',
+            'retail_sales_per_sqm',
+            'retail_store_margin',
+          ],
+        ),
+        (
+          'Conglomerates',
+          'Industrials',
+          'H',
+          ['holding_sotp', 'holding_discount'],
+        ),
       ];
       for (final (ind, sec, sym, keys) in casos) {
-        final ms = sectorMetrics(f, MarketSnapshot(symbol: sym, sector: sec, industry: ind));
+        final ms = sectorMetrics(
+          f,
+          MarketSnapshot(symbol: sym, sector: sec, industry: ind),
+        );
         for (final k in keys) {
           expect(met(ms, k).value, isNull, reason: k);
         }
@@ -334,89 +506,312 @@ void main() {
   // =========================================================================================================
   group('redFlags (secção 17), um caso a 1, um a 0 e um nulo por alerta', () {
     test('flag_earnings_up_cfo_down', () {
-      expect(flag(fin([fp(2023, netIncome: 100, operatingCashFlow: 200), fp(2024, netIncome: 120, operatingCashFlow: 150)]), 'flag_earnings_up_cfo_down'), 1);
+      expect(
+        flag(
+          fin([
+            fp(2023, netIncome: 100, operatingCashFlow: 200),
+            fp(2024, netIncome: 120, operatingCashFlow: 150),
+          ]),
+          'flag_earnings_up_cfo_down',
+        ),
+        1,
+      );
       // CFO a subir: sem alerta. Lucro a descer: sem alerta.
-      expect(flag(fin([fp(2023, netIncome: 100, operatingCashFlow: 200), fp(2024, netIncome: 120, operatingCashFlow: 250)]), 'flag_earnings_up_cfo_down'), 0);
-      expect(flag(fin([fp(2023, netIncome: 100, operatingCashFlow: 200), fp(2024, netIncome: 90, operatingCashFlow: 150)]), 'flag_earnings_up_cfo_down'), 0);
-      expect(flag(fin([fp(2023, netIncome: 100), fp(2024, netIncome: 120, operatingCashFlow: 150)]), 'flag_earnings_up_cfo_down'), isNull);
+      expect(
+        flag(
+          fin([
+            fp(2023, netIncome: 100, operatingCashFlow: 200),
+            fp(2024, netIncome: 120, operatingCashFlow: 250),
+          ]),
+          'flag_earnings_up_cfo_down',
+        ),
+        0,
+      );
+      expect(
+        flag(
+          fin([
+            fp(2023, netIncome: 100, operatingCashFlow: 200),
+            fp(2024, netIncome: 90, operatingCashFlow: 150),
+          ]),
+          'flag_earnings_up_cfo_down',
+        ),
+        0,
+      );
+      expect(
+        flag(
+          fin([
+            fp(2023, netIncome: 100),
+            fp(2024, netIncome: 120, operatingCashFlow: 150),
+          ]),
+          'flag_earnings_up_cfo_down',
+        ),
+        isNull,
+      );
     });
 
     test('flag_dso_rising (DSO = contas a receber / receita × 365)', () {
       // DSO 36,5 → 54,75: subiu 50 %.
-      expect(flag(fin([fp(2023, revenue: 1000, receivables: 100), fp(2024, revenue: 1000, receivables: 150)]), 'flag_dso_rising'), 1);
+      expect(
+        flag(
+          fin([
+            fp(2023, revenue: 1000, receivables: 100),
+            fp(2024, revenue: 1000, receivables: 150),
+          ]),
+          'flag_dso_rising',
+        ),
+        1,
+      );
       // DSO 36,5 → 37,23: subiu 2 %, abaixo do limiar de 5 %.
-      expect(flag(fin([fp(2023, revenue: 1000, receivables: 100), fp(2024, revenue: 1000, receivables: 102)]), 'flag_dso_rising'), 0);
-      expect(flag(fin([fp(2023, revenue: 1000, receivables: 100), fp(2024, revenue: 1000)]), 'flag_dso_rising'), isNull);
+      expect(
+        flag(
+          fin([
+            fp(2023, revenue: 1000, receivables: 100),
+            fp(2024, revenue: 1000, receivables: 102),
+          ]),
+          'flag_dso_rising',
+        ),
+        0,
+      );
+      expect(
+        flag(
+          fin([
+            fp(2023, revenue: 1000, receivables: 100),
+            fp(2024, revenue: 1000),
+          ]),
+          'flag_dso_rising',
+        ),
+        isNull,
+      );
     });
 
     test('flag_dio_rising (DIO = inventário / custo das vendas × 365)', () {
-      expect(flag(fin([fp(2023, costOfRevenue: 500, inventory: 100), fp(2024, costOfRevenue: 500, inventory: 150)]), 'flag_dio_rising'), 1);
-      expect(flag(fin([fp(2023, costOfRevenue: 500, inventory: 100), fp(2024, costOfRevenue: 500, inventory: 90)]), 'flag_dio_rising'), 0);
+      expect(
+        flag(
+          fin([
+            fp(2023, costOfRevenue: 500, inventory: 100),
+            fp(2024, costOfRevenue: 500, inventory: 150),
+          ]),
+          'flag_dio_rising',
+        ),
+        1,
+      );
+      expect(
+        flag(
+          fin([
+            fp(2023, costOfRevenue: 500, inventory: 100),
+            fp(2024, costOfRevenue: 500, inventory: 90),
+          ]),
+          'flag_dio_rising',
+        ),
+        0,
+      );
       // Sem inventário (bancos, software): nulo, não zero.
-      expect(flag(fin([fp(2023, costOfRevenue: 500), fp(2024, costOfRevenue: 500)]), 'flag_dio_rising'), isNull);
+      expect(
+        flag(
+          fin([fp(2023, costOfRevenue: 500), fp(2024, costOfRevenue: 500)]),
+          'flag_dio_rising',
+        ),
+        isNull,
+      );
     });
 
     test('flag_special_items_recurring (todos os anos, mínimo 3, ≥ 1 % da receita)', () {
       FinPeriod ano(int y, double? s) => fp(y, revenue: 1000, specialItems: s);
-      expect(flag(fin([ano(2022, 20), ano(2023, -30), ano(2024, 15)]), 'flag_special_items_recurring'), 1);
+      expect(
+        flag(
+          fin([ano(2022, 20), ano(2023, -30), ano(2024, 15)]),
+          'flag_special_items_recurring',
+        ),
+        1,
+      );
       // Zero explícito num ano quebra o padrão.
-      expect(flag(fin([ano(2022, 20), ano(2023, 0), ano(2024, 15)]), 'flag_special_items_recurring'), 0);
+      expect(
+        flag(
+          fin([ano(2022, 20), ano(2023, 0), ano(2024, 15)]),
+          'flag_special_items_recurring',
+        ),
+        0,
+      );
       // Um ano em falta, sem quebra: não se confirma.
-      expect(flag(fin([ano(2022, 20), ano(2023, null), ano(2024, 15)]), 'flag_special_items_recurring'), isNull);
+      expect(
+        flag(
+          fin([ano(2022, 20), ano(2023, null), ano(2024, 15)]),
+          'flag_special_items_recurring',
+        ),
+        isNull,
+      );
       // Dois anos não bastam.
-      expect(flag(fin([ano(2023, 20), ano(2024, 15)]), 'flag_special_items_recurring'), isNull);
+      expect(
+        flag(
+          fin([ano(2023, 20), ano(2024, 15)]),
+          'flag_special_items_recurring',
+        ),
+        isNull,
+      );
     });
 
     test('flag_goodwill_high (goodwill > 30 % do ativo)', () {
-      expect(flag(fin([fp(2024, goodwill: 310, totalAssets: 1000)]), 'flag_goodwill_high'), 1);
-      expect(flag(fin([fp(2024, goodwill: 290, totalAssets: 1000)]), 'flag_goodwill_high'), 0);
-      expect(flag(fin([fp(2024, totalAssets: 1000)]), 'flag_goodwill_high'), isNull);
+      expect(
+        flag(
+          fin([fp(2024, goodwill: 310, totalAssets: 1000)]),
+          'flag_goodwill_high',
+        ),
+        1,
+      );
+      expect(
+        flag(
+          fin([fp(2024, goodwill: 290, totalAssets: 1000)]),
+          'flag_goodwill_high',
+        ),
+        0,
+      );
+      expect(
+        flag(fin([fp(2024, totalAssets: 1000)]), 'flag_goodwill_high'),
+        isNull,
+      );
     });
 
     test('flag_impairments (últimos 3 anos; imparidade ≥ 1 % do ativo)', () {
-      FinPeriod ano(int y, double? imp, {double? ta = 1000}) => fp(y, impairment: imp, totalAssets: ta);
+      FinPeriod ano(int y, double? imp, {double? ta = 1000}) =>
+          fp(y, impairment: imp, totalAssets: ta);
       // 3 % num dos anos.
-      expect(flag(fin([ano(2022, null), ano(2023, 30), ano(2024, null)]), 'flag_impairments'), 1);
+      expect(
+        flag(
+          fin([ano(2022, null), ano(2023, 30), ano(2024, null)]),
+          'flag_impairments',
+        ),
+        1,
+      );
       // 0,5 % em todos (e campos ausentes contam como zero).
-      expect(flag(fin([ano(2022, null), ano(2023, 5), ano(2024, null)]), 'flag_impairments'), 0);
+      expect(
+        flag(
+          fin([ano(2022, null), ano(2023, 5), ano(2024, null)]),
+          'flag_impairments',
+        ),
+        0,
+      );
       // Sem ativo total não se sabe.
-      expect(flag(fin([ano(2022, 30, ta: null), ano(2023, 30, ta: null)]), 'flag_impairments'), isNull);
+      expect(
+        flag(
+          fin([ano(2022, 30, ta: null), ano(2023, 30, ta: null)]),
+          'flag_impairments',
+        ),
+        isNull,
+      );
     });
 
     test('flag_debt_and_cash_high (caixa ≥ 20 % e dívida ≥ 25 % do ativo)', () {
-      expect(flag(fin([fp(2024, totalAssets: 1000, cash: 250, totalDebt: 300)]), 'flag_debt_and_cash_high'), 1);
-      expect(flag(fin([fp(2024, totalAssets: 1000, cash: 250, totalDebt: 100)]), 'flag_debt_and_cash_high'), 0);
-      expect(flag(fin([fp(2024, totalAssets: 1000, cash: 100, totalDebt: 300)]), 'flag_debt_and_cash_high'), 0);
-      expect(flag(fin([fp(2024, totalAssets: 1000, totalDebt: 300)]), 'flag_debt_and_cash_high'), isNull);
+      expect(
+        flag(
+          fin([fp(2024, totalAssets: 1000, cash: 250, totalDebt: 300)]),
+          'flag_debt_and_cash_high',
+        ),
+        1,
+      );
+      expect(
+        flag(
+          fin([fp(2024, totalAssets: 1000, cash: 250, totalDebt: 100)]),
+          'flag_debt_and_cash_high',
+        ),
+        0,
+      );
+      expect(
+        flag(
+          fin([fp(2024, totalAssets: 1000, cash: 100, totalDebt: 300)]),
+          'flag_debt_and_cash_high',
+        ),
+        0,
+      );
+      expect(
+        flag(
+          fin([fp(2024, totalAssets: 1000, totalDebt: 300)]),
+          'flag_debt_and_cash_high',
+        ),
+        isNull,
+      );
     });
 
-    test('flag_tax_paid_low (imposto pago < 50 % do reportado, 3 últimos anos)', () {
-      FinPeriod ano(int y, double? prov, double? pago) => fp(y, taxProvision: prov, incomeTaxPaid: pago);
-      expect(flag(fin([ano(2022, 100, 20), ano(2023, 100, 20), ano(2024, 100, 20)]), 'flag_tax_paid_low'), 1);
-      expect(flag(fin([ano(2022, 100, 90), ano(2023, 100, 90), ano(2024, 100, 90)]), 'flag_tax_paid_low'), 0);
-      expect(flag(fin([ano(2022, null, 20), ano(2023, null, 20), ano(2024, null, 20)]), 'flag_tax_paid_low'), isNull);
-    });
+    test(
+      'flag_tax_paid_low (imposto pago < 50 % do reportado, 3 últimos anos)',
+      () {
+        FinPeriod ano(int y, double? prov, double? pago) =>
+            fp(y, taxProvision: prov, incomeTaxPaid: pago);
+        expect(
+          flag(
+            fin([ano(2022, 100, 20), ano(2023, 100, 20), ano(2024, 100, 20)]),
+            'flag_tax_paid_low',
+          ),
+          1,
+        );
+        expect(
+          flag(
+            fin([ano(2022, 100, 90), ano(2023, 100, 90), ano(2024, 100, 90)]),
+            'flag_tax_paid_low',
+          ),
+          0,
+        );
+        expect(
+          flag(
+            fin([
+              ano(2022, null, 20),
+              ano(2023, null, 20),
+              ano(2024, null, 20),
+            ]),
+            'flag_tax_paid_low',
+          ),
+          isNull,
+        );
+      },
+    );
 
     test('flag_serial_acquisitions (aquisições negativas em todos os anos, mínimo 3)', () {
       FinPeriod ano(int y, double? a) => fp(y, acquisitions: a);
-      expect(flag(fin([ano(2022, -10), ano(2023, -20), ano(2024, -5)]), 'flag_serial_acquisitions'), 1);
-      expect(flag(fin([ano(2022, -10), ano(2023, 0), ano(2024, -5)]), 'flag_serial_acquisitions'), 0);
-      expect(flag(fin([ano(2022, -10), ano(2023, null), ano(2024, -5)]), 'flag_serial_acquisitions'), isNull);
+      expect(
+        flag(
+          fin([ano(2022, -10), ano(2023, -20), ano(2024, -5)]),
+          'flag_serial_acquisitions',
+        ),
+        1,
+      );
+      expect(
+        flag(
+          fin([ano(2022, -10), ano(2023, 0), ano(2024, -5)]),
+          'flag_serial_acquisitions',
+        ),
+        0,
+      );
+      expect(
+        flag(
+          fin([ano(2022, -10), ano(2023, null), ano(2024, -5)]),
+          'flag_serial_acquisitions',
+        ),
+        isNull,
+      );
     });
 
     test('alertas sem fonte de dados ficam sempre nulos', () {
       final f = rico();
-      for (final k in ['flag_adjusted_vs_gaap', 'flag_accounting_policy_changes', 'flag_capitalized_costs']) {
+      for (final k in [
+        'flag_adjusted_vs_gaap',
+        'flag_accounting_policy_changes',
+        'flag_capitalized_costs',
+      ]) {
         expect(flag(f, k), isNull, reason: k);
       }
     });
 
-    test('sem nenhuma demonstração, todos os alertas são nulos e não há exceções', () {
-      final ms = redFlags(const Financials(symbol: 'X'), const MarketSnapshot(symbol: 'X'));
-      expect(ms.length, 12);
-      expect(ms.every((x) => x.value == null), isTrue);
-      expect(ms.every((x) => x.key.startsWith('flag_')), isTrue);
-    });
+    test(
+      'sem nenhuma demonstração, todos os alertas são nulos e não há exceções',
+      () {
+        final ms = redFlags(
+          const Financials(symbol: 'X'),
+          const MarketSnapshot(symbol: 'X'),
+        );
+        expect(ms.length, 12);
+        expect(ms.every((x) => x.value == null), isTrue);
+        expect(ms.every((x) => x.key.startsWith('flag_')), isTrue);
+      },
+    );
   });
 
   // =========================================================================================================
@@ -425,16 +820,58 @@ void main() {
       final rich = rico();
       final prej = rico(prejuizo: true);
       final snaps = [
-        const MarketSnapshot(symbol: 'G', sector: 'Industrials', industry: 'Machinery', insidersPercentHeld: 0.05),
-        const MarketSnapshot(symbol: 'B', sector: 'Financial Services', industry: 'Banks - Regional', price: 20),
-        const MarketSnapshot(symbol: 'I', sector: 'Financial Services', industry: 'Insurance - Life'),
-        const MarketSnapshot(symbol: 'R', sector: 'Real Estate', industry: 'REIT - Office'),
-        const MarketSnapshot(symbol: 'U', sector: 'Utilities', industry: 'Utilities - Regulated'),
-        const MarketSnapshot(symbol: 'C', sector: 'Energy', industry: 'Oil & Gas E&P'),
-        const MarketSnapshot(symbol: 'S', sector: 'Technology', industry: 'Software - Application'),
-        const MarketSnapshot(symbol: 'T', sector: 'Consumer Cyclical', industry: 'Specialty Retail'),
-        const MarketSnapshot(symbol: 'P', sector: 'Healthcare', industry: 'Biotechnology'),
-        const MarketSnapshot(symbol: 'H', sector: 'Industrials', industry: 'Conglomerates'),
+        const MarketSnapshot(
+          symbol: 'G',
+          sector: 'Industrials',
+          industry: 'Machinery',
+          insidersPercentHeld: 0.05,
+        ),
+        const MarketSnapshot(
+          symbol: 'B',
+          sector: 'Financial Services',
+          industry: 'Banks - Regional',
+          price: 20,
+        ),
+        const MarketSnapshot(
+          symbol: 'I',
+          sector: 'Financial Services',
+          industry: 'Insurance - Life',
+        ),
+        const MarketSnapshot(
+          symbol: 'R',
+          sector: 'Real Estate',
+          industry: 'REIT - Office',
+        ),
+        const MarketSnapshot(
+          symbol: 'U',
+          sector: 'Utilities',
+          industry: 'Utilities - Regulated',
+        ),
+        const MarketSnapshot(
+          symbol: 'C',
+          sector: 'Energy',
+          industry: 'Oil & Gas E&P',
+        ),
+        const MarketSnapshot(
+          symbol: 'S',
+          sector: 'Technology',
+          industry: 'Software - Application',
+        ),
+        const MarketSnapshot(
+          symbol: 'T',
+          sector: 'Consumer Cyclical',
+          industry: 'Specialty Retail',
+        ),
+        const MarketSnapshot(
+          symbol: 'P',
+          sector: 'Healthcare',
+          industry: 'Biotechnology',
+        ),
+        const MarketSnapshot(
+          symbol: 'H',
+          sector: 'Industrials',
+          industry: 'Conglomerates',
+        ),
       ];
 
       final todas = <Metric>[
@@ -451,7 +888,11 @@ void main() {
       final fichas = sectorRedflagsInfo;
       final porChave = <String, MetricInfo>{};
       for (final i in fichas) {
-        expect(porChave.containsKey(i.key), isFalse, reason: 'ficha duplicada: ${i.key}');
+        expect(
+          porChave.containsKey(i.key),
+          isFalse,
+          reason: 'ficha duplicada: ${i.key}',
+        );
         porChave[i.key] = i;
         expect(i.namePt.trim(), isNotEmpty, reason: i.key);
         expect(i.nameEn.trim(), isNotEmpty, reason: i.key);
@@ -480,9 +921,19 @@ void main() {
     });
 
     test('a ficha de uma métrica "não disponível" diz porquê (texto de leitura com a razão)', () {
-      for (final i in sectorRedflagsInfo.where((i) => i.availability == MetricAvailability.unavailable)) {
-        expect(i.readPt.toLowerCase(), contains('não disponível'), reason: i.key);
-        expect(i.readEn.toLowerCase(), contains('not available'), reason: i.key);
+      for (final i in sectorRedflagsInfo.where(
+        (i) => i.availability == MetricAvailability.unavailable,
+      )) {
+        expect(
+          i.readPt.toLowerCase(),
+          contains('não disponível'),
+          reason: i.key,
+        );
+        expect(
+          i.readEn.toLowerCase(),
+          contains('not available'),
+          reason: i.key,
+        );
       }
     });
   });

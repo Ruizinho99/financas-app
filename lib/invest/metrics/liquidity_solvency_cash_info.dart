@@ -11,11 +11,14 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Rácio corrente',
     nameEn: 'Current ratio',
     formula: 'Ativo corrente / Passivo corrente',
-    meaningPt: 'Quantas vezes o ativo de curto prazo cobre o passivo de curto prazo.',
+    meaningPt:
+        'Quantas vezes o ativo de curto prazo cobre o passivo de curto prazo.',
     meaningEn: 'How many times short-term assets cover short-term liabilities.',
-    readPt: 'Acima de 1 a empresa cobre as obrigações de curto prazo com ativos de curto prazo. Muito abaixo de 1 pede atenção, '
+    readPt:
+        'Acima de 1 a empresa cobre as obrigações de curto prazo com ativos de curto prazo. Muito abaixo de 1 pede atenção, '
         'mas o normal depende do setor (retalho e restauração operam com valores baixos) e compara-se com pares.',
-    readEn: 'Above 1, short-term assets cover short-term obligations. Well below 1 calls for attention, but normal values depend on the '
+    readEn:
+        'Above 1, short-term assets cover short-term obligations. Well below 1 calls for attention, but normal values depend on the '
         'sector (retail and restaurants run low) and should be compared with peers.',
     cautionPt: 'Inclui inventários, que podem não ser líquidos. Para a liquidez imediata, ver o rácio rápido.',
     cautionEn: 'Includes inventories, which may not be liquid. For immediate liquidity, see the quick ratio.',
@@ -25,14 +28,19 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Rácio rápido',
     nameEn: 'Quick ratio',
     formula: '(Caixa + Investimentos de curto prazo + Contas a receber) / Passivo corrente',
-    meaningPt: 'Capacidade de pagar o passivo de curto prazo sem vender inventários.',
-    meaningEn: 'Ability to pay short-term liabilities without selling inventory.',
-    readPt: 'Acima de 1 a empresa paga o passivo corrente só com dinheiro e créditos a receber. Abaixo de 1 não é necessariamente mau '
+    meaningPt:
+        'Capacidade de pagar o passivo de curto prazo sem vender inventários.',
+    meaningEn:
+        'Ability to pay short-term liabilities without selling inventory.',
+    readPt:
+        'Acima de 1 a empresa paga o passivo corrente só com dinheiro e créditos a receber. Abaixo de 1 não é necessariamente mau '
         'em negócios com fluxos de caixa previsíveis e passivo de curto prazo rolado (como a grande distribuição).',
-    readEn: 'Above 1, the company can pay current liabilities with cash and receivables alone. Below 1 is not necessarily bad in businesses '
+    readEn:
+        'Above 1, the company can pay current liabilities with cash and receivables alone. Below 1 is not necessarily bad in businesses '
         'with predictable cash flows and rolling short-term debt (such as large retailers).',
     cautionPt: 'Usa o caixa e os investimentos de curto prazo tal como a fonte os reporta.',
-    cautionEn: 'Uses cash and short-term investments as the source reports them.',
+    cautionEn:
+        'Uses cash and short-term investments as the source reports them.',
   ),
   MetricInfo(
     key: 'cash_ratio',
@@ -41,9 +49,11 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     formula: 'Caixa / Passivo corrente',
     meaningPt: 'Parte do passivo de curto prazo que se pagaria só com caixa e equivalentes.',
     meaningEn: 'Share of short-term liabilities that could be paid with cash and equivalents alone.',
-    readPt: 'O valor mais conservador da liquidez. Valores típicos ficam entre 0,2 e 0,5; muito baixos num setor cíclico são um sinal de alerta. '
+    readPt:
+        'O valor mais conservador da liquidez. Valores típicos ficam entre 0,2 e 0,5; muito baixos num setor cíclico são um sinal de alerta. '
         'Depende muito do setor e compara-se com pares.',
-    readEn: 'The most conservative liquidity measure. Typical values are between 0.2 and 0.5; very low values in a cyclical sector are a warning sign. '
+    readEn:
+        'The most conservative liquidity measure. Typical values are between 0.2 and 0.5; very low values in a cyclical sector are a warning sign. '
         'It depends heavily on the sector and should be compared with peers.',
     cautionPt: 'Não penaliza uma empresa que tenha linhas de crédito disponíveis e não usadas, que a fonte não reporta.',
     cautionEn: 'Does not credit undrawn credit lines, which the source does not report.',
@@ -54,10 +64,13 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     nameEn: 'Working capital',
     formula: 'Ativo corrente − Passivo corrente',
     meaningPt: 'Montante do ativo de curto prazo que sobra depois de pagar o passivo de curto prazo.',
-    meaningEn: 'Amount of short-term assets left after paying short-term liabilities.',
-    readPt: 'Positivo: folga de liquidez. Negativo: a empresa financia-se com o passivo de curto prazo, o que é normal em alguns modelos '
+    meaningEn:
+        'Amount of short-term assets left after paying short-term liabilities.',
+    readPt:
+        'Positivo: folga de liquidez. Negativo: a empresa financia-se com o passivo de curto prazo, o que é normal em alguns modelos '
         '(grande distribuição, software com receitas antecipadas). Lê-se em relação à receita.',
-    readEn: 'Positive: liquidity cushion. Negative: the company is financed by short-term liabilities, which is normal in some models '
+    readEn:
+        'Positive: liquidity cushion. Negative: the company is financed by short-term liabilities, which is normal in some models '
         '(large retail, software with upfront billing). Read it relative to revenue.',
     cautionPt: 'Valor absoluto na moeda de reporte: não é comparável entre empresas de dimensões diferentes sem normalizar.',
     cautionEn: 'Absolute value in the reporting currency: not comparable across companies of different sizes without normalising.',
@@ -73,9 +86,11 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Debt remaining after deducting cash.',
     readPt: 'Negativa significa caixa líquida (a empresa tem mais caixa do que dívida). Positiva, lê-se com EBITDA e FCF.',
     readEn: 'Negative means net cash (more cash than debt). Positive is read together with EBITDA and FCF.',
-    cautionPt: 'A dívida financeira vem do Yahoo tal como está. As locações (IFRS 16) entram nalguns anos e noutros não: não se somam à mão, '
+    cautionPt:
+        'A dívida financeira vem do Yahoo tal como está. As locações (IFRS 16) entram nalguns anos e noutros não: não se somam à mão, '
         'para não contar duas vezes.',
-    cautionEn: 'Financial debt comes from Yahoo as reported. Leases (IFRS 16) are included in some years and not in others: they are not added by hand, '
+    cautionEn:
+        'Financial debt comes from Yahoo as reported. Leases (IFRS 16) are included in some years and not in others: they are not added by hand, '
         'to avoid double counting.',
   ),
   MetricInfo(
@@ -83,11 +98,14 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Dívida líquida / EBITDA',
     nameEn: 'Net debt / EBITDA',
     formula: 'Dívida líquida / EBITDA',
-    meaningPt: 'Quantos anos de EBITDA seriam precisos para pagar a dívida líquida.',
+    meaningPt:
+        'Quantos anos de EBITDA seriam precisos para pagar a dívida líquida.',
     meaningEn: 'How many years of EBITDA would be needed to repay net debt.',
-    readPt: 'Acima de 3 a 4 exige cautela, exceto em utilities e infraestruturas, cuja dívida é estável e contratada a longo prazo. '
+    readPt:
+        'Acima de 3 a 4 exige cautela, exceto em utilities e infraestruturas, cuja dívida é estável e contratada a longo prazo. '
         'Negativo significa caixa líquida.',
-    readEn: 'Above 3 to 4 calls for caution, except for utilities and infrastructure, whose debt is stable and long-term. '
+    readEn:
+        'Above 3 to 4 calls for caution, except for utilities and infrastructure, whose debt is stable and long-term. '
         'Negative means net cash.',
     cautionPt: 'Com EBITDA negativo dá null: o rácio não tem significado.',
     cautionEn: 'With negative EBITDA it is null: the ratio has no meaning.',
@@ -99,9 +117,11 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     formula: 'Dívida financeira / Capitais próprios',
     meaningPt: 'Quanto da empresa é financiado por dívida comparado com os acionistas.',
     meaningEn: 'How much of the company is financed by debt compared with shareholders.',
-    readPt: 'Valores baixos (abaixo de 1) indicam uma estrutura conservadora. Valores altos são normais em empresas que recompram ações '
+    readPt:
+        'Valores baixos (abaixo de 1) indicam uma estrutura conservadora. Valores altos são normais em empresas que recompram ações '
         'com dívida, e em bancos. Depende do setor.',
-    readEn: 'Low values (below 1) indicate a conservative structure. High values are normal for companies that buy back shares with debt, '
+    readEn:
+        'Low values (below 1) indicate a conservative structure. High values are normal for companies that buy back shares with debt, '
         'and for banks. It depends on the sector.',
     cautionPt: 'Capitais próprios negativos (muitas recompras ou prejuízos acumulados) dão null: o rácio deixa de ser interpretável.',
     cautionEn: 'Negative equity (heavy buybacks or accumulated losses) gives null: the ratio stops being interpretable.',
@@ -111,13 +131,16 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Cobertura de juros',
     nameEn: 'Interest coverage',
     formula: 'EBIT / Juros pagos',
-    meaningPt: 'Quantas vezes o resultado operacional cobre os juros da dívida.',
+    meaningPt:
+        'Quantas vezes o resultado operacional cobre os juros da dívida.',
     meaningEn: 'How many times operating income covers interest on debt.',
     readPt: 'Abaixo de 1,5 a 2 o serviço da dívida fica apertado; acima de 5 há folga. Lê-se com a estabilidade dos resultados.',
     readEn: 'Below 1.5 to 2 debt service is tight; above 5 there is room. Read it with the stability of earnings.',
-    cautionPt: 'Usa os juros da demonstração de resultados e, se faltarem, os juros pagos. Sem juros na fonte (ou zero) dá null, '
+    cautionPt:
+        'Usa os juros da demonstração de resultados e, se faltarem, os juros pagos. Sem juros na fonte (ou zero) dá null, '
         'o que não quer dizer que a empresa não tenha dívida.',
-    cautionEn: 'Uses interest from the income statement and, if missing, interest paid. Without interest in the source (or zero) it is null, '
+    cautionEn:
+        'Uses interest from the income statement and, if missing, interest paid. Without interest in the source (or zero) it is null, '
         'which does not mean the company has no debt.',
   ),
   MetricInfo(
@@ -125,7 +148,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Dívida líquida / FCF',
     nameEn: 'Net debt / FCF',
     formula: 'Dívida líquida / (CFO − Capex)',
-    meaningPt: 'Anos de fluxo de caixa livre necessários para pagar a dívida líquida.',
+    meaningPt:
+        'Anos de fluxo de caixa livre necessários para pagar a dívida líquida.',
     meaningEn: 'Years of free cash flow needed to repay net debt.',
     readPt: 'Abaixo de 3 anos a dívida é facilmente paga com o FCF atual. Acima de 5 anos merece atenção.',
     readEn: 'Below 3 years, debt is easily repaid from current FCF. Above 5 years deserves attention.',
@@ -161,7 +185,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Fluxo de caixa operacional (CFO)',
     nameEn: 'Operating cash flow (CFO)',
     formula: '',
-    meaningPt: 'Dinheiro gerado pela atividade principal da empresa no período.',
+    meaningPt:
+        'Dinheiro gerado pela atividade principal da empresa no período.',
     meaningEn: 'Cash generated by the main business activity in the period.',
     readPt: 'Deve ser positivo e crescer ao ritmo dos resultados. Um CFO fraco com lucros fortes é um sinal de alerta.',
     readEn: 'Should be positive and grow in line with earnings. Weak CFO with strong profits is a warning sign.',
@@ -175,7 +200,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     formula: '|Capex reportado|',
     meaningPt: 'Dinheiro gasto em ativos fixos (instalações, equipamento, software capitalizado).',
     meaningEn: 'Cash spent on fixed assets (facilities, equipment, capitalised software).',
-    readPt: 'Mostra-se em valor positivo (o que se gastou). Capex alto é normal em indústria e telecomunicações; em software e serviços, '
+    readPt:
+        'Mostra-se em valor positivo (o que se gastou). Capex alto é normal em indústria e telecomunicações; em software e serviços, '
         'baixo.',
     readEn: 'Shown as a positive value (what was spent). High capex is normal in industry and telecoms; low in software and services.',
   ),
@@ -189,7 +215,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readPt: 'Quanto mais positivo e crescente, melhor. Com FCF negativo, a empresa depende de dívida ou de capital novo.',
     readEn: 'The more positive and growing, the better. With negative FCF, the company relies on debt or new capital.',
     cautionPt: 'Se faltar o CFO ou o capex, usa-se o FCF reportado pela fonte.',
-    cautionEn: 'If CFO or capex is missing, the FCF reported by the source is used.',
+    cautionEn:
+        'If CFO or capex is missing, the FCF reported by the source is used.',
   ),
   MetricInfo(
     key: 'fcf_reported',
@@ -229,7 +256,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Capex de manutenção (aproximado)',
     nameEn: 'Maintenance capex (approximate)',
     formula: 'min(|Capex|, D&A)',
-    meaningPt: 'Parte do investimento que serve para manter a capacidade atual.',
+    meaningPt:
+        'Parte do investimento que serve para manter a capacidade atual.',
     meaningEn: 'Part of the investment needed to maintain current capacity.',
     readPt: 'Aproximação: se o capex é inferior às amortizações, o capex de manutenção é o próprio capex.',
     readEn: 'Approximation: if capex is below depreciation, maintenance capex is the capex itself.',
@@ -267,7 +295,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Accruals de Sloan',
     nameEn: 'Sloan accruals',
     formula: '(Resultado líquido − CFO) / Ativo total médio',
-    meaningPt: 'Quanto do lucro não está ainda em dinheiro, em proporção do ativo.',
+    meaningPt:
+        'Quanto do lucro não está ainda em dinheiro, em proporção do ativo.',
     meaningEn: 'How much of earnings is not yet in cash, as a share of assets.',
     readPt: 'Valores altos (positivos e grandes) são sinal de alerta: lucro sem caixa tende a reverter. Valores perto de zero ou negativos são preferíveis.',
     readEn: 'High positive values are a warning sign: earnings without cash tend to reverse. Values near zero or negative are preferable.',
@@ -289,8 +318,10 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Capex / Amortizações e depreciações',
     nameEn: 'Capex / D&A',
     formula: '|Capex| / D&A',
-    meaningPt: 'Quanto se investe em relação ao desgaste contabilístico dos ativos.',
-    meaningEn: 'How much is invested relative to the accounting wear of assets.',
+    meaningPt:
+        'Quanto se investe em relação ao desgaste contabilístico dos ativos.',
+    meaningEn:
+        'How much is invested relative to the accounting wear of assets.',
     readPt: 'Acima de 1 a empresa investe mais do que o desgaste contabilístico (cresce ou moderniza). Abaixo de 1 pode estar a consumir os ativos.',
     readEn: 'Above 1 the company invests more than the accounting wear (growing or modernising). Below 1 it may be consuming its assets.',
     cautionPt: 'Com amortizações nulas dá null.',
@@ -308,7 +339,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readPt: 'Interessa sobretudo a evolução ao longo dos anos. Lê-se com o preço para obter o P/E.',
     readEn: 'The trend over the years matters most. Read it together with the price to get the P/E.',
     cautionPt: 'Na moeda de reporte; itens não recorrentes alteram o valor.',
-    cautionEn: 'In the reporting currency; non-recurring items change the value.',
+    cautionEn:
+        'In the reporting currency; non-recurring items change the value.',
   ),
   MetricInfo(
     key: 'fcf_per_share',
@@ -337,7 +369,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     namePt: 'Valor contabilístico tangível por ação',
     nameEn: 'Tangible book value per share',
     formula: 'Valor contabilístico tangível / Ações em circulação',
-    meaningPt: 'Valor contabilístico por ação sem goodwill nem outros intangíveis.',
+    meaningPt:
+        'Valor contabilístico por ação sem goodwill nem outros intangíveis.',
     meaningEn: 'Book value per share without goodwill or other intangibles.',
     readPt: 'Mais conservador que o BVPS. Relevante em bancos (P/TBV) e em empresas com muitas aquisições.',
     readEn: 'More conservative than BVPS. Relevant for banks (P/TBV) and for companies with many acquisitions.',
@@ -364,7 +397,9 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Annual change in the number of shares outstanding.',
     readPt: 'Positiva significa diluição (emissão de ações, por exemplo por SBC). Negativa significa recompras, que aumentam a parte de cada acionista.',
     readEn: 'Positive means dilution (share issuance, for example from SBC). Negative means buybacks, which increase each shareholder’s stake.',
-    cautionPt: 'Usa o número de ações de fim de ano (fonte), não a média diluída.',
-    cautionEn: 'Uses year-end shares outstanding (source), not the diluted average.',
+    cautionPt:
+        'Usa o número de ações de fim de ano (fonte), não a média diluída.',
+    cautionEn:
+        'Uses year-end shares outstanding (source), not the diluted average.',
   ),
 ];

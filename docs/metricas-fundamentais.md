@@ -495,3 +495,7 @@ ROIC 83 %; Piotroski 8/9; Beneish −2,29 (abaixo de −1,78, sem alerta); Z 8,6
 um efeito conhecido das recompras); beta 1,07; volatilidade 29 %.
 18. **52 semanas, moeda**: o fallback a partir dos closes do gráfico (moeda de cotação) não pode usar o preço do `MarketSnapshot` (moeda de reporte, Parte 4).
     A distância ao máximo usa agora o par coerente: snapshot com snapshot, ou gráfico com gráfico.
+
+### Resolução posterior (orquestrador)
+- O getter `FinPeriod.ebitOrOperating` do contrato já usa `operatingIncome ?? ebit` (ordem da especificação), pelo que as notas das secções 2.0 e Revisão (ponto 15) sobre a prioridade inversa estão ultrapassadas.
+- `FinPeriod` tem `netBuybacks` (= `-buybacks - stockIssuance`), `MarketSnapshot` tem `forwardEps`, e `Financials.currency` vem vazia quando a fonte não tem dados.

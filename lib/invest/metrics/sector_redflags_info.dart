@@ -12,87 +12,60 @@ const List<MetricInfo> sectorRedflagsInfo = [
     namePt: 'ROIC médio anual',
     nameEn: 'Average annual ROIC',
     formula: 'média de NOPAT / capital investido médio, por exercício',
-    meaningPt:
-        'Retorno médio que a empresa obtém do capital investido nos exercícios anuais disponíveis.',
-    meaningEn:
-        'Average return the company earns on invested capital across the available annual years.',
-    readPt:
-        'Um ROIC acima de 15 % e estável sugere vantagem competitiva. Compara com o WACC e com os pares do setor.',
-    readEn:
-        'A ROIC above 15 % and stable suggests a competitive advantage. Compare with WACC and sector peers.',
-    cautionPt:
-        'Só há poucos anos (a fonte gratuita dá cerca de 4 anuais). O primeiro ano não entra, porque a média do capital precisa do ano anterior.',
-    cautionEn:
-        'Only a few years (the free source gives about 4 annual periods). The first year is excluded because the average capital needs the prior year.',
+    meaningPt: 'Retorno médio que a empresa obtém do capital investido nos exercícios anuais disponíveis.',
+    meaningEn: 'Average return the company earns on invested capital across the available annual years.',
+    readPt: 'Um ROIC acima de 15 % e estável sugere vantagem competitiva. Compara com o WACC e com os pares do setor.',
+    readEn: 'A ROIC above 15 % and stable suggests a competitive advantage. Compare with WACC and sector peers.',
+    cautionPt: 'Só há poucos anos (a fonte gratuita dá cerca de 4 anuais). O primeiro ano não entra, porque a média do capital precisa do ano anterior.',
+    cautionEn: 'Only a few years (the free source gives about 4 annual periods). The first year is excluded because the average capital needs the prior year.',
   ),
   MetricInfo(
     key: 'quality_roic_stdev',
     namePt: 'Desvio do ROIC',
     nameEn: 'ROIC standard deviation',
     formula: 'desvio-padrão amostral (n − 1) dos ROIC anuais',
-    meaningPt:
-        'Quanto o ROIC oscila de ano para ano. Quanto menor, mais estável é o retorno do negócio.',
-    meaningEn:
-        'How much ROIC moves from year to year. The lower, the more stable the return of the business.',
-    readPt:
-        'Abaixo de 3 pontos percentuais é estável. Oscilações grandes indicam ciclicidade ou pouca previsibilidade.',
-    readEn:
-        'Below 3 percentage points is stable. Large swings point to cyclicality or low predictability.',
-    cautionPt:
-        'Só se calcula com pelo menos 3 valores anuais (senão é nulo). Com 4 anos é uma estimativa de amostra pequena.',
-    cautionEn:
-        'Only computed with at least 3 annual values (null otherwise). With 4 years it is an estimate from a small sample.',
+    meaningPt: 'Quanto o ROIC oscila de ano para ano. Quanto menor, mais estável é o retorno do negócio.',
+    meaningEn: 'How much ROIC moves from year to year. The lower, the more stable the return of the business.',
+    readPt: 'Abaixo de 3 pontos percentuais é estável. Oscilações grandes indicam ciclicidade ou pouca previsibilidade.',
+    readEn: 'Below 3 percentage points is stable. Large swings point to cyclicality or low predictability.',
+    cautionPt: 'Só se calcula com pelo menos 3 valores anuais (senão é nulo). Com 4 anos é uma estimativa de amostra pequena.',
+    cautionEn: 'Only computed with at least 3 annual values (null otherwise). With 4 years it is an estimate from a small sample.',
   ),
   MetricInfo(
     key: 'quality_roic_change',
     namePt: 'Variação do ROIC',
     nameEn: 'ROIC change',
     formula: 'ROIC do último ano anual − ROIC do primeiro ano anual',
-    meaningPt:
-        'Se o retorno do capital melhorou ou piorou entre o primeiro e o último ano disponível.',
-    meaningEn:
-        'Whether the return on capital improved or worsened between the first and the last available year.',
-    readPt:
-        'Positiva com ROIC elevado indica um negócio a ganhar eficiência. Negativa e forte pede explicação.',
-    readEn:
-        'Positive with a high ROIC indicates a business gaining efficiency. A strong negative value needs an explanation.',
-    cautionPt:
-        'Compara só dois pontos; um ano atípico altera muito o resultado. Usa o desvio para ver a tendência.',
-    cautionEn:
-        'Compares only two points; one unusual year changes the result a lot. Use the standard deviation to see the trend.',
+    meaningPt: 'Se o retorno do capital melhorou ou piorou entre o primeiro e o último ano disponível.',
+    meaningEn: 'Whether the return on capital improved or worsened between the first and the last available year.',
+    readPt: 'Positiva com ROIC elevado indica um negócio a ganhar eficiência. Negativa e forte pede explicação.',
+    readEn: 'Positive with a high ROIC indicates a business gaining efficiency. A strong negative value needs an explanation.',
+    cautionPt: 'Compara só dois pontos; um ano atípico altera muito o resultado. Usa o desvio para ver a tendência.',
+    cautionEn: 'Compares only two points; one unusual year changes the result a lot. Use the standard deviation to see the trend.',
   ),
   MetricInfo(
     key: 'quality_gross_margin_stdev',
     namePt: 'Desvio da margem bruta',
     nameEn: 'Gross margin standard deviation',
     formula: 'desvio-padrão amostral (n − 1) das margens brutas anuais',
-    meaningPt:
-        'Quanto a margem bruta oscila de ano para ano. Mede a estabilidade do poder de fixação de preços.',
-    meaningEn:
-        'How much the gross margin moves from year to year. Measures the stability of pricing power.',
-    readPt:
-        'Abaixo de 2 pontos percentuais indica margens estáveis, típicas de marcas fortes. Oscilações grandes sugerem concorrência ou custos voláteis.',
-    readEn:
-        'Below 2 percentage points indicates stable margins, typical of strong brands. Large swings suggest competition or volatile costs.',
-    cautionPt:
-        'Só com pelo menos 3 anos. Mudanças na classificação de custos entre anos podem criar oscilações falsas.',
-    cautionEn:
-        'Only with at least 3 years. Changes in cost classification between years can create false swings.',
+    meaningPt: 'Quanto a margem bruta oscila de ano para ano. Mede a estabilidade do poder de fixação de preços.',
+    meaningEn: 'How much the gross margin moves from year to year. Measures the stability of pricing power.',
+    readPt: 'Abaixo de 2 pontos percentuais indica margens estáveis, típicas de marcas fortes. Oscilações grandes sugerem concorrência ou custos voláteis.',
+    readEn: 'Below 2 percentage points indicates stable margins, typical of strong brands. Large swings suggest competition or volatile costs.',
+    cautionPt: 'Só com pelo menos 3 anos. Mudanças na classificação de custos entre anos podem criar oscilações falsas.',
+    cautionEn: 'Only with at least 3 years. Changes in cost classification between years can create false swings.',
   ),
   MetricInfo(
     key: 'quality_gross_margin_change',
     namePt: 'Variação da margem bruta',
     nameEn: 'Gross margin change',
     formula: 'margem bruta do último ano − margem bruta do primeiro ano',
-    meaningPt:
-        'Se a margem bruta subiu ou desceu no período disponível (em fração: 0,02 = 2 pontos percentuais).',
-    meaningEn:
-        'Whether the gross margin rose or fell over the available period (as a fraction: 0.02 = 2 percentage points).',
-    readPt:
-        'Margens a subir, ou estáveis e altas, são sinal de poder de preços. A descer num setor competitivo pedem atenção.',
-    readEn:
-        'Rising, or stable and high, margins signal pricing power. Falling margins in a competitive sector deserve attention.',
-    cautionPt: 'Compara dois pontos. Vê também a margem operacional e o desvio.',
+    meaningPt: 'Se a margem bruta subiu ou desceu no período disponível (em fração: 0,02 = 2 pontos percentuais).',
+    meaningEn: 'Whether the gross margin rose or fell over the available period (as a fraction: 0.02 = 2 percentage points).',
+    readPt: 'Margens a subir, ou estáveis e altas, são sinal de poder de preços. A descer num setor competitivo pedem atenção.',
+    readEn: 'Rising, or stable and high, margins signal pricing power. Falling margins in a competitive sector deserve attention.',
+    cautionPt:
+        'Compara dois pontos. Vê também a margem operacional e o desvio.',
     cautionEn: 'Compares two points. Look at the operating margin and the deviation too.',
   ),
   MetricInfo(
@@ -100,68 +73,47 @@ const List<MetricInfo> sectorRedflagsInfo = [
     namePt: 'Desvio da margem operacional',
     nameEn: 'Operating margin standard deviation',
     formula: 'desvio-padrão amostral (n − 1) das margens operacionais anuais (EBIT / receita)',
-    meaningPt:
-        'Quanto a margem operacional oscila de ano para ano. Mede a previsibilidade da rentabilidade.',
-    meaningEn:
-        'How much the operating margin moves from year to year. Measures how predictable profitability is.',
-    readPt:
-        'Abaixo de 2 pontos percentuais é previsível. Oscilações grandes são típicas de negócios cíclicos ou de grandes itens não recorrentes.',
-    readEn:
-        'Below 2 percentage points is predictable. Large swings are typical of cyclical businesses or large non-recurring items.',
-    cautionPt:
-        'Usa o EBIT = resultado operacional (não o EBIT do Yahoo, que inclui itens não operacionais). Só com 3 anos ou mais.',
-    cautionEn:
-        'Uses EBIT = operating income (not the Yahoo EBIT, which includes non-operating items). Only with 3 years or more.',
+    meaningPt: 'Quanto a margem operacional oscila de ano para ano. Mede a previsibilidade da rentabilidade.',
+    meaningEn: 'How much the operating margin moves from year to year. Measures how predictable profitability is.',
+    readPt: 'Abaixo de 2 pontos percentuais é previsível. Oscilações grandes são típicas de negócios cíclicos ou de grandes itens não recorrentes.',
+    readEn: 'Below 2 percentage points is predictable. Large swings are typical of cyclical businesses or large non-recurring items.',
+    cautionPt: 'Usa o EBIT = resultado operacional (não o EBIT do Yahoo, que inclui itens não operacionais). Só com 3 anos ou mais.',
+    cautionEn: 'Uses EBIT = operating income (not the Yahoo EBIT, which includes non-operating items). Only with 3 years or more.',
   ),
   MetricInfo(
     key: 'quality_operating_margin_change',
     namePt: 'Variação da margem operacional',
     nameEn: 'Operating margin change',
-    formula: 'margem operacional do último ano − margem operacional do primeiro ano',
-    meaningPt:
-        'Se a margem operacional melhorou ou piorou no período disponível (em fração).',
-    meaningEn:
-        'Whether the operating margin improved or worsened over the available period (as a fraction).',
-    readPt:
-        'Margem a subir sem aquisições é eficiência ou alavancagem operacional. A descer pode ser pressão de custos ou de preços.',
-    readEn:
-        'A rising margin without acquisitions means efficiency or operating leverage. A falling one can mean cost or price pressure.',
-    cautionPt:
-        'Compara dois pontos. Uma aquisição pode mudar a margem sem melhoria do negócio.',
-    cautionEn:
-        'Compares two points. An acquisition can change the margin without any business improvement.',
+    formula:
+        'margem operacional do último ano − margem operacional do primeiro ano',
+    meaningPt: 'Se a margem operacional melhorou ou piorou no período disponível (em fração).',
+    meaningEn: 'Whether the operating margin improved or worsened over the available period (as a fraction).',
+    readPt: 'Margem a subir sem aquisições é eficiência ou alavancagem operacional. A descer pode ser pressão de custos ou de preços.',
+    readEn: 'A rising margin without acquisitions means efficiency or operating leverage. A falling one can mean cost or price pressure.',
+    cautionPt: 'Compara dois pontos. Uma aquisição pode mudar a margem sem melhoria do negócio.',
+    cautionEn: 'Compares two points. An acquisition can change the margin without any business improvement.',
   ),
   MetricInfo(
     key: 'quality_net_margin_stdev',
     namePt: 'Desvio da margem líquida',
     nameEn: 'Net margin standard deviation',
     formula: 'desvio-padrão amostral (n − 1) das margens líquidas anuais (resultado líquido / receita)',
-    meaningPt:
-        'Quanto a margem líquida oscila de ano para ano. Inclui impostos, juros e itens extraordinários.',
-    meaningEn:
-        'How much the net margin moves from year to year. It includes taxes, interest and extraordinary items.',
-    readPt:
-        'Oscilações pequenas indicam lucros estáveis. Oscilações grandes com margem operacional estável apontam para itens não operacionais, juros ou impostos.',
-    readEn:
-        'Small swings indicate stable earnings. Large swings with a stable operating margin point to non-operating items, interest or taxes.',
-    cautionPt:
-        'Muito afetada por itens únicos (vendas de participações, imparidades). Ver também os alertas da secção 17.',
-    cautionEn:
-        'Strongly affected by one-off items (disposals, impairments). See also the red flags in section 17.',
+    meaningPt: 'Quanto a margem líquida oscila de ano para ano. Inclui impostos, juros e itens extraordinários.',
+    meaningEn: 'How much the net margin moves from year to year. It includes taxes, interest and extraordinary items.',
+    readPt: 'Oscilações pequenas indicam lucros estáveis. Oscilações grandes com margem operacional estável apontam para itens não operacionais, juros ou impostos.',
+    readEn: 'Small swings indicate stable earnings. Large swings with a stable operating margin point to non-operating items, interest or taxes.',
+    cautionPt: 'Muito afetada por itens únicos (vendas de participações, imparidades). Ver também os alertas da secção 17.',
+    cautionEn: 'Strongly affected by one-off items (disposals, impairments). See also the red flags in section 17.',
   ),
   MetricInfo(
     key: 'quality_net_margin_change',
     namePt: 'Variação da margem líquida',
     nameEn: 'Net margin change',
     formula: 'margem líquida do último ano − margem líquida do primeiro ano',
-    meaningPt:
-        'Se a margem líquida subiu ou desceu no período disponível (em fração).',
-    meaningEn:
-        'Whether the net margin rose or fell over the available period (as a fraction).',
-    readPt:
-        'Subir de forma sustentada com margem operacional estável é bom sinal. Subir só por impostos mais baixos ou itens únicos é menos sustentável.',
-    readEn:
-        'A sustained rise with a stable operating margin is a good sign. A rise only from lower taxes or one-off items is less sustainable.',
+    meaningPt: 'Se a margem líquida subiu ou desceu no período disponível (em fração).',
+    meaningEn: 'Whether the net margin rose or fell over the available period (as a fraction).',
+    readPt: 'Subir de forma sustentada com margem operacional estável é bom sinal. Subir só por impostos mais baixos ou itens únicos é menos sustentável.',
+    readEn: 'A sustained rise with a stable operating margin is a good sign. A rise only from lower taxes or one-off items is less sustainable.',
     cautionPt: 'Compara dois pontos. Confirma com a margem operacional.',
     cautionEn: 'Compares two points. Confirm with the operating margin.',
   ),
@@ -169,84 +121,60 @@ const List<MetricInfo> sectorRedflagsInfo = [
     key: 'quality_roic_10y',
     namePt: 'ROIC elevado e estável durante 10 anos',
     nameEn: 'ROIC high and stable for 10 years',
-    meaningPt:
-        'Se o retorno do capital se manteve elevado durante uma década: sinal forte de vantagem duradoura.',
-    meaningEn:
-        'Whether the return on capital stayed high for a decade: a strong sign of a lasting advantage.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte dá cerca de 4 anos de demonstrações anuais. Usa o ROIC médio e o desvio como aproximação, sem lhe chamar 10 anos.',
-    readEn:
-        'Not available with free data: the source gives about 4 years of annual statements. Use the average ROIC and its deviation as a proxy, without calling it 10 years.',
+    meaningPt: 'Se o retorno do capital se manteve elevado durante uma década: sinal forte de vantagem duradoura.',
+    meaningEn: 'Whether the return on capital stayed high for a decade: a strong sign of a lasting advantage.',
+    readPt: 'Não disponível com dados gratuitos: a fonte dá cerca de 4 anos de demonstrações anuais. Usa o ROIC médio e o desvio como aproximação, sem lhe chamar 10 anos.',
+    readEn: 'Not available with free data: the source gives about 4 years of annual statements. Use the average ROIC and its deviation as a proxy, without calling it 10 years.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'quality_market_share',
     namePt: 'Quota de mercado e crescimento face ao setor',
     nameEn: 'Market share and growth versus sector',
-    meaningPt:
-        'Quanto do mercado a empresa tem e se cresce mais ou menos do que o setor.',
-    meaningEn:
-        'How much of the market the company holds and whether it grows faster or slower than the sector.',
-    readPt:
-        'Não disponível com dados gratuitos: não há dados de mercado total do setor nas fontes usadas.',
-    readEn:
-        'Not available with free data: the sources used have no total sector market data.',
+    meaningPt: 'Quanto do mercado a empresa tem e se cresce mais ou menos do que o setor.',
+    meaningEn: 'How much of the market the company holds and whether it grows faster or slower than the sector.',
+    readPt: 'Não disponível com dados gratuitos: não há dados de mercado total do setor nas fontes usadas.',
+    readEn: 'Not available with free data: the sources used have no total sector market data.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'quality_recurring_revenue',
     namePt: 'Receita recorrente (% da receita, churn, retenção)',
     nameEn: 'Recurring revenue (% of revenue, churn, retention)',
-    meaningPt:
-        'Parte da receita que se repete todos os períodos (subscrições, contratos) e quanto se perde de clientes.',
-    meaningEn:
-        'Share of revenue that repeats each period (subscriptions, contracts) and how many customers are lost.',
-    readPt:
-        'Não disponível com dados gratuitos: a divisão da receita por tipo e as métricas de clientes não vêm nas demonstrações.',
-    readEn:
-        'Not available with free data: the revenue split by type and the customer metrics are not in the financial statements.',
+    meaningPt: 'Parte da receita que se repete todos os períodos (subscrições, contratos) e quanto se perde de clientes.',
+    meaningEn: 'Share of revenue that repeats each period (subscriptions, contracts) and how many customers are lost.',
+    readPt: 'Não disponível com dados gratuitos: a divisão da receita por tipo e as métricas de clientes não vêm nas demonstrações.',
+    readEn: 'Not available with free data: the revenue split by type and the customer metrics are not in the financial statements.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'quality_customer_concentration',
     namePt: 'Concentração de clientes',
     nameEn: 'Customer concentration',
-    meaningPt:
-        'Quanto da receita depende de poucos clientes. Muita concentração aumenta o risco.',
-    meaningEn:
-        'How much of the revenue depends on a few customers. High concentration raises the risk.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não identifica os clientes principais. Confirma no relatório anual (nota sobre clientes significativos).',
-    readEn:
-        'Not available with free data: the source does not identify the main customers. Check the annual report (major customers note).',
+    meaningPt: 'Quanto da receita depende de poucos clientes. Muita concentração aumenta o risco.',
+    meaningEn: 'How much of the revenue depends on a few customers. High concentration raises the risk.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não identifica os clientes principais. Confirma no relatório anual (nota sobre clientes significativos).',
+    readEn: 'Not available with free data: the source does not identify the main customers. Check the annual report (major customers note).',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'quality_supplier_concentration',
     namePt: 'Concentração de fornecedores',
     nameEn: 'Supplier concentration',
-    meaningPt:
-        'Quanto da produção depende de poucos fornecedores. Muita concentração aumenta o risco de rutura.',
-    meaningEn:
-        'How much of the production depends on a few suppliers. High concentration raises the risk of disruption.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não identifica os fornecedores principais. Confirma no relatório anual.',
-    readEn:
-        'Not available with free data: the source does not identify the main suppliers. Check the annual report.',
+    meaningPt: 'Quanto da produção depende de poucos fornecedores. Muita concentração aumenta o risco de rutura.',
+    meaningEn: 'How much of the production depends on a few suppliers. High concentration raises the risk of disruption.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não identifica os fornecedores principais. Confirma no relatório anual.',
+    readEn: 'Not available with free data: the source does not identify the main suppliers. Check the annual report.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'quality_moat_sources',
     namePt: 'Fontes de vantagem competitiva (moat)',
     nameEn: 'Sources of competitive advantage (moat)',
-    meaningPt:
-        'Marca, custos de mudança, efeitos de rede, vantagem de custo ou escala eficiente que protegem a empresa.',
-    meaningEn:
-        'Brand, switching costs, network effects, cost advantage or efficient scale that protect the company.',
-    readPt:
-        'Não disponível com dados gratuitos: é uma análise qualitativa. O número (ROIC e margens estáveis) é um indício, não a prova do moat.',
-    readEn:
-        'Not available with free data: this is a qualitative analysis. The numbers (stable ROIC and margins) are a hint, not proof of a moat.',
+    meaningPt: 'Marca, custos de mudança, efeitos de rede, vantagem de custo ou escala eficiente que protegem a empresa.',
+    meaningEn: 'Brand, switching costs, network effects, cost advantage or efficient scale that protect the company.',
+    readPt: 'Não disponível com dados gratuitos: é uma análise qualitativa. O número (ROIC e margens estáveis) é um indício, não a prova do moat.',
+    readEn: 'Not available with free data: this is a qualitative analysis. The numbers (stable ROIC and margins) are a hint, not proof of a moat.',
     availability: MetricAvailability.unavailable,
   ),
 
@@ -255,102 +183,73 @@ const List<MetricInfo> sectorRedflagsInfo = [
     key: 'gov_insider_ownership',
     namePt: 'Ações detidas por administradores',
     nameEn: 'Shares held by insiders',
-    meaningPt:
-        'Percentagem do capital detida pelos administradores. Mais participação alinha interesses com os acionistas.',
-    meaningEn:
-        'Percentage of the capital held by the insiders. Higher holdings align managers with shareholders.',
-    readPt:
-        'Acima de 5 % é um bom alinhamento em empresas médias; em empresas grandes, valores baixos são normais. Compara com os pares.',
-    readEn:
-        'Above 5 % is good alignment for mid-size companies; in large companies low values are normal. Compare with peers.',
-    cautionPt:
-        'Dado de melhor esforço (a fonte nem sempre o dá) e muda pouco no tempo. Não mostra se os administradores compram ou vendem.',
-    cautionEn:
-        'Best-effort data (the source does not always provide it) and it changes slowly. It does not show whether insiders buy or sell.',
+    meaningPt: 'Percentagem do capital detida pelos administradores. Mais participação alinha interesses com os acionistas.',
+    meaningEn: 'Percentage of the capital held by the insiders. Higher holdings align managers with shareholders.',
+    readPt: 'Acima de 5 % é um bom alinhamento em empresas médias; em empresas grandes, valores baixos são normais. Compara com os pares.',
+    readEn: 'Above 5 % is good alignment for mid-size companies; in large companies low values are normal. Compare with peers.',
+    cautionPt: 'Dado de melhor esforço (a fonte nem sempre o dá) e muda pouco no tempo. Não mostra se os administradores compram ou vendem.',
+    cautionEn: 'Best-effort data (the source does not always provide it) and it changes slowly. It does not show whether insiders buy or sell.',
     availability: MetricAvailability.partial,
   ),
   MetricInfo(
     key: 'gov_capital_allocation',
     namePt: 'Alocação de capital (retorno das aquisições e das recompras)',
     nameEn: 'Capital allocation (acquisition and buyback returns)',
-    meaningPt:
-        'Se o dinheiro investido em aquisições e recompras cria valor para o acionista.',
-    meaningEn:
-        'Whether the money invested in acquisitions and buybacks creates value for shareholders.',
-    readPt:
-        'Não disponível com dados gratuitos: exige o preço pago em cada aquisição e recompra e o retorno de cada negócio comprado.',
-    readEn:
-        'Not available with free data: it needs the price paid in each acquisition and buyback and the return of each acquired business.',
+    meaningPt: 'Se o dinheiro investido em aquisições e recompras cria valor para o acionista.',
+    meaningEn: 'Whether the money invested in acquisitions and buybacks creates value for shareholders.',
+    readPt: 'Não disponível com dados gratuitos: exige o preço pago em cada aquisição e recompra e o retorno de cada negócio comprado.',
+    readEn: 'Not available with free data: it needs the price paid in each acquisition and buyback and the return of each acquired business.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'gov_buyback_price_discipline',
     namePt: 'Recompras a preços razoáveis',
     nameEn: 'Buybacks at reasonable prices',
-    meaningPt:
-        'Se a empresa recompra ações quando estão baratas e não quando estão caras.',
-    meaningEn:
-        'Whether the company buys back shares when they are cheap rather than expensive.',
-    readPt:
-        'Não disponível com dados gratuitos: exige o preço médio de recompra de cada período e o histórico de avaliações.',
-    readEn:
-        'Not available with free data: it needs the average buyback price of each period and the valuation history.',
+    meaningPt: 'Se a empresa recompra ações quando estão baratas e não quando estão caras.',
+    meaningEn: 'Whether the company buys back shares when they are cheap rather than expensive.',
+    readPt: 'Não disponível com dados gratuitos: exige o preço médio de recompra de cada período e o histórico de avaliações.',
+    readEn: 'Not available with free data: it needs the average buyback price of each period and the valuation history.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'gov_pay_linked_to_roic_fcf',
     namePt: 'Remuneração ligada a ROIC e FCF',
     nameEn: 'Pay linked to ROIC and FCF',
-    meaningPt:
-        'Se a remuneração dos gestores depende de retorno do capital e de fluxo de caixa, e não só de lucro por ação.',
-    meaningEn:
-        'Whether executive pay depends on return on capital and cash flow, not only on earnings per share.',
-    readPt:
-        'Não disponível com dados gratuitos: as condições de remuneração estão no relatório de governo (proxy statement), não nas demonstrações.',
-    readEn:
-        'Not available with free data: pay conditions are in the governance report (proxy statement), not in the financial statements.',
+    meaningPt: 'Se a remuneração dos gestores depende de retorno do capital e de fluxo de caixa, e não só de lucro por ação.',
+    meaningEn: 'Whether executive pay depends on return on capital and cash flow, not only on earnings per share.',
+    readPt: 'Não disponível com dados gratuitos: as condições de remuneração estão no relatório de governo (proxy statement), não nas demonstrações.',
+    readEn: 'Not available with free data: pay conditions are in the governance report (proxy statement), not in the financial statements.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'gov_board_independence',
     namePt: 'Independência do conselho',
     nameEn: 'Board independence',
-    meaningPt:
-        'Quantos administradores não executivos e independentes fiscalizam a gestão.',
+    meaningPt: 'Quantos administradores não executivos e independentes fiscalizam a gestão.',
     meaningEn:
         'How many independent non-executive directors oversee the management.',
-    readPt:
-        'Não disponível com dados gratuitos: vem da composição do conselho no relatório de governo.',
-    readEn:
-        'Not available with free data: it comes from the board composition in the governance report.',
+    readPt: 'Não disponível com dados gratuitos: vem da composição do conselho no relatório de governo.',
+    readEn: 'Not available with free data: it comes from the board composition in the governance report.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'gov_share_classes',
     namePt: 'Estrutura de classes de ações',
     nameEn: 'Share class structure',
-    meaningPt:
-        'Se existem classes com mais votos (ações de voto múltiplo) que dão controlo com menos capital.',
-    meaningEn:
-        'Whether there are share classes with extra votes (dual class) that give control with less capital.',
-    readPt:
-        'Não disponível com dados gratuitos: consta do estatuto e dos documentos da empresa. Classes com mais votos reduzem o peso dos minoritários.',
-    readEn:
-        'Not available with free data: it is in the company bylaws and filings. Extra-vote classes reduce minority shareholders influence.',
+    meaningPt: 'Se existem classes com mais votos (ações de voto múltiplo) que dão controlo com menos capital.',
+    meaningEn: 'Whether there are share classes with extra votes (dual class) that give control with less capital.',
+    readPt: 'Não disponível com dados gratuitos: consta do estatuto e dos documentos da empresa. Classes com mais votos reduzem o peso dos minoritários.',
+    readEn: 'Not available with free data: it is in the company bylaws and filings. Extra-vote classes reduce minority shareholders influence.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'gov_auditor_risk',
     namePt: 'Troca de auditor, reservas do auditor e atrasos nas contas',
     nameEn: 'Auditor change, audit qualifications and late filings',
-    meaningPt:
-        'Sinais de alerta de governo: mudança frequente de auditor, reservas no parecer ou contas entregues fora de prazo.',
-    meaningEn:
-        'Governance warning signs: frequent auditor changes, qualified audit opinions or late filings.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não dá o histórico de auditores nem os pareceres. Verifica no relatório e no registo da CMVM ou da SEC.',
-    readEn:
-        'Not available with free data: the source does not provide auditor history or audit opinions. Check the report and the regulator filings.',
+    meaningPt: 'Sinais de alerta de governo: mudança frequente de auditor, reservas no parecer ou contas entregues fora de prazo.',
+    meaningEn: 'Governance warning signs: frequent auditor changes, qualified audit opinions or late filings.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não dá o histórico de auditores nem os pareceres. Verifica no relatório e no registo da CMVM ou da SEC.',
+    readEn: 'Not available with free data: the source does not provide auditor history or audit opinions. Check the report and the regulator filings.',
     availability: MetricAvailability.unavailable,
   ),
 
@@ -363,91 +262,63 @@ const List<MetricInfo> sectorRedflagsInfo = [
         'Juros recebidos menos juros pagos: o lucro principal de um banco.',
     meaningEn:
         'Interest received less interest paid: the main profit of a bank.',
-    readPt:
-        'Valor absoluto no período mais recente. Lê-o com a sua variação e com a evolução dos juros (taxas e volume de crédito).',
-    readEn:
-        'Absolute value for the latest period. Read it with its change and with the interest rate and loan volume trend.',
+    readPt: 'Valor absoluto no período mais recente. Lê-o com a sua variação e com a evolução dos juros (taxas e volume de crédito).',
+    readEn: 'Absolute value for the latest period. Read it with its change and with the interest rate and loan volume trend.',
   ),
   MetricInfo(
     key: 'bank_nii_growth',
     namePt: 'Variação da margem financeira',
     nameEn: 'Net interest income growth',
     formula: 'margem financeira do último ano / margem financeira do ano anterior − 1',
-    meaningPt:
-        'Quanto cresceu a margem financeira no último ano anual face ao anterior.',
-    meaningEn:
-        'How much the net interest income grew in the last annual year versus the previous one.',
-    readPt:
-        'Crescimento de um dígito com carteira a crescer é saudável. Queda forte pode ser descida de taxas ou perda de crédito.',
-    readEn:
-        'Single-digit growth with a growing loan book is healthy. A sharp fall can come from lower rates or a loss of loans.',
-    cautionPt:
-        'Não calculável se o ano anterior for nulo ou negativo. Não separa o efeito das taxas do efeito do volume.',
-    cautionEn:
-        'Not computable if the previous year is zero or negative. It does not separate the rate effect from the volume effect.',
+    meaningPt: 'Quanto cresceu a margem financeira no último ano anual face ao anterior.',
+    meaningEn: 'How much the net interest income grew in the last annual year versus the previous one.',
+    readPt: 'Crescimento de um dígito com carteira a crescer é saudável. Queda forte pode ser descida de taxas ou perda de crédito.',
+    readEn: 'Single-digit growth with a growing loan book is healthy. A sharp fall can come from lower rates or a loss of loans.',
+    cautionPt: 'Não calculável se o ano anterior for nulo ou negativo. Não separa o efeito das taxas do efeito do volume.',
+    cautionEn: 'Not computable if the previous year is zero or negative. It does not separate the rate effect from the volume effect.',
   ),
   MetricInfo(
     key: 'bank_rote',
     namePt: 'ROTE (retorno sobre o capital tangível)',
     nameEn: 'ROTE (return on tangible equity)',
     formula: 'resultado líquido / média(capitais próprios tangíveis, atual e anterior)',
-    meaningPt:
-        'Lucro por cada euro de capital próprio tangível: a medida de rentabilidade mais usada para bancos.',
-    meaningEn:
-        'Profit per unit of tangible equity: the most used profitability measure for banks.',
-    readPt:
-        'Acima de 10 % é um banco rentável. Compara com o custo do capital próprio dos pares.',
-    readEn:
-        'Above 10 % is a profitable bank. Compare with the cost of equity of peers.',
-    cautionPt:
-        'Os capitais tangíveis excluem o goodwill, por isso o ROTE é maior do que o ROE. Ver também os rácios de capital do banco (não disponíveis aqui).',
-    cautionEn:
-        'Tangible equity excludes goodwill, so ROTE is higher than ROE. See also the bank capital ratios (not available here).',
+    meaningPt: 'Lucro por cada euro de capital próprio tangível: a medida de rentabilidade mais usada para bancos.',
+    meaningEn: 'Profit per unit of tangible equity: the most used profitability measure for banks.',
+    readPt: 'Acima de 10 % é um banco rentável. Compara com o custo do capital próprio dos pares.',
+    readEn: 'Above 10 % is a profitable bank. Compare with the cost of equity of peers.',
+    cautionPt: 'Os capitais tangíveis excluem o goodwill, por isso o ROTE é maior do que o ROE. Ver também os rácios de capital do banco (não disponíveis aqui).',
+    cautionEn: 'Tangible equity excludes goodwill, so ROTE is higher than ROE. See also the bank capital ratios (not available here).',
   ),
   MetricInfo(
     key: 'bank_p_tbv',
     namePt: 'P/TBV (preço / valor contabilístico tangível)',
     nameEn: 'P/TBV (price / tangible book value)',
     formula: 'preço / (capitais próprios tangíveis / ações)',
-    meaningPt:
-        'Quantas vezes o preço vale o capital tangível por ação. Para bancos é o múltiplo de referência.',
-    meaningEn:
-        'How many times the price is worth the tangible book value per share. For banks it is the reference multiple.',
-    readPt:
-        'Abaixo de 1 vez sugere que o mercado desconta perdas ou um ROTE baixo. Acima de 1,5 vezes exige ROTE alto para ser justificado.',
-    readEn:
-        'Below 1x suggests the market discounts losses or a low ROTE. Above 1.5x requires a high ROTE to be justified.',
-    cautionPt:
-        'Denominador nulo ou negativo dá nulo (capital tangível negativo). Usa as ações do fecho do balanço.',
-    cautionEn:
-        'Zero or negative denominator gives null (negative tangible equity). Uses the shares at balance sheet date.',
+    meaningPt: 'Quantas vezes o preço vale o capital tangível por ação. Para bancos é o múltiplo de referência.',
+    meaningEn: 'How many times the price is worth the tangible book value per share. For banks it is the reference multiple.',
+    readPt: 'Abaixo de 1 vez sugere que o mercado desconta perdas ou um ROTE baixo. Acima de 1,5 vezes exige ROTE alto para ser justificado.',
+    readEn: 'Below 1x suggests the market discounts losses or a low ROTE. Above 1.5x requires a high ROTE to be justified.',
+    cautionPt: 'Denominador nulo ou negativo dá nulo (capital tangível negativo). Usa as ações do fecho do balanço.',
+    cautionEn: 'Zero or negative denominator gives null (negative tangible equity). Uses the shares at balance sheet date.',
   ),
   MetricInfo(
     key: 'bank_nim',
     namePt: 'NIM (margem financeira sobre ativos rentáveis)',
     nameEn: 'NIM (net interest margin)',
-    meaningPt:
-        'Margem financeira em percentagem dos ativos que rendem juros. Mede o spread do crédito.',
-    meaningEn:
-        'Net interest income as a percentage of interest-earning assets. Measures the lending spread.',
-    readPt:
-        'Não disponível com dados gratuitos: exige o total de ativos que rendem juros, que a fonte não dá. Não se usa o ativo total como aproximação.',
-    readEn:
-        'Not available with free data: it needs total interest-earning assets, which the source does not provide. Total assets is not used as a proxy.',
+    meaningPt: 'Margem financeira em percentagem dos ativos que rendem juros. Mede o spread do crédito.',
+    meaningEn: 'Net interest income as a percentage of interest-earning assets. Measures the lending spread.',
+    readPt: 'Não disponível com dados gratuitos: exige o total de ativos que rendem juros, que a fonte não dá. Não se usa o ativo total como aproximação.',
+    readEn: 'Not available with free data: it needs total interest-earning assets, which the source does not provide. Total assets is not used as a proxy.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'bank_cost_to_income',
     namePt: 'Cost-to-income (custos / produto bancário)',
     nameEn: 'Cost-to-income ratio',
-    meaningPt:
-        'Quanto custa ao banco gerar cada euro de receita. Quanto menor, mais eficiente.',
-    meaningEn:
-        'How much the bank spends to earn each unit of income. The lower, the more efficient.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não separa os custos operacionais bancários do resto das despesas.',
-    readEn:
-        'Not available with free data: the source does not separate banking operating costs from other expenses.',
+    meaningPt: 'Quanto custa ao banco gerar cada euro de receita. Quanto menor, mais eficiente.',
+    meaningEn: 'How much the bank spends to earn each unit of income. The lower, the more efficient.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não separa os custos operacionais bancários do resto das despesas.',
+    readEn: 'Not available with free data: the source does not separate banking operating costs from other expenses.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
@@ -456,208 +327,150 @@ const List<MetricInfo> sectorRedflagsInfo = [
     nameEn: 'Cost of risk',
     meaningPt:
         'Perdas de crédito anuais em percentagem da carteira de crédito.',
-    meaningEn:
-        'Annual credit losses as a percentage of the loan book.',
-    readPt:
-        'Não disponível com dados gratuitos: exige as provisões para crédito e a carteira de crédito, que a fonte não separa.',
-    readEn:
-        'Not available with free data: it needs credit provisions and the loan book, which the source does not separate.',
+    meaningEn: 'Annual credit losses as a percentage of the loan book.',
+    readPt: 'Não disponível com dados gratuitos: exige as provisões para crédito e a carteira de crédito, que a fonte não separa.',
+    readEn: 'Not available with free data: it needs credit provisions and the loan book, which the source does not separate.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'bank_cet1',
     namePt: 'Rácio CET1',
     nameEn: 'CET1 ratio',
-    meaningPt:
-        'Capital de melhor qualidade (CET1) sobre ativos ponderados pelo risco. Mede a robustez do banco.',
-    meaningEn:
-        'Best-quality capital (CET1) over risk-weighted assets. Measures the bank resilience.',
-    readPt:
-        'Não disponível com dados gratuitos: está no relatório de capital do banco (Pilar 3), não nas demonstrações.',
-    readEn:
-        'Not available with free data: it is in the bank capital report (Pillar 3), not in the financial statements.',
+    meaningPt: 'Capital de melhor qualidade (CET1) sobre ativos ponderados pelo risco. Mede a robustez do banco.',
+    meaningEn: 'Best-quality capital (CET1) over risk-weighted assets. Measures the bank resilience.',
+    readPt: 'Não disponível com dados gratuitos: está no relatório de capital do banco (Pilar 3), não nas demonstrações.',
+    readEn: 'Not available with free data: it is in the bank capital report (Pillar 3), not in the financial statements.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'bank_npl',
     namePt: 'NPL (crédito em incumprimento)',
     nameEn: 'NPL ratio (non-performing loans)',
-    meaningPt:
-        'Parte do crédito que não está a ser pago. Sobe quando a economia piora.',
-    meaningEn:
-        'Share of loans that are not being repaid. It rises when the economy worsens.',
-    readPt:
-        'Não disponível com dados gratuitos: está nas notas de risco de crédito do relatório anual.',
-    readEn:
-        'Not available with free data: it is in the credit risk notes of the annual report.',
+    meaningPt: 'Parte do crédito que não está a ser pago. Sobe quando a economia piora.',
+    meaningEn: 'Share of loans that are not being repaid. It rises when the economy worsens.',
+    readPt: 'Não disponível com dados gratuitos: está nas notas de risco de crédito do relatório anual.',
+    readEn: 'Not available with free data: it is in the credit risk notes of the annual report.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'bank_npl_coverage',
     namePt: 'Cobertura do NPL',
     nameEn: 'NPL coverage',
-    meaningPt:
-        'Provisões acumuladas sobre o crédito em incumprimento. Mostra se as perdas já estão reconhecidas.',
-    meaningEn:
-        'Accumulated provisions over non-performing loans. Shows whether losses are already recognised.',
-    readPt:
-        'Não disponível com dados gratuitos: exige o stock de provisões e o NPL, que vêm das notas do banco.',
-    readEn:
-        'Not available with free data: it needs the stock of provisions and the NPL, which come from the bank notes.',
+    meaningPt: 'Provisões acumuladas sobre o crédito em incumprimento. Mostra se as perdas já estão reconhecidas.',
+    meaningEn: 'Accumulated provisions over non-performing loans. Shows whether losses are already recognised.',
+    readPt: 'Não disponível com dados gratuitos: exige o stock de provisões e o NPL, que vêm das notas do banco.',
+    readEn: 'Not available with free data: it needs the stock of provisions and the NPL, which come from the bank notes.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'bank_lcr',
     namePt: 'LCR (rácio de cobertura de liquidez)',
     nameEn: 'LCR (liquidity coverage ratio)',
-    meaningPt:
-        'Ativos líquidos de alta qualidade sobre as saídas de caixa previstas em 30 dias de stress.',
-    meaningEn:
-        'High-quality liquid assets over the expected cash outflows in a 30-day stress.',
-    readPt:
-        'Não disponível com dados gratuitos: é um rácio regulatório que vem do relatório de liquidez do banco.',
-    readEn:
-        'Not available with free data: it is a regulatory ratio from the bank liquidity report.',
+    meaningPt: 'Ativos líquidos de alta qualidade sobre as saídas de caixa previstas em 30 dias de stress.',
+    meaningEn: 'High-quality liquid assets over the expected cash outflows in a 30-day stress.',
+    readPt: 'Não disponível com dados gratuitos: é um rácio regulatório que vem do relatório de liquidez do banco.',
+    readEn: 'Not available with free data: it is a regulatory ratio from the bank liquidity report.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'insurer_combined_ratio',
     namePt: 'Combined ratio (seguradoras)',
     nameEn: 'Combined ratio (insurers)',
-    meaningPt:
-        'Sinistros mais custos sobre prémios. Abaixo de 100 % a seguradora tem lucro técnico.',
-    meaningEn:
-        'Claims plus expenses over premiums. Below 100 % the insurer makes an underwriting profit.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não separa sinistros e custos dos prémios.',
-    readEn:
-        'Not available with free data: the source does not separate claims and expenses from premiums.',
+    meaningPt: 'Sinistros mais custos sobre prémios. Abaixo de 100 % a seguradora tem lucro técnico.',
+    meaningEn: 'Claims plus expenses over premiums. Below 100 % the insurer makes an underwriting profit.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não separa sinistros e custos dos prémios.',
+    readEn: 'Not available with free data: the source does not separate claims and expenses from premiums.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'insurer_float',
     namePt: 'Float (fundos de seguros)',
     nameEn: 'Insurance float',
-    meaningPt:
-        'Dinheiro dos clientes que a seguradora investe antes de pagar sinistros.',
-    meaningEn:
-        'Customer money the insurer invests before paying claims.',
-    readPt:
-        'Não disponível com dados gratuitos: exige as reservas técnicas e o detalhe dos investimentos.',
-    readEn:
-        'Not available with free data: it needs the technical reserves and the investment detail.',
+    meaningPt: 'Dinheiro dos clientes que a seguradora investe antes de pagar sinistros.',
+    meaningEn: 'Customer money the insurer invests before paying claims.',
+    readPt: 'Não disponível com dados gratuitos: exige as reservas técnicas e o detalhe dos investimentos.',
+    readEn: 'Not available with free data: it needs the technical reserves and the investment detail.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'insurer_reserves',
     namePt: 'Reservas técnicas (seguradoras)',
     nameEn: 'Technical reserves (insurers)',
-    meaningPt:
-        'Estimativa das responsabilidades futuras com sinistros. Reservas subestimadas inflacionam o lucro.',
-    meaningEn:
-        'Estimate of future claim liabilities. Under-reserved books inflate profits.',
-    readPt:
-        'Não disponível com dados gratuitos: vem das notas técnicas da seguradora. ROE e P/B estão nas secções de rentabilidade e avaliação.',
-    readEn:
-        'Not available with free data: it comes from the insurer technical notes. ROE and P/B are in the profitability and valuation sections.',
+    meaningPt: 'Estimativa das responsabilidades futuras com sinistros. Reservas subestimadas inflacionam o lucro.',
+    meaningEn: 'Estimate of future claim liabilities. Under-reserved books inflate profits.',
+    readPt: 'Não disponível com dados gratuitos: vem das notas técnicas da seguradora. ROE e P/B estão nas secções de rentabilidade e avaliação.',
+    readEn: 'Not available with free data: it comes from the insurer technical notes. ROE and P/B are in the profitability and valuation sections.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'reit_ffo',
     namePt: 'FFO (fundos das operações)',
     nameEn: 'FFO (funds from operations)',
-    meaningPt:
-        'Lucro ajustado de amortizações de imóveis e de ganhos de venda. É a medida de lucro dos REITs.',
-    meaningEn:
-        'Earnings adjusted for property depreciation and sale gains. It is the earnings measure of REITs.',
-    readPt:
-        'Não disponível com dados gratuitos: exige os ajustamentos de imóveis (amortização de imóveis e ganhos de venda), que a fonte não separa.',
-    readEn:
-        'Not available with free data: it needs the property adjustments (property depreciation and sale gains), which the source does not separate.',
+    meaningPt: 'Lucro ajustado de amortizações de imóveis e de ganhos de venda. É a medida de lucro dos REITs.',
+    meaningEn: 'Earnings adjusted for property depreciation and sale gains. It is the earnings measure of REITs.',
+    readPt: 'Não disponível com dados gratuitos: exige os ajustamentos de imóveis (amortização de imóveis e ganhos de venda), que a fonte não separa.',
+    readEn: 'Not available with free data: it needs the property adjustments (property depreciation and sale gains), which the source does not separate.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'reit_affo',
     namePt: 'AFFO (fundos das operações ajustados)',
     nameEn: 'AFFO (adjusted funds from operations)',
-    meaningPt:
-        'FFO depois de descontar a manutenção dos imóveis: o fluxo que sobra para dividendos.',
-    meaningEn:
-        'FFO after deducting property maintenance: the cash flow left for dividends.',
-    readPt:
-        'Não disponível com dados gratuitos: depende da separação entre capex de manutenção e de crescimento dos imóveis.',
-    readEn:
-        'Not available with free data: it depends on splitting maintenance and growth capex of the properties.',
+    meaningPt: 'FFO depois de descontar a manutenção dos imóveis: o fluxo que sobra para dividendos.',
+    meaningEn: 'FFO after deducting property maintenance: the cash flow left for dividends.',
+    readPt: 'Não disponível com dados gratuitos: depende da separação entre capex de manutenção e de crescimento dos imóveis.',
+    readEn: 'Not available with free data: it depends on splitting maintenance and growth capex of the properties.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'reit_nav',
     namePt: 'NAV (valor patrimonial dos imóveis)',
     nameEn: 'NAV (net asset value)',
-    meaningPt:
-        'Valor de mercado estimado dos imóveis menos dívida. Compara-se com o preço por ação.',
-    meaningEn:
-        'Estimated market value of the properties less debt. Compared with the share price.',
-    readPt:
-        'Não disponível com dados gratuitos: exige avaliações dos imóveis, que vêm do relatório anual.',
-    readEn:
-        'Not available with free data: it needs property valuations, which come from the annual report.',
+    meaningPt: 'Valor de mercado estimado dos imóveis menos dívida. Compara-se com o preço por ação.',
+    meaningEn: 'Estimated market value of the properties less debt. Compared with the share price.',
+    readPt: 'Não disponível com dados gratuitos: exige avaliações dos imóveis, que vêm do relatório anual.',
+    readEn: 'Not available with free data: it needs property valuations, which come from the annual report.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'reit_cap_rate',
     namePt: 'Cap rate (taxa de rendimento dos imóveis)',
     nameEn: 'Cap rate',
-    meaningPt:
-        'Renda líquida dos imóveis sobre o valor deles. Mede o rendimento do património.',
-    meaningEn:
-        'Net property income over the property value. Measures the yield of the portfolio.',
-    readPt:
-        'Não disponível com dados gratuitos: exige a renda líquida por imóvel e o valor de avaliação.',
-    readEn:
-        'Not available with free data: it needs net rent per property and the appraisal value.',
+    meaningPt: 'Renda líquida dos imóveis sobre o valor deles. Mede o rendimento do património.',
+    meaningEn: 'Net property income over the property value. Measures the yield of the portfolio.',
+    readPt: 'Não disponível com dados gratuitos: exige a renda líquida por imóvel e o valor de avaliação.',
+    readEn: 'Not available with free data: it needs net rent per property and the appraisal value.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'reit_ltv',
     namePt: 'LTV (dívida / valor dos imóveis)',
     nameEn: 'LTV (loan to value)',
-    meaningPt:
-        'Dívida em percentagem do valor de mercado dos imóveis. Mede a alavancagem do REIT.',
-    meaningEn:
-        'Debt as a percentage of the market value of the properties. Measures the REIT leverage.',
-    readPt:
-        'Não disponível com dados gratuitos: exige o valor de mercado dos imóveis (o balanço usa o custo). Dívida / ativo total não é um substituto correto.',
-    readEn:
-        'Not available with free data: it needs the market value of the properties (the balance sheet uses cost). Debt / total assets is not a correct substitute.',
+    meaningPt: 'Dívida em percentagem do valor de mercado dos imóveis. Mede a alavancagem do REIT.',
+    meaningEn: 'Debt as a percentage of the market value of the properties. Measures the REIT leverage.',
+    readPt: 'Não disponível com dados gratuitos: exige o valor de mercado dos imóveis (o balanço usa o custo). Dívida / ativo total não é um substituto correto.',
+    readEn: 'Not available with free data: it needs the market value of the properties (the balance sheet uses cost). Debt / total assets is not a correct substitute.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'reit_occupancy',
     namePt: 'Taxa de ocupação',
     nameEn: 'Occupancy rate',
-    meaningPt:
-        'Percentagem da área arrendável que está arrendada. Mede a procura pelos imóveis.',
-    meaningEn:
-        'Percentage of the lettable area that is leased. Measures demand for the properties.',
-    readPt:
-        'Não disponível com dados gratuitos: vem dos relatórios trimestrais do REIT.',
-    readEn:
-        'Not available with free data: it comes from the REIT quarterly reports.',
+    meaningPt: 'Percentagem da área arrendável que está arrendada. Mede a procura pelos imóveis.',
+    meaningEn: 'Percentage of the lettable area that is leased. Measures demand for the properties.',
+    readPt: 'Não disponível com dados gratuitos: vem dos relatórios trimestrais do REIT.',
+    readEn: 'Not available with free data: it comes from the REIT quarterly reports.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'utility_rab',
     namePt: 'Base de ativos regulados (RAB)',
     nameEn: 'Regulated asset base (RAB)',
-    meaningPt:
-        'Valor dos ativos sobre os quais o regulador permite ganhar uma taxa de retorno.',
+    meaningPt: 'Valor dos ativos sobre os quais o regulador permite ganhar uma taxa de retorno.',
     meaningEn:
         'Value of the assets on which the regulator allows a return rate.',
-    readPt:
-        'Não disponível com dados gratuitos: está nas decisões tarifárias do regulador e no relatório da empresa.',
-    readEn:
-        'Not available with free data: it is in the regulator tariff decisions and the company report.',
+    readPt: 'Não disponível com dados gratuitos: está nas decisões tarifárias do regulador e no relatório da empresa.',
+    readEn: 'Not available with free data: it is in the regulator tariff decisions and the company report.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
@@ -668,80 +481,59 @@ const List<MetricInfo> sectorRedflagsInfo = [
         'Taxa de retorno sobre a base regulada que o regulador autoriza.',
     meaningEn:
         'Return rate on the regulated base that the regulator authorises.',
-    readPt:
-        'Não disponível com dados gratuitos: vem das decisões do regulador. Dívida líquida / EBITDA e payout estão nas secções próprias.',
-    readEn:
-        'Not available with free data: it comes from regulator decisions. Net debt / EBITDA and payout are in their own sections.',
+    readPt: 'Não disponível com dados gratuitos: vem das decisões do regulador. Dívida líquida / EBITDA e payout estão nas secções próprias.',
+    readEn: 'Not available with free data: it comes from regulator decisions. Net debt / EBITDA and payout are in their own sections.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'commodity_breakeven',
     namePt: 'Preço de equilíbrio',
     nameEn: 'Breakeven price',
-    meaningPt:
-        'Preço da matéria-prima a partir do qual a produção dá lucro.',
-    meaningEn:
-        'Commodity price above which production is profitable.',
-    readPt:
-        'Não disponível com dados gratuitos: vem dos relatórios de produção e dos custos por unidade, que a fonte não dá.',
-    readEn:
-        'Not available with free data: it comes from production reports and unit costs, which the source does not give.',
+    meaningPt: 'Preço da matéria-prima a partir do qual a produção dá lucro.',
+    meaningEn: 'Commodity price above which production is profitable.',
+    readPt: 'Não disponível com dados gratuitos: vem dos relatórios de produção e dos custos por unidade, que a fonte não dá.',
+    readEn: 'Not available with free data: it comes from production reports and unit costs, which the source does not give.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'commodity_reserves',
     namePt: 'Reservas',
     nameEn: 'Reserves',
-    meaningPt:
-        'Quantidade de matéria-prima que a empresa pode produzir de forma provada.',
+    meaningPt: 'Quantidade de matéria-prima que a empresa pode produzir de forma provada.',
     meaningEn:
         'Amount of the commodity the company can produce with proven reserves.',
-    readPt:
-        'Não disponível com dados gratuitos: vem dos relatórios de reservas, normalmente anuais.',
-    readEn:
-        'Not available with free data: it comes from reserve reports, usually annual.',
+    readPt: 'Não disponível com dados gratuitos: vem dos relatórios de reservas, normalmente anuais.',
+    readEn: 'Not available with free data: it comes from reserve reports, usually annual.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'commodity_cost_per_unit',
     namePt: 'Custo de produção por unidade',
     nameEn: 'Production cost per unit',
-    meaningPt:
-        'Custo para produzir uma unidade da matéria-prima. Quanto menor, mais resiliente no ciclo.',
-    meaningEn:
-        'Cost to produce one unit of the commodity. The lower, the more resilient through the cycle.',
-    readPt:
-        'Não disponível com dados gratuitos: vem dos relatórios de produção da empresa.',
-    readEn:
-        'Not available with free data: it comes from the company production reports.',
+    meaningPt: 'Custo para produzir uma unidade da matéria-prima. Quanto menor, mais resiliente no ciclo.',
+    meaningEn: 'Cost to produce one unit of the commodity. The lower, the more resilient through the cycle.',
+    readPt: 'Não disponível com dados gratuitos: vem dos relatórios de produção da empresa.',
+    readEn: 'Not available with free data: it comes from the company production reports.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'commodity_fcf_cycle',
     namePt: 'FCF ao longo do ciclo',
     nameEn: 'FCF through the cycle',
-    meaningPt:
-        'Fluxo de caixa livre médio num ciclo completo de preços, e não só no ano atual.',
-    meaningEn:
-        'Average free cash flow over a full price cycle, not just the current year.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte dá cerca de 4 anos, que não cobrem um ciclo completo de preços das matérias-primas.',
-    readEn:
-        'Not available with free data: the source gives about 4 years, which do not cover a full commodity price cycle.',
+    meaningPt: 'Fluxo de caixa livre médio num ciclo completo de preços, e não só no ano atual.',
+    meaningEn: 'Average free cash flow over a full price cycle, not just the current year.',
+    readPt: 'Não disponível com dados gratuitos: a fonte dá cerca de 4 anos, que não cobrem um ciclo completo de preços das matérias-primas.',
+    readEn: 'Not available with free data: the source gives about 4 years, which do not cover a full commodity price cycle.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'commodity_normalized_earnings',
     namePt: 'Resultados normalizados',
     nameEn: 'Normalised earnings',
-    meaningPt:
-        'Lucro médio de um ciclo, com o preço da matéria-prima ajustado ao seu valor médio.',
-    meaningEn:
-        'Average earnings over a cycle, with the commodity price adjusted to its average value.',
-    readPt:
-        'Não disponível com dados gratuitos: exige o preço médio do ciclo e a sensibilidade do lucro ao preço, que a fonte não dá.',
-    readEn:
-        'Not available with free data: it needs the cycle average price and the earnings sensitivity to price, which the source does not give.',
+    meaningPt: 'Lucro médio de um ciclo, com o preço da matéria-prima ajustado ao seu valor médio.',
+    meaningEn: 'Average earnings over a cycle, with the commodity price adjusted to its average value.',
+    readPt: 'Não disponível com dados gratuitos: exige o preço médio do ciclo e a sensibilidade do lucro ao preço, que a fonte não dá.',
+    readEn: 'Not available with free data: it needs the cycle average price and the earnings sensitivity to price, which the source does not give.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
@@ -749,131 +541,89 @@ const List<MetricInfo> sectorRedflagsInfo = [
     namePt: 'Crescimento da receita (software)',
     nameEn: 'Revenue growth (software)',
     formula: 'receita do último ano / receita do ano anterior − 1',
-    meaningPt:
-        'Quanto cresceu a receita no último ano anual. É a primeira metade da regra dos 40.',
-    meaningEn:
-        'How much revenue grew in the last annual year. It is the first half of the rule of 40.',
-    readPt:
-        'Em software, acima de 20 % é um crescimento forte. Compara com os pares.',
-    readEn:
-        'In software, above 20 % is strong growth. Compare with peers.',
-    cautionPt:
-        'Só anual. Não separa o crescimento orgânico das aquisições (não disponível).',
-    cautionEn:
-        'Annual only. It does not separate organic growth from acquisitions (not available).',
+    meaningPt: 'Quanto cresceu a receita no último ano anual. É a primeira metade da regra dos 40.',
+    meaningEn: 'How much revenue grew in the last annual year. It is the first half of the rule of 40.',
+    readPt: 'Em software, acima de 20 % é um crescimento forte. Compara com os pares.',
+    readEn: 'In software, above 20 % is strong growth. Compare with peers.',
+    cautionPt: 'Só anual. Não separa o crescimento orgânico das aquisições (não disponível).',
+    cautionEn: 'Annual only. It does not separate organic growth from acquisitions (not available).',
   ),
   MetricInfo(
     key: 'saas_fcf_margin',
     namePt: 'Margem de FCF (software)',
     nameEn: 'FCF margin (software)',
     formula: '(CFO − |capex|) / receita, período atual',
-    meaningPt:
-        'Fluxo de caixa livre em percentagem da receita. É a segunda metade da regra dos 40.',
-    meaningEn:
-        'Free cash flow as a percentage of revenue. It is the second half of the rule of 40.',
-    readPt:
-        'Positiva e crescente é o sinal de um modelo de negócio maduro. Negativa é normal em empresas em crescimento.',
-    readEn:
-        'Positive and rising is a sign of a mature business model. Negative is normal in growth companies.',
-    cautionPt:
-        'Pode incluir o efeito de receção de adiantamentos de clientes. Não desconta a remuneração em ações (ver SBC / receita).',
-    cautionEn:
-        'Can include customer prepayments. Does not deduct stock-based pay (see SBC / revenue).',
+    meaningPt: 'Fluxo de caixa livre em percentagem da receita. É a segunda metade da regra dos 40.',
+    meaningEn: 'Free cash flow as a percentage of revenue. It is the second half of the rule of 40.',
+    readPt: 'Positiva e crescente é o sinal de um modelo de negócio maduro. Negativa é normal em empresas em crescimento.',
+    readEn: 'Positive and rising is a sign of a mature business model. Negative is normal in growth companies.',
+    cautionPt: 'Pode incluir o efeito de receção de adiantamentos de clientes. Não desconta a remuneração em ações (ver SBC / receita).',
+    cautionEn: 'Can include customer prepayments. Does not deduct stock-based pay (see SBC / revenue).',
   ),
   MetricInfo(
     key: 'saas_rule_of_40',
     namePt: 'Regra dos 40',
     nameEn: 'Rule of 40',
     formula: 'crescimento da receita (anual) + margem de FCF (período atual)',
-    meaningPt:
-        'Soma o crescimento e a margem de FCF. Mede se a empresa equilibra crescimento e rentabilidade.',
-    meaningEn:
-        'Adds growth and FCF margin. Measures whether the company balances growth and profitability.',
-    readPt:
-        'Acima de 40 % (0,40) é o limiar clássico de uma empresa de software saudável. Abaixo disso, pouco crescimento ou pouca margem.',
-    readEn:
-        'Above 40 % (0.40) is the classic threshold of a healthy software company. Below it, low growth or low margin.',
-    cautionPt:
-        'Mistura um valor anual (crescimento) com um valor do período atual (margem). Não penaliza a remuneração em ações.',
-    cautionEn:
-        'Mixes an annual value (growth) with a current-period value (margin). Does not penalise stock-based pay.',
+    meaningPt: 'Soma o crescimento e a margem de FCF. Mede se a empresa equilibra crescimento e rentabilidade.',
+    meaningEn: 'Adds growth and FCF margin. Measures whether the company balances growth and profitability.',
+    readPt: 'Acima de 40 % (0,40) é o limiar clássico de uma empresa de software saudável. Abaixo disso, pouco crescimento ou pouca margem.',
+    readEn: 'Above 40 % (0.40) is the classic threshold of a healthy software company. Below it, low growth or low margin.',
+    cautionPt: 'Mistura um valor anual (crescimento) com um valor do período atual (margem). Não penaliza a remuneração em ações.',
+    cautionEn: 'Mixes an annual value (growth) with a current-period value (margin). Does not penalise stock-based pay.',
   ),
   MetricInfo(
     key: 'saas_sbc_to_revenue',
     namePt: 'Remuneração em ações / receita (software)',
     nameEn: 'Stock-based compensation / revenue (software)',
     formula: 'remuneração em ações / receita, período atual',
-    meaningPt:
-        'Quanto da receita é dado aos trabalhadores em ações. É um custo real para o acionista, mesmo sem saída de caixa.',
-    meaningEn:
-        'How much of the revenue is paid to employees in shares. It is a real cost for shareholders, even without cash outflow.',
-    readPt:
-        'Abaixo de 10 % é aceitável. Acima de 15 % a diluição come parte do crescimento e do FCF.',
-    readEn:
-        'Below 10 % is acceptable. Above 15 % dilution eats part of the growth and of the FCF.',
-    cautionPt:
-        'Compara com a diluição (secção 8) para ver se as ações emitidas se refletem no número de ações.',
-    cautionEn:
-        'Compare with dilution (section 8) to see whether the shares issued show up in the share count.',
+    meaningPt: 'Quanto da receita é dado aos trabalhadores em ações. É um custo real para o acionista, mesmo sem saída de caixa.',
+    meaningEn: 'How much of the revenue is paid to employees in shares. It is a real cost for shareholders, even without cash outflow.',
+    readPt: 'Abaixo de 10 % é aceitável. Acima de 15 % a diluição come parte do crescimento e do FCF.',
+    readEn: 'Below 10 % is acceptable. Above 15 % dilution eats part of the growth and of the FCF.',
+    cautionPt: 'Compara com a diluição (secção 8) para ver se as ações emitidas se refletem no número de ações.',
+    cautionEn: 'Compare with dilution (section 8) to see whether the shares issued show up in the share count.',
   ),
   MetricInfo(
     key: 'saas_gross_margin',
     namePt: 'Margem bruta (software)',
     nameEn: 'Gross margin (software)',
     formula: '(receita − custo das vendas) / receita, período atual',
-    meaningPt:
-        'Parte da receita que sobra depois do custo direto do software. Software maduro tem margens acima de 70 %.',
-    meaningEn:
-        'Share of revenue left after the direct cost of the software. Mature software has margins above 70 %.',
-    readPt:
-        'Acima de 70 % é o padrão de software. Abaixo disso o modelo tem mais custo de serviços ou de infraestrutura.',
-    readEn:
-        'Above 70 % is the software standard. Below it the model has more services or infrastructure cost.',
-    cautionPt:
-        'Mesma definição da margem bruta geral (secção 1), prefixada aqui para o grupo software.',
-    cautionEn:
-        'Same definition as the general gross margin (section 1), prefixed here for the software group.',
+    meaningPt: 'Parte da receita que sobra depois do custo direto do software. Software maduro tem margens acima de 70 %.',
+    meaningEn: 'Share of revenue left after the direct cost of the software. Mature software has margins above 70 %.',
+    readPt: 'Acima de 70 % é o padrão de software. Abaixo disso o modelo tem mais custo de serviços ou de infraestrutura.',
+    readEn: 'Above 70 % is the software standard. Below it the model has more services or infrastructure cost.',
+    cautionPt: 'Mesma definição da margem bruta geral (secção 1), prefixada aqui para o grupo software.',
+    cautionEn: 'Same definition as the general gross margin (section 1), prefixed here for the software group.',
   ),
   MetricInfo(
     key: 'saas_arr',
     namePt: 'ARR (receita recorrente anual)',
     nameEn: 'ARR (annual recurring revenue)',
-    meaningPt:
-        'Receita recorrente anualizada no fim do período. Mede a receita que já está contratada para o ano seguinte.',
-    meaningEn:
-        'Annualised recurring revenue at period end. Measures the revenue already contracted for the next year.',
-    readPt:
-        'Não disponível com dados gratuitos: é uma métrica divulgada pela empresa, não nas demonstrações.',
-    readEn:
-        'Not available with free data: it is a metric the company discloses, not in the financial statements.',
+    meaningPt: 'Receita recorrente anualizada no fim do período. Mede a receita que já está contratada para o ano seguinte.',
+    meaningEn: 'Annualised recurring revenue at period end. Measures the revenue already contracted for the next year.',
+    readPt: 'Não disponível com dados gratuitos: é uma métrica divulgada pela empresa, não nas demonstrações.',
+    readEn: 'Not available with free data: it is a metric the company discloses, not in the financial statements.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'saas_nrr',
     namePt: 'Net revenue retention (NRR)',
     nameEn: 'Net revenue retention (NRR)',
-    meaningPt:
-        'Receita de um grupo de clientes depois de um ano, com expansões e perdas. Acima de 100 % a base cresce sozinha.',
-    meaningEn:
-        'Revenue from a group of customers after a year, with expansions and losses. Above 100 % the base grows on its own.',
-    readPt:
-        'Não disponível com dados gratuitos: é um KPI divulgado pela empresa (em geral na apresentação de resultados).',
-    readEn:
-        'Not available with free data: it is a KPI the company discloses (usually in the results presentation).',
+    meaningPt: 'Receita de um grupo de clientes depois de um ano, com expansões e perdas. Acima de 100 % a base cresce sozinha.',
+    meaningEn: 'Revenue from a group of customers after a year, with expansions and losses. Above 100 % the base grows on its own.',
+    readPt: 'Não disponível com dados gratuitos: é um KPI divulgado pela empresa (em geral na apresentação de resultados).',
+    readEn: 'Not available with free data: it is a KPI the company discloses (usually in the results presentation).',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'saas_cac_payback',
     namePt: 'Período de recuperação do CAC',
     nameEn: 'CAC payback period',
-    meaningPt:
-        'Meses de margem bruta de um cliente necessários para pagar o custo de o adquirir.',
-    meaningEn:
-        'Months of gross margin from a customer needed to pay back its acquisition cost.',
-    readPt:
-        'Não disponível com dados gratuitos: exige o custo de aquisição de clientes (CAC) e o número de novos clientes, que a fonte não dá.',
-    readEn:
-        'Not available with free data: it needs the customer acquisition cost (CAC) and the number of new customers, which the source does not give.',
+    meaningPt: 'Meses de margem bruta de um cliente necessários para pagar o custo de o adquirir.',
+    meaningEn: 'Months of gross margin from a customer needed to pay back its acquisition cost.',
+    readPt: 'Não disponível com dados gratuitos: exige o custo de aquisição de clientes (CAC) e o número de novos clientes, que a fonte não dá.',
+    readEn: 'Not available with free data: it needs the customer acquisition cost (CAC) and the number of new customers, which the source does not give.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
@@ -881,73 +631,51 @@ const List<MetricInfo> sectorRedflagsInfo = [
     namePt: 'I&D / receita (farma e biotecnologia)',
     nameEn: 'R&D / revenue (pharma and biotech)',
     formula: 'investigação e desenvolvimento / receita, período atual',
-    meaningPt:
-        'Quanto da receita é reinvestido em investigação. Mede a dependência do futuro pipeline.',
-    meaningEn:
-        'How much of the revenue is reinvested in research. Measures the dependence on the future pipeline.',
-    readPt:
-        'Em farmacêuticas, 15 % a 20 % é típico. Muito abaixo pode indicar um pipeline fraco; muito acima, um negócio ainda sem receita suficiente.',
-    readEn:
-        'In pharma, 15 % to 20 % is typical. Much lower can mean a weak pipeline; much higher, a business without enough revenue yet.',
-    cautionPt:
-        'Pode haver I&D capitalizada que não aparece na despesa. Compara com os pares.',
-    cautionEn:
-        'Some R&D may be capitalised and not show in the expense. Compare with peers.',
+    meaningPt: 'Quanto da receita é reinvestido em investigação. Mede a dependência do futuro pipeline.',
+    meaningEn: 'How much of the revenue is reinvested in research. Measures the dependence on the future pipeline.',
+    readPt: 'Em farmacêuticas, 15 % a 20 % é típico. Muito abaixo pode indicar um pipeline fraco; muito acima, um negócio ainda sem receita suficiente.',
+    readEn: 'In pharma, 15 % to 20 % is typical. Much lower can mean a weak pipeline; much higher, a business without enough revenue yet.',
+    cautionPt: 'Pode haver I&D capitalizada que não aparece na despesa. Compara com os pares.',
+    cautionEn: 'Some R&D may be capitalised and not show in the expense. Compare with peers.',
   ),
   MetricInfo(
     key: 'pharma_pipeline',
     namePt: 'Pipeline de medicamentos',
     nameEn: 'Drug pipeline',
-    meaningPt:
-        'Lista de medicamentos em ensaios clínicos e a fase de cada um.',
-    meaningEn:
-        'List of drugs in clinical trials and the stage of each one.',
-    readPt:
-        'Não disponível com dados gratuitos: vem dos relatórios e das bases de ensaios clínicos.',
-    readEn:
-        'Not available with free data: it comes from company reports and clinical trial registries.',
+    meaningPt: 'Lista de medicamentos em ensaios clínicos e a fase de cada um.',
+    meaningEn: 'List of drugs in clinical trials and the stage of each one.',
+    readPt: 'Não disponível com dados gratuitos: vem dos relatórios e das bases de ensaios clínicos.',
+    readEn: 'Not available with free data: it comes from company reports and clinical trial registries.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'pharma_patent_cliff',
     namePt: 'Patent cliff (perda de patentes)',
     nameEn: 'Patent cliff',
-    meaningPt:
-        'Data em que as patentes dos medicamentos mais vendidos expiram e a concorrência genérica entra.',
-    meaningEn:
-        'Date when the patents of the best-selling drugs expire and generic competition enters.',
-    readPt:
-        'Não disponível com dados gratuitos: exige a lista de patentes e as vendas por produto, que vêm do relatório anual.',
-    readEn:
-        'Not available with free data: it needs the patent list and sales by product, which come from the annual report.',
+    meaningPt: 'Data em que as patentes dos medicamentos mais vendidos expiram e a concorrência genérica entra.',
+    meaningEn: 'Date when the patents of the best-selling drugs expire and generic competition enters.',
+    readPt: 'Não disponível com dados gratuitos: exige a lista de patentes e as vendas por produto, que vêm do relatório anual.',
+    readEn: 'Not available with free data: it needs the patent list and sales by product, which come from the annual report.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'pharma_rnpv',
     namePt: 'rNPV (valor ajustado ao risco dos ensaios)',
     nameEn: 'rNPV (risk-adjusted NPV of the pipeline)',
-    meaningPt:
-        'Valor atual dos medicamentos em desenvolvimento, ponderado pela probabilidade de sucesso de cada fase.',
-    meaningEn:
-        'Present value of drugs in development, weighted by the probability of success of each phase.',
-    readPt:
-        'Não disponível com dados gratuitos: exige probabilidades de sucesso por fase e vendas previstas de cada medicamento, que não são dados da fonte.',
-    readEn:
-        'Not available with free data: it needs success probabilities per phase and forecast sales per drug, which are not data from the source.',
+    meaningPt: 'Valor atual dos medicamentos em desenvolvimento, ponderado pela probabilidade de sucesso de cada fase.',
+    meaningEn: 'Present value of drugs in development, weighted by the probability of success of each phase.',
+    readPt: 'Não disponível com dados gratuitos: exige probabilidades de sucesso por fase e vendas previstas de cada medicamento, que não são dados da fonte.',
+    readEn: 'Not available with free data: it needs success probabilities per phase and forecast sales per drug, which are not data from the source.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'retail_like_for_like',
     namePt: 'Vendas comparáveis (like-for-like)',
     nameEn: 'Like-for-like sales',
-    meaningPt:
-        'Crescimento das vendas só nas lojas abertas há pelo menos um ano. Separa o crescimento real da abertura de lojas.',
-    meaningEn:
-        'Sales growth only in stores open for at least a year. Separates real growth from new store openings.',
-    readPt:
-        'Não disponível com dados gratuitos: é um KPI divulgado pelo retalhista nas suas comunicações de resultados.',
-    readEn:
-        'Not available with free data: it is a KPI the retailer discloses in its results communications.',
+    meaningPt: 'Crescimento das vendas só nas lojas abertas há pelo menos um ano. Separa o crescimento real da abertura de lojas.',
+    meaningEn: 'Sales growth only in stores open for at least a year. Separates real growth from new store openings.',
+    readPt: 'Não disponível com dados gratuitos: é um KPI divulgado pelo retalhista nas suas comunicações de resultados.',
+    readEn: 'Not available with free data: it is a KPI the retailer discloses in its results communications.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
@@ -958,84 +686,61 @@ const List<MetricInfo> sectorRedflagsInfo = [
         'Receita dividida pela área de venda. Mede a produtividade das lojas.',
     meaningEn:
         'Revenue divided by the sales area. Measures store productivity.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não dá a área de venda das lojas.',
-    readEn:
-        'Not available with free data: the source does not give the store sales area.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não dá a área de venda das lojas.',
+    readEn: 'Not available with free data: the source does not give the store sales area.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'retail_store_margin',
     namePt: 'Margem por loja',
     nameEn: 'Store-level margin',
-    meaningPt:
-        'Margem operacional de cada loja, antes dos custos centrais.',
-    meaningEn:
-        'Operating margin of each store, before central costs.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não separa os resultados por loja.',
-    readEn:
-        'Not available with free data: the source does not split results by store.',
+    meaningPt: 'Margem operacional de cada loja, antes dos custos centrais.',
+    meaningEn: 'Operating margin of each store, before central costs.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não separa os resultados por loja.',
+    readEn: 'Not available with free data: the source does not split results by store.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'holding_sotp',
     namePt: 'Soma das partes (SOTP)',
     nameEn: 'Sum of the parts (SOTP)',
-    meaningPt:
-        'Valor de cada negócio ou participação avaliado à parte e somado. Usa-se em holdings.',
-    meaningEn:
-        'Value of each business or stake valued separately and added up. Used for holdings.',
-    readPt:
-        'Não disponível com dados gratuitos: exige avaliar cada participação com múltiplos próprios, o que a fonte não permite.',
-    readEn:
-        'Not available with free data: it needs each stake valued with its own multiples, which the source does not allow.',
+    meaningPt: 'Valor de cada negócio ou participação avaliado à parte e somado. Usa-se em holdings.',
+    meaningEn: 'Value of each business or stake valued separately and added up. Used for holdings.',
+    readPt: 'Não disponível com dados gratuitos: exige avaliar cada participação com múltiplos próprios, o que a fonte não permite.',
+    readEn: 'Not available with free data: it needs each stake valued with its own multiples, which the source does not allow.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'holding_discount',
     namePt: 'Desconto de holding',
     nameEn: 'Holding discount',
-    meaningPt:
-        'Quanto o preço da holding fica abaixo da soma das partes. Muitas holdings são negociadas com desconto.',
-    meaningEn:
-        'How far the holding price falls below the sum of the parts. Many holdings trade at a discount.',
-    readPt:
-        'Não disponível com dados gratuitos: depende do SOTP, que não se calcula com os dados gratuitos.',
-    readEn:
-        'Not available with free data: it depends on the SOTP, which cannot be computed with free data.',
+    meaningPt: 'Quanto o preço da holding fica abaixo da soma das partes. Muitas holdings são negociadas com desconto.',
+    meaningEn: 'How far the holding price falls below the sum of the parts. Many holdings trade at a discount.',
+    readPt: 'Não disponível com dados gratuitos: depende do SOTP, que não se calcula com os dados gratuitos.',
+    readEn: 'Not available with free data: it depends on the SOTP, which cannot be computed with free data.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'nolp_revenue',
     namePt: 'Receita (empresa sem lucros)',
     nameEn: 'Revenue (loss-making company)',
-    meaningPt:
-        'Receita do período atual. Numa empresa sem lucros, é o primeiro sinal de que o produto tem procura.',
-    meaningEn:
-        'Revenue of the current period. For a loss-making company it is the first sign that the product has demand.',
-    readPt:
-        'Crescimento da receita com margem bruta a melhorar é o caminho para o lucro. Receita estagnada com perdas é um mau sinal.',
-    readEn:
-        'Revenue growth with an improving gross margin is the path to profit. Stagnant revenue with losses is a bad sign.',
+    meaningPt: 'Receita do período atual. Numa empresa sem lucros, é o primeiro sinal de que o produto tem procura.',
+    meaningEn: 'Revenue of the current period. For a loss-making company it is the first sign that the product has demand.',
+    readPt: 'Crescimento da receita com margem bruta a melhorar é o caminho para o lucro. Receita estagnada com perdas é um mau sinal.',
+    readEn: 'Revenue growth with an improving gross margin is the path to profit. Stagnant revenue with losses is a bad sign.',
     cautionPt:
         'Valor absoluto. Usa o crescimento da secção 2 e a margem bruta junto.',
-    cautionEn:
-        'Absolute value. Use the growth in section 2 and the gross margin together.',
+    cautionEn: 'Absolute value. Use the growth in section 2 and the gross margin together.',
   ),
   MetricInfo(
     key: 'nolp_gross_margin',
     namePt: 'Margem bruta (empresa sem lucros)',
     nameEn: 'Gross margin (loss-making company)',
     formula: '(receita − custo das vendas) / receita, período atual',
-    meaningPt:
-        'Quanto sobra da receita depois do custo direto. Numa empresa sem lucros, mostra se o modelo tem margem para crescer.',
-    meaningEn:
-        'How much revenue is left after direct costs. In a loss-making company it shows whether the model has room to grow.',
-    readPt:
-        'Margem bruta alta (acima de 60 %) dá espaço para cobrir os custos fixos quando a escala chegar.',
-    readEn:
-        'A high gross margin (above 60 %) leaves room to cover fixed costs as scale arrives.',
+    meaningPt: 'Quanto sobra da receita depois do custo direto. Numa empresa sem lucros, mostra se o modelo tem margem para crescer.',
+    meaningEn: 'How much revenue is left after direct costs. In a loss-making company it shows whether the model has room to grow.',
+    readPt: 'Margem bruta alta (acima de 60 %) dá espaço para cobrir os custos fixos quando a escala chegar.',
+    readEn: 'A high gross margin (above 60 %) leaves room to cover fixed costs as scale arrives.',
     cautionPt: 'Compara com o padrão do setor; software e farma têm margens diferentes.',
     cautionEn: 'Compare with the sector standard; software and pharma have different margins.',
   ),
@@ -1044,37 +749,26 @@ const List<MetricInfo> sectorRedflagsInfo = [
     namePt: 'Cash runway (meses)',
     nameEn: 'Cash runway (months)',
     formula: 'caixa e investimentos de curto prazo / (−FCF do período atual / 12), só com FCF < 0',
-    meaningPt:
-        'Quantos meses a empresa aguenta com o caixa atual, ao ritmo atual de queima de caixa.',
-    meaningEn:
-        'How many months the company can last with its current cash, at the current cash burn rate.',
-    readPt:
-        'Abaixo de 12 meses é urgente: vai precisar de financiamento ou de diluir os acionistas em breve. Acima de 24 meses dá margem.',
-    readEn:
-        'Below 12 months is urgent: it will need financing or to dilute shareholders soon. Above 24 months gives room.',
-    cautionPt:
-        'Nulo quando o FCF é positivo (não há queima; o runway não se aplica). Assume que a queima se mantém constante.',
-    cautionEn:
-        'Null when FCF is positive (there is no burn; runway does not apply). Assumes the burn stays constant.',
+    meaningPt: 'Quantos meses a empresa aguenta com o caixa atual, ao ritmo atual de queima de caixa.',
+    meaningEn: 'How many months the company can last with its current cash, at the current cash burn rate.',
+    readPt: 'Abaixo de 12 meses é urgente: vai precisar de financiamento ou de diluir os acionistas em breve. Acima de 24 meses dá margem.',
+    readEn: 'Below 12 months is urgent: it will need financing or to dilute shareholders soon. Above 24 months gives room.',
+    cautionPt: 'Nulo quando o FCF é positivo (não há queima; o runway não se aplica). Assume que a queima se mantém constante.',
+    cautionEn: 'Null when FCF is positive (there is no burn; runway does not apply). Assumes the burn stays constant.',
     availability: MetricAvailability.partial,
   ),
   MetricInfo(
     key: 'nolp_dilution',
     namePt: 'Diluição (empresa sem lucros)',
     nameEn: 'Dilution (loss-making company)',
-    formula: 'ações do fecho do último ano / ações do fecho do ano anterior − 1',
-    meaningPt:
-        'Quanto aumentou o número de ações no último ano. Numa empresa sem lucros, é o custo de financiar a queima de caixa.',
-    meaningEn:
-        'How much the share count rose in the last year. In a loss-making company it is the cost of funding the cash burn.',
-    readPt:
-        'Acima de 5 % ao ano é diluição relevante. Um aumento grande, com queima de caixa, indica financiamento por emissão de ações.',
-    readEn:
-        'Above 5 % a year is material dilution. A large increase with cash burn points to financing through share issues.',
-    cautionPt:
-        'Mesma definição da diluição da secção 8, aqui aplicada ao grupo das empresas sem lucros.',
-    cautionEn:
-        'Same definition as the dilution in section 8, applied here to the loss-making group.',
+    formula:
+        'ações do fecho do último ano / ações do fecho do ano anterior − 1',
+    meaningPt: 'Quanto aumentou o número de ações no último ano. Numa empresa sem lucros, é o custo de financiar a queima de caixa.',
+    meaningEn: 'How much the share count rose in the last year. In a loss-making company it is the cost of funding the cash burn.',
+    readPt: 'Acima de 5 % ao ano é diluição relevante. Um aumento grande, com queima de caixa, indica financiamento por emissão de ações.',
+    readEn: 'Above 5 % a year is material dilution. A large increase with cash burn points to financing through share issues.',
+    cautionPt: 'Mesma definição da diluição da secção 8, aqui aplicada ao grupo das empresas sem lucros.',
+    cautionEn: 'Same definition as the dilution in section 8, applied here to the loss-making group.',
   ),
 
   // ===== Secção 17: red flags =====
@@ -1082,198 +776,132 @@ const List<MetricInfo> sectorRedflagsInfo = [
     key: 'flag_earnings_up_cfo_down',
     namePt: 'Lucros a subir e fluxo operacional a descer',
     nameEn: 'Earnings up while operating cash flow down',
-    meaningPt:
-        'Alerta quando o lucro líquido sobe e o fluxo operacional (CFO) desce no último ano face ao anterior.',
-    meaningEn:
-        'Alert when net income rises and operating cash flow (CFO) falls in the last year versus the prior one.',
-    readPt:
-        '1 = alerta (lucro a subir e CFO a descer no último ano anual); 0 = sem alerta; nulo = sem dados dos dois anos. Limiar: qualquer variação, sem tolerância.',
-    readEn:
-        '1 = alert (net income up and CFO down in the last annual year); 0 = no alert; null = no data for both years. Threshold: any change, no tolerance.',
-    cautionPt:
-        'Compara só dois anos. Um ano de lucro com venda de ativos ou com capital de giro favorável pode dar o alerta sem problema real.',
-    cautionEn:
-        'Compares only two years. A profit year with asset sales or favourable working capital can trigger the alert without a real problem.',
+    meaningPt: 'Alerta quando o lucro líquido sobe e o fluxo operacional (CFO) desce no último ano face ao anterior.',
+    meaningEn: 'Alert when net income rises and operating cash flow (CFO) falls in the last year versus the prior one.',
+    readPt: '1 = alerta (lucro a subir e CFO a descer no último ano anual); 0 = sem alerta; nulo = sem dados dos dois anos. Limiar: qualquer variação, sem tolerância.',
+    readEn: '1 = alert (net income up and CFO down in the last annual year); 0 = no alert; null = no data for both years. Threshold: any change, no tolerance.',
+    cautionPt: 'Compara só dois anos. Um ano de lucro com venda de ativos ou com capital de giro favorável pode dar o alerta sem problema real.',
+    cautionEn: 'Compares only two years. A profit year with asset sales or favourable working capital can trigger the alert without a real problem.',
   ),
   MetricInfo(
     key: 'flag_dso_rising',
     namePt: 'DSO a subir mais do que as vendas',
     nameEn: 'DSO rising faster than sales',
-    meaningPt:
-        'Alerta quando os dias de vendas por receber sobem: as contas a receber crescem mais depressa do que a receita.',
-    meaningEn:
-        'Alert when days sales outstanding rise: receivables grow faster than revenue.',
-    readPt:
-        '1 = alerta: DSO do último ano anual mais de 5 % acima do ano anterior; 0 = sem alerta; nulo = sem dados. Pode indicar vendas forçadas ou clientes a pagar mais tarde.',
-    readEn:
-        '1 = alert: DSO of the last annual year more than 5 % above the prior year; 0 = no alert; null = no data. It can signal forced sales or customers paying later.',
-    cautionPt:
-        'Usa o saldo de fecho das contas a receber. Vendas concentradas no fim do ano também podem inflacionar as contas a receber.',
-    cautionEn:
-        'Uses the year-end receivables balance. Sales concentrated at year end can also inflate receivables.',
+    meaningPt: 'Alerta quando os dias de vendas por receber sobem: as contas a receber crescem mais depressa do que a receita.',
+    meaningEn: 'Alert when days sales outstanding rise: receivables grow faster than revenue.',
+    readPt: '1 = alerta: DSO do último ano anual mais de 5 % acima do ano anterior; 0 = sem alerta; nulo = sem dados. Pode indicar vendas forçadas ou clientes a pagar mais tarde.',
+    readEn: '1 = alert: DSO of the last annual year more than 5 % above the prior year; 0 = no alert; null = no data. It can signal forced sales or customers paying later.',
+    cautionPt: 'Usa o saldo de fecho das contas a receber. Vendas concentradas no fim do ano também podem inflacionar as contas a receber.',
+    cautionEn: 'Uses the year-end receivables balance. Sales concentrated at year end can also inflate receivables.',
   ),
   MetricInfo(
     key: 'flag_dio_rising',
     namePt: 'Inventários a crescer mais do que as vendas',
     nameEn: 'Inventory rising faster than sales',
-    meaningPt:
-        'Alerta quando os dias de inventário sobem: o stock cresce mais depressa do que o custo das vendas.',
-    meaningEn:
-        'Alert when days inventory rise: stock grows faster than the cost of sales.',
-    readPt:
-        '1 = alerta: DIO do último ano anual mais de 5 % acima do ano anterior; 0 = sem alerta; nulo = sem dados ou sem inventário (bancos e software, por exemplo). Pode indicar procura a abrandar.',
-    readEn:
-        '1 = alert: DIO of the last annual year more than 5 % above the prior year; 0 = no alert; null = no data or no inventory (banks and software, for example). It can signal slowing demand.',
-    cautionPt:
-        'Usa o custo das vendas como proxy das vendas (o DIO é inventário / custo × 365). Inventários de fim de ano podem subir por calendário.',
-    cautionEn:
-        'Uses the cost of sales as a proxy for sales (DIO is inventory / cost × 365). Year-end inventory can rise for calendar reasons.',
+    meaningPt: 'Alerta quando os dias de inventário sobem: o stock cresce mais depressa do que o custo das vendas.',
+    meaningEn: 'Alert when days inventory rise: stock grows faster than the cost of sales.',
+    readPt: '1 = alerta: DIO do último ano anual mais de 5 % acima do ano anterior; 0 = sem alerta; nulo = sem dados ou sem inventário (bancos e software, por exemplo). Pode indicar procura a abrandar.',
+    readEn: '1 = alert: DIO of the last annual year more than 5 % above the prior year; 0 = no alert; null = no data or no inventory (banks and software, for example). It can signal slowing demand.',
+    cautionPt: 'Usa o custo das vendas como proxy das vendas (o DIO é inventário / custo × 365). Inventários de fim de ano podem subir por calendário.',
+    cautionEn: 'Uses the cost of sales as a proxy for sales (DIO is inventory / cost × 365). Year-end inventory can rise for calendar reasons.',
   ),
   MetricInfo(
     key: 'flag_adjusted_vs_gaap',
     namePt: 'Resultados ajustados cada vez mais distantes do GAAP',
     nameEn: 'Adjusted results increasingly far from GAAP',
-    meaningPt:
-        'Alerta quando a diferença entre o lucro ajustado (non-GAAP) e o lucro contabilístico (GAAP) cresce ano após ano.',
-    meaningEn:
-        'Alert when the gap between adjusted (non-GAAP) and GAAP earnings widens year after year.',
-    readPt:
-        'Não disponível com dados gratuitos: o lucro ajustado é divulgado pela empresa e não está nas demonstrações da fonte.',
-    readEn:
-        'Not available with free data: adjusted earnings are disclosed by the company and are not in the source statements.',
+    meaningPt: 'Alerta quando a diferença entre o lucro ajustado (non-GAAP) e o lucro contabilístico (GAAP) cresce ano após ano.',
+    meaningEn: 'Alert when the gap between adjusted (non-GAAP) and GAAP earnings widens year after year.',
+    readPt: 'Não disponível com dados gratuitos: o lucro ajustado é divulgado pela empresa e não está nas demonstrações da fonte.',
+    readEn: 'Not available with free data: adjusted earnings are disclosed by the company and are not in the source statements.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'flag_special_items_recurring',
     namePt: 'Itens não recorrentes todos os anos',
     nameEn: 'Non-recurring items every year',
-    meaningPt:
-        'Alerta quando há itens especiais em todos os exercícios: o que é "não recorrente" passa a ser recorrente.',
-    meaningEn:
-        'Alert when there are special items in every year: what is called "non-recurring" becomes recurring.',
-    readPt:
-        '1 = alerta: todos os anos anuais (mínimo 3) têm itens especiais de pelo menos 1 % da receita; 0 = algum ano não tem (incluindo zero explícito); nulo = falta um ano sem que haja quebra do padrão.',
-    readEn:
-        '1 = alert: every annual year (minimum 3) has special items of at least 1 % of revenue; 0 = some year does not (including an explicit zero); null = a year is missing and no break is shown.',
-    cautionPt:
-        'A fonte omite campos a zero. Por isso um zero explícito conta como quebra do padrão e um campo em falta não.',
-    cautionEn:
-        'The source omits zero-valued fields. So an explicit zero counts as a break in the pattern and a missing field does not.',
+    meaningPt: 'Alerta quando há itens especiais em todos os exercícios: o que é "não recorrente" passa a ser recorrente.',
+    meaningEn: 'Alert when there are special items in every year: what is called "non-recurring" becomes recurring.',
+    readPt: '1 = alerta: todos os anos anuais (mínimo 3) têm itens especiais de pelo menos 1 % da receita; 0 = algum ano não tem (incluindo zero explícito); nulo = falta um ano sem que haja quebra do padrão.',
+    readEn: '1 = alert: every annual year (minimum 3) has special items of at least 1 % of revenue; 0 = some year does not (including an explicit zero); null = a year is missing and no break is shown.',
+    cautionPt: 'A fonte omite campos a zero. Por isso um zero explícito conta como quebra do padrão e um campo em falta não.',
+    cautionEn: 'The source omits zero-valued fields. So an explicit zero counts as a break in the pattern and a missing field does not.',
   ),
   MetricInfo(
     key: 'flag_goodwill_high',
     namePt: 'Goodwill elevado',
     nameEn: 'High goodwill',
     formula: 'goodwill / ativo total, período atual',
-    meaningPt:
-        'Parte do ativo que vem de preços pagos acima do valor contabilístico em aquisições. Pode ser depreciado.',
-    meaningEn:
-        'Share of assets that comes from prices paid above book value in acquisitions. It can be written down.',
-    readPt:
-        '1 = alerta: goodwill acima de 30 % do ativo total; 0 = sem alerta; nulo = sem dados. Quanto mais alto, maior o risco de imparidades.',
-    readEn:
-        '1 = alert: goodwill above 30 % of total assets; 0 = no alert; null = no data. The higher it is, the greater the impairment risk.',
-    cautionPt:
-        'Limiar de 30 % do ativo, simples. Empresas de serviços podem ter goodwill alto sem risco real.',
-    cautionEn:
-        'Simple 30 % of assets threshold. Service companies can have high goodwill without real risk.',
+    meaningPt: 'Parte do ativo que vem de preços pagos acima do valor contabilístico em aquisições. Pode ser depreciado.',
+    meaningEn: 'Share of assets that comes from prices paid above book value in acquisitions. It can be written down.',
+    readPt: '1 = alerta: goodwill acima de 30 % do ativo total; 0 = sem alerta; nulo = sem dados. Quanto mais alto, maior o risco de imparidades.',
+    readEn: '1 = alert: goodwill above 30 % of total assets; 0 = no alert; null = no data. The higher it is, the greater the impairment risk.',
+    cautionPt: 'Limiar de 30 % do ativo, simples. Empresas de serviços podem ter goodwill alto sem risco real.',
+    cautionEn: 'Simple 30 % of assets threshold. Service companies can have high goodwill without real risk.',
   ),
   MetricInfo(
     key: 'flag_impairments',
     namePt: 'Imparidades',
     nameEn: 'Impairments',
-    meaningPt:
-        'Perdas reconhecidas porque ativos (goodwill, imobilizado, participações) valem menos do que o contabilizado.',
-    meaningEn:
-        'Losses recognised because assets (goodwill, fixed assets, stakes) are worth less than their book value.',
-    readPt:
-        '1 = alerta: algum dos últimos 3 anos tem imparidade de pelo menos 1 % do ativo total; 0 = sem alerta (campo ausente conta como sem imparidade); nulo = sem ativo total.',
-    readEn:
-        '1 = alert: one of the last 3 years has impairment of at least 1 % of total assets; 0 = no alert (a missing field counts as no impairment); null = no total assets.',
-    cautionPt:
-        'Imparidades são por vezes reconhecidas para limpar o balanço. Um ano isolado pode não ser uma tendência.',
-    cautionEn:
-        'Impairments are sometimes booked to clean up the balance sheet. A single year may not be a trend.',
+    meaningPt: 'Perdas reconhecidas porque ativos (goodwill, imobilizado, participações) valem menos do que o contabilizado.',
+    meaningEn: 'Losses recognised because assets (goodwill, fixed assets, stakes) are worth less than their book value.',
+    readPt: '1 = alerta: algum dos últimos 3 anos tem imparidade de pelo menos 1 % do ativo total; 0 = sem alerta (campo ausente conta como sem imparidade); nulo = sem ativo total.',
+    readEn: '1 = alert: one of the last 3 years has impairment of at least 1 % of total assets; 0 = no alert (a missing field counts as no impairment); null = no total assets.',
+    cautionPt: 'Imparidades são por vezes reconhecidas para limpar o balanço. Um ano isolado pode não ser uma tendência.',
+    cautionEn: 'Impairments are sometimes booked to clean up the balance sheet. A single year may not be a trend.',
   ),
   MetricInfo(
     key: 'flag_debt_and_cash_high',
     namePt: 'Dívida e caixa elevados ao mesmo tempo',
     nameEn: 'High debt and high cash at the same time',
     formula: 'caixa / ativo total e dívida total / ativo total, período atual',
-    meaningPt:
-        'Empresa com muito caixa e muita dívida ao mesmo tempo: paga juros sobre a dívida enquanto guarda caixa parado.',
-    meaningEn:
-        'Company with a lot of cash and a lot of debt at the same time: it pays interest on debt while holding idle cash.',
-    readPt:
-        '1 = alerta: caixa de pelo menos 20 % do ativo e dívida de pelo menos 25 % do ativo; 0 = sem alerta; nulo = sem dados. Pode ser uma política de liquidez prudente; confirma o motivo.',
-    readEn:
-        '1 = alert: cash of at least 20 % of assets and debt of at least 25 % of assets; 0 = no alert; null = no data. It can be a prudent liquidity policy; check the reason.',
-    cautionPt:
-        'Limiares simples. Em empresas de comércio internacional, o caixa pode estar retido fora do país por impostos.',
-    cautionEn:
-        'Simple thresholds. In international companies, cash may be held abroad for tax reasons.',
+    meaningPt: 'Empresa com muito caixa e muita dívida ao mesmo tempo: paga juros sobre a dívida enquanto guarda caixa parado.',
+    meaningEn: 'Company with a lot of cash and a lot of debt at the same time: it pays interest on debt while holding idle cash.',
+    readPt: '1 = alerta: caixa de pelo menos 20 % do ativo e dívida de pelo menos 25 % do ativo; 0 = sem alerta; nulo = sem dados. Pode ser uma política de liquidez prudente; confirma o motivo.',
+    readEn: '1 = alert: cash of at least 20 % of assets and debt of at least 25 % of assets; 0 = no alert; null = no data. It can be a prudent liquidity policy; check the reason.',
+    cautionPt: 'Limiares simples. Em empresas de comércio internacional, o caixa pode estar retido fora do país por impostos.',
+    cautionEn: 'Simple thresholds. In international companies, cash may be held abroad for tax reasons.',
   ),
   MetricInfo(
     key: 'flag_tax_paid_low',
     namePt: 'Imposto pago muito abaixo do reportado',
     nameEn: 'Tax paid well below the tax reported',
     formula: 'soma do imposto pago / soma do imposto reportado, últimos 3 anos',
-    meaningPt:
-        'Compara o imposto que sai em dinheiro com o imposto que a empresa reconhece na demonstração de resultados.',
-    meaningEn:
-        'Compares the tax paid in cash with the tax the company recognises in the income statement.',
-    readPt:
-        '1 = alerta: imposto pago abaixo de 50 % do reportado; 0 = sem alerta; nulo = sem anos com os dois valores e imposto reportado positivo. Diferenças temporárias são normais; diferenças persistentes pedem explicação.',
-    readEn:
-        '1 = alert: tax paid below 50 % of the reported tax; 0 = no alert; null = no years with both values and positive reported tax. Temporary differences are normal; persistent ones need an explanation.',
-    cautionPt:
-        'Prejuízos fiscais, créditos de imposto e diferimentos explicam muitos casos. Usa-o como pista, não como prova.',
-    cautionEn:
-        'Tax losses, tax credits and deferrals explain many cases. Use it as a lead, not as proof.',
+    meaningPt: 'Compara o imposto que sai em dinheiro com o imposto que a empresa reconhece na demonstração de resultados.',
+    meaningEn: 'Compares the tax paid in cash with the tax the company recognises in the income statement.',
+    readPt: '1 = alerta: imposto pago abaixo de 50 % do reportado; 0 = sem alerta; nulo = sem anos com os dois valores e imposto reportado positivo. Diferenças temporárias são normais; diferenças persistentes pedem explicação.',
+    readEn: '1 = alert: tax paid below 50 % of the reported tax; 0 = no alert; null = no years with both values and positive reported tax. Temporary differences are normal; persistent ones need an explanation.',
+    cautionPt: 'Prejuízos fiscais, créditos de imposto e diferimentos explicam muitos casos. Usa-o como pista, não como prova.',
+    cautionEn: 'Tax losses, tax credits and deferrals explain many cases. Use it as a lead, not as proof.',
   ),
   MetricInfo(
     key: 'flag_serial_acquisitions',
     namePt: 'Aquisições em série',
     nameEn: 'Serial acquisitions',
-    meaningPt:
-        'Alerta quando a empresa compra outras todos os anos: o crescimento pode vir de compras e não do negócio.',
-    meaningEn:
-        'Alert when the company buys other businesses every year: growth may come from purchases, not from the business.',
-    readPt:
-        '1 = alerta: a compra de empresas é uma saída de caixa em todos os exercícios anuais (mínimo 3); 0 = algum ano sem compra (zero explícito incluído); nulo = falta um ano sem quebra do padrão.',
-    readEn:
-        '1 = alert: business purchases are a cash outflow in every annual year (minimum 3); 0 = some year without purchases (explicit zero included); null = a year is missing and no break is shown.',
-    cautionPt:
-        'Só indício: o campo não separa o crescimento orgânico do das aquisições (esse dado não está disponível).',
-    cautionEn:
-        'Only a hint: the field does not separate organic growth from acquired growth (that data is not available).',
+    meaningPt: 'Alerta quando a empresa compra outras todos os anos: o crescimento pode vir de compras e não do negócio.',
+    meaningEn: 'Alert when the company buys other businesses every year: growth may come from purchases, not from the business.',
+    readPt: '1 = alerta: a compra de empresas é uma saída de caixa em todos os exercícios anuais (mínimo 3); 0 = algum ano sem compra (zero explícito incluído); nulo = falta um ano sem quebra do padrão.',
+    readEn: '1 = alert: business purchases are a cash outflow in every annual year (minimum 3); 0 = some year without purchases (explicit zero included); null = a year is missing and no break is shown.',
+    cautionPt: 'Só indício: o campo não separa o crescimento orgânico do das aquisições (esse dado não está disponível).',
+    cautionEn: 'Only a hint: the field does not separate organic growth from acquired growth (that data is not available).',
   ),
   MetricInfo(
     key: 'flag_accounting_policy_changes',
     namePt: 'Mudanças de políticas contabilísticas',
     nameEn: 'Changes in accounting policies',
-    meaningPt:
-        'Alerta quando a empresa muda a forma de contabilizar receitas, custos ou ativos, o que altera a comparação entre anos.',
-    meaningEn:
-        'Alert when the company changes how it books revenue, costs or assets, which breaks comparability across years.',
-    readPt:
-        'Não disponível com dados gratuitos: as mudanças de política estão nas notas às demonstrações, que a fonte não dá.',
-    readEn:
-        'Not available with free data: accounting policy changes are in the notes to the statements, which the source does not give.',
+    meaningPt: 'Alerta quando a empresa muda a forma de contabilizar receitas, custos ou ativos, o que altera a comparação entre anos.',
+    meaningEn: 'Alert when the company changes how it books revenue, costs or assets, which breaks comparability across years.',
+    readPt: 'Não disponível com dados gratuitos: as mudanças de política estão nas notas às demonstrações, que a fonte não dá.',
+    readEn: 'Not available with free data: accounting policy changes are in the notes to the statements, which the source does not give.',
     availability: MetricAvailability.unavailable,
   ),
   MetricInfo(
     key: 'flag_capitalized_costs',
     namePt: 'Capitalização agressiva de custos',
     nameEn: 'Aggressive cost capitalisation',
-    meaningPt:
-        'Alerta quando despesas correntes são registadas como investimento (ativo), o que melhora artificialmente o lucro.',
-    meaningEn:
-        'Alert when current expenses are booked as investment (assets), which artificially improves profit.',
-    readPt:
-        'Não disponível com dados gratuitos: a fonte não separa os custos capitalizados (ex.: software ou desenvolvimento) nas demonstrações.',
-    readEn:
-        'Not available with free data: the source does not separate capitalised costs (for example software or development) in the statements.',
+    meaningPt: 'Alerta quando despesas correntes são registadas como investimento (ativo), o que melhora artificialmente o lucro.',
+    meaningEn: 'Alert when current expenses are booked as investment (assets), which artificially improves profit.',
+    readPt: 'Não disponível com dados gratuitos: a fonte não separa os custos capitalizados (ex.: software ou desenvolvimento) nas demonstrações.',
+    readEn: 'Not available with free data: the source does not separate capitalised costs (for example software or development) in the statements.',
     availability: MetricAvailability.unavailable,
   ),
 ];

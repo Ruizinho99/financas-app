@@ -35,83 +35,95 @@ List<Metric> _todas(Financials f) => [
 void main() {
   late Map golden;
   setUpAll(() {
-    golden =
-        jsonDecode(File('test/fixtures/golden_aapl.json').readAsStringSync())
-            as Map;
+    golden = jsonDecode(
+      File('test/fixtures/golden_aapl.json').readAsStringSync(),
+    ) as Map;
   });
 
   group('valores AAPL contra o golden (fonte: fixtures Yahoo reais)', () {
-    test('liquidez, solvência, fluxo de caixa e por ação batem com o golden', () async {
-      final f = _soAnuais(await _yahoo().financials('AAPL'));
-      final liq = liquidityMetrics(f);
-      final sol = solvencyMetrics(f);
-      final cf = cashFlowMetrics(f);
-      final ps = perShareMetrics(f);
+    test(
+      'liquidez, solvência, fluxo de caixa e por ação batem com o golden',
+      () async {
+        final f = _soAnuais(await _yahoo().financials('AAPL'));
+        final liq = liquidityMetrics(f);
+        final sol = solvencyMetrics(f);
+        final cf = cashFlowMetrics(f);
+        final ps = perShareMetrics(f);
 
-      final esperado = <String, List<Metric>>{
-        'current_ratio': liq,
-        'quick_ratio': liq,
-        'cash_ratio': liq,
-        'working_capital': liq,
-        'net_debt': sol,
-        'net_debt_to_ebitda': sol,
-        'debt_to_equity': sol,
-        'interest_coverage': sol,
-        'net_debt_to_fcf': sol,
-        'fcf': cf,
-        'fcf_reported': cf,
-        'fcf_after_sbc': cf,
-        'cash_conversion': cf,
-        'sloan_accruals': cf,
-        'capex_to_revenue': cf,
-        'capex_to_da': cf,
-        'owner_earnings': cf,
-        'maintenance_capex': cf,
-        'eps': ps,
-        'bvps': ps,
-        'fcf_per_share': ps,
-        'share_dilution': ps,
-      };
-      for (final entrada in esperado.entries) {
-        final valor = _m(entrada.value, entrada.key).value;
-        final e = golden[entrada.key];
-        if (e == null) {
-          expect(valor, isNull, reason: entrada.key);
-        } else {
-          final ref = (e as num).toDouble();
-          expect(
-            valor,
-            closeTo(ref, 1e-9 * max(1.0, ref.abs())),
-            reason: entrada.key,
-          );
+        final esperado = <String, List<Metric>>{
+          'current_ratio': liq,
+          'quick_ratio': liq,
+          'cash_ratio': liq,
+          'working_capital': liq,
+          'net_debt': sol,
+          'net_debt_to_ebitda': sol,
+          'debt_to_equity': sol,
+          'interest_coverage': sol,
+          'net_debt_to_fcf': sol,
+          'fcf': cf,
+          'fcf_reported': cf,
+          'fcf_after_sbc': cf,
+          'cash_conversion': cf,
+          'sloan_accruals': cf,
+          'capex_to_revenue': cf,
+          'capex_to_da': cf,
+          'owner_earnings': cf,
+          'maintenance_capex': cf,
+          'eps': ps,
+          'bvps': ps,
+          'fcf_per_share': ps,
+          'share_dilution': ps,
+        };
+        for (final entrada in esperado.entries) {
+          final valor = _m(entrada.value, entrada.key).value;
+          final e = golden[entrada.key];
+          if (e == null) {
+            expect(valor, isNull, reason: entrada.key);
+          } else {
+            final ref = (e as num).toDouble();
+            expect(
+              valor,
+              closeTo(ref, 1e-9 * max(1.0, ref.abs())),
+              reason: entrada.key,
+            );
+          }
         }
-      }
-    });
+      },
+    );
 
-    test('cobertura de juros da AAPL é null (sem juros na fonte), como no golden', () async {
-      final f = _soAnuais(await _yahoo().financials('AAPL'));
-      expect(golden['interest_coverage'], isNull);
-      expect(_m(solvencyMetrics(f), 'interest_coverage').value, isNull);
-    });
+    test(
+      'cobertura de juros da AAPL é null (sem juros na fonte), como no golden',
+      () async {
+        final f = _soAnuais(await _yahoo().financials('AAPL'));
+        expect(golden['interest_coverage'], isNull);
+        expect(_m(solvencyMetrics(f), 'interest_coverage').value, isNull);
+      },
+    );
 
-    test('dívida líquida e capex são os da fixture, com capex positivo', () async {
-      final f = await _yahoo().financials('AAPL');
-      final a = f.lastAnnual!;
-      final ms = cashFlowMetrics(_soAnuais(f));
-      expect(_m(ms, 'capex').value, a.capexSpent);
-      expect(_m(ms, 'capex').value!, greaterThan(0));
-      expect(
-        _m(solvencyMetrics(_soAnuais(f)), 'net_debt').value,
-        a.totalDebt! - a.cash!,
-      );
-    });
+    test(
+      'dívida líquida e capex são os da fixture, com capex positivo',
+      () async {
+        final f = await _yahoo().financials('AAPL');
+        final a = f.lastAnnual!;
+        final ms = cashFlowMetrics(_soAnuais(f));
+        expect(_m(ms, 'capex').value, a.capexSpent);
+        expect(_m(ms, 'capex').value!, greaterThan(0));
+        expect(
+          _m(solvencyMetrics(_soAnuais(f)), 'net_debt').value,
+          a.totalDebt! - a.cash!,
+        );
+      },
+    );
 
-    test('caixa do golden: fcf = CFO − |capex| e fcf_reported = freeCashFlow', () async {
-      final f = _soAnuais(await _yahoo().financials('AAPL'));
-      final ms = cashFlowMetrics(f);
-      expect(_m(ms, 'fcf').value, golden['fcf']);
-      expect(_m(ms, 'fcf_reported').value, golden['fcf_reported']);
-    });
+    test(
+      'caixa do golden: fcf = CFO − |capex| e fcf_reported = freeCashFlow',
+      () async {
+        final f = _soAnuais(await _yahoo().financials('AAPL'));
+        final ms = cashFlowMetrics(f);
+        expect(_m(ms, 'fcf').value, golden['fcf']);
+        expect(_m(ms, 'fcf_reported').value, golden['fcf_reported']);
+      },
+    );
   });
 
   group('TTM e base temporal', () {
@@ -252,7 +264,10 @@ void main() {
         ],
       );
       expect(_m(solvencyMetrics(f), 'net_debt').value, -20);
-      expect(_m(solvencyMetrics(f), 'net_debt_to_ebitda').value, closeTo(-0.4, 1e-12));
+      expect(
+        _m(solvencyMetrics(f), 'net_debt_to_ebitda').value,
+        closeTo(-0.4, 1e-12),
+      );
     });
 
     test('capitais próprios negativos: dívida / capitais próprios null', () {
@@ -270,23 +285,39 @@ void main() {
       expect(_m(solvencyMetrics(f), 'debt_to_equity').value, isNull);
     });
 
-    test('juros zero ou ausentes: cobertura null; interestPaid como alternativa', () {
-      final semJuros = Financials(
-        symbol: 'X',
-        annual: [
-          FinPeriod(end: DateTime(2025, 12, 31), annual: true, operatingIncome: 50, interestExpense: 0),
-        ],
-      );
-      expect(_m(solvencyMetrics(semJuros), 'interest_coverage').value, isNull);
+    test(
+      'juros zero ou ausentes: cobertura null; interestPaid como alternativa',
+      () {
+        final semJuros = Financials(
+          symbol: 'X',
+          annual: [
+            FinPeriod(
+              end: DateTime(2025, 12, 31),
+              annual: true,
+              operatingIncome: 50,
+              interestExpense: 0,
+            ),
+          ],
+        );
+        expect(
+          _m(solvencyMetrics(semJuros), 'interest_coverage').value,
+          isNull,
+        );
 
-      final comPago = Financials(
-        symbol: 'X',
-        annual: [
-          FinPeriod(end: DateTime(2025, 12, 31), annual: true, operatingIncome: 50, interestPaid: 10),
-        ],
-      );
-      expect(_m(solvencyMetrics(comPago), 'interest_coverage').value, 5);
-    });
+        final comPago = Financials(
+          symbol: 'X',
+          annual: [
+            FinPeriod(
+              end: DateTime(2025, 12, 31),
+              annual: true,
+              operatingIncome: 50,
+              interestPaid: 10,
+            ),
+          ],
+        );
+        expect(_m(solvencyMetrics(comPago), 'interest_coverage').value, 5);
+      },
+    );
 
     test('EBIT é o resultado operacional, não o EBIT da fonte', () {
       final f = Financials(
@@ -325,38 +356,50 @@ void main() {
       final f = Financials(
         symbol: 'X',
         annual: [
-          FinPeriod(end: DateTime(2025, 12, 31), annual: true, freeCashFlow: 77),
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            freeCashFlow: 77,
+          ),
         ],
       );
       expect(_m(cashFlowMetrics(f), 'fcf').value, 77);
     });
 
-    test('capex de manutenção e de crescimento: min(|capex|, D&A) e o resto', () {
+    test(
+      'capex de manutenção e de crescimento: min(|capex|, D&A) e o resto',
+      () {
+        final f = Financials(
+          symbol: 'X',
+          annual: [
+            FinPeriod(
+              end: DateTime(2025, 12, 31),
+              annual: true,
+              capex: -100,
+              depreciationAmortization: 60,
+              netIncome: 50,
+              changeInWorkingCapital: -10,
+            ),
+          ],
+        );
+        final ms = cashFlowMetrics(f);
+        expect(_m(ms, 'maintenance_capex').value, 60);
+        expect(_m(ms, 'growth_capex').value, 40);
+        // owner earnings = 50 + 60 − 60 + (−10)
+        expect(_m(ms, 'owner_earnings').value, 40);
+      },
+    );
+
+    test('conversão de caixa com resultado ≤ 0 é null', () {
       final f = Financials(
         symbol: 'X',
         annual: [
           FinPeriod(
             end: DateTime(2025, 12, 31),
             annual: true,
-            capex: -100,
-            depreciationAmortization: 60,
-            netIncome: 50,
-            changeInWorkingCapital: -10,
+            operatingCashFlow: 10,
+            netIncome: -5,
           ),
-        ],
-      );
-      final ms = cashFlowMetrics(f);
-      expect(_m(ms, 'maintenance_capex').value, 60);
-      expect(_m(ms, 'growth_capex').value, 40);
-      // owner earnings = 50 + 60 − 60 + (−10)
-      expect(_m(ms, 'owner_earnings').value, 40);
-    });
-
-    test('conversão de caixa com resultado ≤ 0 é null', () {
-      final f = Financials(
-        symbol: 'X',
-        annual: [
-          FinPeriod(end: DateTime(2025, 12, 31), annual: true, operatingCashFlow: 10, netIncome: -5),
         ],
       );
       expect(_m(cashFlowMetrics(f), 'cash_conversion').value, isNull);
@@ -366,22 +409,45 @@ void main() {
       final f = Financials(
         symbol: 'X',
         annual: [
-          FinPeriod(end: DateTime(2025, 12, 31), annual: true, capex: -10, revenue: 100),
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            capex: -10,
+            revenue: 100,
+          ),
         ],
       );
       expect(_m(cashFlowMetrics(f), 'capex_to_da').value, isNull);
-      expect(_m(cashFlowMetrics(f), 'capex_to_revenue').value, closeTo(0.1, 1e-12));
+      expect(
+        _m(cashFlowMetrics(f), 'capex_to_revenue').value,
+        closeTo(0.1, 1e-12),
+      );
     });
 
     test('EPS usa dilutedEps e, sem ele, resultado / ações diluídas', () {
       final com = Financials(
         symbol: 'X',
-        annual: [FinPeriod(end: DateTime(2025, 12, 31), annual: true, dilutedEps: 2.5, netIncome: 100, dilutedShares: 10)],
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            dilutedEps: 2.5,
+            netIncome: 100,
+            dilutedShares: 10,
+          ),
+        ],
       );
       expect(_m(perShareMetrics(com), 'eps').value, 2.5);
       final sem = Financials(
         symbol: 'X',
-        annual: [FinPeriod(end: DateTime(2025, 12, 31), annual: true, netIncome: 100, dilutedShares: 40)],
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            netIncome: 100,
+            dilutedShares: 40,
+          ),
+        ],
       );
       expect(_m(perShareMetrics(sem), 'eps').value, 2.5);
     });
@@ -389,17 +455,34 @@ void main() {
     test('diluição com um só anual: null; recompras dão negativo', () {
       final um = Financials(
         symbol: 'X',
-        annual: [FinPeriod(end: DateTime(2025, 12, 31), annual: true, sharesOutstanding: 100)],
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            sharesOutstanding: 100,
+          ),
+        ],
       );
       expect(_m(perShareMetrics(um), 'share_dilution').value, isNull);
       final dois = Financials(
         symbol: 'X',
         annual: [
-          FinPeriod(end: DateTime(2024, 12, 31), annual: true, sharesOutstanding: 100),
-          FinPeriod(end: DateTime(2025, 12, 31), annual: true, sharesOutstanding: 95),
+          FinPeriod(
+            end: DateTime(2024, 12, 31),
+            annual: true,
+            sharesOutstanding: 100,
+          ),
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            sharesOutstanding: 95,
+          ),
         ],
       );
-      expect(_m(perShareMetrics(dois), 'share_dilution').value, closeTo(-0.05, 1e-12));
+      expect(
+        _m(perShareMetrics(dois), 'share_dilution').value,
+        closeTo(-0.05, 1e-12),
+      );
     });
 
     test('DPS vem do MarketSnapshot; sem snapshot é null', () {
@@ -412,17 +495,26 @@ void main() {
       expect(_m(perShareMetrics(f, market: mercado), 'dps').value, 0.96);
     });
 
-    test('maturidades e dívida a taxa variável são sempre null (não disponíveis)', () {
-      final f = Financials(symbol: 'X');
-      expect(_m(solvencyMetrics(f), 'debt_maturities').value, isNull);
-      expect(_m(solvencyMetrics(f), 'variable_rate_debt').value, isNull);
-    });
+    test(
+      'maturidades e dívida a taxa variável são sempre null (não disponíveis)',
+      () {
+        final f = Financials(symbol: 'X');
+        expect(_m(solvencyMetrics(f), 'debt_maturities').value, isNull);
+        expect(_m(solvencyMetrics(f), 'variable_rate_debt').value, isNull);
+      },
+    );
 
     test('dívida total não soma locações: a fonte é a única referência', () {
       final f = Financials(
         symbol: 'X',
         annual: [
-          FinPeriod(end: DateTime(2025, 12, 31), annual: true, totalDebt: 100, cash: 10, leaseLiabilities: 40),
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            totalDebt: 100,
+            cash: 10,
+            leaseLiabilities: 40,
+          ),
         ],
       );
       expect(_m(solvencyMetrics(f), 'net_debt').value, 90);
@@ -430,30 +522,47 @@ void main() {
   });
 
   group('cobertura das fichas (MetricInfo)', () {
-    test('cada chave devolvida tem uma ficha, sem duplicados, com textos', () async {
-      final f = await _yahoo().financials('AAPL');
-      final chaves = _todas(f).map((m) => m.key).toList();
-      expect(chaves.toSet().length, chaves.length, reason: 'chaves duplicadas');
+    test(
+      'cada chave devolvida tem uma ficha, sem duplicados, com textos',
+      () async {
+        final f = await _yahoo().financials('AAPL');
+        final chaves = _todas(f).map((m) => m.key).toList();
+        expect(
+          chaves.toSet().length,
+          chaves.length,
+          reason: 'chaves duplicadas',
+        );
 
-      final fichas = {for (final i in liquiditySolvencyCashInfo) i.key: i};
-      expect(fichas.length, liquiditySolvencyCashInfo.length, reason: 'fichas duplicadas');
-      for (final k in chaves) {
-        expect(fichas.containsKey(k), isTrue, reason: 'sem ficha: $k');
-      }
-      for (final i in liquiditySolvencyCashInfo) {
-        expect(i.namePt.trim(), isNotEmpty, reason: i.key);
-        expect(i.nameEn.trim(), isNotEmpty, reason: i.key);
-        expect(i.meaningPt.trim(), isNotEmpty, reason: i.key);
-        expect(i.meaningEn.trim(), isNotEmpty, reason: i.key);
-        expect(i.readPt.trim(), isNotEmpty, reason: i.key);
-        expect(i.readEn.trim(), isNotEmpty, reason: i.key);
-      }
-    });
+        final fichas = {for (final i in liquiditySolvencyCashInfo) i.key: i};
+        expect(
+          fichas.length,
+          liquiditySolvencyCashInfo.length,
+          reason: 'fichas duplicadas',
+        );
+        for (final k in chaves) {
+          expect(fichas.containsKey(k), isTrue, reason: 'sem ficha: $k');
+        }
+        for (final i in liquiditySolvencyCashInfo) {
+          expect(i.namePt.trim(), isNotEmpty, reason: i.key);
+          expect(i.nameEn.trim(), isNotEmpty, reason: i.key);
+          expect(i.meaningPt.trim(), isNotEmpty, reason: i.key);
+          expect(i.meaningEn.trim(), isNotEmpty, reason: i.key);
+          expect(i.readPt.trim(), isNotEmpty, reason: i.key);
+          expect(i.readEn.trim(), isNotEmpty, reason: i.key);
+        }
+      },
+    );
 
     test('as "não disponível" estão marcadas como tal', () {
       final fichas = {for (final i in liquiditySolvencyCashInfo) i.key: i};
-      expect(fichas['debt_maturities']!.availability, MetricAvailability.unavailable);
-      expect(fichas['variable_rate_debt']!.availability, MetricAvailability.unavailable);
+      expect(
+        fichas['debt_maturities']!.availability,
+        MetricAvailability.unavailable,
+      );
+      expect(
+        fichas['variable_rate_debt']!.availability,
+        MetricAvailability.unavailable,
+      );
     });
   });
 }

@@ -27,15 +27,20 @@ void _esperaRel(double? obtido, num esperado) {
 }
 
 /// Período anual mínimo, só com o que os testes precisam.
-FinPeriod _ano(int ano, {double? eps, double? equity, double? totalDebt, double? cash}) =>
-    FinPeriod(
-      end: DateTime(ano, 12, 31),
-      annual: true,
-      dilutedEps: eps,
-      equity: equity,
-      totalDebt: totalDebt,
-      cash: cash,
-    );
+FinPeriod _ano(
+  int ano, {
+  double? eps,
+  double? equity,
+  double? totalDebt,
+  double? cash,
+}) => FinPeriod(
+  end: DateTime(ano, 12, 31),
+  annual: true,
+  dilutedEps: eps,
+  equity: equity,
+  totalDebt: totalDebt,
+  cash: cash,
+);
 
 void main() {
   group('Golden AAPL (período = último anual, como o golden)', () {
@@ -53,7 +58,9 @@ void main() {
         annual: f0.annual,
         quarterly: f0.quarterly,
       );
-      g = jsonDecode(File('test/fixtures/golden_aapl.json').readAsStringSync()) as Map;
+      g = jsonDecode(
+        File('test/fixtures/golden_aapl.json').readAsStringSync(),
+      ) as Map;
       preco = (g['ultimo_preco'] as num).toDouble();
       // A capitalização de teste do golden (3 biliões), usada no EV e no rendimento EV/EBIT.
       m = MarketSnapshot(
@@ -100,17 +107,38 @@ void main() {
     // Quatro anuais: EPS 1,0 → 1,2 → 1,44 → 1,728 (CAGR 3 anos = 20 %).
     // Último anual: capitalização 1000, EV = 1000 + 300 − 100 + 10 + 5 = 1215.
     final anuais = [
-      FinPeriod(end: DateTime(2022, 12, 31), annual: true, dilutedEps: 1.0, netIncome: 100, dilutedShares: 100),
-      FinPeriod(end: DateTime(2023, 12, 31), annual: true, dilutedEps: 1.2, netIncome: 120, dilutedShares: 100),
-      FinPeriod(end: DateTime(2024, 12, 31), annual: true, dilutedEps: 1.44, netIncome: 144, dilutedShares: 100,
-          equity: 450, totalDebt: 280, cash: 80),
+      FinPeriod(
+        end: DateTime(2022, 12, 31),
+        annual: true,
+        dilutedEps: 1.0,
+        netIncome: 100,
+        dilutedShares: 100,
+      ),
+      FinPeriod(
+        end: DateTime(2023, 12, 31),
+        annual: true,
+        dilutedEps: 1.2,
+        netIncome: 120,
+        dilutedShares: 100,
+      ),
+      FinPeriod(
+        end: DateTime(2024, 12, 31),
+        annual: true,
+        dilutedEps: 1.44,
+        netIncome: 144,
+        dilutedShares: 100,
+        equity: 450,
+        totalDebt: 280,
+        cash: 80,
+      ),
       FinPeriod(
         end: DateTime(2025, 12, 31),
         annual: true,
         revenue: 800,
         ebitda: 250,
         operatingIncome: 150,
-        ebit: 160, // o resultado operacional tem prioridade sobre o EBIT da fonte
+        ebit:
+            160, // o resultado operacional tem prioridade sobre o EBIT da fonte
         netIncome: 250,
         pretaxIncome: 150,
         taxProvision: 30, // taxa 20 %
@@ -214,9 +242,17 @@ void main() {
       const f = Financials(symbol: 'VAZIO');
       const m = MarketSnapshot(symbol: 'VAZIO');
       final val = valuationMetrics(f, m);
-      final div = dividendMetrics(f, m, dividendHistory: {DateTime(2025, 5, 1): 1.0}, agora: DateTime(2026, 1, 1));
+      final div = dividendMetrics(
+        f,
+        m,
+        dividendHistory: {DateTime(2025, 5, 1): 1.0},
+        agora: DateTime(2026, 1, 1),
+      );
       for (final x in [...val, ...div]) {
-        if (x.key == 'cape' || x.key == 'dividend_growth' || x.key == 'dividend_consecutive_years') continue;
+        if (x.key == 'cape' ||
+            x.key == 'dividend_growth' ||
+            x.key == 'dividend_consecutive_years')
+          continue;
         expect(x.value, isNull, reason: x.key);
       }
     });
@@ -231,7 +267,10 @@ void main() {
           _ano(2025, eps: -0.2),
         ],
       );
-      final val = valuationMetrics(f, const MarketSnapshot(symbol: 'P', price: 20));
+      final val = valuationMetrics(
+        f,
+        const MarketSnapshot(symbol: 'P', price: 20),
+      );
       expect(_v(val, 'pe_ttm'), isNull);
       expect(_v(val, 'pe_trailing'), isNull);
       expect(_v(val, 'peg'), isNull);
@@ -241,9 +280,19 @@ void main() {
     test('dívida ou caixa em falta: EV nulo, e os múltiplos de EV também', () {
       final f = Financials(
         symbol: 'D',
-        annual: [FinPeriod(end: DateTime(2025, 12, 31), annual: true, ebit: 100, cash: 10)],
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            ebit: 100,
+            cash: 10,
+          ),
+        ],
       );
-      final val = valuationMetrics(f, const MarketSnapshot(symbol: 'D', marketCap: 1000));
+      final val = valuationMetrics(
+        f,
+        const MarketSnapshot(symbol: 'D', marketCap: 1000),
+      );
       expect(_v(val, 'ev'), isNull);
       expect(_v(val, 'ev_ebit'), isNull);
       expect(_v(val, 'earnings_yield_ev'), isNull);
@@ -277,7 +326,14 @@ void main() {
     test('resultado líquido negativo: payout nulo; recompras sem dados: shareholder yield nulo', () {
       final f = Financials(
         symbol: 'R',
-        annual: [FinPeriod(end: DateTime(2025, 12, 31), annual: true, netIncome: -5, dividendsPaid: -2)],
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            netIncome: -5,
+            dividendsPaid: -2,
+          ),
+        ],
       );
       const m = MarketSnapshot(symbol: 'R', price: 10, marketCap: 500);
       final div = dividendMetrics(f, m);
@@ -302,7 +358,10 @@ void main() {
           ),
         ],
       );
-      final val = valuationMetrics(f, const MarketSnapshot(symbol: 'C', price: 10, marketCap: 100));
+      final val = valuationMetrics(
+        f,
+        const MarketSnapshot(symbol: 'C', price: 10, marketCap: 100),
+      );
       expect(_v(val, 'magic_formula_roic'), isNull);
     });
   });
@@ -315,8 +374,20 @@ void main() {
           _ano(2025, equity: 9000, totalDebt: 0, cash: 0), // não deve entrar
         ],
         quarterly: [
-          FinPeriod(end: DateTime(2025, 6, 30), annual: false, equity: 400, totalDebt: 250, cash: 50), // IC 600
-          FinPeriod(end: DateTime(2026, 3, 31), annual: false, equity: 1, totalDebt: 1, cash: 0), // fora do intervalo
+          FinPeriod(
+            end: DateTime(2025, 6, 30),
+            annual: false,
+            equity: 400,
+            totalDebt: 250,
+            cash: 50,
+          ), // IC 600
+          FinPeriod(
+            end: DateTime(2026, 3, 31),
+            annual: false,
+            equity: 1,
+            totalDebt: 1,
+            cash: 0,
+          ), // fora do intervalo
         ],
         ttm: FinPeriod(
           end: DateTime(2026, 6, 30),
@@ -329,7 +400,10 @@ void main() {
           cash: 100, // IC 700
         ),
       );
-      final val = valuationMetrics(f, const MarketSnapshot(symbol: 'T', price: 10, marketCap: 1000));
+      final val = valuationMetrics(
+        f,
+        const MarketSnapshot(symbol: 'T', price: 10, marketCap: 1000),
+      );
       // NOPAT = 150 × 0,8 = 120; capital médio = (700 + 600) / 2 = 650
       _esperaRel(_v(val, 'magic_formula_roic'), 120 / 650);
     });
@@ -343,15 +417,31 @@ void main() {
         _ano(2025, eps: 2, equity: 2, totalDebt: 2, cash: 2),
       ],
     );
-    final m = MarketSnapshot(symbol: 'C', price: 10, marketCap: 100, dividendPerShare: 0.1);
+    final m = MarketSnapshot(
+      symbol: 'C',
+      price: 10,
+      marketCap: 100,
+      dividendPerShare: 0.1,
+    );
     final historico = {DateTime(2024, 5, 1): 0.1, DateTime(2025, 5, 1): 0.2};
     final todas = [
       ...valuationMetrics(f, m),
-      ...dividendMetrics(f, m, dividendHistory: historico, agora: DateTime(2026, 11, 12)),
+      ...dividendMetrics(
+        f,
+        m,
+        dividendHistory: historico,
+        agora: DateTime(2026, 11, 12),
+      ),
     ];
     final vazias = [
-      ...valuationMetrics(const Financials(symbol: 'X'), const MarketSnapshot(symbol: 'X')),
-      ...dividendMetrics(const Financials(symbol: 'X'), const MarketSnapshot(symbol: 'X')),
+      ...valuationMetrics(
+        const Financials(symbol: 'X'),
+        const MarketSnapshot(symbol: 'X'),
+      ),
+      ...dividendMetrics(
+        const Financials(symbol: 'X'),
+        const MarketSnapshot(symbol: 'X'),
+      ),
     ];
 
     test('cada chave devolvida tem uma ficha, sem duplicados', () {
