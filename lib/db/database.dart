@@ -398,6 +398,21 @@ class Db {
       } catch (_) {}
       _db.execute('PRAGMA user_version = 22');
     }
+    if (v < 23) {
+      // v23: cache de dados de mercado (respostas do Yahoo) e símbolo de análise de cada ativo
+      _db.execute('''
+        CREATE TABLE IF NOT EXISTS market_cache(
+          key TEXT PRIMARY KEY,
+          json TEXT NOT NULL,
+          fetched_at TEXT NOT NULL
+        )''');
+      try {
+        _db.execute(
+          "ALTER TABLE holdings ADD COLUMN analysis_symbol TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+      _db.execute('PRAGMA user_version = 23');
+    }
   }
 
   /// Corre [body] numa transação: ou grava tudo ou nada.
@@ -1211,6 +1226,7 @@ class Db {
           lastPriceOrig: (r['last_price_orig'] as num?)?.toDouble(),
           lastFx: (r['last_fx'] as num?)?.toDouble(),
           logo: r['logo'] as Uint8List?,
+          analysisSymbol: (r['analysis_symbol'] as String?) ?? '',
         );
       })
       .toList();
@@ -1230,20 +1246,38 @@ class Db {
       h.lastFx,
       h.currencyManual ? 1 : 0,
       h.logo,
+      h.analysisSymbol,
     ];
     if (isNew) {
       _db.execute(
-        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual,logo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual,logo,analysis_symbol) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         vals,
       );
       return _db.lastInsertRowId;
     }
     _db.execute(
-      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=?,logo=? WHERE id=?',
+      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=?,logo=?,analysis_symbol=? WHERE id=?',
       [...vals, h.id],
     );
     return h.id;
   }
+
+  /// Cache de dados de mercado (usada por `MarketCache`): devolve o texto JSON e a data de obtenção.
+  ({String json, DateTime fetchedAt})? marketCacheRead(String key) {
+    final rows = _db.select(
+      'SELECT json, fetched_at FROM market_cache WHERE key=?',
+      [key],
+    );
+    if (rows.isEmpty) return null;
+    final at = DateTime.tryParse(rows.first['fetched_at'] as String);
+    if (at == null) return null;
+    return (json: rows.first['json'] as String, fetchedAt: at);
+  }
+
+  void marketCacheWrite(String key, String json, DateTime at) => _db.execute(
+    'INSERT OR REPLACE INTO market_cache(key,json,fetched_at) VALUES(?,?,?)',
+    [key, json, at.toIso8601String()],
+  );
 
   void deleteHolding(int id) =>
       _db.execute('DELETE FROM holdings WHERE id=?', [id]);
@@ -1494,7 +1528,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 22;
+  static const _schemaVersion = 23;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();
