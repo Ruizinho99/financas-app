@@ -34,6 +34,17 @@ class DcfAssumptions {
   /// Taxa de imposto do utilizador. Se `null`: taxa efetiva do período ([effectiveTaxRate]).
   final double? taxRate;
 
+  /// Cópia com os campos indicados alterados (para a interface editar as premissas).
+  DcfAssumptions copyWithGrowth(double? growth) => DcfAssumptions(
+    riskFreeRate: riskFreeRate,
+    marketRiskPremium: marketRiskPremium,
+    years: years,
+    explicitGrowth: growth,
+    terminalGrowth: terminalGrowth,
+    beta: beta,
+    taxRate: taxRate,
+  );
+
   const DcfAssumptions({
     this.riskFreeRate = kRiskFreeDefault,
     this.marketRiskPremium = 0.055,
