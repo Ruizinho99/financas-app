@@ -27,28 +27,53 @@ enum SectorGroup {
   generic,
 }
 
+/// Matérias-primas dentro de "Basic Materials" (petróleo, gás, mineração, metais, agricultura). Os outros
+/// títulos do setor (químicos, gases industriais, embalagens...) ficam `generic`.
+const _palavrasMateriasPrimas = [
+  'oil & gas',
+  'mining',
+  'gold',
+  'silver',
+  'copper',
+  'steel',
+  'aluminum',
+  'coal',
+  'uranium',
+  'metal',
+  'agricultur',
+  'farm',
+];
+
 /// Classifica o título num grupo da secção 16. Ordem de prioridade: a primeira regra que bater ganha.
+/// A classificação usa a indústria do Yahoo; o nome do título não conta (ASML Holding não é holding).
+/// Sem indústria, só o setor decide, e só para imobiliário (REIT). "Financial Services" sem indústria
+/// não se presume banco nem seguradora: fica `generic` (conservador).
 /// Sem correspondência (industriais, consumo, comunicação...) é `generic`: sem métricas setoriais.
 SectorGroup sectorGroupOf(MarketSnapshot m) {
   final ind = m.industry.toLowerCase();
   final sec = m.sector.toLowerCase();
-  final name = m.name.toLowerCase();
   if (ind.contains('bank')) return SectorGroup.banks;
   if (ind.contains('insurance')) return SectorGroup.insurers;
   if (ind.contains('reit')) return SectorGroup.reits;
+  if (ind.isEmpty && sec == 'real estate') return SectorGroup.reits;
   if (sec.contains('utilities')) return SectorGroup.utilities;
-  if (sec.contains('energy') || sec.contains('basic materials')) {
-    return SectorGroup.commodities;
+  if (sec.contains('energy')) return SectorGroup.commodities;
+  if (sec.contains('basic materials')) {
+    return _palavrasMateriasPrimas.any(ind.contains)
+        ? SectorGroup.commodities
+        : SectorGroup.generic;
   }
   if (ind.contains('software')) return SectorGroup.software;
-  if (ind.contains('retail')) return SectorGroup.retail;
-  if (ind.contains('drug') || ind.contains('biotech'))
-    return SectorGroup.pharma;
-  if (ind.contains('conglomerate') ||
-      ind.contains('holding') ||
-      name.contains('holding')) {
-    return SectorGroup.holdings;
+  if (ind.contains('retail') ||
+      ind.contains('discount stores') ||
+      ind.contains('grocery stores') ||
+      ind.contains('department stores')) {
+    return SectorGroup.retail;
   }
+  if (ind.contains('drug') || ind.contains('biotech')) {
+    return SectorGroup.pharma;
+  }
+  if (ind.contains('conglomerate')) return SectorGroup.holdings;
   return SectorGroup.generic;
 }
 
@@ -413,7 +438,7 @@ List<Metric> _semLucros(Financials f) {
       cur == null ? null : _grossMargin(cur),
       MetricKind.percent,
     ),
-    Metric('nolp_cash_runway_months', runway, MetricKind.years),
+    Metric('nolp_cash_runway_months', runway, MetricKind.months),
     Metric(
       'nolp_dilution',
       _yoy(f.lastAnnual?.sharesOutstanding, f.prevAnnual?.sharesOutstanding),
@@ -430,7 +455,9 @@ List<Metric> _semLucros(Financials f) {
 /// Limiares dos alertas (iguais aos das fichas em `sector_redflags_info.dart`).
 const double _limiteCrescimentoWc =
     0.05; // DSO / DIO a subir mais de 5 % num ano
+const double _tolerancia = 1e-9; // evita falsos alertas por vírgula flutuante (42 / 40 − 1 ≠ 0,05 exato)
 const double _limiteItensEspeciais = 0.01; // |itens especiais| ≥ 1 % da receita
+const double _limiteAquisicoes = 0.01; // aquisições (saída de caixa) ≥ 1 % da receita
 const double _limiteGoodwill = 0.30; // goodwill > 30 % do ativo total
 const double _limiteImparidade = 0.01; // imparidade ≥ 1 % do ativo total
 const double _limiteCaixa = 0.20; // caixa ≥ 20 % do ativo total
@@ -438,12 +465,14 @@ const double _limiteDivida = 0.25; // dívida ≥ 25 % do ativo total
 const double _limiteImpostoPago =
     0.50; // imposto pago < 50 % do imposto reportado
 
-/// Red flags (secção 17 da Parte 1). `m` está na assinatura para as regras futuras que precisem de mercado;
-/// as regras atuais usam só as demonstrações. Os alertas sem fonte de dados (ajustados vs GAAP, mudanças de
+/// Red flags (secção 17 da Parte 1). `m` decide os grupos financeiros: em bancos e seguradoras, DSO, DIO e
+/// dívida com caixa não se aplicam (dão `null`). Os alertas sem fonte de dados (ajustados vs GAAP, mudanças de
 /// políticas contabilísticas, capitalização de custos) devolvem sempre `null`.
 List<Metric> redFlags(Financials f, MarketSnapshot m) {
   final t = f.lastAnnual;
   final p = f.prevAnnual;
+  final g = sectorGroupOf(m);
+  final financeira = g == SectorGroup.banks || g == SectorGroup.insurers;
   return [
     Metric(
       'flag_earnings_up_cfo_down',
@@ -452,12 +481,12 @@ List<Metric> redFlags(Financials f, MarketSnapshot m) {
     ),
     Metric(
       'flag_dso_rising',
-      _risingAbove(t, p, _dso, _limiteCrescimentoWc),
+      financeira ? null : _risingAbove(t, p, _dso, _limiteCrescimentoWc),
       MetricKind.score,
     ),
     Metric(
       'flag_dio_rising',
-      _risingAbove(t, p, _dio, _limiteCrescimentoWc),
+      financeira ? null : _risingAbove(t, p, _dio, _limiteCrescimentoWc),
       MetricKind.score,
     ),
     const Metric('flag_adjusted_vs_gaap', null, MetricKind.score),
@@ -468,7 +497,11 @@ List<Metric> redFlags(Financials f, MarketSnapshot m) {
     ),
     Metric('flag_goodwill_high', _goodwillAlto(f), MetricKind.score),
     Metric('flag_impairments', _imparidades(f), MetricKind.score),
-    Metric('flag_debt_and_cash_high', _dividaECaixa(f), MetricKind.score),
+    Metric(
+      'flag_debt_and_cash_high',
+      financeira ? null : _dividaECaixa(f),
+      MetricKind.score,
+    ),
     Metric('flag_tax_paid_low', _impostoPagoBaixo(f), MetricKind.score),
     Metric(
       'flag_serial_acquisitions',
@@ -512,7 +545,7 @@ double? _risingAbove(
   final now = metric(t);
   final before = metric(p);
   if (now == null || before == null || before <= 0) return null;
-  return (now / before - 1) > limite ? 1 : 0;
+  return (now / before - 1) - limite > _tolerancia ? 1 : 0;
 }
 
 /// Itens especiais: 1 se |itens| ≥ 1 % da receita; 0 se não (incluindo o zero explícito).
@@ -525,11 +558,14 @@ bool? _itensEspeciaisAcima(FinPeriod p) {
   return s.abs() / r.abs() >= _limiteItensEspeciais;
 }
 
-/// Aquisições: `acquisitions` negativo (saída de caixa) neste ano.
+/// Aquisições materiais: `acquisitions` negativo (saída de caixa) de pelo menos 1 % da receita neste ano.
+/// Campo em falta conta como zero (a fonte omite os zeros, como nas imparidades); sem receita não há
+/// materialidade para avaliar, logo nulo.
 bool? _aquisicoes(FinPeriod p) {
-  final q = p.acquisitions;
-  if (q == null) return null;
-  return q < 0;
+  final r = p.revenue;
+  if (r == null || r == 0) return null;
+  final q = p.acquisitions ?? 0;
+  return q < 0 && q.abs() / r.abs() >= _limiteAquisicoes;
 }
 
 /// Regra "todos os anos": exige pelo menos 3 exercícios anuais. Um ano que quebra o padrão (`false`) dá 0 de
