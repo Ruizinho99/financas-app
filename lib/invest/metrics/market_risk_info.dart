@@ -353,6 +353,18 @@ const List<MetricInfo> marketRiskInfo = [
     cautionEn: 'Needs the portfolio value immediately before each flow. A sub-period that starts and ends at zero counts as 0 %; if it starts at zero and ends with value, it is null.',
   ),
   MetricInfo(
+    key: 'yield_on_cost',
+    namePt: 'Rendimento sobre o custo',
+    nameEn: 'Yield on cost',
+    formula: 'dividendos recebidos / custo das posições atuais',
+    meaningPt: 'Quanto recebeste em dividendos em relação ao que pagaste pelas posições que ainda tens.',
+    meaningEn: 'How much you received in dividends relative to what you paid for the positions you still hold.',
+    readPt: 'Mostra o rendimento real do teu investimento, não o do preço de hoje. Compara com o dividend yield atual de cada ativo.',
+    readEn: 'Shows the real income on your investment, not at today\'s price. Compare with each asset\'s current dividend yield.',
+    cautionPt: 'Soma todos os dividendos de sempre, mesmo de anos diferentes; não é uma taxa anual.',
+    cautionEn: 'Sums all dividends ever received, across different years; it is not an annual rate.',
+  ),
+  MetricInfo(
     key: 'hhi',
     namePt: 'Concentração da carteira (HHI)',
     nameEn: 'Portfolio concentration (HHI)',

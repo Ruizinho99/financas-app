@@ -224,7 +224,8 @@ void main() {
 
     test('datas sem dados (listas vazias) dão nulo e não lançam exceção', () {
       final m = marketRiskMetrics(const [], const []);
-      expect(m.length, marketRiskInfo.length - 3 - _chavesCarteira.length);
+      // fora desta função: 3 do snapshot + yield_on_cost (calculada na análise da carteira)
+      expect(m.length, marketRiskInfo.length - 4 - _chavesCarteira.length);
       for (final x in m) {
         if (x.key == 'spread_bid_ask') continue;
         expect(x.value, isNull, reason: x.key);
