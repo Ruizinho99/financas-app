@@ -176,7 +176,7 @@ class OpTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        '${fmtDate(op.date)}${detail.isEmpty ? '' : ' · $detail'}',
+        '${fmtDate(op.date)}${op.date.hour == 0 && op.date.minute == 0 ? '' : ' ${op.date.hour.toString().padLeft(2, '0')}:${op.date.minute.toString().padLeft(2, '0')}'}${detail.isEmpty ? '' : ' · $detail'}',
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),

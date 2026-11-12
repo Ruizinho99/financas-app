@@ -193,7 +193,7 @@ void main() {
     try {
       final f = File('${dir2.path}/d.db')..writeAsBytesSync(db.snapshotBytes());
       final raw = sqlite3.open(f.path);
-      expect(raw.select('PRAGMA user_version').first.values.first, 23);
+      expect(raw.select('PRAGMA user_version').first.values.first, 24);
       raw.close();
     } finally {
       dir2.deleteSync(recursive: true);

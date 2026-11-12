@@ -1,3 +1,4 @@
+import '../widgets/category_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -259,6 +260,7 @@ Future<int?> showHoldingEditor(
   var currency = edit?.currency ?? baseCcy;
   var manualCcy = edit?.currencyManual ?? false;
   var kind = edit?.kind ?? HoldingKind.etf;
+  int? categoryId = edit?.categoryId;
   var provider = edit?.provider ?? PriceProvider.yahoo;
   var acc =
       edit?.accountId ??
@@ -285,6 +287,31 @@ Future<int?> showHoldingEditor(
                   labelText: l.invfName,
                   hintText: l.invfHoldingNameHint,
                   errorText: error,
+                ),
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () async {
+                  final id = await chooseCategory(
+                    ctx,
+                    selected: categoryId,
+                    income: false,
+                  );
+                  if (id != null) set(() => categoryId = id);
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: Localizations.localeOf(ctx).languageCode == 'en'
+                        ? 'Budget category (optional)'
+                        : 'Categoria do orçamento (opcional)',
+                    suffixIcon: categoryId == null
+                        ? const Icon(Icons.chevron_right)
+                        : IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => set(() => categoryId = null),
+                          ),
+                  ),
+                  child: Text(s.cat(categoryId)?.name ?? '—'),
                 ),
               ),
               const SizedBox(height: 12),
@@ -497,6 +524,7 @@ Future<int?> showHoldingEditor(
                     name: n,
                     accountId: acc,
                     kind: kind,
+                    categoryId: categoryId,
                     provider: provider,
                     symbol: provider == PriceProvider.manual
                         ? ''
@@ -1337,7 +1365,42 @@ class _OpFormScreenState extends State<OpFormScreen> {
                     firstDate: DateTime(2000),
                     lastDate: DateTime(2100),
                   );
-                  if (d != null) setState(() => date = d);
+                  if (d != null) {
+                    setState(
+                      () => date = DateTime(
+                        d.year,
+                        d.month,
+                        d.day,
+                        date.hour,
+                        date.minute,
+                      ),
+                    );
+                  }
+                },
+              ),
+              TileField(
+                icon: Icons.access_time,
+                title: Localizations.localeOf(context).languageCode == 'en'
+                    ? 'Time'
+                    : 'Hora',
+                text:
+                    '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                onTap: () async {
+                  final t = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(date),
+                  );
+                  if (t != null) {
+                    setState(
+                      () => date = DateTime(
+                        date.year,
+                        date.month,
+                        date.day,
+                        t.hour,
+                        t.minute,
+                      ),
+                    );
+                  }
                 },
               ),
               // o resto, escondido até ser preciso
