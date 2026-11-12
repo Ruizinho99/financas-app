@@ -6,6 +6,9 @@ import 'package:financas/invest/metrics/financials.dart';
 import 'package:financas/invest/metrics/metric_info.dart';
 import 'package:financas/invest/metrics/profitability_growth.dart';
 import 'package:financas/invest/metrics/profitability_growth_info.dart';
+import 'package:financas/invest/metrics/shared.dart';
+import 'package:financas/invest/metrics/liquidity_solvency_cash.dart';
+import 'package:financas/invest/metrics/valuation_dividends.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -211,7 +214,7 @@ void main() {
     test('FCF sem CFO ou sem capex usa freeCashFlow da fonte', () {
       final g = Financials(
         symbol: 'X',
-        annual: [per(ano: 2025, rev: 1000, fcfFonte: 99, ocf: 180)],
+        annual: [per(ano: 2025, rev: 1000, cogs: 600, fcfFonte: 99, ocf: 180)],
       );
       expect(
         _valores(profitabilityMetrics(g))['fcf_margin'],
@@ -252,11 +255,10 @@ void main() {
       expect(v['dupont_roe'], closeTo(v['roe']!, 1e-12));
     });
 
-    test('sem WACC não há spread', () {
-      expect(
-        _valores(returnMetrics(f)).containsKey('roic_wacc_spread'),
-        isFalse,
-      );
+    test('sem WACC o spread existe mas é null', () {
+      final v = _valores(returnMetrics(f));
+      expect(v.containsKey('roic_wacc_spread'), isTrue);
+      expect(v['roic_wacc_spread'], isNull);
     });
 
     test('eficiência: rotação, prazos (saldo de fecho) e ciclo', () {
@@ -298,7 +300,7 @@ void main() {
         quarterly: [q],
         ttm: t,
       );
-      expect(periodoAnterior(g, t), same(q));
+      expect(previousPeriodFor(g, t), same(q));
       // ROE TTM = 130 / média (500, 400)
       expect(_valores(returnMetrics(g))['roe'], closeTo(130 / 450, 1e-12));
     });
@@ -507,6 +509,127 @@ void main() {
       ]) {
         expect(por[k]!.availability, MetricAvailability.unavailable, reason: k);
       }
+    });
+  });
+
+  group('Correções da revisão (F1)', () {
+    // Banco: sem custo das vendas, resultado operacional nem ativo corrente.
+    final banco = FinPeriod(
+      end: DateTime(2025, 12, 31),
+      annual: true,
+      revenue: 1000,
+      netIncome: 200,
+      equity: 1500,
+      totalAssets: 20000,
+      receivables: 900,
+      payables: 400,
+      operatingCashFlow: -300,
+      capex: -20,
+      tangibleBookValue: 1200,
+    );
+
+    test('E1: a margem EBITDA usa EBIT + D&A e não o ebitda do Yahoo', () {
+      final p = FinPeriod(
+        end: DateTime(2025, 12, 31),
+        annual: true,
+        revenue: 1000,
+        operatingIncome: 100,
+        depreciationAmortization: 20,
+        ebitda: 770, // inclui resultados não operacionais
+      );
+      final f = Financials(symbol: 'X', annual: [p]);
+      expect(
+        _valores(profitabilityMetrics(f))['ebitda_margin'],
+        closeTo(0.12, 1e-12),
+      );
+    });
+
+    test(
+      'R1: banco dá null em DSO, DIO, DPO, rotação do ativo, ciclo e FCF',
+      () {
+        final f = Financials(symbol: 'B', annual: [banco]);
+        final p = _valores(profitabilityMetrics(f));
+        final e = _valores(efficiencyMetrics(f));
+        final r = _valores(returnMetrics(f));
+        expect(p['fcf_margin'], isNull);
+        for (final k in [
+          'dso',
+          'dio',
+          'dpo',
+          'asset_turnover',
+          'cash_conversion_cycle',
+          'inventory_turnover',
+        ]) {
+          expect(e[k], isNull, reason: k);
+        }
+        expect(r['roic'], isNull);
+        // ROE, ROA e ROTE mantêm-se
+        expect(r['roe'], closeTo(200 / 1500, 1e-12));
+        expect(r['roa'], closeTo(200 / 20000, 1e-12));
+        expect(r['rote'], closeTo(200 / 1200, 1e-12));
+      },
+    );
+
+    test(
+      'R2: ROA, Sloan, ROIC e magic_formula_roic usam o MESMO período anterior',
+      () {
+        FinPeriod base(
+          DateTime fim, {
+          bool anual = false,
+          double ativo = 0,
+          double eq = 0,
+        }) => FinPeriod(
+          end: fim,
+          annual: anual,
+          revenue: 1000,
+          costOfRevenue: 600,
+          operatingIncome: 100,
+          netIncome: 40,
+          operatingCashFlow: 70,
+          totalAssets: ativo,
+          equity: eq,
+          totalDebt: 0,
+          cash: 0,
+          currentAssets: 10,
+          taxProvision: 20,
+          pretaxIncome: 100,
+        );
+        final ttm = base(
+          DateTime(2026, 9, 30),
+          anual: true,
+          ativo: 300,
+          eq: 300,
+        );
+        final f = Financials(
+          symbol: 'T',
+          annual: [
+            base(DateTime(2025, 9, 30), anual: true, ativo: 100, eq: 100),
+            base(DateTime(2026, 6, 30), anual: true, ativo: 9000, eq: 9000),
+          ],
+          quarterly: [base(DateTime(2026, 6, 30), ativo: 9000, eq: 9000)],
+          ttm: ttm,
+        );
+        // média do ativo = (300 + 100) / 2 = 200; capital investido idem
+        final roa = _valores(returnMetrics(f))['roa']!;
+        expect(roa, closeTo(40 / 200, 1e-12));
+        final sloan = cashFlowMetrics(f)
+            .firstWhere((x) => x.key == 'sloan_accruals');
+        expect(sloan.value, closeTo((40 - 70) / 200, 1e-12));
+        final roic = _valores(returnMetrics(f))['roic']!;
+        expect(roic, closeTo(100 * 0.8 / 200, 1e-12));
+        final mf = valuationMetrics(
+          f,
+          const MarketSnapshot(symbol: 'T', price: 10, marketCap: 1000),
+        ).firstWhere((x) => x.key == 'magic_formula_roic');
+        expect(mf.value, closeTo(roic, 1e-12));
+      },
+    );
+
+    test('R4: roic_wacc_spread existe sempre; null sem WACC', () {
+      final f = Financials(symbol: 'X', annual: [banco]);
+      final v = _valores(returnMetrics(f));
+      expect(v.containsKey('roic_wacc_spread'), isTrue);
+      expect(v['roic_wacc_spread'], isNull);
     });
   });
 }

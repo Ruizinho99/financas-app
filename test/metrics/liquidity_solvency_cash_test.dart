@@ -240,6 +240,7 @@ void main() {
           FinPeriod(
             end: DateTime(2025, 12, 31),
             annual: true,
+            currentAssets: 1, // empresa não financeira
             totalDebt: 100,
             cash: 20,
             ebitda: -5,
@@ -257,6 +258,7 @@ void main() {
           FinPeriod(
             end: DateTime(2025, 12, 31),
             annual: true,
+            currentAssets: 1, // empresa não financeira
             totalDebt: 10,
             cash: 30,
             ebitda: 50,
@@ -359,6 +361,7 @@ void main() {
           FinPeriod(
             end: DateTime(2025, 12, 31),
             annual: true,
+            currentAssets: 1, // empresa não financeira
             freeCashFlow: 77,
           ),
         ],
@@ -375,6 +378,7 @@ void main() {
             FinPeriod(
               end: DateTime(2025, 12, 31),
               annual: true,
+              currentAssets: 1, // empresa não financeira
               capex: -100,
               depreciationAmortization: 60,
               netIncome: 50,
@@ -511,6 +515,7 @@ void main() {
           FinPeriod(
             end: DateTime(2025, 12, 31),
             annual: true,
+            currentAssets: 1, // empresa não financeira
             totalDebt: 100,
             cash: 10,
             leaseLiabilities: 40,
@@ -562,6 +567,107 @@ void main() {
       expect(
         fichas['variable_rate_debt']!.availability,
         MetricAvailability.unavailable,
+      );
+    });
+  });
+
+  group('Correções da revisão (F1)', () {
+    test(
+      'E1: dívida líquida / EBITDA usa EBIT + D&A e não o ebitda do Yahoo',
+      () {
+        final f = Financials(
+          symbol: 'X',
+          annual: [
+            FinPeriod(
+              end: DateTime(2025, 12, 31),
+              annual: true,
+              operatingIncome: 100,
+              depreciationAmortization: 20,
+              ebitda: 770,
+              totalDebt: 300,
+              cash: 60,
+            ),
+          ],
+        );
+        // dívida líquida 240 / (100 + 20)
+        expect(
+          _m(solvencyMetrics(f), 'net_debt_to_ebitda').value,
+          closeTo(2.0, 1e-12),
+        );
+      },
+    );
+
+    test('R1: banco dá null em liquidez, dívida líquida, FCF e derivadas', () {
+      final f = Financials(
+        symbol: 'B',
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            revenue: 1000,
+            netIncome: 200,
+            equity: 1500,
+            totalAssets: 20000,
+            totalDebt: 5000,
+            cash: 800,
+            receivables: 900,
+            operatingCashFlow: -300,
+            capex: -20,
+            stockBasedComp: 10,
+            depreciationAmortization: 30,
+            changeInWorkingCapital: 5,
+            dilutedShares: 100,
+            sharesOutstanding: 100,
+          ),
+        ],
+      );
+      for (final x in [...liquidityMetrics(f), ...solvencyMetrics(f)]) {
+        if (x.key == 'interest_coverage') continue;
+        expect(x.value, isNull, reason: x.key);
+      }
+      final cf = cashFlowMetrics(f);
+      for (final k in [
+        'fcf',
+        'fcf_after_sbc',
+        'owner_earnings',
+        'cash_conversion',
+      ]) {
+        expect(_m(cf, k).value, isNull, reason: k);
+      }
+      expect(_m(perShareMetrics(f), 'fcf_per_share').value, isNull);
+      // BVPS mantém-se
+      expect(_m(perShareMetrics(f), 'bvps').value, closeTo(15, 1e-12));
+    });
+
+    test('E2: ADR com ações em base diferente: BVPS e TBVPS são null', () {
+      final f = Financials(
+        symbol: 'TSM',
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            equity: 1000,
+            tangibleBookValue: 900,
+            sharesOutstanding: 500,
+            dilutedShares: 500,
+          ),
+        ],
+      );
+      // 1 ADR = 5 ações: o snapshot tem 100 ADR equivalentes
+      const adr = MarketSnapshot(
+        symbol: 'TSM',
+        sharesOutstanding: 100,
+        price: 10,
+      );
+      final ps = perShareMetrics(f, market: adr);
+      expect(_m(ps, 'bvps').value, isNull);
+      expect(_m(ps, 'tbvps').value, isNull);
+      // sem snapshot, ou com a mesma base, calcula
+      expect(_m(perShareMetrics(f), 'bvps').value, closeTo(2, 1e-12));
+      const igual = MarketSnapshot(symbol: 'TSM', sharesOutstanding: 500);
+      expect(
+        _m(perShareMetrics(f, market: igual), 'bvps').value,
+        closeTo(2, 1e-12),
       );
     });
   });

@@ -6,20 +6,24 @@ library;
 
 import 'dart:math' as math;
 
+import 'common_calcs.dart';
 import 'financials.dart';
+import 'shared.dart';
+
+export 'common_calcs.dart' show taxRateOf;
 
 // ---------------------------------------------------------------------------
 // Auxiliares (convenções da Parte 2.0 e 2.1)
 // ---------------------------------------------------------------------------
 
-/// EBIT para as fórmulas: resultado operacional e, se faltar, o campo `ebit`.
-/// Não se usa `FinPeriod.ebitOrOperating` (tem a prioridade inversa, ver Parte 2.0).
-double? _ebit(FinPeriod p) => p.operatingIncome ?? p.ebit;
+double? _ebit(FinPeriod p) => ebitOf(p);
 
 double? _receita(FinPeriod p) => p.revenue;
 double? _custo(FinPeriod p) => p.costOfRevenue;
 double? _lucro(FinPeriod p) => p.netIncome;
-double? _ebitda(FinPeriod p) => p.ebitda;
+double? _ebitda(FinPeriod p) => ebitdaOf(p);
+double? _fcf(FinPeriod p) => fcfOf(p);
+double? _capitalInvestido(FinPeriod p) => investedCapitalOf(p);
 double? _patrimonio(FinPeriod p) => p.equity;
 double? _ativo(FinPeriod p) => p.totalAssets;
 double? _tangivel(FinPeriod p) => p.tangibleBookValue;
@@ -32,51 +36,6 @@ double? _resultadoBruto(FinPeriod p) {
   if (p.grossProfit != null) return p.grossProfit;
   if (p.revenue == null || p.costOfRevenue == null) return null;
   return p.revenue! - p.costOfRevenue!;
-}
-
-/// FCF = CFO − |capex|; se faltar um dos dois, o `freeCashFlow` da fonte.
-double? _fcf(FinPeriod p) {
-  if (p.operatingCashFlow != null && p.capexSpent != null) {
-    return p.operatingCashFlow! - p.capexSpent!;
-  }
-  return p.freeCashFlow;
-}
-
-/// Capital investido de um período: capitais próprios + dívida financeira − caixa e equivalentes.
-/// (Não se usa o `investedCapital` do Yahoo, que não deduz a caixa.)
-double? _capitalInvestido(FinPeriod p) {
-  if (p.equity == null || p.totalDebt == null || p.cash == null) return null;
-  return p.equity! + p.totalDebt! - p.cash!;
-}
-
-/// Taxa de imposto efetiva `t` (Parte 2.0): `taxProvision / pretaxIncome` se estiver em [0; 0,5] e o
-/// resultado antes de impostos for positivo; senão 21 %. É um fallback, não um clamp.
-double taxRateOf(FinPeriod p) {
-  final pt = p.pretaxIncome;
-  final tx = p.taxProvision;
-  if (pt == null || tx == null || pt <= 0) return 0.21;
-  final r = tx / pt;
-  return (r >= 0 && r <= 0.5) ? r : 0.21;
-}
-
-/// Período anterior de `cur` para as médias de balanço (Parte 2.0).
-/// Exercício anual: o exercício anual imediatamente anterior. TTM ou trimestre: o período cujo fecho
-/// está entre 320 e 410 dias antes de `cur.end`, primeiro nos trimestrais e depois nos anuais; `null` se não houver.
-FinPeriod? periodoAnterior(Financials f, FinPeriod cur) {
-  final i = f.annual.indexWhere((p) => identical(p, cur));
-  if (i >= 0) return i > 0 ? f.annual[i - 1] : null;
-  bool naJanela(FinPeriod p) {
-    final dias = cur.end.difference(p.end).inDays;
-    return dias >= 320 && dias <= 410;
-  }
-
-  for (final p in f.quarterly.reversed) {
-    if (naJanela(p)) return p;
-  }
-  for (final p in f.annual.reversed) {
-    if (naJanela(p)) return p;
-  }
-  return null;
 }
 
 /// Campo de um período, ou `null` se o período não existir.
@@ -129,6 +88,8 @@ double? _roe(FinPeriod? cur, FinPeriod? prev) =>
 List<Metric> profitabilityMetrics(Financials f, {FinPeriod? cur}) {
   final c = cur ?? f.latest;
   final receita = _de(c, _receita);
+  // bancos: o FCF não tem leitura (os fluxos operacionais incluem depósitos e empréstimos)
+  final banco = isFinancialLike(c);
   return [
     // margem bruta = (receita − custo das vendas) / receita
     Metric(
@@ -136,7 +97,7 @@ List<Metric> profitabilityMetrics(Financials f, {FinPeriod? cur}) {
       safeDiv(_de(c, _resultadoBruto), receita),
       MetricKind.percent,
     ),
-    // margem EBITDA = EBITDA / receita
+    // margem EBITDA = (EBIT + D&A) / receita (ver `ebitdaOf`)
     Metric(
       'ebitda_margin',
       safeDiv(_de(c, _ebitda), receita),
@@ -151,7 +112,11 @@ List<Metric> profitabilityMetrics(Financials f, {FinPeriod? cur}) {
     // margem líquida = resultado líquido / receita
     Metric('net_margin', safeDiv(_de(c, _lucro), receita), MetricKind.percent),
     // margem de FCF = FCF / receita
-    Metric('fcf_margin', safeDiv(_de(c, _fcf), receita), MetricKind.percent),
+    Metric(
+      'fcf_margin',
+      banco ? null : safeDiv(_de(c, _fcf), receita),
+      MetricKind.percent,
+    ),
   ];
 }
 
@@ -214,7 +179,7 @@ List<Metric> growthMetrics(Financials f) {
 // ---------------------------------------------------------------------------
 
 /// Secção 3: retornos. `wacc` (fração) é opcional: sem ele não há spread ROIC − WACC.
-/// `cur`/`prev` por omissão: `fin.latest` e o período anterior (ver [periodoAnterior]).
+/// `cur`/`prev` por omissão: `fin.latest` e o período anterior (ver `previousPeriodFor` em shared.dart).
 List<Metric> returnMetrics(
   Financials f, {
   double? wacc,
@@ -222,7 +187,7 @@ List<Metric> returnMetrics(
   FinPeriod? prev,
 }) {
   final c = cur ?? f.latest;
-  final p = prev ?? (c == null ? null : periodoAnterior(f, c));
+  final p = prev ?? (c == null ? null : previousPeriodFor(f, c));
 
   final lucro = _de(c, _lucro);
   final receita = _de(c, _receita);
@@ -238,7 +203,10 @@ List<Metric> returnMetrics(
   final ebit = _de(c, _ebit);
   final t = c == null ? null : taxRateOf(c);
   final nopat = (ebit == null || t == null) ? null : ebit * (1 - t);
-  final roic = _porMedia(nopat, _mediaDe(c, p, _capitalInvestido));
+  // bancos: o capital investido (capitais próprios + dívida − caixa) não tem leitura
+  final roic = isFinancialLike(c)
+      ? null
+      : _porMedia(nopat, _mediaDe(c, p, _capitalInvestido));
 
   // ROTE = resultado / capitais próprios tangíveis médios
   final rote = _porMedia(lucro, _mediaDe(c, p, _tangivel));
@@ -256,13 +224,12 @@ List<Metric> returnMetrics(
     Metric('roe', roe, MetricKind.percent),
     Metric('roa', roa, MetricKind.percent),
     Metric('roic', roic, MetricKind.percent),
-    // spread só se houver WACC: ROIC − WACC
-    if (wacc != null)
-      Metric(
-        'roic_wacc_spread',
-        roic == null ? null : roic - wacc,
-        MetricKind.percent,
-      ),
+    // spread ROIC − WACC: a chave existe sempre; sem WACC (ou sem ROIC) o valor é null
+    Metric(
+      'roic_wacc_spread',
+      (roic == null || wacc == null) ? null : roic - wacc,
+      MetricKind.percent,
+    ),
     Metric('rote', rote, MetricKind.percent),
     // taxa de imposto efetiva (a usada no NOPAT)
     Metric('tax_rate', t, MetricKind.percent),
@@ -284,25 +251,31 @@ List<Metric> efficiencyMetrics(
   FinPeriod? prev,
 }) {
   final c = cur ?? f.latest;
-  final p = prev ?? (c == null ? null : periodoAnterior(f, c));
+  final p = prev ?? (c == null ? null : previousPeriodFor(f, c));
 
   final receita = _de(c, _receita);
   final custo = _de(c, _custo);
+  // bancos: não há ciclo operacional (DSO, DIO, DPO, rotações) com significado
+  final banco = isFinancialLike(c);
 
   // rotação do ativo = receita / ativo total médio
-  final rotacaoAtivo = _porMedia(receita, _mediaDe(c, p, _ativo));
+  final rotacaoAtivo = banco
+      ? null
+      : _porMedia(receita, _mediaDe(c, p, _ativo));
   // DSO = contas a receber / receita × 365
-  final dso = _dias(_de(c, _recebiveis), receita);
+  final dso = banco ? null : _dias(_de(c, _recebiveis), receita);
   // DIO = inventários / custo das vendas × 365 (null se não houver inventários)
-  final dio = _dias(_de(c, _inventario), custo);
+  final dio = banco ? null : _dias(_de(c, _inventario), custo);
   // DPO = contas a pagar / custo das vendas × 365
-  final dpo = _dias(_de(c, _pagaveis), custo);
-  // ciclo de conversão de caixa = DSO + DIO − DPO
+  final dpo = banco ? null : _dias(_de(c, _pagaveis), custo);
+  // ciclo de conversão de caixa = DSO + DIO − DPO (null se faltar qualquer um dos três)
   final ciclo = (dso == null || dio == null || dpo == null)
       ? null
       : dso + dio - dpo;
   // rotação de inventários = custo das vendas / inventário médio
-  final rotacaoInventarios = _porMedia(custo, _mediaDe(c, p, _inventario));
+  final rotacaoInventarios = banco
+      ? null
+      : _porMedia(custo, _mediaDe(c, p, _inventario));
 
   return [
     Metric('asset_turnover', rotacaoAtivo, MetricKind.ratio),

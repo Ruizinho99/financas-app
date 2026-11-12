@@ -9,7 +9,9 @@ library;
 
 import 'dart:math' show min;
 
+import 'common_calcs.dart';
 import 'financials.dart';
+import 'shared.dart';
 
 /// Período vazio para quando não há demonstrações: todos os campos são `null`, logo todas as métricas dão `null`.
 final FinPeriod _vazio = FinPeriod(end: DateTime(1970), annual: true);
@@ -17,33 +19,14 @@ final FinPeriod _vazio = FinPeriod(end: DateTime(1970), annual: true);
 /// Período corrente: `fin.latest` (TTM se existir, senão o último anual).
 FinPeriod _cur(Financials f) => f.latest ?? _vazio;
 
-/// Período anterior para as médias ("médio").
-/// - Sem TTM (o corrente é o último anual): o anual anterior.
-/// - Com TTM: o período (trimestral, ou anual se não houver trimestral) cujo `end` está entre 320 e 410 dias
-///   antes de `cur.end`; se não houver nenhum, `null` (a média usa só o saldo corrente).
-FinPeriod? _anterior(Financials f) {
-  if (f.ttm == null) return f.prevAnnual;
-  final fim = _cur(f).end;
-  final candidatos = f.quarterly.isNotEmpty ? f.quarterly : f.annual;
-  FinPeriod? melhor;
-  int? melhorDif;
-  for (final p in candidatos) {
-    final dias = fim.difference(p.end).inDays;
-    if (dias < 320 || dias > 410) continue;
-    final dif = (dias - 365).abs();
-    if (melhor == null || dif < melhorDif!) {
-      melhor = p;
-      melhorDif = dif;
-    }
-  }
-  return melhor;
-}
+/// Período anterior para as médias ("médio"): ver `previousPeriodFor` em shared.dart.
+FinPeriod? _anterior(Financials f) => previousPeriodFor(f, _cur(f));
 
 /// Soma que dá `null` se faltar uma parcela (não se inventa um zero).
 double? _soma(double? a, double? b) => a == null || b == null ? null : a + b;
 
-/// EBIT = resultado operacional e, se faltar, o campo `ebit` (Parte 2.0: NÃO o `ebitOrOperating` do contrato).
-double? _ebit(FinPeriod p) => p.operatingIncome ?? p.ebit;
+/// EBIT = resultado operacional e, se faltar, o campo `ebit`.
+double? _ebit(FinPeriod p) => ebitOf(p);
 
 /// Juros para a cobertura: `interestExpense ?? interestPaid`; `null` ou 0 dão `null`.
 double? _juros(FinPeriod p) {
@@ -52,12 +35,7 @@ double? _juros(FinPeriod p) {
 }
 
 /// FCF = CFO − |capex|; se faltar um dos dois, o `freeCashFlow` da fonte.
-double? _fcf(FinPeriod p) {
-  final cfo = p.operatingCashFlow;
-  final capex = p.capexSpent;
-  if (cfo != null && capex != null) return cfo - capex;
-  return p.freeCashFlow;
-}
+double? _fcf(FinPeriod p) => fcfOf(p);
 
 // ---------------------------------------------------------------- 5. Liquidez
 
@@ -65,6 +43,15 @@ double? _fcf(FinPeriod p) {
 List<Metric> liquidityMetrics(Financials f) {
   final c = _cur(f);
   final ac = c.currentAssets, pc = c.currentLiabilities;
+  // bancos não têm ativo/passivo corrente com significado: todos os rácios de liquidez ficam null
+  if (isFinancialLike(c)) {
+    return const [
+      Metric('current_ratio', null, MetricKind.ratio),
+      Metric('quick_ratio', null, MetricKind.ratio),
+      Metric('cash_ratio', null, MetricKind.ratio),
+      Metric('working_capital', null, MetricKind.money),
+    ];
+  }
   return [
     // Rácio corrente = ativo corrente / passivo corrente
     Metric('current_ratio', safeDiv(ac, pc), MetricKind.ratio),
@@ -93,16 +80,19 @@ List<Metric> solvencyMetrics(Financials f) {
   final c = _cur(f);
   final divida = c.totalDebt;
   final caixa = c.cash;
-  final dl = divida == null || caixa == null ? null : divida - caixa;
-  final ebitda = c.ebitda;
+  final banco = isFinancialLike(c);
+  // bancos: a dívida líquida e os rácios de dívida não se aplicam (depósitos e funding são o negócio)
+  final dl = banco || divida == null || caixa == null ? null : divida - caixa;
+  // EBIT + D&A (o `ebitda` do Yahoo inclui resultados não operacionais)
+  final ebitda = ebitdaOf(c);
   final pl = c.equity;
   final juros = _juros(c);
   final ebit = _ebit(c);
-  final fcf = _fcf(c);
+  final fcf = banco ? null : _fcf(c);
   return [
     // Dívida líquida = dívida financeira − caixa e equivalentes (negativa = caixa líquida)
     Metric('net_debt', dl, MetricKind.money),
-    // Dívida líquida / EBITDA (EBITDA ≤ 0 → null)
+    // Dívida líquida / EBITDA (EBITDA = EBIT + D&A; EBITDA ≤ 0 → null)
     Metric(
       'net_debt_to_ebitda',
       ebitda == null || ebitda <= 0 ? null : safeDiv(dl, ebitda),
@@ -111,7 +101,7 @@ List<Metric> solvencyMetrics(Financials f) {
     // Dívida / capitais próprios (capitais próprios ≤ 0 → null)
     Metric(
       'debt_to_equity',
-      pl == null || pl <= 0 ? null : safeDiv(divida, pl),
+      banco || pl == null || pl <= 0 ? null : safeDiv(divida, pl),
       MetricKind.ratio,
     ),
     // Cobertura de juros = EBIT / juros
@@ -145,13 +135,16 @@ List<Metric> cashFlowMetrics(Financials f) {
   final ni = c.netIncome;
   final cwc = c.changeInWorkingCapital;
   final sbc = c.stockBasedComp;
-  final fcf = _fcf(c);
+  // bancos: FCF, owner earnings e conversão de caixa não se aplicam (os fluxos operacionais incluem depósitos)
+  final banco = isFinancialLike(c);
+  final fcf = banco ? null : _fcf(c);
   // Capex de manutenção ≈ min(|capex|, D&A); capex de crescimento = |capex| − manutenção (aproximação)
   final manut = capex == null || da == null ? null : min(capex, da);
   final crescimento = capex == null || manut == null ? null : capex - manut;
   // Owner earnings (Buffett, aproximação) = resultado + D&A − capex de manutenção + variação do fundo de maneio
   // (a variação entra com o sinal da fonte: negativo = consumiu caixa)
-  final ownerEarnings = ni == null || da == null || manut == null || cwc == null
+  final ownerEarnings =
+      banco || ni == null || da == null || manut == null || cwc == null
       ? null
       : ni + da - manut + cwc;
   // Accruals de Sloan (versão por fluxos) = (resultado − CFO) / ativo total médio
@@ -178,7 +171,7 @@ List<Metric> cashFlowMetrics(Financials f) {
     // Conversão de caixa = CFO / resultado (resultado ≤ 0 → null)
     Metric(
       'cash_conversion',
-      cfo == null || ni == null || ni <= 0 ? null : safeDiv(cfo, ni),
+      banco || cfo == null || ni == null || ni <= 0 ? null : safeDiv(cfo, ni),
       MetricKind.percent,
     ),
     Metric('sloan_accruals', sloan, MetricKind.percent),
@@ -192,12 +185,16 @@ List<Metric> cashFlowMetrics(Financials f) {
 // ---------------------------------------------------------------- 8. Métricas por ação
 
 /// Métricas por ação. Saldos e resultados vêm de `fin.latest`; a diluição usa sempre anuais.
+/// Com `market` em base de ações diferente (ADR), BVPS e TBVPS ficam `null`.
 /// O DPS vem do `MarketSnapshot` (dividendo dos últimos 12 meses, na moeda de reporte); sem snapshot, `null`.
 List<Metric> perShareMetrics(Financials f, {MarketSnapshot? market}) {
   final c = _cur(f);
   final acoes = c.dilutedShares;
-  final fcf = _fcf(c);
-  // EPS = resultado líquido / ações diluídas (o `dilutedEps` da fonte tem prioridade)
+  final fcf = isFinancialLike(c) ? null : _fcf(c);
+  // ADR: se as ações do snapshot e das demonstrações estão em bases diferentes (1 ADR = N ações),
+  // o valor contabilístico por ação das demonstrações não é comparável com o preço do snapshot
+  final adr = market != null && sharesBasisMismatch(f, market);
+  // EPS = `dilutedEps` da fonte, ou resultado líquido / ações diluídas. Um EPS negativo (prejuízo) é intencional.
   final eps = c.dilutedEps ?? safeDiv(c.netIncome, acoes);
   // Diluição = ações em fim de ano / ações do ano anterior − 1 (negativa = recompras)
   final relacao = safeDiv(
@@ -208,11 +205,15 @@ List<Metric> perShareMetrics(Financials f, {MarketSnapshot? market}) {
     Metric('eps', eps, MetricKind.perShare),
     Metric('fcf_per_share', safeDiv(fcf, acoes), MetricKind.perShare),
     // BVPS = capitais próprios / ações
-    Metric('bvps', safeDiv(c.equity, c.sharesOutstanding), MetricKind.perShare),
+    Metric(
+      'bvps',
+      adr ? null : safeDiv(c.equity, c.sharesOutstanding),
+      MetricKind.perShare,
+    ),
     // Valor contabilístico tangível por ação
     Metric(
       'tbvps',
-      safeDiv(c.tangibleBookValue, c.sharesOutstanding),
+      adr ? null : safeDiv(c.tangibleBookValue, c.sharesOutstanding),
       MetricKind.perShare,
     ),
     Metric('dps', market?.dividendPerShare, MetricKind.perShare),

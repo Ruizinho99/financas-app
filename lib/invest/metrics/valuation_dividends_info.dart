@@ -29,8 +29,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'What it would cost to buy the whole company: includes debt and deducts cash. Allows comparing companies with different capital structures.',
     readPt: 'Serve de denominador nos múltiplos EV/... Uma empresa com muita dívida tem um EV bem acima da capitalização. Compara com pares do mesmo setor.',
     readEn: 'Used as the denominator in the EV/... multiples. A company with a lot of debt has an EV well above its market cap. Compare with sector peers.',
-    cautionPt: 'A dívida inclui ou não as locações conforme a fonte (IFRS 16); não se corrige à mão. Minoritários e preferenciais em falta contam como zero.',
-    cautionEn: 'Debt includes lease liabilities or not depending on the source (IFRS 16); it is not adjusted by hand. Missing minority and preferred interests count as zero.',
+    cautionPt: 'A dívida inclui ou não as locações conforme a fonte (IFRS 16); não se corrige à mão. Minoritários e preferenciais em falta contam como zero. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Debt includes lease liabilities or not depending on the source (IFRS 16); it is not adjusted by hand. Missing minority and preferred interests count as zero. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'pe_ttm',
@@ -65,8 +65,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'How expensive the share is against the earnings per share analysts expect. Best effort: depends on the source.',
     readPt: 'Lê-se como o P/E de trás: comparar o esperado com o histórico mostra se o mercado espera lucros a subir ou a descer.',
     readEn: 'Read like the trailing P/E: comparing the expected figure with the historical one shows whether the market expects earnings to rise or fall.',
-    cautionPt: 'É uma estimativa de analistas, não um valor reportado. Pode faltar, e é menos fiável quanto mais longe for o horizonte.',
-    cautionEn: 'It is an analyst estimate, not a reported figure. It can be missing, and it is less reliable the further out the horizon.',
+    cautionPt: 'É uma estimativa de analistas, não um valor reportado. Pode faltar, e é menos fiável quanto mais longe for o horizonte. Só se calcula quando a moeda de reporte e a de cotação são a mesma: no ADR da TSM o EPS esperado vem em USD e as demonstrações em TWD, e o P/E esperado saía errado por uma ordem de grandeza. Caso contrário é null.',
+    cautionEn: 'It is an analyst estimate, not a reported figure. It can be missing, and it is less reliable the further out the horizon. Only calculated when the reporting and quote currencies are the same: for the TSM ADR the expected EPS comes in USD and the statements in TWD, and the forward P/E came out wrong by an order of magnitude. Otherwise it is null.',
     availability: MetricAvailability.partial,
   ),
   MetricInfo(
@@ -117,8 +117,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     readPt: 'Relevante em empresas com muitos ativos tangíveis, como bancos e industriais. Em empresas com ativos intangíveis, o rácio costuma ser alto e diz pouco.',
     readEn: 'Relevant for companies with many tangible assets, such as banks and industrials. For companies with intangible assets the ratio is often high and says little.',
     cautionPt:
-        'As recompras reduzem os capitais próprios e inflacionam o rácio.',
-    cautionEn: 'Buybacks reduce equity and inflate the ratio.',
+        'As recompras reduzem os capitais próprios e inflacionam o rácio. Se as ações do snapshot de mercado (por exemplo, equivalentes ADR) e as das demonstrações estiverem em bases diferentes (TSM: 1 ADR = 5 ações), dá null: o valor saía 5 vezes fora.',
+    cautionEn: 'Buybacks reduce equity and inflate the ratio. If the market snapshot shares (for example ADR equivalents) and the financial statement shares are on different bases (TSM: 1 ADR = 5 shares), it is null: the value came out 5 times off.',
   ),
   MetricInfo(
     key: 'p_tbv',
@@ -130,8 +130,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     readPt: 'Usa-se sobretudo em bancos, em que o valor tangível é o principal referencial.',
     readEn:
         'Mainly used for banks, where tangible value is the main reference.',
-    cautionPt: 'Não se calcula se o capital tangível for negativo.',
-    cautionEn: 'Not calculated if tangible capital is negative.',
+    cautionPt: 'Não se calcula se o capital tangível for negativo. Se as ações do snapshot de mercado (por exemplo, equivalentes ADR) e as das demonstrações estiverem em bases diferentes (TSM: 1 ADR = 5 ações), dá null: o valor saía 5 vezes fora.',
+    cautionEn: 'Not calculated if tangible capital is negative. If the market snapshot shares (for example ADR equivalents) and the financial statement shares are on different bases (TSM: 1 ADR = 5 shares), it is null: the value came out 5 times off.',
   ),
   MetricInfo(
     key: 'ps',
@@ -154,8 +154,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'How much you pay per unit of free cash flow.',
     readPt: 'É mais difícil de manipular do que o lucro. Compara-se com pares e com a história da própria empresa.',
     readEn: 'Harder to manipulate than earnings. Compare with peers and the company\'s own history.',
-    cautionPt: 'Com FCF negativo ou nulo não se calcula.',
-    cautionEn: 'Not calculated with zero or negative FCF.',
+    cautionPt: 'Com FCF negativo ou nulo não se calcula. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Not calculated with zero or negative FCF. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'fcf_yield',
@@ -167,8 +167,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     readPt:
         'Compara-se com a taxa sem risco e com o custo dos capitais próprios.',
     readEn: 'Compare it with the risk-free rate and with the cost of equity.',
-    cautionPt: 'Com FCF negativo o valor é negativo.',
-    cautionEn: 'With negative FCF the value is negative.',
+    cautionPt: 'Com FCF negativo o valor é negativo. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'With negative FCF the value is negative. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'ev_ebit',
@@ -179,8 +179,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'Enterprise value against operating income. Does not depend on how the company is financed or on taxes.',
     readPt: 'Lê-se contra pares do mesmo setor e contra a história da empresa.',
     readEn: 'Read against sector peers and the company\'s own history.',
-    cautionPt: 'Com EBIT nulo ou negativo não se calcula.',
-    cautionEn: 'Not calculated with zero or negative EBIT.',
+    cautionPt: 'Com EBIT nulo ou negativo não se calcula. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Not calculated with zero or negative EBIT. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'ev_ebitda',
@@ -192,8 +192,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     readPt: 'Útil para comparar empresas com níveis de investimento e amortização diferentes. Lê-se contra pares do mesmo setor.',
     readEn: 'Useful for comparing companies with different levels of investment and amortisation. Read against sector peers.',
     cautionPt:
-        'Ignora o capex: uma empresa com muito capex pode parecer barata.',
-    cautionEn: 'Ignores capex: a company with heavy capex can look cheap.',
+        'Ignora o capex: uma empresa com muito capex pode parecer barata. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). O EBITDA é EBIT + amortizações e depreciações, e não o campo EBITDA do Yahoo (inclui resultados não operacionais, e dava margens EBITDA acima da margem operacional + D&A); esse campo só é usado se faltar a D&A.',
+    cautionEn: 'Ignores capex: a company with heavy capex can look cheap. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). EBITDA is EBIT + depreciation and amortisation, not the Yahoo EBITDA field (it includes non-operating items and gave EBITDA margins above operating margin + D&A); that field is only used if D&A is missing.',
   ),
   MetricInfo(
     key: 'ev_revenue',
@@ -204,8 +204,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'Enterprise value against revenue. Useful for companies that do not yet have profits.',
     readPt: 'Lê-se junto com a margem: a mesma receita vale mais numa empresa com margem alta.',
     readEn: 'Read together with the margin: the same revenue is worth more at a company with a high margin.',
-    cautionPt: 'Não tem em conta a rentabilidade.',
-    cautionEn: 'Does not take profitability into account.',
+    cautionPt: 'Não tem em conta a rentabilidade. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Does not take profitability into account. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'ev_fcf',
@@ -216,8 +216,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'Enterprise value against free cash flow.',
     readPt: 'Quanto mais baixo, mais fluxo de caixa se obtém por cada unidade de valor. Compara com pares.',
     readEn: 'The lower it is, the more cash flow you get per unit of value. Compare with peers.',
-    cautionPt: 'Com FCF nulo ou negativo não se calcula. Oscila com o fundo de maneio e o capex.',
-    cautionEn: 'Not calculated with zero or negative FCF. Fluctuates with working capital and capex.',
+    cautionPt: 'Com FCF nulo ou negativo não se calcula. Oscila com o fundo de maneio e o capex. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Not calculated with zero or negative FCF. Fluctuates with working capital and capex. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'magic_formula_roc',
@@ -240,8 +240,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'Return on invested capital: the quality component of the magic formula as the user\'s list defines it.',
     readPt: 'Lê-se contra o WACC: se o spread (ROIC − WACC) for positivo e persistente, há moat. Compara com pares.',
     readEn: 'Read against WACC: if the spread (ROIC − WACC) is positive and persistent, there is a moat. Compare with peers.',
-    cautionPt: 'Capital investido = capitais próprios + dívida − caixa. As recompras e a dívida distorcem a leitura.',
-    cautionEn: 'Invested capital = equity + debt − cash. Buybacks and debt distort the reading.',
+    cautionPt: 'Capital investido = capitais próprios + dívida − caixa. As recompras e a dívida distorcem a leitura. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Invested capital = equity + debt − cash. Buybacks and debt distort the reading. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'earnings_yield_ev',
@@ -252,8 +252,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'The inverse of EV/EBIT: how much operating income the company generates against its value. It is the price component of the magic formula.',
     readPt: 'Combina-se com o ROIC para ordenar empresas. Lê-se contra pares e contra a história da empresa.',
     readEn: 'Combined with ROIC to rank companies. Read against peers and the company\'s own history.',
-    cautionPt: 'Com EV nulo ou negativo não se calcula.',
-    cautionEn: 'Not calculated with zero or negative EV.',
+    cautionPt: 'Com EV nulo ou negativo não se calcula. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Not calculated with zero or negative EV. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   // ---------- 10. Dividendos e retorno aos acionistas
   MetricInfo(
@@ -292,8 +292,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'Fraction of free cash flow distributed as dividends. Often more reliable than the payout on earnings.',
     readPt: 'Acima de 100 % o dividendo é pago com caixa acumulada ou com dívida, o que não se mantém indefinidamente.',
     readEn: 'Above 100 % the dividend is paid from accumulated cash or debt, which cannot continue indefinitely.',
-    cautionPt: 'Não se calcula com FCF negativo ou nulo.',
-    cautionEn: 'Not calculated with negative or zero FCF.',
+    cautionPt: 'Não se calcula com FCF negativo ou nulo. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Not calculated with negative or zero FCF. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'dividend_growth',
@@ -305,8 +305,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'How much the dividend per share grew in the last complete calendar year.',
     readPt: 'Um crescimento consistente, ano após ano, indica uma política de dividendos estável. Lê-se junto com os anos consecutivos de aumento.',
     readEn: 'Consistent growth, year after year, indicates a stable dividend policy. Read together with the consecutive years of increase.',
-    cautionPt: 'Precisa do histórico completo de dividendos, desde a primeira distribuição. Não se calcula sem histórico nem se o ano anterior tiver dividendo nulo.',
-    cautionEn: 'Needs the full dividend history, from the first distribution. Not calculated without history, or if the previous year had zero dividend.',
+    cautionPt: 'Precisa do histórico completo de dividendos, desde a primeira distribuição. Não se calcula sem histórico nem se o ano anterior tiver dividendo nulo. O primeiro ano do histórico pode ser parcial e fica de fora, salvo se o primeiro dividendo for em janeiro.',
+    cautionEn: 'Needs the full dividend history, from the first distribution. Not calculated without history, or if the previous year had zero dividend. The first year of the history may be partial and is left out, unless the first dividend is in January.',
   ),
   MetricInfo(
     key: 'dividend_consecutive_years',
@@ -317,8 +317,8 @@ const List<MetricInfo> valuationDividendsInfo = [
     meaningEn: 'How many years in a row the dividend per share increased. It signals a commitment to shareholders.',
     readPt: 'Quanto mais anos, mais sólido é o historial. Compara-se com a política declarada pela própria empresa.',
     readEn: 'The more years, the stronger the track record. Compare it with the policy the company itself declares.',
-    cautionPt: 'Não se calcula sem histórico suficiente. Um ano sem dividendo quebra a série.',
-    cautionEn: 'Not calculated without enough history. A year without a dividend breaks the streak.',
+    cautionPt: 'Não se calcula sem histórico suficiente. Um ano sem dividendo quebra a série. O primeiro ano do histórico pode ser parcial e fica de fora, salvo se o primeiro dividendo for em janeiro.',
+    cautionEn: 'Not calculated without enough history. A year without a dividend breaks the streak. The first year of the history may be partial and is left out, unless the first dividend is in January.',
     availability: MetricAvailability.partial,
   ),
   MetricInfo(

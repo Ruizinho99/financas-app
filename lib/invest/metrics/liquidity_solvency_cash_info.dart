@@ -20,8 +20,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn:
         'Above 1, short-term assets cover short-term obligations. Well below 1 calls for attention, but normal values depend on the '
         'sector (retail and restaurants run low) and should be compared with peers.',
-    cautionPt: 'Inclui inventários, que podem não ser líquidos. Para a liquidez imediata, ver o rácio rápido.',
-    cautionEn: 'Includes inventories, which may not be liquid. For immediate liquidity, see the quick ratio.',
+    cautionPt: 'Inclui inventários, que podem não ser líquidos. Para a liquidez imediata, ver o rácio rápido. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'Includes inventories, which may not be liquid. For immediate liquidity, see the quick ratio. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'quick_ratio',
@@ -38,9 +38,9 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn:
         'Above 1, the company can pay current liabilities with cash and receivables alone. Below 1 is not necessarily bad in businesses '
         'with predictable cash flows and rolling short-term debt (such as large retailers).',
-    cautionPt: 'Usa o caixa e os investimentos de curto prazo tal como a fonte os reporta.',
+    cautionPt: 'Usa o caixa e os investimentos de curto prazo tal como a fonte os reporta. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
     cautionEn:
-        'Uses cash and short-term investments as the source reports them.',
+        'Uses cash and short-term investments as the source reports them. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'cash_ratio',
@@ -55,8 +55,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn:
         'The most conservative liquidity measure. Typical values are between 0.2 and 0.5; very low values in a cyclical sector are a warning sign. '
         'It depends heavily on the sector and should be compared with peers.',
-    cautionPt: 'Não penaliza uma empresa que tenha linhas de crédito disponíveis e não usadas, que a fonte não reporta.',
-    cautionEn: 'Does not credit undrawn credit lines, which the source does not report.',
+    cautionPt: 'Não penaliza uma empresa que tenha linhas de crédito disponíveis e não usadas, que a fonte não reporta. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'Does not credit undrawn credit lines, which the source does not report. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'working_capital',
@@ -72,8 +72,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn:
         'Positive: liquidity cushion. Negative: the company is financed by short-term liabilities, which is normal in some models '
         '(large retail, software with upfront billing). Read it relative to revenue.',
-    cautionPt: 'Valor absoluto na moeda de reporte: não é comparável entre empresas de dimensões diferentes sem normalizar.',
-    cautionEn: 'Absolute value in the reporting currency: not comparable across companies of different sizes without normalising.',
+    cautionPt: 'Valor absoluto na moeda de reporte: não é comparável entre empresas de dimensões diferentes sem normalizar. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'Absolute value in the reporting currency: not comparable across companies of different sizes without normalising. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
 
   // ------------------------------------------------------------ 6. Solvência e dívida
@@ -88,10 +88,10 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn: 'Negative means net cash (more cash than debt). Positive is read together with EBITDA and FCF.',
     cautionPt:
         'A dívida financeira vem do Yahoo tal como está. As locações (IFRS 16) entram nalguns anos e noutros não: não se somam à mão, '
-        'para não contar duas vezes.',
+        'para não contar duas vezes. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
     cautionEn:
         'Financial debt comes from Yahoo as reported. Leases (IFRS 16) are included in some years and not in others: they are not added by hand, '
-        'to avoid double counting.',
+        'to avoid double counting. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'net_debt_to_ebitda',
@@ -107,8 +107,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn:
         'Above 3 to 4 calls for caution, except for utilities and infrastructure, whose debt is stable and long-term. '
         'Negative means net cash.',
-    cautionPt: 'Com EBITDA negativo dá null: o rácio não tem significado.',
-    cautionEn: 'With negative EBITDA it is null: the ratio has no meaning.',
+    cautionPt: 'Com EBITDA negativo dá null: o rácio não tem significado. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual. O EBITDA é EBIT + amortizações e depreciações, e não o campo EBITDA do Yahoo (inclui resultados não operacionais, e dava margens EBITDA acima da margem operacional + D&A); esse campo só é usado se faltar a D&A.',
+    cautionEn: 'With negative EBITDA it is null: the ratio has no meaning. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year. EBITDA is EBIT + depreciation and amortisation, not the Yahoo EBITDA field (it includes non-operating items and gave EBITDA margins above operating margin + D&A); that field is only used if D&A is missing.',
   ),
   MetricInfo(
     key: 'debt_to_equity',
@@ -123,14 +123,14 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn:
         'Low values (below 1) indicate a conservative structure. High values are normal for companies that buy back shares with debt, '
         'and for banks. It depends on the sector.',
-    cautionPt: 'Capitais próprios negativos (muitas recompras ou prejuízos acumulados) dão null: o rácio deixa de ser interpretável.',
-    cautionEn: 'Negative equity (heavy buybacks or accumulated losses) gives null: the ratio stops being interpretable.',
+    cautionPt: 'Capitais próprios negativos (muitas recompras ou prejuízos acumulados) dão null: o rácio deixa de ser interpretável. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'Negative equity (heavy buybacks or accumulated losses) gives null: the ratio stops being interpretable. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'interest_coverage',
     namePt: 'Cobertura de juros',
     nameEn: 'Interest coverage',
-    formula: 'EBIT / Juros pagos',
+    formula: 'EBIT / Juros (despesa de juros da demonstração de resultados; se faltar, juros pagos)',
     meaningPt:
         'Quantas vezes o resultado operacional cobre os juros da dívida.',
     meaningEn: 'How many times operating income covers interest on debt.',
@@ -138,10 +138,10 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     readEn: 'Below 1.5 to 2 debt service is tight; above 5 there is room. Read it with the stability of earnings.',
     cautionPt:
         'Usa os juros da demonstração de resultados e, se faltarem, os juros pagos. Sem juros na fonte (ou zero) dá null, '
-        'o que não quer dizer que a empresa não tenha dívida.',
+        'o que não quer dizer que a empresa não tenha dívida. Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
     cautionEn:
         'Uses interest from the income statement and, if missing, interest paid. Without interest in the source (or zero) it is null, '
-        'which does not mean the company has no debt.',
+        'which does not mean the company has no debt. Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'net_debt_to_fcf',
@@ -153,8 +153,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Years of free cash flow needed to repay net debt.',
     readPt: 'Abaixo de 3 anos a dívida é facilmente paga com o FCF atual. Acima de 5 anos merece atenção.',
     readEn: 'Below 3 years, debt is easily repaid from current FCF. Above 5 years deserves attention.',
-    cautionPt: 'Com FCF negativo ou nulo dá null (não há anos de FCF para pagar a dívida).',
-    cautionEn: 'With zero or negative FCF it is null (there are no years of FCF to repay the debt).',
+    cautionPt: 'Com FCF negativo ou nulo dá null (não há anos de FCF para pagar a dívida). Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'With zero or negative FCF it is null (there are no years of FCF to repay the debt). Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'debt_maturities',
@@ -214,9 +214,9 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Cash left after capital investment, available for dividends, buybacks or debt.',
     readPt: 'Quanto mais positivo e crescente, melhor. Com FCF negativo, a empresa depende de dívida ou de capital novo.',
     readEn: 'The more positive and growing, the better. With negative FCF, the company relies on debt or new capital.',
-    cautionPt: 'Se faltar o CFO ou o capex, usa-se o FCF reportado pela fonte.',
+    cautionPt: 'Se faltar o CFO ou o capex, usa-se o FCF reportado pela fonte. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
     cautionEn:
-        'If CFO or capex is missing, the FCF reported by the source is used.',
+        'If CFO or capex is missing, the FCF reported by the source is used. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'fcf_reported',
@@ -237,6 +237,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'FCF treating stock-based compensation as a real cost.',
     readPt: 'Em empresas tecnológicas a SBC pode ser grande. Se o FCF ajustado for muito inferior ao FCF, grande parte do FCF paga funcionários com ações.',
     readEn: 'In tech companies SBC can be large. If adjusted FCF is far below FCF, much of the FCF goes to paying staff in shares.',
+    cautionPt: 'Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'owner_earnings',
@@ -247,8 +249,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Earnings that can be paid out to the owner without reducing the company’s ability to sustain itself.',
     readPt: 'Deve ser positivo e aproximar-se do resultado líquido. Muito abaixo do resultado indica investimento ou capital circulante pesado.',
     readEn: 'Should be positive and close to net income. Far below net income indicates heavy investment or working capital.',
-    cautionPt: 'É uma aproximação: o capex de manutenção não é reportado, usa-se o mínimo entre capex e D&A.',
-    cautionEn: 'It is an approximation: maintenance capex is not reported, so the lower of capex and D&A is used.',
+    cautionPt: 'É uma aproximação: o capex de manutenção não é reportado, usa-se o mínimo entre capex e D&A. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'It is an approximation: maintenance capex is not reported, so the lower of capex and D&A is used. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
     availability: MetricAvailability.partial,
   ),
   MetricInfo(
@@ -287,8 +289,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'How much of accounting profit turns into cash.',
     readPt: 'Perto de 100 % ou mais é saudável. Consistentemente abaixo de 80 % merece investigação.',
     readEn: 'Close to 100 % or more is healthy. Consistently below 80 % deserves investigation.',
-    cautionPt: 'Com resultado líquido zero ou negativo dá null: o rácio não é interpretável.',
-    cautionEn: 'With zero or negative net income it is null: the ratio is not interpretable.',
+    cautionPt: 'Com resultado líquido zero ou negativo dá null: o rácio não é interpretável. Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado). Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'With zero or negative net income it is null: the ratio is not interpretable. Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning). Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'sloan_accruals',
@@ -300,8 +302,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'How much of earnings is not yet in cash, as a share of assets.',
     readPt: 'Valores altos (positivos e grandes) são sinal de alerta: lucro sem caixa tende a reverter. Valores perto de zero ou negativos são preferíveis.',
     readEn: 'High positive values are a warning sign: earnings without cash tend to reverse. Values near zero or negative are preferable.',
-    cautionPt: 'Versão por fluxos de caixa (Hribar e Collins, 2002), não a de Sloan (1996), que usava o balanço.',
-    cautionEn: 'Cash-flow version (Hribar and Collins, 2002), not Sloan’s (1996) balance-sheet version.',
+    cautionPt: 'Versão por fluxos de caixa (Hribar e Collins, 2002), não a de Sloan (1996), que usava o balanço. Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'Cash-flow version (Hribar and Collins, 2002), not Sloan’s (1996) balance-sheet version. Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'capex_to_revenue',
@@ -312,6 +314,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'How much of revenue is reinvested in fixed assets.',
     readPt: 'Baixo em negócios leves (software, serviços); alto em indústria, energia e telecomunicações. Compara-se com pares.',
     readEn: 'Low in asset-light businesses (software, services); high in industry, energy and telecoms. Compare with peers.',
+    cautionPt: 'Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
   MetricInfo(
     key: 'capex_to_da',
@@ -324,8 +328,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
         'How much is invested relative to the accounting wear of assets.',
     readPt: 'Acima de 1 a empresa investe mais do que o desgaste contabilístico (cresce ou moderniza). Abaixo de 1 pode estar a consumir os ativos.',
     readEn: 'Above 1 the company invests more than the accounting wear (growing or modernising). Below 1 it may be consuming its assets.',
-    cautionPt: 'Com amortizações nulas dá null.',
-    cautionEn: 'With zero depreciation it is null.',
+    cautionPt: 'Com amortizações nulas dá null. Usa o balanço do último trimestre e os fluxos dos últimos 12 meses (TTM) quando existem, senão o último exercício anual.',
+    cautionEn: 'With zero depreciation it is null. Uses the latest quarter balance sheet and the last 12 months of flows (TTM) when available, otherwise the last fiscal year.',
   ),
 
   // ------------------------------------------------------------ 8. Métricas por ação
@@ -333,14 +337,14 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     key: 'eps',
     namePt: 'EPS (resultado por ação)',
     nameEn: 'EPS (earnings per share)',
-    formula: 'Resultado líquido / Ações diluídas',
+    formula: 'EPS diluído da fonte; se faltar, Resultado líquido / Ações diluídas',
     meaningPt: 'Lucro atribuível a cada ação diluída.',
     meaningEn: 'Earnings attributable to each diluted share.',
     readPt: 'Interessa sobretudo a evolução ao longo dos anos. Lê-se com o preço para obter o P/E.',
     readEn: 'The trend over the years matters most. Read it together with the price to get the P/E.',
-    cautionPt: 'Na moeda de reporte; itens não recorrentes alteram o valor.',
+    cautionPt: 'Na moeda de reporte; itens não recorrentes alteram o valor. Um EPS negativo (prejuízo) mantém-se tal como é, de propósito; só os múltiplos (P/E, PEG) o tratam como não aplicável.',
     cautionEn:
-        'In the reporting currency; non-recurring items change the value.',
+        'In the reporting currency; non-recurring items change the value. A negative EPS (loss) is kept as is, on purpose; only the multiples (P/E, PEG) treat it as not applicable.',
   ),
   MetricInfo(
     key: 'fcf_per_share',
@@ -351,6 +355,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Free cash flow attributable to each diluted share.',
     readPt: 'Crescente e acima do dividendo por ação é sinal de capacidade de devolver capital. Compara-se com o preço (yield de FCF).',
     readEn: 'Rising and above the dividend per share signals capacity to return capital. Compare with the price (FCF yield).',
+    cautionPt: 'Não aplicável a bancos e financeiras: dá null (sem custo das vendas, resultado operacional nem ativo corrente, a métrica não tem o mesmo significado).',
+    cautionEn: 'Not applicable to banks and financial companies: it is null (without cost of sales, operating income or current assets the metric does not have the same meaning).',
   ),
   MetricInfo(
     key: 'bvps',
@@ -361,8 +367,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Accounting value of equity per share.',
     readPt: 'Lê-se com o preço (P/B). Muito útil em bancos e seguros; em empresas com recompras e ativos intangíveis perde significado.',
     readEn: 'Read it with the price (P/B). Very useful for banks and insurers; loses meaning in companies with buybacks and intangible assets.',
-    cautionPt: 'Com capitais próprios negativos o valor é negativo e não serve de referência.',
-    cautionEn: 'With negative equity the value is negative and not a useful reference.',
+    cautionPt: 'Com capitais próprios negativos o valor é negativo e não serve de referência. Se as ações do snapshot de mercado (por exemplo, equivalentes ADR) e as das demonstrações estiverem em bases diferentes (TSM: 1 ADR = 5 ações), dá null: o BVPS saía 5 vezes fora. Só se verifica quando se passa o snapshot de mercado.',
+    cautionEn: 'With negative equity the value is negative and not a useful reference. If the market snapshot shares (for example ADR equivalents) and the financial statement shares are on different bases (TSM: 1 ADR = 5 shares), it is null: the value came out 5 times off. Only checked when the market snapshot is passed.',
   ),
   MetricInfo(
     key: 'tbvps',
@@ -374,6 +380,8 @@ const List<MetricInfo> liquiditySolvencyCashInfo = [
     meaningEn: 'Book value per share without goodwill or other intangibles.',
     readPt: 'Mais conservador que o BVPS. Relevante em bancos (P/TBV) e em empresas com muitas aquisições.',
     readEn: 'More conservative than BVPS. Relevant for banks (P/TBV) and for companies with many acquisitions.',
+    cautionPt: 'Se as ações do snapshot de mercado (por exemplo, equivalentes ADR) e as das demonstrações estiverem em bases diferentes (TSM: 1 ADR = 5 ações), dá null: o valor saía 5 vezes fora. Só se verifica quando se passa o snapshot de mercado.',
+    cautionEn: 'If the market snapshot shares (for example ADR equivalents) and the financial statement shares are on different bases (TSM: 1 ADR = 5 shares), it is null: the value came out 5 times off. Only checked when the market snapshot is passed.',
   ),
   MetricInfo(
     key: 'dps',

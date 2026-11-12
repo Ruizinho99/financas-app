@@ -470,4 +470,160 @@ void main() {
       expect(cape.availability, MetricAvailability.unavailable);
     });
   });
+
+  group('Correções da revisão (F1)', () {
+    test('E1: EV/EBITDA usa EBIT + D&A e não o ebitda do Yahoo', () {
+      final f = Financials(
+        symbol: 'X',
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            operatingIncome: 100,
+            depreciationAmortization: 20,
+            ebitda: 770,
+            totalDebt: 200,
+            cash: 100,
+          ),
+        ],
+      );
+      final v = valuationMetrics(
+        f,
+        const MarketSnapshot(symbol: 'X', price: 10, marketCap: 1000),
+      );
+      // EV = 1000 + 200 − 100 = 1100; EBITDA = 120
+      _esperaRel(_v(v, 'ev_ebitda'), 1100 / 120);
+    });
+
+    test(
+      'R1: banco dá null em EV, múltiplos de EV, FCF; P/B e EPS mantêm-se',
+      () {
+        final f = Financials(
+          symbol: 'B',
+          annual: [
+            FinPeriod(
+              end: DateTime(2025, 12, 31),
+              annual: true,
+              revenue: 1000,
+              netIncome: 200,
+              dilutedEps: 2,
+              equity: 1500,
+              tangibleBookValue: 1200,
+              sharesOutstanding: 100,
+              totalDebt: 5000,
+              cash: 800,
+              operatingCashFlow: -300,
+              capex: -20,
+              dividendsPaid: -50,
+            ),
+          ],
+        );
+        const m = MarketSnapshot(
+          symbol: 'B',
+          price: 30,
+          marketCap: 3000,
+          dividendPerShare: 0.5,
+        );
+        final v = valuationMetrics(f, m);
+        for (final k in [
+          'ev',
+          'ev_ebit',
+          'ev_ebitda',
+          'ev_revenue',
+          'ev_fcf',
+          'p_fcf',
+          'fcf_yield',
+          'earnings_yield_ev',
+          'magic_formula_roic',
+        ]) {
+          expect(_v(v, k), isNull, reason: k);
+        }
+        _esperaRel(_v(v, 'pb'), 2);
+        _esperaRel(_v(v, 'p_tbv'), 2.5);
+        _esperaRel(_v(v, 'pe_ttm'), 15);
+        final d = dividendMetrics(f, m);
+        expect(_v(d, 'payout_fcf'), isNull);
+        _esperaRel(_v(d, 'dividend_yield'), 0.5 / 30);
+      },
+    );
+
+    test('R3: o primeiro ano do histórico, parcial, fica fora', () {
+      final h = <DateTime, double>{
+        DateTime(2021, 12, 15): 0.1,
+        DateTime(2022, 6, 1): 0.4,
+        DateTime(2023, 6, 1): 0.5,
+        DateTime(2024, 6, 1): 0.6,
+        DateTime(2025, 6, 1): 0.7,
+      };
+      final d = dividendMetrics(
+        const Financials(symbol: 'X'),
+        const MarketSnapshot(symbol: 'X', price: 10),
+        dividendHistory: h,
+        agora: DateTime(2026, 11, 12),
+      );
+      expect(_v(d, 'dividend_consecutive_years'), 3);
+      _esperaRel(_v(d, 'dividend_growth'), 0.7 / 0.6 - 1);
+    });
+
+    test('R3: se o histórico começa em janeiro, o primeiro ano conta', () {
+      final h = <DateTime, double>{
+        DateTime(2022, 1, 10): 0.4,
+        DateTime(2023, 6, 1): 0.5,
+        DateTime(2024, 6, 1): 0.6,
+        DateTime(2025, 6, 1): 0.7,
+      };
+      final d = dividendMetrics(
+        const Financials(symbol: 'X'),
+        const MarketSnapshot(symbol: 'X', price: 10),
+        dividendHistory: h,
+        agora: DateTime(2026, 11, 12),
+      );
+      expect(_v(d, 'dividend_consecutive_years'), 3);
+    });
+
+    test('E2: ADR em base diferente: P/B e P/TBV são null', () {
+      final f = Financials(
+        symbol: 'TSM',
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            equity: 1000,
+            tangibleBookValue: 900,
+            sharesOutstanding: 500,
+          ),
+        ],
+      );
+      const adr = MarketSnapshot(
+        symbol: 'TSM',
+        price: 10,
+        sharesOutstanding: 100,
+        marketCap: 1000,
+      );
+      final v = valuationMetrics(f, adr);
+      expect(_v(v, 'pb'), isNull);
+      expect(_v(v, 'p_tbv'), isNull);
+      const igual = MarketSnapshot(
+        symbol: 'TSM',
+        price: 10,
+        sharesOutstanding: 500,
+        marketCap: 5000,
+      );
+      _esperaRel(_v(valuationMetrics(f, igual), 'pb'), 10 / 2);
+    });
+
+    test('E1 forwardEps: só com a mesma moeda de reporte e de cotação', () {
+      const f = Financials(symbol: 'X');
+      const mesma = MarketSnapshot(symbol: 'X', price: 100, forwardEps: 5);
+      _esperaRel(_v(valuationMetrics(f, mesma), 'pe_forward'), 20);
+      const outra = MarketSnapshot(
+        symbol: 'X',
+        currency: 'TWD',
+        quoteCurrency: 'USD',
+        price: 100,
+        forwardEps: 5,
+      );
+      expect(_v(valuationMetrics(f, outra), 'pe_forward'), isNull);
+    });
+  });
 }
