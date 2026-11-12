@@ -196,14 +196,16 @@ class MarketSnapshot {
 /// (do mais antigo para o mais recente) e o acumulado dos últimos 12 meses (TTM).
 class Financials {
   final String symbol;
-  final String currency; // moeda de reporte
+  final String currency; // moeda de reporte; vazia quando a fonte não tem dados
   final List<FinPeriod> annual;
   final List<FinPeriod> quarterly;
-  final FinPeriod?
-  ttm; // fluxos dos últimos 12 meses + balanço do último trimestre
+
+  /// Fluxos dos últimos 12 meses + balanço do último trimestre. Conta como um período de 12 meses
+  /// (`annual: true`) para as fórmulas que dividem por receita ou resultado.
+  final FinPeriod? ttm;
   const Financials({
     required this.symbol,
-    this.currency = 'USD',
+    this.currency = '',
     this.annual = const [],
     this.quarterly = const [],
     this.ttm,

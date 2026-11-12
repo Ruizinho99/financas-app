@@ -392,7 +392,7 @@ class YahooMarketData {
     ]);
     final annual = res[0], quarterly = res[1], trailing = res[2];
     final currency =
-        annual.currency ?? quarterly.currency ?? trailing.currency ?? 'USD';
+        annual.currency ?? quarterly.currency ?? trailing.currency ?? '';
 
     FinPeriod build(
       DateTime end,
@@ -753,6 +753,8 @@ class YahooMarketData {
       fiftyTwoWeekLow: low,
       averageVolume: avgVol,
       dividendPerShare: dividendPerShare,
+      // EPS esperado: já vem na moeda das demonstrações (a de reporte); nulo em muitos títulos locais
+      forwardEps: _num(stats?['forwardEps']),
       shortPercentOfFloat: _num(stats?['shortPercentOfFloat']),
       insidersPercentHeld: _num(holders?['insidersPercentHeld']),
       sector: (profile?['sector'] ?? '').toString(),
