@@ -8,48 +8,63 @@ class FinPeriod {
   final DateTime end; // data de fecho do período
   final bool annual; // true = 12 meses; false = trimestre
   // --- demonstração de resultados
-  final double? revenue,
-      costOfRevenue,
-      grossProfit,
-      operatingIncome, // resultado operacional reportado
-      ebit,
-      ebitda,
-      netIncome,
-      pretaxIncome,
-      taxProvision, // imposto sobre o rendimento (positivo = despesa)
-      interestExpense, // positivo = despesa
-      depreciationAmortization,
-      stockBasedComp,
-      dilutedEps,
-      dilutedShares; // média de ações diluídas
-  // --- balanço (no fecho do período)
+  final double? revenue;
+  final double? costOfRevenue;
+  final double? grossProfit;
+  final double? operatingIncome; // resultado operacional reportado
+  final double? ebit;
+  final double? ebitda;
+  final double? netIncome;
+  final double? pretaxIncome;
+  final double? taxProvision; // imposto sobre o rendimento (positivo = despesa)
+  final double? interestExpense; // positivo = despesa
+  final double? depreciationAmortization;
+  final double? stockBasedComp;
+  final double? sellingGeneralAdmin; // SG&A (Beneish SGAI)
+  final double? researchDevelopment; // I&D (farma, software)
+  final double? netInterestIncome; // margem financeira (bancos)
   final double?
-  totalAssets,
-  currentAssets,
-  currentLiabilities,
-  cash, // caixa e equivalentes
-  cashAndShortTermInvestments,
-  receivables,
-  inventory,
-  payables,
-  totalDebt, // dívida financeira total (inclui locações se a fonte as incluir)
-  longTermDebt,
-  currentDebt,
-  equity, // capitais próprios dos acionistas
-  tangibleBookValue,
-  retainedEarnings,
-  totalLiabilities,
-  goodwill,
-  minorityInterest,
-  sharesOutstanding,
-  netPpe,
-  investedCapital;
+  specialItems; // itens especiais/não recorrentes (positivo = ganho)
+  final double? impairment; // imparidades de ativos (positivo = despesa)
+  final double? dilutedEps;
+  final double? dilutedShares; // média de ações diluídas
+  // --- balanço (no fecho do período)
+  final double? totalAssets;
+  final double? currentAssets;
+  final double? currentLiabilities;
+  final double? cash; // caixa e equivalentes
+  final double? cashAndShortTermInvestments;
+  final double? receivables;
+  final double? inventory;
+  final double? payables;
+  final double?
+  totalDebt; // dívida financeira total (inclui locações se a fonte as incluir)
+  final double? longTermDebt;
+  final double? currentDebt;
+  final double? equity; // capitais próprios dos acionistas
+  final double? tangibleBookValue;
+  final double? retainedEarnings;
+  final double? totalLiabilities;
+  final double? goodwill;
+  final double? minorityInterest;
+  final double? sharesOutstanding;
+  final double? netPpe;
+  final double? investedCapital;
+  final double? preferredStock; // ações preferenciais (EV)
+  final double? leaseLiabilities; // obrigações de locação (IFRS 16)
   // --- fluxos de caixa
-  final double? operatingCashFlow,
-      capex, // como reportado: negativo = saída de caixa
-      freeCashFlow,
-      dividendsPaid, // como reportado: negativo = saída de caixa
-      buybacks; // recompras de ações líquidas, como reportado: negativo = saída de caixa
+  final double? operatingCashFlow;
+  final double? capex; // como reportado: negativo = saída de caixa
+  final double? freeCashFlow;
+  final double? dividendsPaid; // como reportado: negativo = saída de caixa
+  final double?
+  buybacks; // recompras líquidas, como reportado: negativo = saída de caixa
+  final double? incomeTaxPaid; // imposto pago em dinheiro (positivo = pago)
+  final double? interestPaid; // juros pagos em dinheiro (positivo = pago)
+  final double?
+  acquisitions; // compra de empresas, como reportado: negativo = saída de caixa
+  final double? stockIssuance; // emissão de ações (positivo = entrada de caixa)
+  final double? changeInWorkingCapital; // variação do fundo de maneio no fluxo de caixa, como reportado
 
   const FinPeriod({
     required this.end,
@@ -66,6 +81,11 @@ class FinPeriod {
     this.interestExpense,
     this.depreciationAmortization,
     this.stockBasedComp,
+    this.sellingGeneralAdmin,
+    this.researchDevelopment,
+    this.netInterestIncome,
+    this.specialItems,
+    this.impairment,
     this.dilutedEps,
     this.dilutedShares,
     this.totalAssets,
@@ -88,11 +108,18 @@ class FinPeriod {
     this.sharesOutstanding,
     this.netPpe,
     this.investedCapital,
+    this.preferredStock,
+    this.leaseLiabilities,
     this.operatingCashFlow,
     this.capex,
     this.freeCashFlow,
     this.dividendsPaid,
     this.buybacks,
+    this.incomeTaxPaid,
+    this.interestPaid,
+    this.acquisitions,
+    this.stockIssuance,
+    this.changeInWorkingCapital,
   });
 
   /// Capex em valor positivo (o que se gastou).
@@ -109,11 +136,24 @@ class FinPeriod {
   double? get ebitOrOperating => ebit ?? operatingIncome;
 }
 
+/// Tipo de instrumento. Só as ações (equity) têm análise fundamental; ETFs, fundos e cripto
+/// só têm métricas de mercado e de risco (preço, volatilidade, drawdown, retornos...).
+enum QuoteType { equity, etf, fund, crypto, marketIndex, other }
+
 /// Dados de mercado de uma empresa (agora).
+///
+/// **Regra de moeda**: todos os valores monetários deste objeto (preço, market cap, EV, dividendo por ação,
+/// máximo/mínimo de 52 semanas) estão na **moeda de reporte** das demonstrações (`currency`, a mesma de
+/// `Financials.currency`), já convertidos pela camada de dados com a taxa de câmbio atual (`fxApplied` =
+/// unidades da moeda de reporte por 1 unidade de `quoteCurrency`). Assim os múltiplos (P/E, P/B, EV/EBIT...)
+/// comparam sempre valores na mesma moeda, mesmo em títulos cotados noutra (NVD.DE cota em EUR e reporta em USD).
 class MarketSnapshot {
   final String symbol;
   final String name;
-  final String currency;
+  final String currency; // moeda de reporte
+  final String quoteCurrency; // moeda em que o título cota
+  final double fxApplied; // reporte por 1 de cotação (1 se for a mesma)
+  final QuoteType quoteType;
   final double? price;
   final double? marketCap;
   final double? sharesOutstanding;
@@ -129,6 +169,9 @@ class MarketSnapshot {
     required this.symbol,
     this.name = '',
     this.currency = 'USD',
+    this.quoteCurrency = 'USD',
+    this.fxApplied = 1,
+    this.quoteType = QuoteType.equity,
     this.price,
     this.marketCap,
     this.sharesOutstanding,
