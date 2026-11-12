@@ -8,7 +8,6 @@ import '../../util/format.dart';
 import '../data/market_cache.dart';
 import '../data/yahoo_market_data.dart';
 import '../metrics/dcf.dart';
-import '../metrics/financials.dart';
 import '../metrics/metric_catalog.dart';
 import '../metrics/metric_info.dart';
 import '../invest.dart';
