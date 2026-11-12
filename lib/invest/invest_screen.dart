@@ -1,4 +1,5 @@
 import 'analysis/analysis_screen.dart';
+import 'analysis/portfolio_analysis_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -171,6 +172,18 @@ class _InvestScreenState extends State<InvestScreen> {
       appBar: AppBar(
         title: Text(l.invTitle),
         actions: [
+          IconButton(
+            tooltip: Localizations.localeOf(context).languageCode == 'en'
+                ? 'Portfolio analysis'
+                : 'Análise da carteira',
+            icon: const Icon(Icons.insights),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const PortfolioAnalysisScreen(),
+              ),
+            ),
+          ),
           IconButton(
             tooltip: Localizations.localeOf(context).languageCode == 'en'
                 ? 'Analyse an asset'
