@@ -91,11 +91,14 @@ List<Metric> valuationMetrics(Financials f, MarketSnapshot m) {
 
   // P/E: preço / EPS (EPS ≤ 0 → null). Trailing = último anual; TTM = período atual.
   final epsTtm = c == null ? null : _eps(c);
-  final peTtm = _dividirPositivo(preco, epsTtm);
-  final peTrailing = _dividirPositivo(
-    preco,
-    ultimo == null ? null : _eps(ultimo),
-  );
+  // ADR (ações do snapshot e das demonstrações em bases diferentes): o preço é por recibo e o EPS por ação
+  // ordinária, por isso o P/E faz-se pela capitalização sobre o resultado líquido, que não depende da base.
+  final peTtm = adr
+      ? _dividirPositivo(mcap, c?.netIncome)
+      : _dividirPositivo(preco, epsTtm);
+  final peTrailing = adr
+      ? _dividirPositivo(mcap, ultimo?.netIncome)
+      : _dividirPositivo(preco, ultimo == null ? null : _eps(ultimo));
   // P/E esperado: melhor esforço, a partir do EPS esperado da fonte (`forwardEps`). Só com a mesma moeda de
   // reporte e de cotação (ADR: o EPS esperado vem na moeda de cotação e as demonstrações noutra).
   final peForward = m.currency == m.quoteCurrency
@@ -125,7 +128,9 @@ List<Metric> valuationMetrics(Financials f, MarketSnapshot m) {
     // (o EPS pode ser negativo: só o preço tem de ser positivo)
     Metric(
       'earnings_yield',
-      _dividirPositivo(epsTtm, preco),
+      adr
+          ? _dividirPositivo(c?.netIncome, mcap)
+          : _dividirPositivo(epsTtm, preco),
       MetricKind.percent,
     ),
     Metric('peg', peg, MetricKind.ratio),

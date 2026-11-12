@@ -43,6 +43,7 @@ FinPeriod _ano(
 );
 
 void main() {
+  adrPeTests();
   group('Golden AAPL (período = último anual, como o golden)', () {
     late Map g;
     late Financials f;
@@ -624,6 +625,35 @@ void main() {
         forwardEps: 5,
       );
       expect(_v(valuationMetrics(f, outra), 'pe_forward'), isNull);
+    });
+  });
+}
+
+void adrPeTests() {
+  group('P/E com recibos de ações (ADR)', () {
+    // 1 ADR = 5 ações ordinárias: o preço é por ADR e o EPS por ação ordinária.
+    final fim = DateTime(2026, 6, 30);
+    final f = Financials(
+      symbol: 'X',
+      annual: [
+        FinPeriod(
+          end: fim,
+          annual: true,
+          netIncome: 10,
+          dilutedEps: 0.4,
+          sharesOutstanding: 25,
+          currentAssets: 1,
+          revenue: 100,
+        ),
+      ],
+    );
+    const m = MarketSnapshot(symbol: 'X', price: 10, sharesOutstanding: 5);
+    test('o P/E sai pela capitalização sobre o resultado, não pelo preço do ADR sobre o EPS', () {
+      final r = {for (final x in valuationMetrics(f, m)) x.key: x.value};
+      expect(r['pe_ttm'], closeTo(5, 1e-9)); // 50 / 10 (e não 10 / 0,4 = 25)
+      expect(r['pe_trailing'], closeTo(5, 1e-9));
+      expect(r['earnings_yield'], closeTo(0.2, 1e-9));
+      expect(r['pb'], isNull);
     });
   });
 }
