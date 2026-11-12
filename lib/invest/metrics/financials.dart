@@ -129,11 +129,13 @@ class FinPeriod {
   double? get dividendsPaidPositive =>
       dividendsPaid == null ? null : dividendsPaid!.abs();
 
-  /// Recompras líquidas em valor positivo.
-  double? get buybacksPositive => buybacks == null ? null : buybacks!.abs();
+  /// Recompras líquidas de emissões, em valor positivo: `-buybacks - stockIssuance` (o `buybacks` do Yahoo é
+  /// um valor bruto de sinal de caixa; com emissão líquida o resultado seria negativo, e não se usa `abs`).
+  double? get netBuybacks =>
+      buybacks == null ? null : -buybacks! - (stockIssuance ?? 0);
 
-  /// EBIT: o campo `ebit` ou, se faltar, o resultado operacional.
-  double? get ebitOrOperating => ebit ?? operatingIncome;
+  /// EBIT para as fórmulas: o resultado operacional e, se faltar, o campo `ebit` (ordem da especificação).
+  double? get ebitOrOperating => operatingIncome ?? ebit;
 }
 
 /// Tipo de instrumento. Só as ações (equity) têm análise fundamental; ETFs, fundos e cripto
@@ -162,6 +164,7 @@ class MarketSnapshot {
   final double? fiftyTwoWeekHigh, fiftyTwoWeekLow;
   final double? averageVolume;
   final double? dividendPerShare; // últimos 12 meses
+  final double? forwardEps; // EPS esperado (quoteSummary, melhor esforço), na moeda de reporte
   final double? shortPercentOfFloat; // 0..1
   final double? insidersPercentHeld; // 0..1
   final String sector, industry;
@@ -181,6 +184,7 @@ class MarketSnapshot {
     this.fiftyTwoWeekLow,
     this.averageVolume,
     this.dividendPerShare,
+    this.forwardEps,
     this.shortPercentOfFloat,
     this.insidersPercentHeld,
     this.sector = '',
