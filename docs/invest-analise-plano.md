@@ -11,7 +11,7 @@ Verificado com pedidos reais:
   Bancos (JPM) não têm CostOfRevenue, EBIT, CurrentAssets... Tickers locais podem não ter dados (AMZN.DE): mapear para o primário (AMZN).
 - **Perfil e estatísticas**: `quoteSummary` precisa de cookie+crumb: `GET https://fc.yahoo.com` (cookie) e
   `GET https://query1.finance.yahoo.com/v1/test/getcrumb` (com o cookie); depois
-  `https://query2.finance.yahoo.com/v10/finance/quoteSummary/{sym}?modules=assetProfile,summaryDetail,defaultKeyStatistics,financialData,majorHoldersBreakdown&crumb=...`
+  `https://query2.finance.yahoo.com/v10/finance/quoteSummary/{sym}?modules=assetProfile,summaryDetail,defaultKeyStatistics,majorHoldersBreakdown,price&crumb=...`
   (setor, indústria, beta, ações, EV, short % do float, % de insiders). Melhor esforço: se falhar, a análise segue sem estes campos.
 - **Finnhub** (opcional, chave do utilizador nas definições): peers, crescimento a 5/10 anos, insiders. Fase posterior.
 - Cripto: CoinGecko (já existe).

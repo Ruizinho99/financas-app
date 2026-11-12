@@ -83,16 +83,18 @@ class MarketCache {
   void put(String key, Object? value) =>
       _store.write(key, jsonEncode(value), _now());
 
-  /// Devolve o valor da cache se válido; senão corre [fetch], guarda o resultado (se não for nulo) e devolve-o.
+  /// Devolve o valor da cache se válido; senão corre [fetch], guarda o resultado (se não for nulo e se
+  /// [worthCaching], quando dado, o aceitar) e devolve-o. Assim uma resposta vazia não fica em cache 24 h.
   Future<Object?> cachedOr(
     String key,
     Duration ttl,
-    Future<Object?> Function() fetch,
-  ) async {
+    Future<Object?> Function() fetch, {
+    bool Function(Object? value)? worthCaching,
+  }) async {
     final hit = get(key, ttl);
     if (hit != null) return hit;
     final v = await fetch();
-    if (v != null) put(key, v);
+    if (v != null && (worthCaching == null || worthCaching(v))) put(key, v);
     return v;
   }
 }
