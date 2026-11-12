@@ -251,12 +251,12 @@ void main() {
       }
     });
 
-    test('uma holding pelo nome (sem indústria) também é holding', () {
+    test('um nome com "Holding" (sem indústria) não torna holding (correção E3)', () {
       expect(
         sectorGroupOf(
           const MarketSnapshot(symbol: 'X', name: 'Alfa Holdings SA'),
         ),
-        SectorGroup.holdings,
+        SectorGroup.generic,
       );
     });
   });
@@ -765,27 +765,29 @@ void main() {
     );
 
     test('flag_serial_acquisitions (aquisições negativas em todos os anos, mínimo 3)', () {
-      FinPeriod ano(int y, double? a) => fp(y, acquisitions: a);
+      // Receita de 1000 em todos os anos: as aquisições têm de ser ≥ 1 % (10) para contarem (correção R11).
+      FinPeriod ano(int y, double? a) => fp(y, acquisitions: a, revenue: 1000);
       expect(
         flag(
-          fin([ano(2022, -10), ano(2023, -20), ano(2024, -5)]),
+          fin([ano(2022, -20), ano(2023, -30), ano(2024, -15)]),
           'flag_serial_acquisitions',
         ),
         1,
       );
       expect(
         flag(
-          fin([ano(2022, -10), ano(2023, 0), ano(2024, -5)]),
+          fin([ano(2022, -20), ano(2023, 0), ano(2024, -15)]),
           'flag_serial_acquisitions',
         ),
         0,
       );
+      // Campo em falta conta como zero (correção R11): já não é nulo.
       expect(
         flag(
-          fin([ano(2022, -10), ano(2023, null), ano(2024, -5)]),
+          fin([ano(2022, -20), ano(2023, null), ano(2024, -15)]),
           'flag_serial_acquisitions',
         ),
-        isNull,
+        0,
       );
     });
 
@@ -935,6 +937,201 @@ void main() {
           reason: i.key,
         );
       }
+    });
+  });
+
+  // =========================================================================================================
+  group('correções da revisão independente (F4)', () {
+    test('E3: "Holding" no nome não torna holding (ASML Holding, Booking Holdings)', () {
+      expect(
+        sectorGroupOf(
+          const MarketSnapshot(
+            symbol: 'ASML',
+            name: 'ASML Holding N.V.',
+            sector: 'Technology',
+            industry: 'Semiconductor Equipment & Materials',
+          ),
+        ),
+        SectorGroup.generic,
+      );
+      expect(
+        sectorGroupOf(
+          const MarketSnapshot(
+            symbol: 'BKNG',
+            name: 'Booking Holdings Inc.',
+            sector: 'Consumer Cyclical',
+            industry: 'Travel Services',
+          ),
+        ),
+        SectorGroup.generic,
+      );
+    });
+
+    test('E3: conglomerados (industriais e financeiros) são holdings', () {
+      for (final (ind, sec) in [
+        ('Conglomerates', 'Industrials'),
+        ('Financial Conglomerates', 'Financial Services'),
+      ]) {
+        expect(
+          sectorGroupOf(MarketSnapshot(symbol: 'X', sector: sec, industry: ind)),
+          SectorGroup.holdings,
+          reason: ind,
+        );
+      }
+    });
+
+    test('E3: lojas de desconto, supermercados e grandes armazéns são retalho', () {
+      for (final (ind, sec) in [
+        ('Discount Stores', 'Consumer Defensive'),
+        ('Grocery Stores', 'Consumer Defensive'),
+        ('Department Stores', 'Consumer Cyclical'),
+      ]) {
+        expect(
+          sectorGroupOf(MarketSnapshot(symbol: 'X', sector: sec, industry: ind)),
+          SectorGroup.retail,
+          reason: ind,
+        );
+      }
+    });
+
+    test('E3: matérias-primas só petróleo, gás, mineração, metais e agricultura (químicos ficam de fora)', () {
+      final casos = <(String, String, SectorGroup)>[
+        ('Specialty Chemicals', 'Basic Materials', SectorGroup.generic),
+        ('Industrial Gases', 'Basic Materials', SectorGroup.generic),
+        ('Copper', 'Basic Materials', SectorGroup.commodities),
+        ('Agricultural Inputs', 'Basic Materials', SectorGroup.commodities),
+        ('Oil & Gas Integrated', 'Energy', SectorGroup.commodities),
+      ];
+      for (final (ind, sec, grupo) in casos) {
+        expect(
+          sectorGroupOf(MarketSnapshot(symbol: 'X', sector: sec, industry: ind)),
+          grupo,
+          reason: '$sec / $ind',
+        );
+      }
+    });
+
+    test('E3: sem indústria, Real Estate é REIT; Financial Services não se presume grupo', () {
+      expect(
+        sectorGroupOf(const MarketSnapshot(symbol: 'X', sector: 'Real Estate')),
+        SectorGroup.reits,
+      );
+      expect(
+        sectorGroupOf(
+          const MarketSnapshot(symbol: 'X', sector: 'Financial Services'),
+        ),
+        SectorGroup.generic,
+      );
+    });
+
+    test('E4: subida de exatamente 5 % (42 / 40) não é alerta de DSO nem de DIO', () {
+      expect(
+        flag(
+          fin([
+            fp(2023, revenue: 365, receivables: 40),
+            fp(2024, revenue: 365, receivables: 42),
+          ]),
+          'flag_dso_rising',
+        ),
+        0,
+      );
+      expect(
+        flag(
+          fin([
+            fp(2023, costOfRevenue: 365, inventory: 40),
+            fp(2024, costOfRevenue: 365, inventory: 42),
+          ]),
+          'flag_dio_rising',
+        ),
+        0,
+      );
+    });
+
+    test('R10: cash runway devolve-se em meses (MetricKind.months)', () {
+      final ms = sectorMetrics(
+        fin([
+          fp(
+            2024,
+            revenue: 1000,
+            netIncome: -5,
+            operatingCashFlow: -100,
+            capex: -20,
+            cashAndShortTermInvestments: 600,
+          ),
+        ]),
+        const MarketSnapshot(symbol: 'N'),
+      );
+      expect(met(ms, 'nolp_cash_runway_months').kind, MetricKind.months);
+    });
+
+    test('R11: aquisições abaixo de 1 % da receita (0,2 %) não são série de aquisições', () {
+      expect(
+        flag(
+          fin([
+            fp(2022, revenue: 1000, acquisitions: -2),
+            fp(2023, revenue: 1000, acquisitions: -2),
+            fp(2024, revenue: 1000, acquisitions: -2),
+          ]),
+          'flag_serial_acquisitions',
+        ),
+        0,
+      );
+    });
+
+    test('R11: aquisições de 1 % ou mais da receita em todos os anos dão alerta', () {
+      expect(
+        flag(
+          fin([
+            fp(2022, revenue: 1000, acquisitions: -10),
+            fp(2023, revenue: 1000, acquisitions: -10),
+            fp(2024, revenue: 1000, acquisitions: -10),
+          ]),
+          'flag_serial_acquisitions',
+        ),
+        1,
+      );
+    });
+
+    test('R12: bancos e seguradoras não têm DSO, DIO nem alerta de dívida e caixa', () {
+      final f = fin([
+        fp(
+          2023,
+          revenue: 1000,
+          costOfRevenue: 400,
+          receivables: 100,
+          inventory: 80,
+          totalAssets: 1000,
+          cash: 250,
+          totalDebt: 300,
+        ),
+        fp(
+          2024,
+          revenue: 1000,
+          costOfRevenue: 400,
+          receivables: 150,
+          inventory: 120,
+          totalAssets: 1000,
+          cash: 250,
+          totalDebt: 300,
+        ),
+      ]);
+      for (final ind in [
+        const MarketSnapshot(symbol: 'JPM', sector: 'Financial Services', industry: 'Banks - Diversified'),
+        const MarketSnapshot(symbol: 'ALV', sector: 'Financial Services', industry: 'Insurance - Diversified'),
+      ]) {
+        final ms = redFlags(f, ind);
+        for (final k in ['flag_dso_rising', 'flag_dio_rising', 'flag_debt_and_cash_high']) {
+          expect(met(ms, k).value, isNull, reason: '${ind.industry} / $k');
+        }
+      }
+      // Uma empresa industrial com os mesmos números continua a ser avaliada.
+      expect(
+        redFlags(
+          f,
+          const MarketSnapshot(symbol: 'X', sector: 'Industrials', industry: 'Machinery'),
+        ).firstWhere((x) => x.key == 'flag_dso_rising').value,
+        1,
+      );
     });
   });
 }
