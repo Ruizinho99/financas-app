@@ -12,8 +12,12 @@ import 'financials.dart';
 /// Sessões de bolsa por ano (anualização de volatilidade, Sharpe e Sortino).
 const int kSessoesAno = 252;
 
-/// Taxa sem risco por omissão: 4 % ao ano (a mesma do CAPM da app).
+/// Taxa sem risco por omissão: 4 % ao ano. É a ÚNICA constante: `DcfAssumptions.riskFreeRate` (CAPM do DCF) usa-a
+/// por omissão e quem a alterar no DCF deve passar o mesmo valor a [marketRiskMetrics] (`riskFree`).
 const double kRiskFreeDefault = 0.04;
+
+/// Mínimo de retornos alinhados para estimar beta e correlação face ao índice (cerca de 3 meses de sessões).
+const int kMinRetornosBeta = 60;
 
 /// Data de calendário local da bolsa de um timestamp Unix: `timestamp + gmtoffset`, convertido em UTC na data.
 /// Usa-se para alinhar séries de bolsas diferentes (NVD.DE × ^GSPC nunca têm o mesmo timestamp).
@@ -76,9 +80,12 @@ double? _percentilLinear(List<double> xs, double q) {
   return ys[lo] + (ys[hi] - ys[lo]) * (pos - lo);
 }
 
-/// Retornos simples diários `r_i = P_i / P_{i−1} − 1`.
+/// Retornos simples diários `r_i = P_i / P_{i−1} − 1`. Um retorno com fecho anterior 0 (ou não finito) é ignorado,
+/// para nunca produzir Infinity nem NaN.
 List<double> retornosSimples(List<double> precos) => [
-  for (var i = 1; i < precos.length; i++) precos[i] / precos[i - 1] - 1,
+  for (var i = 1; i < precos.length; i++)
+    if (precos[i - 1] != 0 && precos[i - 1].isFinite && precos[i].isFinite)
+      precos[i] / precos[i - 1] - 1,
 ];
 
 /// Retorno desde a última data de referência: `P_último / P_ref − 1`, com `P_ref` o último fecho com data ≤ referência.
@@ -123,6 +130,7 @@ double? _drawdownMaximo(List<double> p) {
   var mdd = 0.0;
   for (final x in p) {
     if (x > pico) pico = x;
+    if (pico <= 0) continue;
     final dd = x / pico - 1;
     if (dd < mdd) mdd = dd;
   }
@@ -130,7 +138,8 @@ double? _drawdownMaximo(List<double> p) {
 }
 
 /// Alinha as duas séries pela data de calendário e devolve os retornos entre datas comuns consecutivas.
-/// Nulo se houver menos de 2 retornos.
+/// Nulo se houver menos de [kMinRetornosBeta] retornos (poucos pontos dão betas absurdos). Pares com um fecho
+/// não positivo ou não finito são descartados antes, para os dois vetores ficarem sempre do mesmo tamanho.
 ({List<double> ativo, List<double> mercado})? _retornosAlinhados(
   List<DateTime> datas,
   List<double> fechos,
@@ -145,14 +154,54 @@ double? _drawdownMaximo(List<double> p) {
   for (var i = 0; i < datas.length; i++) {
     final m = mapa[_dia(datas[i])];
     if (m == null) continue;
+    if (!(fechos[i] > 0 && fechos[i].isFinite && m > 0 && m.isFinite)) continue;
     precosAtivo.add(fechos[i]);
     precosMercado.add(m);
   }
-  if (precosAtivo.length < 3) return null;
+  if (precosAtivo.length < kMinRetornosBeta + 1) return null;
   return (
     ativo: retornosSimples(precosAtivo),
     mercado: retornosSimples(precosMercado),
   );
+}
+
+/// Beta de Dimson: soma dos coeficientes da regressão `r_ativo(t) = a + b0·r_mercado(t) + b1·r_mercado(t−1)`.
+/// Corrige o beta de cotações cruzadas com fechos assíncronos (por exemplo NVD.DE, que fecha antes do ^GSPC, face
+/// ao ^GSPC: o beta simples dá ~0,89 e o de Dimson ~1,3): parte da reação ao mercado americano só aparece no dia
+/// seguinte. Mesmo alinhamento por data que o beta; exige [kMinRetornosBeta] observações (já com o desfasamento),
+/// senão `null`; também `null` se a regressão for degenerada.
+double? betaDimson(
+  List<DateTime> datas,
+  List<double> fechos,
+  List<DateTime> datasIndice,
+  List<double> fechosIndice,
+) {
+  if (datas.length != fechos.length ||
+      datasIndice.length != fechosIndice.length) {
+    throw ArgumentError('datas e fechos com tamanhos diferentes');
+  }
+  final al = _retornosAlinhados(datas, fechos, datasIndice, fechosIndice);
+  if (al == null) return null;
+  final n = al.ativo.length - 1; // observações com o desfasamento de 1
+  if (n < kMinRetornosBeta) return null;
+  final y = al.ativo.sublist(1);
+  final x1 = al.mercado.sublist(1);
+  final x2 = al.mercado.sublist(0, n);
+  final my = _media(y), m1 = _media(x1), m2 = _media(x2);
+  var s11 = 0.0, s22 = 0.0, s12 = 0.0, s1y = 0.0, s2y = 0.0;
+  for (var i = 0; i < n; i++) {
+    final a = x1[i] - m1, b = x2[i] - m2, c = y[i] - my;
+    s11 += a * a;
+    s22 += b * b;
+    s12 += a * b;
+    s1y += a * c;
+    s2y += b * c;
+  }
+  final det = s11 * s22 - s12 * s12;
+  if (!det.isFinite || det.abs() < 1e-18) return null;
+  final b0 = (s1y * s22 - s2y * s12) / det;
+  final b1 = (s2y * s11 - s1y * s12) / det;
+  return b0 + b1;
 }
 
 /// Métricas de mercado e de risco a partir do histórico diário (datas e fechos em ordem cronológica, sem `null`).
@@ -282,7 +331,7 @@ List<Metric> marketRiskMetrics(
     Metric('maximo_52s', maximo52, MetricKind.money),
     Metric('minimo_52s', minimo52, MetricKind.money),
     Metric('distancia_maximo_52s', distancia52, MetricKind.percent),
-    Metric('volume_medio', volumeMedio, MetricKind.score),
+    Metric('volume_medio', volumeMedio, MetricKind.count),
     Metric('sma50', _sma(closes, 50), MetricKind.money),
     Metric('sma200', _sma(closes, 200), MetricKind.money),
     Metric('rsi14', _rsi14(closes), MetricKind.score),
@@ -311,7 +360,7 @@ List<Metric> snapshotRiskMetrics(MarketSnapshot m) => [
 ];
 
 /// XIRR: taxa anual `r` tal que `Σ c_i / (1+r)^((d_i − d_0)/365) = 0` (base 365, como o Excel).
-/// `d_0` = data do primeiro fluxo. Bisseção em [−0,9999; 10], 200 iterações. Exige um fluxo negativo e um positivo;
+/// `d_0` = data do primeiro fluxo. Bisseção em [−0,9999; 1000], 200 iterações. Exige um fluxo negativo e um positivo;
 /// se o VPL não mudar de sinal no intervalo, devolve nulo.
 double? xirr(List<({DateTime date, double amount})> flows) {
   if (flows.isEmpty) return null;
@@ -330,7 +379,7 @@ double? xirr(List<({DateTime date, double amount})> flows) {
     return s;
   }
 
-  var lo = -0.9999, hi = 10.0;
+  var lo = -0.9999, hi = 1000.0;
   var fLo = vpl(lo);
   final fHi = vpl(hi);
   if (!fLo.isFinite || !fHi.isFinite || (fLo > 0) == (fHi > 0)) return null;
@@ -350,7 +399,8 @@ double? xirr(List<({DateTime date, double amount})> flows) {
 /// TWR (retorno ponderado no tempo). [pontos]: o primeiro é `(valueBefore ignorado, cashFlow = valor inicial)`;
 /// cada fluxo externo seguinte é `(valueBefore = V_i⁻ valor imediatamente antes do fluxo, cashFlow = CF_i)`;
 /// o último é `(valueBefore = valor final, cashFlow ignorado)`.
-/// `r_i = V_i⁻ / (V_{i−1}⁻ + CF_{i−1}) − 1` com `V_0⁻ = 0`; `TWR = Π(1 + r_i) − 1`. Nulo se um denominador for 0.
+/// `r_i = V_i⁻ / (V_{i−1}⁻ + CF_{i−1}) − 1` com `V_0⁻ = 0`; `TWR = Π(1 + r_i) − 1`. Um sub-período que começa em 0 e acaba em 0 conta fator 1;
+/// nulo se começa em 0 e acaba ≠ 0.
 /// Exemplo: 1000 → 1100, entra 500, → 1500: `[(0, 1000), (1100, 500), (1500, 0)]` dá 0,03125.
 double? twr(List<({double valueBefore, double cashFlow})> pontos) {
   if (pontos.length < 2) return null;
@@ -358,16 +408,20 @@ double? twr(List<({double valueBefore, double cashFlow})> pontos) {
   for (var i = 1; i < pontos.length; i++) {
     final vAnteriorFim = i - 1 == 0 ? 0.0 : pontos[i - 1].valueBefore;
     final inicioSub = vAnteriorFim + pontos[i - 1].cashFlow;
-    final ri = safeDiv(pontos[i].valueBefore, inicioSub);
-    if (ri == null) return null;
-    acumulado *= ri;
+    final fim = pontos[i].valueBefore;
+    if (inicioSub == 0) {
+      // Sub-período que começa vazio: se também acaba vazio o fator é 1; se acaba ≠ 0 não há base de cálculo.
+      if (fim == 0) continue;
+      return null;
+    }
+    acumulado *= fim / inicioSub;
   }
   return acumulado - 1;
 }
 
-/// Pesos normalizados para soma 1 (valor de mercado de cada posição). Nulo se a soma não for positiva.
+/// Pesos normalizados para soma 1 (valor de mercado de cada posição). Nulo se a soma não for positiva ou se algum peso for negativo.
 List<double>? _pesosNormalizados(List<double> pesos) {
-  if (pesos.isEmpty) return null;
+  if (pesos.isEmpty || pesos.any((w) => w < 0 || !w.isFinite)) return null;
   final total = pesos.fold(0.0, (a, b) => a + b);
   if (!total.isFinite || total <= 0) return null;
   return [for (final w in pesos) w / total];
@@ -390,7 +444,8 @@ double? topNConcentration(List<double> weights, int n) {
 }
 
 /// Correlação média de todos os pares de posições. Cada série é um mapa data → retorno diário; os pares usam
-/// as datas comuns. Se algum par não tiver pelo menos 3 datas comuns ou variância nula, devolve nulo.
+/// as datas comuns. Um par com menos de 3 datas comuns ou com variância nula é ignorado (não anula os restantes);
+/// nulo só se nenhum par for calculável.
 double? averageCorrelation(List<Map<DateTime, double>> returnsByDate) {
   if (returnsByDate.length < 2) return null;
   var soma = 0.0;
@@ -400,15 +455,40 @@ double? averageCorrelation(List<Map<DateTime, double>> returnsByDate) {
       final a = returnsByDate[i], b = returnsByDate[j];
       final comuns = a.keys.where(b.containsKey).toList()
         ..sort((x, y) => x.compareTo(y));
-      if (comuns.length < 3) return null;
+      if (comuns.length < 3) continue;
       final r = _pearson(
         [for (final d in comuns) a[d]!],
         [for (final d in comuns) b[d]!],
       );
-      if (r == null) return null;
+      if (r == null) continue;
       soma += r;
       pares++;
     }
   }
-  return soma / pares;
+  return pares == 0 ? null : soma / pares;
 }
+
+/// Métricas de carteira como [Metric] (cada chave tem ficha em `marketRiskInfo`). Cada grupo de dados é opcional:
+/// sem ele a métrica fica `null`. [flows] → `xirr`; [twrPoints] → `twr`; [weights] → `hhi` e `top_n_concentration`
+/// (com [topN], por omissão 3); [returnsByDate] → `average_correlation`.
+List<Metric> portfolioMetrics({
+  List<({DateTime date, double amount})>? flows,
+  List<({double valueBefore, double cashFlow})>? twrPoints,
+  List<double>? weights,
+  int topN = 3,
+  List<Map<DateTime, double>>? returnsByDate,
+}) => [
+  Metric('xirr', flows == null ? null : xirr(flows), MetricKind.percent),
+  Metric('twr', twrPoints == null ? null : twr(twrPoints), MetricKind.percent),
+  Metric('hhi', weights == null ? null : hhi(weights), MetricKind.ratio),
+  Metric(
+    'top_n_concentration',
+    weights == null ? null : topNConcentration(weights, topN),
+    MetricKind.percent,
+  ),
+  Metric(
+    'average_correlation',
+    returnsByDate == null ? null : averageCorrelation(returnsByDate),
+    MetricKind.ratio,
+  ),
+];

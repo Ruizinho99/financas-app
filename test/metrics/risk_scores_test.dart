@@ -403,6 +403,95 @@ void main() {
     });
   });
 
+  group('correções F2', () {
+    test('Altman: sem marketCap usa preço × ações (Z original calcula-se)', () {
+      final f = Financials(
+        symbol: 'X',
+        annual: [
+          _ano(
+            2025,
+            revenue: 200,
+            operatingIncome: 10,
+            totalAssets: 100,
+            currentAssets: 50,
+            currentLiabilities: 30,
+            retainedEarnings: 20,
+            totalLiabilities: 40,
+            equity: 60,
+          ),
+        ],
+      );
+      final z = altmanMetrics(
+        f,
+        const MarketSnapshot(
+          symbol: 'X',
+          sector: 'Industrials',
+          price: 8,
+          sharesOutstanding: 10,
+        ),
+      );
+      expectRel(porChave(z)['altman_z'], 1.2 * 0.2 + 1.4 * 0.2 + 3.3 * 0.1 + 0.6 * 2 + 2);
+    });
+
+    test('Piotroski 5: dívida LP 0 nos dois anos conta como cumprido', () {
+      final f = Financials(
+        symbol: 'X',
+        annual: [
+          _ano(2023, totalAssets: 100, netIncome: 10, longTermDebt: 0),
+          _ano(2024, totalAssets: 110, netIncome: 12, longTermDebt: 0),
+          _ano(2025, totalAssets: 120, netIncome: 15, longTermDebt: 0),
+        ],
+      );
+      expect(porChave(piotroskiMetrics(f))['piotroski_d_leverage'], 1.0);
+    });
+
+    test('Piotroski 5: dívida LP a subir continua a falhar', () {
+      final f = Financials(
+        symbol: 'X',
+        annual: [
+          _ano(2023, totalAssets: 100, netIncome: 10, longTermDebt: 5),
+          _ano(2024, totalAssets: 110, netIncome: 12, longTermDebt: 5),
+          _ano(2025, totalAssets: 120, netIncome: 15, longTermDebt: 30),
+        ],
+      );
+      expect(porChave(piotroskiMetrics(f))['piotroski_d_leverage'], 0.0);
+    });
+
+    test('Beneish: bancos (sem custo das vendas, resultado operacional e ativo corrente) dão null em tudo', () {
+      FinPeriod banco(int ano) => FinPeriod(
+        end: DateTime(ano, 12, 31),
+        annual: true,
+        revenue: 100,
+        grossProfit: 80,
+        netIncome: 20,
+        totalAssets: 1000,
+        receivables: 50,
+        sellingGeneralAdmin: 30,
+        depreciationAmortization: 5,
+        netPpe: 40,
+        longTermDebt: 100,
+        operatingCashFlow: 25,
+      );
+      final r = porChave(
+        beneishMetrics(Financials(symbol: 'JPM', annual: [banco(2024), banco(2025)])),
+      );
+      for (final k in [
+        'beneish_dsri',
+        'beneish_gmi',
+        'beneish_aqi',
+        'beneish_sgi',
+        'beneish_depi',
+        'beneish_sgai',
+        'beneish_tata',
+        'beneish_lvgi',
+        'beneish_m',
+        'beneish_alert',
+      ]) {
+        expect(r[k], isNull, reason: k);
+      }
+    });
+  });
+
   group('Cobertura das fichas', () {
     test(
       'cada chave devolvida tem ficha, sem duplicados, com textos preenchidos',

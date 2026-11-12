@@ -5,10 +5,13 @@ library;
 import 'dart:math' as math;
 
 import 'financials.dart';
+import 'market_risk.dart' show kRiskFreeDefault;
+import 'shared.dart';
 
 /// Premissas editáveis pelo utilizador. Os valores por omissão são os da especificação.
 class DcfAssumptions {
-  /// Taxa sem risco (rf) do CAPM.
+  /// Taxa sem risco (rf) do CAPM. É a mesma constante ([kRiskFreeDefault]) que o Sharpe e o Sortino usam por omissão;
+  /// se o utilizador a alterar, deve passar o mesmo valor a `marketRiskMetrics(riskFree: …)`.
   final double riskFreeRate;
 
   /// Prémio de risco de mercado (MRP) do CAPM.
@@ -24,14 +27,15 @@ class DcfAssumptions {
   /// Crescimento terminal na perpetuidade (g).
   final double terminalGrowth;
 
-  /// Beta do utilizador. Se `null`: beta do snapshot de mercado, senão 1,0.
+  /// Beta que o utilizador escreve. Se `null`: beta do snapshot de mercado, senão o beta calculado a partir das
+  /// cotações (`computedBeta` de [dcfMetrics]), senão 1,0.
   final double? beta;
 
   /// Taxa de imposto do utilizador. Se `null`: taxa efetiva do período ([effectiveTaxRate]).
   final double? taxRate;
 
   const DcfAssumptions({
-    this.riskFreeRate = 0.04,
+    this.riskFreeRate = kRiskFreeDefault,
     this.marketRiskPremium = 0.055,
     this.years = 5,
     this.explicitGrowth,
@@ -110,12 +114,14 @@ double? waccOf({
   return we * ke + wd * kd * (1 - t);
 }
 
-/// Kd = juros / dívida média. Juros = `interestExpense ?? interestPaid` (em valor absoluto); dívida média = `avgOf` da
-/// dívida total de `cur` e `prev`. Sem juros ou sem dívida, ou se o resultado estiver fora de [0; 0,20], devolve 5 %.
+/// Kd = juros / dívida média. Juros = `interestExpense`, ou `interestPaid` se faltar ou for 0 (um 0 conta como
+/// ausente); em valor absoluto. Dívida média = `avgOf` da dívida total de `cur` e `prev`. Sem juros (ou juros 0),
+/// sem dívida, ou se o resultado estiver fora de [0; 0,20], devolve 5 %.
 double costOfDebt(FinPeriod cur, FinPeriod? prev) {
-  final interest = (cur.interestExpense ?? cur.interestPaid)?.abs();
+  final ie = cur.interestExpense;
+  final interest = ((ie == null || ie == 0) ? cur.interestPaid : ie)?.abs();
   final debt = avgOf(cur.totalDebt, prev?.totalDebt);
-  final kd = interest == null ? null : safeDiv(interest, debt);
+  final kd = (interest == null || interest == 0) ? null : safeDiv(interest, debt);
   if (kd == null || kd < 0 || kd > 0.20) return kdFallback;
   return kd;
 }
@@ -254,7 +260,7 @@ double? impliedGrowth({
   return mid;
 }
 
-/// Matriz 5 × 5 de valor por ação: linhas WACC + {−2; −1; 0; +1; +2} pontos base; colunas g + {−1; −0,5; 0; +0,5; +1} pontos base.
+/// Matriz 5 × 5 de valor por ação: linhas WACC + {−2; −1; 0; +1; +2} pontos percentuais; colunas g + {−1; −0,5; 0; +0,5; +1} pontos percentuais.
 /// Célula com WACC <= g é `null`.
 List<List<double?>> sensitivityMatrix({
   required double fcff0,
@@ -288,7 +294,8 @@ List<List<double?>> sensitivityMatrix({
   ];
 }
 
-/// Cenários de crescimento explícito (mesmos WACC e g): `pessimistic` gr × 0,5, `base` gr, `optimistic` gr × 1,5.
+/// Cenários de crescimento explícito (mesmos WACC e g): `pessimistic` gr − 0,5·|gr|, `base` gr, `optimistic` gr + 0,5·|gr|
+/// (com gr > 0 é gr × 0,5 e gr × 1,5; com gr < 0 a ordem mantém-se: o pessimista cai mais e o otimista cai menos).
 Map<String, double?> scenarios({
   required double fcff0,
   required double growth,
@@ -312,9 +319,9 @@ Map<String, double?> scenarios({
     shares: shares,
   )?.valuePerShare;
   return {
-    'pessimistic': valueWith(growth * 0.5),
+    'pessimistic': valueWith(growth - 0.5 * growth.abs()),
     'base': valueWith(growth),
-    'optimistic': valueWith(growth * 1.5),
+    'optimistic': valueWith(growth + 0.5 * growth.abs()),
   };
 }
 
@@ -346,10 +353,13 @@ FinPeriod? prevPeriodFor(Financials f, FinPeriod cur) {
 
 /// Métricas do DCF de uma empresa com as premissas dadas (ou as por omissão). Base `f.latest` (TTM se existir), 2.0 e 2.8.
 /// Cada chave devolvida tem uma ficha em `dcfInfo` (ver dcf_info.dart).
+/// [computedBeta]: beta calculado a partir das cotações (ver `marketRiskMetrics`); ordem de escolha do beta:
+/// `assumptions.beta ?? m.beta ?? computedBeta ?? 1,0`. Bancos e financeiras: `ke` e `wacc` são `null`.
 List<Metric> dcfMetrics(
   Financials f,
   MarketSnapshot m, {
   DcfAssumptions? assumptions,
+  double? computedBeta,
 }) {
   final a = assumptions ?? const DcfAssumptions();
   final cur = f.latest;
@@ -357,16 +367,22 @@ List<Metric> dcfMetrics(
 
   final t = a.taxRate ?? (cur == null ? taxFallback : effectiveTaxRate(cur));
   final base = cur == null ? null : fcff(cur: cur, taxRate: t);
-  final beta = a.beta ?? m.beta ?? betaFallback;
-  final ke = capmKe(rf: a.riskFreeRate, beta: beta, mrp: a.marketRiskPremium);
+  final beta = a.beta ?? m.beta ?? computedBeta ?? betaFallback;
+  // Bancos: Ke/WACC não têm o mesmo significado (a dívida é matéria-prima, não financiamento).
+  final banco = isFinancialLike(cur);
+  final ke = banco
+      ? null
+      : capmKe(rf: a.riskFreeRate, beta: beta, mrp: a.marketRiskPremium);
   final kd = cur == null ? kdFallback : costOfDebt(cur, prev);
-  final wacc = waccOf(
-    marketCap: m.marketCap,
-    totalDebt: cur?.totalDebt,
-    ke: ke,
-    kd: kd,
-    t: t,
-  );
+  final wacc = ke == null
+      ? null
+      : waccOf(
+          marketCap: mcapOf(m),
+          totalDebt: cur?.totalDebt,
+          ke: ke,
+          kd: kd,
+          t: t,
+        );
 
   // Dívida líquida = dívida total − caixa (se faltar algum, fica null: sem valor por ação).
   final debt = cur?.totalDebt;
