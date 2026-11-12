@@ -3,6 +3,7 @@
 library;
 
 import 'financials.dart';
+import 'shared.dart';
 
 /// Modelo de Altman que a interface destaca para um setor.
 enum AltmanModel { original, doublePrime, notApplicable }
@@ -67,7 +68,6 @@ FinPeriod? _anual(Financials f, int k) {
 }
 
 bool? _gt(double? a, double? b) => a == null || b == null ? null : a > b;
-bool? _lt(double? a, double? b) => a == null || b == null ? null : a < b;
 bool? _le(double? a, double? b) => a == null || b == null ? null : a <= b;
 
 /// Teste booleano como métrica 0/1 (nulo se o teste não foi avaliado).
@@ -76,7 +76,7 @@ double? _bit(bool? b) => b == null ? null : (b ? 1.0 : 0.0);
 // ---------------------------------------------------------------------------
 // Altman
 
-/// Altman Z original e Z″ (SEM constante), com as capitalizações de `m.marketCap` (moeda de reporte).
+/// Altman Z original e Z″ (SEM constante), com a capitalização `mcapOf(m)` (`marketCap`, ou preço × ações; moeda de reporte).
 ///
 /// `cur` é o período de balanço e de fluxos; por omissão `f.latest` (TTM se existir, senão o último anual).
 /// Setores financeiros e imobiliário devolvem ambos `null` (Altman não se aplica).
@@ -99,7 +99,7 @@ List<Metric> altmanMetrics(Financials f, MarketSnapshot m, {FinPeriod? cur}) {
   final x2 = safeDiv(p.retainedEarnings, ta);
   // EBIT = operatingIncome ?? ebit (getter do contrato: ebitOrOperating).
   final x3 = safeDiv(p.ebitOrOperating, ta);
-  final x4 = safeDiv(m.marketCap, tl);
+  final x4 = safeDiv(mcapOf(m), tl);
   final x4b = safeDiv(p.equity, tl);
   final x5 = safeDiv(p.revenue, ta);
 
@@ -113,6 +113,13 @@ List<Metric> altmanMetrics(Financials f, MarketSnapshot m, {FinPeriod? cur}) {
 
 // ---------------------------------------------------------------------------
 // Piotroski
+
+/// Teste 5: a alavancagem desce. Sem dívida de longo prazo nos dois anos (0 e 0) conta como cumprido (<=).
+bool? _alavancaDesce(double? atual, double? anterior) {
+  if (atual == null || anterior == null) return null;
+  if (atual == 0 && anterior == 0) return true;
+  return atual < anterior;
+}
 
 /// Piotroski F-Score (Piotroski 2000) com os 9 testes como métricas 0/1 (nulo se não avaliado).
 ///
@@ -151,7 +158,7 @@ List<Metric> piotroskiMetrics(Financials f) {
       t?.operatingCashFlow,
       t?.netIncome,
     ), // 4 CFO > resultado líquido (accruals negativos)
-    _lt(lev(t, t1), lev(t1, t2)), // 5 alavancagem desce
+    _alavancaDesce(lev(t, t1), lev(t1, t2)), // 5 alavancagem desce (0 e 0 conta como cumprido)
     _gt(cr(t), cr(t1)), // 6 liquidez sobe
     _le(
       t?.sharesOutstanding,
@@ -213,7 +220,8 @@ List<Metric> beneishMetrics(Financials f) {
       safeDiv(_add(x.currentLiabilities, x.longTermDebt), x.totalAssets);
 
   double? dsri, gmi, aqi, sgi, depi, sgai, lvgi, tata;
-  if (t != null && p != null) {
+  // Bancos e financeiras: sem custo das vendas, resultado operacional nem ativo corrente, os índices não fazem sentido.
+  if (t != null && p != null && !isFinancialLike(t)) {
     dsri = safeDiv(
       safeDiv(t.receivables, t.revenue),
       safeDiv(p.receivables, p.revenue),

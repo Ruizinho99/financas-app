@@ -5,6 +5,7 @@ import 'package:financas/invest/data/yahoo_market_data.dart';
 import 'package:financas/invest/metrics/dcf.dart';
 import 'package:financas/invest/metrics/dcf_info.dart';
 import 'package:financas/invest/metrics/financials.dart';
+import 'package:financas/invest/metrics/market_risk.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -33,6 +34,7 @@ FinPeriod _p({
   double? totalDebt,
   double? cash,
   double? interestExpense,
+  double? interestPaid,
   double? pretax,
   double? tax,
   double? revenue,
@@ -47,6 +49,7 @@ FinPeriod _p({
   totalDebt: totalDebt,
   cash: cash,
   interestExpense: interestExpense,
+  interestPaid: interestPaid,
   pretaxIncome: pretax,
   taxProvision: tax,
   revenue: revenue,
@@ -397,6 +400,131 @@ void main() {
         _close(_m(ms, 'ke'), capmKe(rf: 0.04, beta: 1.2, mrp: 0.055));
       },
     );
+  });
+
+  group('correções F2', () {
+    FinPeriod base0({double? interestExpense}) => _p(
+      ebit: 100,
+      da: 10,
+      capex: 20,
+      cwc: 0,
+      totalDebt: 100,
+      cash: 50,
+      interestExpense: interestExpense,
+      revenue: 500,
+      shares: 10,
+    );
+
+    test('capitalização: sem marketCap usa preço × ações (WACC e DCF não ficam null)', () {
+      final f = Financials(symbol: 'X', annual: [base0()]);
+      final ms = dcfMetrics(
+        f,
+        const MarketSnapshot(symbol: 'X', price: 10, sharesOutstanding: 100),
+      );
+      expect(_m(ms, 'wacc'), isNotNull);
+      expect(_m(ms, 'dcf_value_per_share'), isNotNull);
+    });
+
+    test('Kd: juros 0 contam como ausentes (usa interestPaid); se continuar 0 → 5 %', () {
+      final prev = _p(totalDebt: 1000, end: DateTime(2024, 9, 30));
+      expect(
+        costOfDebt(_p(totalDebt: 1000, interestExpense: 0, interestPaid: -80), prev),
+        closeTo(0.08, 1e-12),
+      );
+      expect(
+        costOfDebt(_p(totalDebt: 1000, interestExpense: 0, interestPaid: 0), prev),
+        kdFallback,
+      );
+      expect(costOfDebt(_p(totalDebt: 1000, interestExpense: 0), prev), kdFallback);
+    });
+
+    test('cenários com crescimento negativo: pessimista < base < otimista', () {
+      final s = scenarios(
+        fcff0: 100,
+        growth: -0.10,
+        terminalGrowth: 0.02,
+        wacc: 0.09,
+        years: 5,
+        netDebt: 0,
+        shares: 10,
+      );
+      expect(s['pessimistic']!, lessThan(s['base']!));
+      expect(s['base']!, lessThan(s['optimistic']!));
+    });
+
+    test('cenários com crescimento positivo mantêm gr × 0,5 e gr × 1,5', () {
+      final s = scenarios(
+        fcff0: 100,
+        growth: 0.10,
+        terminalGrowth: 0.02,
+        wacc: 0.09,
+        years: 5,
+        netDebt: 0,
+        shares: 10,
+      );
+      final meio = computeDcf(
+        fcff0: 100,
+        growth: 0.05,
+        terminalGrowth: 0.02,
+        wacc: 0.09,
+        years: 5,
+        netDebt: 0,
+        shares: 10,
+      )!.valuePerShare;
+      expect(s['pessimistic'], closeTo(meio!, 1e-9));
+    });
+
+    test('beta: utilizador > snapshot > calculado > 1,0', () {
+      final f = Financials(symbol: 'X', annual: [base0()]);
+      const mkt = MarketSnapshot(symbol: 'X', marketCap: 1000);
+      double ke(MarketSnapshot m, {double? calc, double? user}) => _m(
+        dcfMetrics(
+          f,
+          m,
+          computedBeta: calc,
+          assumptions: DcfAssumptions(beta: user),
+        ),
+        'ke',
+      )!;
+      double com(double b) => capmKe(rf: kRiskFreeDefault, beta: b, mrp: 0.055);
+      expect(ke(mkt, calc: 1.5), closeTo(com(1.5), 1e-12));
+      expect(ke(mkt), closeTo(com(1.0), 1e-12));
+      expect(
+        ke(const MarketSnapshot(symbol: 'X', marketCap: 1000, beta: 0.8), calc: 1.5),
+        closeTo(com(0.8), 1e-12),
+      );
+      expect(
+        ke(const MarketSnapshot(symbol: 'X', marketCap: 1000, beta: 0.8), calc: 1.5, user: 1.2),
+        closeTo(com(1.2), 1e-12),
+      );
+    });
+
+    test('a taxa sem risco é uma só constante partilhada com o módulo de mercado', () {
+      expect(const DcfAssumptions().riskFreeRate, kRiskFreeDefault);
+    });
+
+    test('bancos: ke, wacc e valor por ação são null', () {
+      final banco = Financials(
+        symbol: 'JPM',
+        annual: [
+          FinPeriod(
+            end: DateTime(2025, 12, 31),
+            annual: true,
+            revenue: 100,
+            totalDebt: 500,
+            cash: 100,
+            interestExpense: 95,
+          ),
+        ],
+      );
+      final ms = dcfMetrics(
+        banco,
+        const MarketSnapshot(symbol: 'JPM', marketCap: 800, price: 10),
+      );
+      expect(_m(ms, 'ke'), isNull);
+      expect(_m(ms, 'wacc'), isNull);
+      expect(_m(ms, 'dcf_value_per_share'), isNull);
+    });
   });
 
   group('cobertura das fichas', () {

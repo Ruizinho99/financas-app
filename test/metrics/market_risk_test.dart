@@ -197,8 +197,8 @@ void main() {
     });
 
     test('beta e correlação de um índice contra si próprio dão 1', () {
-      final datas = _dias(5);
-      final fechos = <double>[100, 102, 99, 105, 103];
+      final datas = _dias(61);
+      final fechos = _fechosSinteticos(61);
       final m = marketRiskMetrics(
         datas,
         fechos,
@@ -210,8 +210,8 @@ void main() {
     });
 
     test('beta alinhado por data: o índice com horas diferentes conta como o mesmo dia', () {
-      final datas = _dias(5);
-      final fechos = <double>[100, 102, 99, 105, 103];
+      final datas = _dias(61);
+      final fechos = _fechosSinteticos(61);
       final bDatas = [for (final d in datas) d.add(const Duration(hours: 20))];
       final m = marketRiskMetrics(
         datas,
@@ -224,7 +224,7 @@ void main() {
 
     test('datas sem dados (listas vazias) dão nulo e não lançam exceção', () {
       final m = marketRiskMetrics(const [], const []);
-      expect(m.length, marketRiskInfo.length - 3);
+      expect(m.length, marketRiskInfo.length - 3 - _chavesCarteira.length);
       for (final x in m) {
         if (x.key == 'spread_bid_ask') continue;
         expect(x.value, isNull, reason: x.key);
@@ -254,7 +254,7 @@ void main() {
       () {
         expect(xirr([(date: DateTime.utc(2024), amount: 100)]), isNull);
         expect(xirr(const []), isNull);
-        // -100 e +1e9 um ano depois: a raiz (~1e7) está fora de [-0,9999; 10], o VPL não muda de sinal
+        // -100 e +1e9 um ano depois: a raiz (~1e7) está fora de [-0,9999; 1000], o VPL não muda de sinal
         expect(
           xirr([
             (date: DateTime.utc(2024), amount: -100),
@@ -305,6 +305,168 @@ void main() {
     });
   });
 
+  group('correções F2', () {
+    test('retornosSimples: fecho 0 não gera Infinity nem NaN', () {
+      final r = retornosSimples([100, 0, 50, 55]);
+      expect(r.every((x) => x.isFinite), isTrue);
+      expect(r, [-1.0, closeTo(0.1, 1e-12)]);
+    });
+
+    test('marketRiskMetrics com um fecho 0 não devolve valores infinitos', () {
+      final m = marketRiskMetrics(_dias(4), [100, 0, 50, 55]);
+      for (final x in m) {
+        expect(x.value == null || x.value!.isFinite, isTrue, reason: x.key);
+      }
+    });
+
+    test('beta com 3 preços (2 retornos) dá null; com 60 preços (59 retornos) também; com 61 dá valor', () {
+      for (final n in [3, 60]) {
+        final d = _dias(n);
+        final c = _fechosSinteticos(n);
+        final m = marketRiskMetrics(d, c, benchDates: d, benchCloses: c);
+        expect(_v(m, 'beta_sp500'), isNull, reason: 'n=$n');
+        expect(_v(m, 'correlacao_sp500'), isNull, reason: 'n=$n');
+      }
+      final d = _dias(61);
+      final c = _fechosSinteticos(61);
+      final m = marketRiskMetrics(d, c, benchDates: d, benchCloses: c);
+      expect(_v(m, 'beta_sp500'), closeTo(1, 1e-12));
+    });
+
+    test('beta com 3 preços que dava ~10: agora null', () {
+      final d = _dias(3);
+      final m = marketRiskMetrics(
+        d,
+        [100, 110, 90],
+        benchDates: d,
+        benchCloses: [100, 101, 100.5],
+      );
+      expect(_v(m, 'beta_sp500'), isNull);
+    });
+
+    test('betaDimson: recupera 1,3 quando o ativo reage ao mercado do dia anterior (fechos assíncronos)', () {
+      const n = 120;
+      final rm = <double>[
+        for (var i = 0; i < n; i++)
+          0.01 * math.sin(1.7 * i) + 0.004 * math.cos(3.1 * i + 1),
+      ];
+      final ra = <double>[
+        for (var i = 0; i < n; i++)
+          i == 0 ? 0.002 : 0.5 * rm[i] + 0.8 * rm[i - 1],
+      ];
+      List<double> precos(List<double> r) {
+        final p = <double>[100];
+        for (final x in r) {
+          p.add(p.last * (1 + x));
+        }
+        return p;
+      }
+
+      final pm = precos(rm), pa = precos(ra);
+      final d = _dias(pm.length);
+      final dimson = betaDimson(d, pa, d, pm);
+      expect(dimson, closeTo(1.3, 1e-9));
+      final simples = _v(
+        marketRiskMetrics(d, pa, benchDates: d, benchCloses: pm),
+        'beta_sp500',
+      );
+      expect(simples, isNotNull);
+      expect(simples!, lessThan(1.15)); // o beta simples subestima
+    });
+
+    test('betaDimson: menos de 60 observações dá null', () {
+      final d = _dias(40);
+      final c = _fechosSinteticos(40);
+      expect(betaDimson(d, c, d, c), isNull);
+    });
+
+    test('TWR: sub-período que começa e acaba em 0 conta fator 1', () {
+      expect(
+        twr([
+          (valueBefore: 0, cashFlow: 1000),
+          (valueBefore: 1200, cashFlow: -1200),
+          (valueBefore: 0, cashFlow: 500),
+          (valueBefore: 550, cashFlow: 0),
+        ]),
+        closeTo(0.32, 1e-12),
+      );
+      expect(
+        twr([
+          (valueBefore: 0, cashFlow: 0),
+          (valueBefore: 0, cashFlow: 1000),
+          (valueBefore: 1100, cashFlow: 0),
+        ]),
+        closeTo(0.10, 1e-12),
+      );
+    });
+
+    test('TWR: sub-período que começa em 0 e acaba ≠ 0 dá null', () {
+      expect(
+        twr([
+          (valueBefore: 0, cashFlow: 0),
+          (valueBefore: 500, cashFlow: 0),
+        ]),
+        isNull,
+      );
+    });
+
+    test('XIRR: -1000 e +1300 trinta dias depois dá ≈ 23,34', () {
+      final r = xirr([
+        (date: DateTime.utc(2024, 1, 1), amount: -1000),
+        (date: DateTime.utc(2024, 1, 31), amount: 1300),
+      ]);
+      expect(r, isNotNull);
+      expect(r!, closeTo(math.pow(1.3, 365 / 30) - 1, 1e-6));
+      expect(r, closeTo(23.34, 0.01));
+    });
+
+    test('HHI e top-N com pesos negativos dão null', () {
+      expect(hhi([0.6, -0.1, 0.5]), isNull);
+      expect(topNConcentration([0.6, -0.1, 0.5], 2), isNull);
+    });
+
+    test('correlação média: um par com poucas datas comuns não anula os outros', () {
+      final datas = _dias(5);
+      final a = {for (var i = 0; i < 5; i++) datas[i]: [1.0, 2.0, 3.0, 4.0, 5.0][i]};
+      final b = {for (var i = 0; i < 5; i++) datas[i]: [2.0, 4.0, 6.0, 8.0, 10.0][i]};
+      final c = {datas[0]: 1.0, datas[1]: 2.0}; // só 2 datas comuns com os outros
+      expect(averageCorrelation([a, b, c]), closeTo(1.0, 1e-12));
+    });
+
+    test('portfolioMetrics devolve Metric com as 5 chaves e fichas', () {
+      final ms = portfolioMetrics(
+        flows: [
+          (date: DateTime.utc(2024, 1, 1), amount: -1000),
+          (date: DateTime.utc(2024, 12, 31), amount: 1100),
+        ],
+        twrPoints: [
+          (valueBefore: 0, cashFlow: 1000),
+          (valueBefore: 1200, cashFlow: 0),
+        ],
+        weights: [0.2, 0.5, 0.3],
+        topN: 2,
+      );
+      expect(ms.map((m) => m.key).toList(), _chavesCarteira);
+      expect(_v(ms, 'xirr'), closeTo(0.1, 1e-9));
+      expect(_v(ms, 'twr'), closeTo(0.2, 1e-12));
+      expect(_v(ms, 'hhi'), closeTo(0.04 + 0.25 + 0.09, 1e-12));
+      expect(_v(ms, 'top_n_concentration'), closeTo(0.8, 1e-12));
+      expect(_v(ms, 'average_correlation'), isNull);
+      final fichas = marketRiskInfo.map((i) => i.key).toSet();
+      for (final k in _chavesCarteira) {
+        expect(fichas, contains(k));
+      }
+    });
+
+    test('ficha de volume médio é uma contagem; Sortino não promete "volatilidade de subida"', () {
+      final v = marketRiskMetrics(_dias(3), [1, 2, 3]).firstWhere((m) => m.key == 'volume_medio');
+      expect(v.kind, MetricKind.count);
+      final i = marketRiskInfo.firstWhere((x) => x.key == 'sortino');
+      expect(i.readPt.contains('sobretudo de subida'), isFalse);
+      expect(i.readEn.contains('mostly upside'), isFalse);
+    });
+  });
+
   group('snapshot e cobertura das fichas', () {
     test('short interest e insiders vêm do snapshot; bid-ask fica nulo', () {
       final s = snapshotRiskMetrics(
@@ -325,6 +487,7 @@ void main() {
         final chaves = [
           ...ms,
           ...snapshotRiskMetrics(const MarketSnapshot(symbol: 'X')),
+          ...portfolioMetrics(),
         ].map((m) => m.key).toList();
         expect(chaves.toSet().length, chaves.length);
         final fichas = marketRiskInfo.map((i) => i.key).toList();
@@ -360,4 +523,17 @@ void main() {
 /// Datas diárias consecutivas a partir de 2023-01-01 (só para os casos pequenos).
 List<DateTime> _dias(int n) => [
   for (var i = 0; i < n; i++) DateTime.utc(2023, 1, 1).add(Duration(days: i)),
+];
+
+const _chavesCarteira = [
+  'xirr',
+  'twr',
+  'hhi',
+  'top_n_concentration',
+  'average_correlation',
+];
+
+/// Fechos determinísticos e variados (para os testes que precisam de ≥ 60 retornos).
+List<double> _fechosSinteticos(int n) => [
+  for (var i = 0; i < n; i++) 100 + 5 * math.sin(i * 0.9) + i * 0.3,
 ];
