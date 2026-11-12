@@ -207,7 +207,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final snap = a.snapshot;
-    final ccy = snap.currency;
     final change = a.metric('retorno_1d')?.value;
     return [
       const SizedBox(height: 12),
