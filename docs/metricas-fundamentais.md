@@ -212,7 +212,7 @@ Nota: os valores de referência dependem do setor. Compara sempre com concorrent
 | `dilutedShares` | `DilutedAverageShares` (média do período) | | |
 | `depreciationAmortization` | `DepreciationAndAmortization` | positivo | |
 
-**Recompras líquidas** (positivo = dinheiro devolvido): `netBuybacks = −(buybacks ?? 0) − (stockIssuance ?? 0)`; se `buybacks == null` → `null`.
+**Recompras líquidas** (positivo = dinheiro devolvido): `netBuybacks = −buybacks − (stockIssuance ?? 0)`; se `buybacks == null` → `null`.
 Pode ser negativo (emissão líquida). **Não** usar `buybacksPositive` (o `abs` trocaria o sinal de uma emissão líquida).
 
 ### 2.2 Rentabilidade, crescimento, retorno, eficiência
@@ -341,8 +341,8 @@ LVGI = ((currentLiabilities_t + longTermDebt_t) / TA_t) / ((currentLiabilities_{
 TATA = (netIncome_t − operatingCashFlow_t) / TA_t
 M = −4.84 + 0.920*DSRI + 0.528*GMI + 0.404*AQI + 0.892*SGI + 0.115*DEPI − 0.172*SGAI + 4.679*TATA − 0.327*LVGI
 ```
-Alerta se `M > −1,78` (limiar do modelo de 8 variáveis em Beneish 1999, retomado em Beneish, Lee e Nichols 2013). Não usar −2,22 (limiar mais
-conservador que a literatura secundária associa ao modelo de 5 variáveis). Se faltar qualquer dado de qualquer índice (incluindo `longTermDebt`), `M = null`
+Alerta se `M > −1,78` (Parte 1; Beneish, Lee e Nichols 2013). As fontes secundárias divergem sobre o limiar do artigo de 1999 (−1,78 vs −2,22)
+e sobre o do modelo de 5 variáveis; não usar −2,22. Se faltar qualquer dado de qualquer índice (incluindo `longTermDebt`), `M = null`
 (o modelo precisa dos 8; nada de `?? 0`). Aproximações a documentar: o artigo usa depreciação (não D&A) no DEPI e accruals de balanço no TATA
 (a versão por fluxos de caixa é a de Beneish, Lee e Nichols 2013); os campos gratuitos não têm impostos a pagar para a versão de balanço.
 
@@ -380,8 +380,9 @@ do gráfico do Yahoo (já ajustado a splits, **não** a dividendos; não usar `a
 - **Beta** = cov(r_ativo, r_mercado) / var(r_mercado), ambos amostrais (n − 1), com as séries **alinhadas por data de calendário local da bolsa**
   (`timestamp + meta.gmtoffset`, em UTC → data), não pelo timestamp bruto (NVD.DE e ^GSPC nunca têm o mesmo timestamp). Retornos calculados entre datas
   comuns consecutivas. Correlação de Pearson com as mesmas séries. Índice por omissão ^GSPC.
-- **52 semanas**: `MarketSnapshot.fiftyTwoWeekHigh/Low` (máximos/mínimos intradiários da fonte); se faltarem, máximo/mínimo dos `close` com data ≥ última data − 365 dias.
-  Distância ao máximo = preço / máximo − 1.
+- **52 semanas**: `MarketSnapshot.fiftyTwoWeekHigh/Low` (máximos/mínimos intradiários da fonte, na moeda de reporte) e distância ao máximo =
+  `MarketSnapshot.price / fiftyTwoWeekHigh − 1`. Se faltarem, máximo/mínimo dos `close` do gráfico com data ≥ última data − 365 dias e distância =
+  **último `close` do gráfico** / máximo − 1. Nunca misturar o preço do snapshot (moeda de reporte) com closes do gráfico (moeda de cotação; NVD.DE: EUR vs USD).
 - **Retornos 1D, 1S, 1M, 3M, 6M, 1A, 3A, 5A**: `P_last / P_ref − 1`, com `P_ref` o último `close` com data ≤ data do último − (1, 7 dias; 1, 3, 6 meses; 1, 3, 5 anos);
   se não houver → `null`. **YTD**: `P_ref` = último `close` do ano civil anterior.
 - **SMA 50/200** = média dos últimos 50/200 `close` (menos pontos → `null`).
@@ -471,7 +472,7 @@ Ambiguidades resolvidas (os implementadores divergiriam):
     (artigo: "change in the ratio of total long-term debt to average total assets"). O teste 4 (accruals) é equivalente a CFO > resultado líquido. O teste 7 é uma aproximação
     (o artigo testa a emissão de ações ordinárias). O script segue agora o artigo. Os 9 resultados da AAPL não mudam (F = 8, falha só o teste 4, porque CFO 111,5 < resultado 112,0 mil M).
 11. **Beneish (1999)**: os coeficientes e as definições de DSRI, GMI, AQI (versão 1999, sem títulos), SGI, DEPI, SGAI e LVGI estão corretos. O limiar fica em −1,78
-    (o −2,22 é um limiar mais conservador, que a literatura secundária associa ao modelo de 5 variáveis). O TATA por fluxos de caixa é a variante de Beneish, Lee e Nichols (2013);
+    (Parte 1; Beneish, Lee e Nichols 2013). As fontes secundárias divergem sobre qual dos dois, −1,78 ou −2,22, é o do artigo de 1999; o −2,22 não se usa. O TATA por fluxos de caixa é a variante de Beneish, Lee e Nichols (2013);
     o artigo de 1999 usa accruals de balanço, para os quais faltam campos (impostos a pagar). Sem `?? 0` na dívida LP (o script tinha `or 0`): dado em falta → `null`.
 12. **Sinal de `changeInWorkingCapital`** no FCFF e nas owner earnings: escrito como "+ changeInWorkingCapital tal como vem" (o sinal de caixa do Yahoo), para evitar uma dupla negação.
     Na AAPL 2025 o valor é −25 000 M (FCFF 86,3 mil M).
@@ -492,3 +493,5 @@ Script `tool/golden_metrics.py`: foram aplicadas as correções 4, 7, 10, 11, 15
 earnings yield, shareholder yield, Sharpe, Sortino, VaR 95 % e TWR. Ordens de grandeza da AAPL (FY2025): margem bruta 46,9 %; ROE 171 % (capitais próprios encolhidos pelas recompras);
 ROIC 83 %; Piotroski 8/9; Beneish −2,29 (abaixo de −1,78, sem alerta); Z 8,6 (com capitalização de 3 biliões); Z″ 2,31 (zona cinzenta, por causa do fundo de maneio e dos resultados retidos negativos,
 um efeito conhecido das recompras); beta 1,07; volatilidade 29 %.
+18. **52 semanas, moeda**: o fallback a partir dos closes do gráfico (moeda de cotação) não pode usar o preço do `MarketSnapshot` (moeda de reporte, Parte 4).
+    A distância ao máximo usa agora o par coerente: snapshot com snapshot, ou gráfico com gráfico.
