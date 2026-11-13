@@ -12,7 +12,7 @@ void main() {
     final sub = s.addCategory(Categoria(id: 0, name: 'Ações', parentId: inv));
     final acc = s.addInvestAccount('XTB', emoji: '📈');
     final nv = s.addHolding(
-      Holding(id: 0, accountId: acc, name: 'NVD.DE', categoryId: sub),
+      Holding(id: 0, accountId: acc, name: 'NVD.DE', categoryId: sub, monthlyPlanCents: 20000),
     );
     final outro = s.addHolding(Holding(id: 0, accountId: acc, name: 'Outro'));
     InvestOp buy(int h, DateTime d, double q, int cents) => InvestOp(
@@ -29,13 +29,30 @@ void main() {
     expect(p.count, 2);
     expect(p.cents, 11000);
     expect(p.quantityByAsset['NVD.DE'], closeTo(0.8, 1e-9));
-    expect(purchasesForCategory(s, inv, '2026-09').isEmpty, isTrue);
+    // planeado vs comprado por ativo
+    final a = p.assets.single;
+    expect(a.plannedCents, 20000);
+    expect(a.boughtCents, 11000);
+    expect(a.count, 2);
+    // sem compras mas com plano: aparece "planeado 200 €, comprado 0 €"
+    expect(purchasesForCategory(s, inv, '2026-09').assets.single.boughtCents, 0);
+    expect(purchasesForCategory(s, inv, '2026-09').isEmpty, isFalse);
 
     // a categoria sobrevive à gravação e a hora das compras também
     final h = s.db.holdings().firstWhere((x) => x.id == nv);
     expect(h.categoryId, sub);
+    expect(h.monthlyPlanCents, 20000);
     final ops = s.db.investOps().where((o) => o.holdingId == nv).toList();
     expect(ops.any((o) => o.date == DateTime(2026, 11, 3, 9, 41)), isTrue);
     expect(ops.any((o) => o.date == DateTime(2026, 10, 20)), isTrue); // sem hora: só o dia
+  });
+
+  test('ativo novo de uma plataforma herda a categoria mais usada', () {
+    final s = AppState(Db.memory());
+    final inv = s.addCategory(Categoria(id: 0, name: 'Investimentos'));
+    final acc = s.addInvestAccount('XTB', emoji: '📈');
+    expect(defaultCategoryForNewHolding(s, acc), isNull);
+    s.addHolding(Holding(id: 0, accountId: acc, name: 'A', categoryId: inv));
+    expect(defaultCategoryForNewHolding(s, acc), inv);
   });
 }

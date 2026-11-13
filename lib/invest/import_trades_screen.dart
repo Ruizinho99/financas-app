@@ -1,3 +1,4 @@
+import 'category_link.dart';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -399,6 +400,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
               ? kindFromCategory(l.first.category, name)
               : _guessKind(name, sym),
           currency: _ccyOf(l.first),
+          categoryId: defaultCategoryForNewHolding(s, accountId!),
         );
       }
     }

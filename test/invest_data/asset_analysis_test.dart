@@ -49,6 +49,8 @@ void main() {
         expect(metricInfoFor(m.key), isNotNull, reason: m.key);
       }
     }
+    // o beta calculado das cotações entra no DCF quando o snapshot não o traz
+    expect(a.metric('beta_sp500')?.available, isTrue);
     // premissas do DCF mudam o resultado sem rede
     final b = a.withAssumptions(
       a.assumptions.copyWithGrowth(0.02),
