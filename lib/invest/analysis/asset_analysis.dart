@@ -104,7 +104,7 @@ AssetAnalysis buildAnalysis({
     snapshot: m,
     riskFree: assumptions.riskFreeRate,
   );
-  final beta = risco.where((x) => x.key == 'beta').firstOrNull?.value;
+  final beta = risco.where((x) => x.key == 'beta_sp500').firstOrNull?.value;
 
   final sections = <AnalysisSection>[
     if (!soMercado) ...[

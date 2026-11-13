@@ -100,6 +100,7 @@ class Holding {
   final Uint8List?
   logo; // imagem do ativo, obtida uma vez e guardada na base de dados
   final String analysisSymbol; // símbolo usado na análise fundamental (vazio = resolver automaticamente)
+  final int monthlyPlanCents; // quanto planeias comprar por mês deste ativo (0 = sem plano)
   final int? categoryId; // categoria do orçamento a que este ativo está associado (opcional)
   Holding({
     required this.id,
@@ -118,6 +119,7 @@ class Holding {
     this.logo,
     this.analysisSymbol = '',
     this.categoryId,
+    this.monthlyPlanCents = 0,
   }) : currency = currency ?? baseCcy;
 
   bool get foreign => currency != baseCcy;
@@ -147,6 +149,7 @@ class Holding {
     Object? logo = _k,
     String? analysisSymbol,
     Object? categoryId = _k,
+    int? monthlyPlanCents,
   }) => Holding(
     id: id,
     accountId: accountId ?? this.accountId,
@@ -168,6 +171,7 @@ class Holding {
     logo: identical(logo, _k) ? this.logo : logo as Uint8List?,
     analysisSymbol: analysisSymbol ?? this.analysisSymbol,
     categoryId: identical(categoryId, _k) ? this.categoryId : categoryId as int?,
+    monthlyPlanCents: monthlyPlanCents ?? this.monthlyPlanCents,
   );
 }
 

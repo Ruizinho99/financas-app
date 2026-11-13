@@ -261,6 +261,11 @@ Future<int?> showHoldingEditor(
   var manualCcy = edit?.currencyManual ?? false;
   var kind = edit?.kind ?? HoldingKind.etf;
   int? categoryId = edit?.categoryId;
+  final planCtl = TextEditingController(
+    text: (edit?.monthlyPlanCents ?? 0) > 0
+        ? (edit!.monthlyPlanCents / 100).toStringAsFixed(2).replaceAll('.', ',')
+        : '',
+  );
   var provider = edit?.provider ?? PriceProvider.yahoo;
   var acc =
       edit?.accountId ??
@@ -312,6 +317,19 @@ Future<int?> showHoldingEditor(
                           ),
                   ),
                   child: Text(s.cat(categoryId)?.name ?? '—'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: planCtl,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: Localizations.localeOf(ctx).languageCode == 'en'
+                      ? 'Planned purchases per month (optional)'
+                      : 'Compras planeadas por mês (opcional)',
+                  prefixText: '$baseSym ',
                 ),
               ),
               const SizedBox(height: 12),
@@ -525,6 +543,7 @@ Future<int?> showHoldingEditor(
                     accountId: acc,
                     kind: kind,
                     categoryId: categoryId,
+                    monthlyPlanCents: ((parseNum(planCtl.text) ?? 0) * 100).round(),
                     provider: provider,
                     symbol: provider == PriceProvider.manual
                         ? ''

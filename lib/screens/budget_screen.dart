@@ -598,20 +598,28 @@ class _BudgetRow extends StatelessWidget {
     final p = purchasesForCategory(s, row.category.id, monthKey);
     if (p.isEmpty) return const [];
     final en = Localizations.localeOf(context).languageCode == 'en';
-    final qty = p.quantityByAsset.entries
-        .map((e) => '${fmtQty(e.value)} ${e.key}')
-        .join(', ');
+    String money(int c) => fmtMoney(c);
+    String n(int k) => en
+        ? '$k ${k == 1 ? 'purchase' : 'purchases'}'
+        : '$k ${k == 1 ? 'compra' : 'compras'}';
     return [
-      Padding(
-        padding: const EdgeInsets.only(top: 2),
-        child: Text(
-          '${en ? 'Purchases' : 'Compras'}: ${fmtMoney(p.cents)} · $qty · '
-          '${p.count} ${en ? (p.count == 1 ? 'purchase' : 'purchases') : (p.count == 1 ? 'compra' : 'compras')}',
-          style: tt.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
+      for (final a in p.assets)
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            a.plannedCents > 0
+                ? '${a.name}: ${en ? 'planned' : 'planeado'} ${money(a.plannedCents)} · '
+                      '${en ? 'bought' : 'comprado'} ${money(a.boughtCents)}'
+                      '${a.count == 0 ? '' : ' · ${fmtQty(a.quantity)} un · ${n(a.count)}'}'
+                : '${a.name}: ${en ? 'bought' : 'comprado'} ${money(a.boughtCents)} · '
+                      '${fmtQty(a.quantity)} un · ${n(a.count)}',
+            style: tt.bodySmall?.copyWith(
+              color: a.plannedCents > 0 && a.boughtCents >= a.plannedCents
+                  ? Colors.green
+                  : Theme.of(context).colorScheme.primary,
+            ),
           ),
         ),
-      ),
     ];
   }
 

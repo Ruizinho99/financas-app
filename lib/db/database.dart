@@ -433,6 +433,20 @@ class Db {
         _db.execute('PRAGMA user_version = 24');
       });
     }
+    if (v < 25) {
+      inTransaction(() {
+        final cols = _db
+            .select('PRAGMA table_info(holdings)')
+            .map((r) => r['name'])
+            .toSet();
+        if (!cols.contains('monthly_plan')) {
+          _db.execute(
+            'ALTER TABLE holdings ADD COLUMN monthly_plan INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+        _db.execute('PRAGMA user_version = 25');
+      });
+    }
     // a cache de mercado só serve para evitar pedidos repetidos: ao abrir, apaga o que tem mais de 7 dias
     purgeMarketCache();
   }
@@ -1250,6 +1264,7 @@ class Db {
           logo: r['logo'] as Uint8List?,
           analysisSymbol: (r['analysis_symbol'] as String?) ?? '',
           categoryId: r['category_id'] as int?,
+          monthlyPlanCents: (r['monthly_plan'] as int?) ?? 0,
         );
       })
       .toList();
@@ -1271,16 +1286,17 @@ class Db {
       h.logo,
       h.analysisSymbol,
       h.categoryId,
+      h.monthlyPlanCents,
     ];
     if (isNew) {
       _db.execute(
-        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual,logo,analysis_symbol,category_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO holdings(account_id,name,symbol,provider,kind,last_price,last_price_at,archived,currency,last_price_orig,last_fx,currency_manual,logo,analysis_symbol,category_id,monthly_plan) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         vals,
       );
       return _db.lastInsertRowId;
     }
     _db.execute(
-      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=?,logo=?,analysis_symbol=?,category_id=? WHERE id=?',
+      'UPDATE holdings SET account_id=?,name=?,symbol=?,provider=?,kind=?,last_price=?,last_price_at=?,archived=?,currency=?,last_price_orig=?,last_fx=?,currency_manual=?,logo=?,analysis_symbol=?,category_id=?,monthly_plan=? WHERE id=?',
       [...vals, h.id],
     );
     return h.id;
@@ -1577,7 +1593,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 24;
+  static const _schemaVersion = 25;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();
