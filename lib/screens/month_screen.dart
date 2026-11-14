@@ -11,7 +11,6 @@ import '../analysis/analytics.dart';
 import '../analysis/widgets.dart';
 import '../goals/goals.dart';
 import '../invest/plan_widgets.dart';
-import '../planning/planning.dart';
 import '../state/app_state.dart';
 import '../util/format.dart';
 import '../widgets/common.dart' show showTxnEditor;
@@ -270,6 +269,16 @@ class _MonthScreenState extends State<MonthScreen> {
                   wide: true,
                 ),
               ),
+            if (an.saved != 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: _Stat(
+                  label: l.sentToSavings,
+                  value: fmtMoney(an.saved),
+                  color: cs.onSurface,
+                  wide: true,
+                ),
+              ),
             const SizedBox(height: 6),
             _SixMonths(
               series: spendSeries(s, monthKey(month)),
@@ -475,12 +484,14 @@ class _CartoesMes extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    final t = planTotals(s.salaryFor(key), s.planFor(key));
-    final excede = spent > t.planned;
-    final ratio = t.planned <= 0
+    // mesmos números da página única: o alocado efetivo do mês
+    final salary = s.salaryFor(key);
+    final planned = s.totalAllocated(salary, key);
+    final excede = spent > planned;
+    final ratio = planned <= 0
         ? 0.0
-        : (spent / t.planned).clamp(0.0, 1.0).toDouble();
-    final sobra = t.left;
+        : (spent / planned).clamp(0.0, 1.0).toDouble();
+    final sobra = salary - planned;
     return SectionCard(
       title: l.planning,
       trailing: TextButton(
@@ -500,7 +511,7 @@ class _CartoesMes extends StatelessWidget {
               Expanded(
                 child: _Stat(
                   label: l.planned,
-                  value: fmtMoney(t.planned),
+                  value: fmtMoney(planned),
                   color: cs.onSurface,
                 ),
               ),
@@ -526,7 +537,7 @@ class _CartoesMes extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            t.salary <= 0
+            salary <= 0
                 ? l.frmSetSalaryLeft
                 : (sobra < 0
                       ? l.frmPlanExceeds(fmtMoney(-sobra))
@@ -782,11 +793,10 @@ class _SixMonths extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final en = Localizations.localeOf(context).languageCode == 'en';
     final maxV = series.fold<int>(0, (a, e) => e.spent > a ? e.spent : a);
     if (maxV <= 0) return const SizedBox.shrink();
     return SectionCard(
-      title: en ? 'Last 6 months' : 'Últimos 6 meses',
+      title: AppLocalizations.of(context)!.bpLast6Months,
       child: SizedBox(
         height: 120,
         child: BarChart(

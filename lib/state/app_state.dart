@@ -1148,10 +1148,13 @@ class AppState extends ChangeNotifier {
 
   /// Alocação mensal efectiva: valor próprio, ou soma das filhas se a mãe não tiver.
   /// Com [month] (AAAA-MM), categorias fora das suas datas nesse mês não têm alocação.
+  /// Os valores planeados só para um mês (PlannedItem) mandam sobre o orçamento apenas no mês
+  /// atual e nos futuros: meses passados ignoram-nos, para que dados antigos do Planeamento
+  /// não alterem o histórico ([targetIn], `history()`).
   int effectiveMonthlyTarget(Categoria c, int salary, [String? month]) {
     if (month != null && !isCategoryActive(c, month)) return 0;
     // valor planeado só para este mês: manda sobre o orçamento da categoria
-    if (month != null) {
+    if (month != null && month.compareTo(currentMonthKey) >= 0) {
       for (final p in plannedItems) {
         if (p.month == month && p.categoryId == c.id) return p.cents;
       }

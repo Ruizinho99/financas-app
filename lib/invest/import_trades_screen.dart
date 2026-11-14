@@ -102,6 +102,14 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
     }
   }
 
+  /// Data do saldo do extrato (as horas da XTB são lidas como as das restantes operações importadas).
+  DateTime _statementDate() {
+    final a = xtb?.asOf;
+    return a == null
+        ? DateTime.now()
+        : DateTime(a.year, a.month, a.day, a.hour, a.minute);
+  }
+
   Future<void> _load(String name, Uint8List bytes) async {
     final l = AppLocalizations.of(context)!;
     try {
@@ -125,6 +133,10 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             // relatório da XTB: converte-se em operações (compras, vendas e dividendos) e segue o fluxo normal
             final x = xtbReportToTable(sheets);
             xtb = x.summary;
+            // o saldo do extrato vem preenchido (pode editar ou limpar)
+            cashCtl.text = (x.summary.cashBalance / 100)
+                .toStringAsFixed(2)
+                .replaceAll('.', ',');
             sheets = {};
             sheet = null;
             table = x.table;
@@ -422,7 +434,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
           InvestOp(
             id: 0,
             accountId: accountId!,
-            date: DateTime.now(),
+            date: _statementDate(),
             type: OpType.cash,
             amount: diff,
             note: 'Saldo do extrato',
@@ -562,16 +574,12 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             FormCard(
               children: [
                 Text(
-                  Localizations.localeOf(context).languageCode == 'en'
-                      ? 'Cash on the platform (optional)'
-                      : 'Dinheiro na corretora (opcional)',
+                  AppLocalizations.of(context)!.impCashTitle,
                   style: tt.titleMedium,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  Localizations.localeOf(context).languageCode == 'en'
-                      ? 'The imported trades already happened, so they do not change your unallocated cash. Enter the cash you had at the statement date to set it.'
-                      : 'As compras importadas já aconteceram, por isso não mexem no dinheiro por alocar. Indica o dinheiro que tinhas na data do extrato para o fixar.',
+                  AppLocalizations.of(context)!.impCashHint,
                   style: tt.bodySmall,
                 ),
                 const SizedBox(height: 8),

@@ -85,6 +85,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get anInvested => 'Invested';
 
   @override
+  String get anSaved => 'Saved in categories';
+
+  @override
   String anOfIncome(String percent) {
     return '$percent of income';
   }
@@ -1281,6 +1284,100 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bpActiveHint => 'Turn off to pause, without deleting';
 
   @override
+  String get bpFilterAll => 'All';
+
+  @override
+  String get bpFilterExpenses => 'Expenses';
+
+  @override
+  String get bpFilterInvestments => 'Investments';
+
+  @override
+  String get bpFilterSavings => 'Savings';
+
+  @override
+  String get bpPlanningTitle => 'Planning and budget';
+
+  @override
+  String bpForecastAmount(String amount) {
+    return 'Forecast $amount';
+  }
+
+  @override
+  String bpPurchasesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count purchases',
+      one: '$count purchase',
+      zero: '$count purchases',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bpAssetPlannedBought(String name, String planned, String bought) {
+    return '$name: planned $planned · bought $bought';
+  }
+
+  @override
+  String bpAssetBought(String name, String bought) {
+    return '$name: bought $bought';
+  }
+
+  @override
+  String bpUnitsShort(String qty) {
+    return '$qty un';
+  }
+
+  @override
+  String get bpStatsTooltip => 'Statistics';
+
+  @override
+  String bpThisMonthOnlyAmount(String amount) {
+    return 'This month only: $amount';
+  }
+
+  @override
+  String get bpPlanThisMonthOnly => 'Plan this month only';
+
+  @override
+  String get bpRemove => 'Remove';
+
+  @override
+  String get bpDistribute => 'Distribute';
+
+  @override
+  String bpDistributeTitle(String name) {
+    return 'Distribute $name';
+  }
+
+  @override
+  String bpDistributeTotal(String amount) {
+    return 'Total to distribute: $amount';
+  }
+
+  @override
+  String get bpDistributeNote =>
+      'This writes permanent monthly budgets on the subcategories, not just this month. Empty fields are left untouched.';
+
+  @override
+  String bpDistributePercentOfSalary(String percent) {
+    return '$percent% of salary (not changed)';
+  }
+
+  @override
+  String bpDistributedOf(String sum, String total) {
+    return 'Distributed $sum of $total';
+  }
+
+  @override
+  String get bpSplitEqually => 'Split equally';
+
+  @override
+  String get bpLast6Months => 'Last 6 months';
+
+  @override
   String get budSpentThisMonth => 'Spent this month';
 
   @override
@@ -1531,6 +1628,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sentToInvest => 'Sent to invest';
 
   @override
+  String get sentToSavings => 'Put into savings';
+
+  @override
   String get whereSpendMost => 'Where you spend the most';
 
   @override
@@ -1704,6 +1804,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String dayOfMonthItem(int day) {
     return 'Day $day';
   }
+
+  @override
+  String get cstEmpty =>
+      'No expenses in this category in the last 12 months yet.';
+
+  @override
+  String get cstTotal12 => 'Total (12 months)';
+
+  @override
+  String get cstMonthlyAverage => 'Monthly average';
+
+  @override
+  String get cstBiggest => 'Biggest expense';
+
+  @override
+  String get cstTransactions => 'Transactions';
+
+  @override
+  String get cstTrend => 'Monthly trend and average';
+
+  @override
+  String get cstSubcategories => 'Subcategories';
+
+  @override
+  String get cstWhereMost => 'Where you spend most';
 
   @override
   String get ctbPickParentTitle => 'Choose parent category';
@@ -2710,6 +2835,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get frmTotalBalance => 'Total balance';
+
+  @override
+  String frmDeltaIn12Months(String delta) {
+    return '$delta in 12 months';
+  }
+
+  @override
   String get impImportTitle => 'Import Statement';
 
   @override
@@ -3315,6 +3448,13 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get impCashTitle => 'Cash on the platform (optional)';
+
+  @override
+  String get impCashHint =>
+      'The imported trades already happened, so they do not change your unallocated cash. Enter the cash you had at the statement date to set it. Linking older deposits later changes your cash.';
 
   @override
   String impfixMismatchTitle(int count) {
@@ -3985,6 +4125,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invClosedPosition => 'Closed position';
+
+  @override
+  String get invPortfolioAnalysisTooltip => 'Portfolio analysis';
+
+  @override
+  String get invAnalyseAssetTooltip => 'Analyse an asset';
 
   @override
   String get invfAccountNewTitle => 'New platform';
@@ -4804,6 +4950,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invfKindOther => 'Other';
 
   @override
+  String get invfBudgetCategoryLabel => 'Budget category (optional)';
+
+  @override
+  String get invfPlannedPerMonthLabel =>
+      'Planned purchases per month (optional)';
+
+  @override
+  String get invfTimeLabel => 'Time';
+
+  @override
   String get iosBackupSubtitle => 'Save or restore to iCloud Drive or a file';
 
   @override
@@ -4878,7 +5034,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get morBudgetSubtitle => 'Salary and limits per category';
 
   @override
-  String get morPlanningSubtitle => 'Salary and planned expenses per month';
+  String get morPlanningSubtitle =>
+      'Plan each month and follow what you spend, by type';
 
   @override
   String get morGoalsSubtitle => 'Save for a holiday, a car…';
@@ -5367,6 +5524,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get morNavPortfolio => 'Portfolio';
+
+  @override
+  String get morSavingsKind => 'Savings';
 
   @override
   String get mrgMenu => 'Merge into…';

@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'Investido'**
   String get anInvested;
 
+  /// No description provided for @anSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Poupado em categorias'**
+  String get anSaved;
+
   /// No description provided for @anOfIncome.
   ///
   /// In pt, this message translates to:
@@ -2108,6 +2114,138 @@ abstract class AppLocalizations {
   /// **'Desativa para pausar, sem apagar'**
   String get bpActiveHint;
 
+  /// No description provided for @bpFilterAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todas'**
+  String get bpFilterAll;
+
+  /// No description provided for @bpFilterExpenses.
+  ///
+  /// In pt, this message translates to:
+  /// **'Despesas'**
+  String get bpFilterExpenses;
+
+  /// No description provided for @bpFilterInvestments.
+  ///
+  /// In pt, this message translates to:
+  /// **'Investimentos'**
+  String get bpFilterInvestments;
+
+  /// No description provided for @bpFilterSavings.
+  ///
+  /// In pt, this message translates to:
+  /// **'Poupanças'**
+  String get bpFilterSavings;
+
+  /// No description provided for @bpPlanningTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Planeamento e orçamento'**
+  String get bpPlanningTitle;
+
+  /// No description provided for @bpForecastAmount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Previsão {amount}'**
+  String bpForecastAmount(String amount);
+
+  /// No description provided for @bpPurchasesCount.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{{count} compras} =1{{count} compra} other{{count} compras}}'**
+  String bpPurchasesCount(int count);
+
+  /// No description provided for @bpAssetPlannedBought.
+  ///
+  /// In pt, this message translates to:
+  /// **'{name}: planeado {planned} · comprado {bought}'**
+  String bpAssetPlannedBought(String name, String planned, String bought);
+
+  /// No description provided for @bpAssetBought.
+  ///
+  /// In pt, this message translates to:
+  /// **'{name}: comprado {bought}'**
+  String bpAssetBought(String name, String bought);
+
+  /// No description provided for @bpUnitsShort.
+  ///
+  /// In pt, this message translates to:
+  /// **'{qty} un'**
+  String bpUnitsShort(String qty);
+
+  /// No description provided for @bpStatsTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estatísticas'**
+  String get bpStatsTooltip;
+
+  /// No description provided for @bpThisMonthOnlyAmount.
+  ///
+  /// In pt, this message translates to:
+  /// **'Só este mês: {amount}'**
+  String bpThisMonthOnlyAmount(String amount);
+
+  /// No description provided for @bpPlanThisMonthOnly.
+  ///
+  /// In pt, this message translates to:
+  /// **'Planear só este mês'**
+  String get bpPlanThisMonthOnly;
+
+  /// No description provided for @bpRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover'**
+  String get bpRemove;
+
+  /// No description provided for @bpDistribute.
+  ///
+  /// In pt, this message translates to:
+  /// **'Distribuir'**
+  String get bpDistribute;
+
+  /// No description provided for @bpDistributeTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Distribuir {name}'**
+  String bpDistributeTitle(String name);
+
+  /// No description provided for @bpDistributeTotal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor a distribuir: {amount}'**
+  String bpDistributeTotal(String amount);
+
+  /// No description provided for @bpDistributeNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Isto grava orçamentos mensais permanentes nas subcategorias, não só neste mês. Os campos vazios ficam como estão.'**
+  String get bpDistributeNote;
+
+  /// No description provided for @bpDistributePercentOfSalary.
+  ///
+  /// In pt, this message translates to:
+  /// **'{percent}% do salário (não alterado)'**
+  String bpDistributePercentOfSalary(String percent);
+
+  /// No description provided for @bpDistributedOf.
+  ///
+  /// In pt, this message translates to:
+  /// **'Distribuído {sum} de {total}'**
+  String bpDistributedOf(String sum, String total);
+
+  /// No description provided for @bpSplitEqually.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dividir por igual'**
+  String get bpSplitEqually;
+
+  /// No description provided for @bpLast6Months.
+  ///
+  /// In pt, this message translates to:
+  /// **'Últimos 6 meses'**
+  String get bpLast6Months;
+
   /// No description provided for @budSpentThisMonth.
   ///
   /// In pt, this message translates to:
@@ -2468,6 +2606,12 @@ abstract class AppLocalizations {
   /// **'Enviado para investir'**
   String get sentToInvest;
 
+  /// No description provided for @sentToSavings.
+  ///
+  /// In pt, this message translates to:
+  /// **'Posto em poupança'**
+  String get sentToSavings;
+
   /// No description provided for @whereSpendMost.
   ///
   /// In pt, this message translates to:
@@ -2761,6 +2905,54 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Dia {day}'**
   String dayOfMonthItem(int day);
+
+  /// No description provided for @cstEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ainda não há despesas nesta categoria nos últimos 12 meses.'**
+  String get cstEmpty;
+
+  /// No description provided for @cstTotal12.
+  ///
+  /// In pt, this message translates to:
+  /// **'Total (12 meses)'**
+  String get cstTotal12;
+
+  /// No description provided for @cstMonthlyAverage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Média por mês'**
+  String get cstMonthlyAverage;
+
+  /// No description provided for @cstBiggest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Maior gasto'**
+  String get cstBiggest;
+
+  /// No description provided for @cstTransactions.
+  ///
+  /// In pt, this message translates to:
+  /// **'Movimentos'**
+  String get cstTransactions;
+
+  /// No description provided for @cstTrend.
+  ///
+  /// In pt, this message translates to:
+  /// **'Evolução mensal e média'**
+  String get cstTrend;
+
+  /// No description provided for @cstSubcategories.
+  ///
+  /// In pt, this message translates to:
+  /// **'Subcategorias'**
+  String get cstSubcategories;
+
+  /// No description provided for @cstWhereMost.
+  ///
+  /// In pt, this message translates to:
+  /// **'Onde mais gastas'**
+  String get cstWhereMost;
 
   /// No description provided for @ctbPickParentTitle.
   ///
@@ -4304,6 +4496,18 @@ abstract class AppLocalizations {
   /// **' · até {date}'**
   String frmUntilDate(String date);
 
+  /// No description provided for @frmTotalBalance.
+  ///
+  /// In pt, this message translates to:
+  /// **'Saldo total'**
+  String get frmTotalBalance;
+
+  /// No description provided for @frmDeltaIn12Months.
+  ///
+  /// In pt, this message translates to:
+  /// **'{delta} em 12 meses'**
+  String frmDeltaIn12Months(String delta);
+
   /// No description provided for @impImportTitle.
   ///
   /// In pt, this message translates to:
@@ -5083,6 +5287,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'{count, plural, =0{{count} títulos} =1{1 título} other{{count} títulos}}'**
   String impTitleCount(int count);
+
+  /// No description provided for @impCashTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dinheiro na corretora (opcional)'**
+  String get impCashTitle;
+
+  /// No description provided for @impCashHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'As compras importadas já aconteceram, por isso não mexem no dinheiro por alocar. Indica o dinheiro que tinhas na data do extrato para o fixar. Ligar depois entregas mais antigas a esta conta altera o dinheiro.'**
+  String get impCashHint;
 
   /// No description provided for @impfixMismatchTitle.
   ///
@@ -6139,6 +6355,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Posição fechada'**
   String get invClosedPosition;
+
+  /// No description provided for @invPortfolioAnalysisTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Análise da carteira'**
+  String get invPortfolioAnalysisTooltip;
+
+  /// No description provided for @invAnalyseAssetTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Analisar um ativo'**
+  String get invAnalyseAssetTooltip;
 
   /// No description provided for @invfAccountNewTitle.
   ///
@@ -7292,6 +7520,24 @@ abstract class AppLocalizations {
   /// **'Outro'**
   String get invfKindOther;
 
+  /// No description provided for @invfBudgetCategoryLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Categoria do orçamento (opcional)'**
+  String get invfBudgetCategoryLabel;
+
+  /// No description provided for @invfPlannedPerMonthLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Compras planeadas por mês (opcional)'**
+  String get invfPlannedPerMonthLabel;
+
+  /// No description provided for @invfTimeLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Hora'**
+  String get invfTimeLabel;
+
   /// No description provided for @iosBackupSubtitle.
   ///
   /// In pt, this message translates to:
@@ -7421,7 +7667,7 @@ abstract class AppLocalizations {
   /// No description provided for @morPlanningSubtitle.
   ///
   /// In pt, this message translates to:
-  /// **'Salário e despesas planeadas por mês'**
+  /// **'Planeia cada mês e acompanha o que gastas, por tipo'**
   String get morPlanningSubtitle;
 
   /// No description provided for @morGoalsSubtitle.
@@ -8101,6 +8347,12 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Carteira'**
   String get morNavPortfolio;
+
+  /// No description provided for @morSavingsKind.
+  ///
+  /// In pt, this message translates to:
+  /// **'Poupança'**
+  String get morSavingsKind;
 
   /// No description provided for @mrgMenu.
   ///

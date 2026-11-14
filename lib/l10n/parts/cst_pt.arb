@@ -1,0 +1,11 @@
+{
+  "@@locale": "pt",
+  "cstEmpty": "Ainda não há despesas nesta categoria nos últimos 12 meses.",
+  "cstTotal12": "Total (12 meses)",
+  "cstMonthlyAverage": "Média por mês",
+  "cstBiggest": "Maior gasto",
+  "cstTransactions": "Movimentos",
+  "cstTrend": "Evolução mensal e média",
+  "cstSubcategories": "Subcategorias",
+  "cstWhereMost": "Onde mais gastas"
+}

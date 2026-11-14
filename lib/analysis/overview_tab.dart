@@ -140,6 +140,19 @@ class OverviewTab extends StatelessWidget {
                             )
                           : null,
                     ),
+                  if (a.saved != 0)
+                    Stat(
+                      l.anSaved,
+                      fmtMoney(a.saved),
+                      extra: a.income > 0
+                          ? Text(
+                              l.anOfIncome(fmtPercent(a.saved / a.income)),
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            )
+                          : null,
+                    ),
                   if (rate != null)
                     Stat(
                       l.anSavingsRate,

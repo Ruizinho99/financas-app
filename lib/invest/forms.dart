@@ -306,9 +306,7 @@ Future<int?> showHoldingEditor(
                 },
                 child: InputDecorator(
                   decoration: InputDecoration(
-                    labelText: Localizations.localeOf(ctx).languageCode == 'en'
-                        ? 'Budget category (optional)'
-                        : 'Categoria do orçamento (opcional)',
+                    labelText: AppLocalizations.of(ctx)!.invfBudgetCategoryLabel,
                     suffixIcon: categoryId == null
                         ? const Icon(Icons.chevron_right)
                         : IconButton(
@@ -326,9 +324,7 @@ Future<int?> showHoldingEditor(
                   decimal: true,
                 ),
                 decoration: InputDecoration(
-                  labelText: Localizations.localeOf(ctx).languageCode == 'en'
-                      ? 'Planned purchases per month (optional)'
-                      : 'Compras planeadas por mês (opcional)',
+                  labelText: AppLocalizations.of(ctx)!.invfPlannedPerMonthLabel,
                   prefixText: '$baseSym ',
                 ),
               ),
@@ -1399,9 +1395,7 @@ class _OpFormScreenState extends State<OpFormScreen> {
               ),
               TileField(
                 icon: Icons.access_time,
-                title: Localizations.localeOf(context).languageCode == 'en'
-                    ? 'Time'
-                    : 'Hora',
+                title: AppLocalizations.of(context)!.invfTimeLabel,
                 text:
                     '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
                 onTap: () async {

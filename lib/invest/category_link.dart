@@ -50,6 +50,14 @@ int? defaultCategoryForNewHolding(AppState s, int accountId) {
   return inv.length == 1 ? inv.first.id : null;
 }
 
+/// Fonte única do "planeado" por ativo: se a categoria do ativo tem orçamento próprio, vale esse
+/// valor mensal; senão o plano do próprio ativo ([holdingPlanCents]).
+int plannedForAsset({
+  required int holdingPlanCents,
+  required bool categoryHasBudget,
+  required int categoryMonthlyTarget,
+}) => categoryHasBudget ? categoryMonthlyTarget : holdingPlanCents;
+
 /// Compras (tipo "compra") do mês [monthKey] ('AAAA-MM') de ativos cuja categoria é [categoryId]
 /// ou uma das suas subcategorias.
 CategoryPurchases purchasesForCategory(
@@ -81,12 +89,24 @@ CategoryPurchases purchasesForCategory(
       ifAbsent: () => o.quantity,
     );
   }
+  final salary = s.salaryFor(monthKey);
+  int plan(Holding h) {
+    final c = s.cat(h.categoryId);
+    return plannedForAsset(
+      holdingPlanCents: h.monthlyPlanCents,
+      categoryHasBudget: c != null && c.hasBudget,
+      categoryMonthlyTarget: c == null
+          ? 0
+          : s.effectiveMonthlyTarget(c, salary, monthKey),
+    );
+  }
+
   final assets = [
     for (final h in byId.values)
-      if (per.containsKey(h.id) || h.monthlyPlanCents > 0)
+      if (per.containsKey(h.id) || plan(h) > 0)
         AssetPurchases(
           h.name,
-          h.monthlyPlanCents,
+          plan(h),
           per[h.id]?.$1 ?? 0,
           per[h.id]?.$2 ?? 0,
           per[h.id]?.$3 ?? 0,

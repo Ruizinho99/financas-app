@@ -316,5 +316,7 @@
   "morAlertsChannelDescription": "Movimentos recorrentes e entregas de investimento",
   "morAssetFallback": "Ativo",
   "morNavMonth": "Mês",
-  "morNavPortfolio": "Carteira"
+  "morNavPortfolio": "Carteira",
+  "morPlanningSubtitle": "Planeia cada mês e acompanha o que gastas, por tipo",
+  "morSavingsKind": "Poupança"
 }

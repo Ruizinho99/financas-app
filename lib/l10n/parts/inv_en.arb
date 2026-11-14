@@ -460,5 +460,7 @@
   "invSeen": "Seen",
   "invAvgShort": "avg",
   "invNoPriceShort": "no price",
-  "invClosedPosition": "Closed position"
+  "invClosedPosition": "Closed position",
+  "invPortfolioAnalysisTooltip": "Portfolio analysis",
+  "invAnalyseAssetTooltip": "Analyse an asset"
 }

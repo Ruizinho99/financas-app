@@ -3,6 +3,7 @@ import 'package:financas/invest/invest.dart';
 import 'package:financas/models.dart';
 import 'package:financas/screens/month_screen.dart';
 import 'package:financas/state/app_state.dart';
+import 'package:financas/util/format.dart';
 import 'package:financas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,5 +102,32 @@ void main() {
     expect(find.text('Entregas para distribuir'), findsOneWidget);
     expect(find.textContaining('1 entrega'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('cartão Planeamento mostra o mesmo planeado que a página única', (
+    tester,
+  ) async {
+    final s = AppState(Db.memory());
+    final casa = s.addCategory(
+      const Categoria(id: 0, name: 'Casa', hasBudget: true, budgetValue: 80000),
+    );
+    final renda = s.addCategory(Categoria(id: 0, name: 'Renda', parentId: casa));
+    s.addCategory(
+      const Categoria(id: 0, name: 'Lazer', hasBudget: true, budgetValue: 20000),
+    );
+    s.setSalary(_mesAtual(), 200000);
+    s.addPlanned(
+      month: _mesAtual(),
+      categoryId: renda,
+      cents: 70000,
+      mandatory: true,
+    );
+    // a mãe manda sobre a filha: planeado 1000, não 700
+    expect(s.totalAllocated(200000, _mesAtual()), 100000);
+    await _pump(tester, s);
+    expect(find.text('Planeamento'), findsOneWidget);
+    expect(find.text(fmtMoney(100000)), findsOneWidget); // planeado
+    expect(find.textContaining(fmtMoney(100000)), findsWidgets); // e sobra
+    expect(find.textContaining(fmtMoney(70000)), findsNothing);
   });
 }

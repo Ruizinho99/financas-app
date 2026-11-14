@@ -50,6 +50,7 @@
   "anIncomes": "Income",
   "anBalance": "Balance",
   "anInvested": "Invested",
+  "anSaved": "Saved in categories",
   "anOfIncome": "{percent} of income",
   "@anOfIncome": {
     "placeholders": {
@@ -1116,6 +1117,110 @@
   "bpRemoveEndDate": "Remove end date",
   "bpActive": "Active",
   "bpActiveHint": "Turn off to pause, without deleting",
+  "bpFilterAll": "All",
+  "bpFilterExpenses": "Expenses",
+  "bpFilterInvestments": "Investments",
+  "bpFilterSavings": "Savings",
+  "bpPlanningTitle": "Planning and budget",
+  "bpForecastAmount": "Forecast {amount}",
+  "@bpForecastAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPurchasesCount": "{count, plural, =0{{count} purchases} =1{{count} purchase} other{{count} purchases}}",
+  "@bpPurchasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bpAssetPlannedBought": "{name}: planned {planned} · bought {bought}",
+  "@bpAssetPlannedBought": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      },
+      "bought": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAssetBought": "{name}: bought {bought}",
+  "@bpAssetBought": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "bought": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnitsShort": "{qty} un",
+  "@bpUnitsShort": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatsTooltip": "Statistics",
+  "bpThisMonthOnlyAmount": "This month only: {amount}",
+  "@bpThisMonthOnlyAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPlanThisMonthOnly": "Plan this month only",
+  "bpRemove": "Remove",
+  "bpDistribute": "Distribute",
+  "bpDistributeTitle": "Distribute {name}",
+  "@bpDistributeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributeTotal": "Total to distribute: {amount}",
+  "@bpDistributeTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributeNote": "This writes permanent monthly budgets on the subcategories, not just this month. Empty fields are left untouched.",
+  "bpDistributePercentOfSalary": "{percent}% of salary (not changed)",
+  "@bpDistributePercentOfSalary": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributedOf": "Distributed {sum} of {total}",
+  "@bpDistributedOf": {
+    "placeholders": {
+      "sum": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSplitEqually": "Split equally",
+  "bpLast6Months": "Last 6 months",
   "budSpentThisMonth": "Spent this month",
   "budDayOfTotal": "day {day} of {total}",
   "@budDayOfTotal": {
@@ -1359,6 +1464,7 @@
   "income": "Income",
   "saved": "Saved",
   "sentToInvest": "Sent to invest",
+  "sentToSavings": "Put into savings",
   "whereSpendMost": "Where you spend the most",
   "seeAnalysis": "See analysis",
   "classifyHint": "One card per name; remembered for next time",
@@ -1491,6 +1597,14 @@
       }
     }
   },
+  "cstEmpty": "No expenses in this category in the last 12 months yet.",
+  "cstTotal12": "Total (12 months)",
+  "cstMonthlyAverage": "Monthly average",
+  "cstBiggest": "Biggest expense",
+  "cstTransactions": "Transactions",
+  "cstTrend": "Monthly trend and average",
+  "cstSubcategories": "Subcategories",
+  "cstWhereMost": "Where you spend most",
   "ctbPickParentTitle": "Choose parent category",
   "ctbMoveTo": "Move “{name}” to…",
   "@ctbMoveTo": {
@@ -2191,6 +2305,15 @@
       }
     }
   },
+  "frmTotalBalance": "Total balance",
+  "frmDeltaIn12Months": "{delta} in 12 months",
+  "@frmDeltaIn12Months": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
   "impImportTitle": "Import Statement",
   "impFormatsInfo": "Supported formats: PDF (with text), CSV and Excel (.xlsx). The file is read only on the phone and never leaves it.",
   "impChooseFile": "Choose file",
@@ -2593,6 +2716,8 @@
       }
     }
   },
+  "impCashTitle": "Cash on the platform (optional)",
+  "impCashHint": "The imported trades already happened, so they do not change your unallocated cash. Enter the cash you had at the statement date to set it. Linking older deposits later changes your cash.",
   "impfixMismatchTitle": "{count, plural, =0{{count} transactions don't match the balance} =1{1 transaction doesn't match the balance} other{{count} transactions don't match the balance}}",
   "@impfixMismatchTitle": {
     "placeholders": {
@@ -3063,6 +3188,8 @@
   "invAvgShort": "avg",
   "invNoPriceShort": "no price",
   "invClosedPosition": "Closed position",
+  "invPortfolioAnalysisTooltip": "Portfolio analysis",
+  "invAnalyseAssetTooltip": "Analyse an asset",
   "invfAccountNewTitle": "New platform",
   "invfAccountEditTitle": "Edit platform",
   "invfName": "Name",
@@ -3768,6 +3895,9 @@
   "invfKindFund": "Fund",
   "invfKindBond": "Bond",
   "invfKindOther": "Other",
+  "invfBudgetCategoryLabel": "Budget category (optional)",
+  "invfPlannedPerMonthLabel": "Planned purchases per month (optional)",
+  "invfTimeLabel": "Time",
   "iosBackupSubtitle": "Save or restore to iCloud Drive or a file",
   "iosBackupDriveHint": "There is no need to connect an account in the app: when saving, choose “iCloud Drive” (or another folder) in the iPhone Files sheet. To restore, pick the file, from the iPhone or from iCloud Drive.",
   "iosSaveBackup": "Save backup (iCloud Drive or file)",
@@ -3827,7 +3957,7 @@
   "lnkUnlinked": "Transaction unlinked.",
   "morMoreTitle": "More",
   "morBudgetSubtitle": "Salary and limits per category",
-  "morPlanningSubtitle": "Salary and planned expenses per month",
+  "morPlanningSubtitle": "Plan each month and follow what you spend, by type",
   "morGoalsSubtitle": "Save for a holiday, a car…",
   "morAnalysisSubtitle": "Where you spend and where you can save",
   "morClassifyTitle": "Classify transactions",
@@ -4148,6 +4278,7 @@
   "morAssetFallback": "Asset",
   "morNavMonth": "Month",
   "morNavPortfolio": "Portfolio",
+  "morSavingsKind": "Savings",
   "mrgMenu": "Merge into…",
   "mrgMergeInto": "Merge \"{name}\" into…",
   "@mrgMergeInto": {

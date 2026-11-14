@@ -1,7 +1,8 @@
 import 'package:financas/db/database.dart';
 import 'package:financas/models.dart';
 import 'package:financas/planning/planning.dart';
-import 'package:financas/screens/planning_screen.dart';
+import 'package:financas/screens/budget_screen.dart';
+import 'package:financas/screens/plan_item_editor.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:financas/util/format.dart';
 import 'package:financas/l10n/app_localizations.dart';
@@ -100,7 +101,7 @@ void main() {
     expect(s.actualSpent(luz, '2026-10'), 4000);
   });
 
-  testWidgets('ecrã: mostra o que sobra e as linhas planeadas', (tester) async {
+  testWidgets('página única: mostra a despesa planeada do mês', (tester) async {
     final s = AppState(Db.memory());
     final casa = s.addCategory(const Categoria(id: 0, name: 'Casa'));
     final now = DateTime.now();
@@ -117,13 +118,49 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: const Locale('pt', 'PT'),
-          home: PlanningScreen(),
+          home: const BudgetScreen(),
         ),
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Por planear'), findsOneWidget);
-    expect(find.text('Obrigatórias'), findsOneWidget);
     expect(find.textContaining('Casa'), findsWidgets);
+    expect(find.textContaining(fmtMoney(90000)), findsWidgets);
+  });
+
+  testWidgets('editor do valor planeado: lê o valor e o tipo', (tester) async {
+    final s = AppState(Db.memory());
+    PlanValue? res;
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AppState>.value(
+        value: s,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('pt', 'PT'),
+          home: Builder(
+            builder: (ctx) => TextButton(
+              onPressed: () async => res = await showPlanItemEditor(
+                ctx,
+                s,
+                '2026-12',
+                categoryId: 1,
+                title: 'Casa',
+              ),
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Casa'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '12,50');
+    await tester.tap(find.text('Obrigatória'));
+    await tester.pump();
+    await tester.tap(find.text('Guardar'));
+    await tester.pumpAndSettle();
+    expect(res?.cents, 1250);
+    expect(res?.mandatory, isTrue);
   });
 }
