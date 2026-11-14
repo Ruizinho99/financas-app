@@ -1,5 +1,22 @@
 enum BudgetType { limit, goal }
 
+/// Tipo de orçamento ao editar uma categoria. Só muda quando o tipo (despesa/investimento/poupança)
+/// mudou nesta edição e a categoria não tem orçamento próprio ou o tipo era o habitual do tipo antigo:
+/// investimento/poupança passam a meta, despesa normal volta a limite. Um orçamento configurado
+/// explicitamente (tipo diferente do habitual) nunca é mexido.
+BudgetType budgetTypeAfterKindChange({
+  required BudgetType current,
+  required bool hasBudget,
+  required bool kindChanged,
+  required bool wasSetAside,
+  required bool isSetAside,
+}) {
+  if (!kindChanged) return current;
+  final oldDefault = wasSetAside ? BudgetType.goal : BudgetType.limit;
+  if (hasBudget && current != oldDefault) return current;
+  return isSetAside ? BudgetType.goal : BudgetType.limit;
+}
+
 const Object _keep = Object();
 
 class Categoria {

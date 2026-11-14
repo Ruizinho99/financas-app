@@ -269,6 +269,16 @@ class _MonthScreenState extends State<MonthScreen> {
                   wide: true,
                 ),
               ),
+            if (an.saved != 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: _Stat(
+                  label: l.sentToSavings,
+                  value: fmtMoney(an.saved),
+                  color: cs.onSurface,
+                  wide: true,
+                ),
+              ),
             const SizedBox(height: 6),
             _SixMonths(
               series: spendSeries(s, monthKey(month)),

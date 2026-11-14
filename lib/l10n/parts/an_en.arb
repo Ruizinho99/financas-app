@@ -50,6 +50,7 @@
   "anIncomes": "Income",
   "anBalance": "Balance",
   "anInvested": "Invested",
+  "anSaved": "Saved in categories",
   "anOfIncome": "{percent} of income",
   "@anOfIncome": {
     "placeholders": {

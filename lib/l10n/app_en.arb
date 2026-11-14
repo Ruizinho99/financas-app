@@ -50,6 +50,7 @@
   "anIncomes": "Income",
   "anBalance": "Balance",
   "anInvested": "Invested",
+  "anSaved": "Saved in categories",
   "anOfIncome": "{percent} of income",
   "@anOfIncome": {
     "placeholders": {
@@ -1359,6 +1360,7 @@
   "income": "Income",
   "saved": "Saved",
   "sentToInvest": "Sent to invest",
+  "sentToSavings": "Put into savings",
   "whereSpendMost": "Where you spend the most",
   "seeAnalysis": "See analysis",
   "classifyHint": "One card per name; remembered for next time",
