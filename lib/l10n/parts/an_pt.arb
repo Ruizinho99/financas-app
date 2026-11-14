@@ -50,6 +50,7 @@
   "anIncomes": "Rendimentos",
   "anBalance": "Saldo",
   "anInvested": "Investido",
+  "anSaved": "Poupado em categorias",
   "anOfIncome": "{percent} dos rendimentos",
   "@anOfIncome": {
     "placeholders": {

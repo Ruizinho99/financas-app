@@ -271,12 +271,17 @@ class Analytics {
   late final int invested = s.investedIn(period) + _investedByCategory(period);
 
   /// Despesas lançadas em categorias de investimento (fora das transferências para plataformas).
-  int _investedByCategory(Period p) {
+  int _investedByCategory(Period p) => _setAsideByCategory(p, (c) => c.isInvestment);
+
+  /// Dinheiro posto em categorias de poupança no período (não conta como gasto nem como investido).
+  late final int saved = _setAsideByCategory(period, (c) => c.isSavings);
+
+  int _setAsideByCategory(Period p, bool Function(Categoria) pick) {
     var total = 0;
     for (final t in s.transactions) {
       if (!p.contains(t.date) || t.isTransfer || s.flowAmount(t) >= 0) continue;
       final c = s.cat(t.categoryId);
-      if (c == null || !c.isSetAside) continue;
+      if (c == null || !pick(c)) continue;
       if (filter.accountIds.isNotEmpty &&
           (t.accountId == null || !filter.accountIds.contains(t.accountId)))
         continue;

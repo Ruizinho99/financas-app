@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'Investido'**
   String get anInvested;
 
+  /// No description provided for @anSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Poupado em categorias'**
+  String get anSaved;
+
   /// No description provided for @anOfIncome.
   ///
   /// In pt, this message translates to:
@@ -2467,6 +2473,12 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Enviado para investir'**
   String get sentToInvest;
+
+  /// No description provided for @sentToSavings.
+  ///
+  /// In pt, this message translates to:
+  /// **'Posto em poupança'**
+  String get sentToSavings;
 
   /// No description provided for @whereSpendMost.
   ///

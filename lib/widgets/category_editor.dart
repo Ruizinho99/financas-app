@@ -270,11 +270,18 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       both: e?.both ?? parentCat?.both ?? false,
       emoji: emoji,
       description: desc.text.trim(),
-      budgetType:
-          e?.budgetType ??
-          ((parentCat?.isSetAside ?? (kind == _Kind.investment || kind == _Kind.savings))
-              ? BudgetType.goal
-              : BudgetType.limit),
+      budgetType: e == null
+          ? ((parentCat?.isSetAside ??
+                    (kind == _Kind.investment || kind == _Kind.savings))
+                ? BudgetType.goal
+                : BudgetType.limit)
+          : budgetTypeAfterKindChange(
+              current: e.budgetType,
+              hasBudget: e.hasBudget,
+              kindChanged: parentCat == null && kind != initialKind,
+              wasSetAside: e.isSetAside,
+              isSetAside: kind == _Kind.investment || kind == _Kind.savings,
+            ),
       budgetPercent: e?.budgetPercent ?? false,
       budgetValue: e?.budgetValue ?? 0,
       hasBudget: e?.hasBudget ?? false,

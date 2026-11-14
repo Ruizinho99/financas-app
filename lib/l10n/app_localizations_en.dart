@@ -85,6 +85,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get anInvested => 'Invested';
 
   @override
+  String get anSaved => 'Saved in categories';
+
+  @override
   String anOfIncome(String percent) {
     return '$percent of income';
   }
@@ -1529,6 +1532,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sentToInvest => 'Sent to invest';
+
+  @override
+  String get sentToSavings => 'Put into savings';
 
   @override
   String get whereSpendMost => 'Where you spend the most';

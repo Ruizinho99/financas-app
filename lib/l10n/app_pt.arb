@@ -50,6 +50,7 @@
   "anIncomes": "Rendimentos",
   "anBalance": "Saldo",
   "anInvested": "Investido",
+  "anSaved": "Poupado em categorias",
   "anOfIncome": "{percent} dos rendimentos",
   "@anOfIncome": {
     "placeholders": {
@@ -1359,6 +1360,7 @@
   "income": "Receitas",
   "saved": "Poupado",
   "sentToInvest": "Enviado para investir",
+  "sentToSavings": "Posto em poupança",
   "whereSpendMost": "Onde gastas mais",
   "seeAnalysis": "Ver análise",
   "classifyHint": "Um cartão por nome; memoriza para as próximas vezes",
