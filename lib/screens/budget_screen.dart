@@ -13,7 +13,8 @@ import '../widgets/common.dart';
 import '../planning/planning.dart';
 import 'category_stats_screen.dart';
 import 'classify_screen.dart';
-import 'planning_screen.dart' show showPlanItemEditor;
+import '../budget/distribute.dart';
+import 'plan_item_editor.dart' show showPlanItemEditor;
 
 class BudgetScreen extends StatefulWidget {
   /// Mês a abrir (por omissão, o atual).
@@ -904,7 +905,7 @@ class _CategorySheet extends StatelessWidget {
 
     Widget kidRow(Categoria k, int depth) {
       final ks = agg(k) < 0 ? 0 : agg(k);
-      final kt = k.monthlyTarget(salary);
+      final kt = s.effectiveMonthlyTarget(k, salary, monthKey);
       final kr = CatBudget(
         k,
         ks,
@@ -914,7 +915,14 @@ class _CategorySheet extends StatelessWidget {
       );
       return InkWell(
         key: ValueKey('kid-row-${k.id}'),
-        onTap: () => showBudgetEditor(context, k),
+        onTap: () => visibleKids(k).isNotEmpty
+            ? showCategoryBudgetSheet(
+                context,
+                categoryId: k.id,
+                monthKey: monthKey,
+                salary: salary,
+              )
+            : showBudgetEditor(context, k),
         child: Padding(
           // cada nível desce um degrau; a indentação para de crescer ao fim de 5
           padding: EdgeInsets.only(
@@ -932,7 +940,7 @@ class _CategorySheet extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              if (k.hasBudget)
+              if (kt > 0)
                 StateBar(kr, height: 6)
               else
                 ClipRRect(
@@ -1019,7 +1027,14 @@ class _CategorySheet extends StatelessWidget {
                           ? 'Distribute'
                           : 'Distribuir',
                     ),
-                    onPressed: () => showDistributeDialog(context, s, c, target),
+                    onPressed: () => showDistributeDialog(
+                      context,
+                      s,
+                      c,
+                      c.hasBudget ? c.monthlyTarget(salary) : target,
+                      monthKey: monthKey,
+                      salary: salary,
+                    ),
                   ),
               ],
             ),
@@ -1506,24 +1521,48 @@ Future<void> _planThisMonth(
 }
 
 /// Reparte o valor de uma categoria (ex.: Investimento) pelas suas subcategorias (corretoras, ativos...).
-/// Cada subcategoria fica com o seu orçamento; a soma é comparada com o valor da categoria.
+/// Grava orçamentos mensais permanentes nas subcategorias editadas; as restantes ficam como estão.
 Future<void> showDistributeDialog(
   BuildContext context,
   AppState s,
   Categoria c,
-  int total,
-) {
+  int total, {
+  String? monthKey,
+  int? salary,
+}) {
   final en = Localizations.localeOf(context).languageCode == 'en';
-  final kids = s.childrenOf(c.id).where((k) => !k.archived).toList();
+  final mk = monthKey ?? s.currentMonthKey;
+  final sal = salary ?? s.salaryFor(mk);
+  final own = s.totalsByCategory(s.periodOfMonth(mk));
+  // as mesmas filhas que a folha mostra: ativas neste mês ou com gasto
+  final kids = s
+      .childrenOf(c.id)
+      .where((k) => s.isCategoryActive(k, mk) || s.rollup(k, own) != 0)
+      .toList();
+  String fmtField(int cents) => (cents / 100).toStringAsFixed(2).replaceAll('.', ',');
   final ctl = {
     for (final k in kids)
       k.id: TextEditingController(
         text: k.hasBudget && k.budgetValue > 0 && !k.budgetPercent
-            ? (k.budgetValue / 100).toStringAsFixed(2).replaceAll('.', ',')
+            ? fmtField(k.budgetValue)
             : '',
       ),
   };
-  int sum() => ctl.values.fold(0, (a, t) => a + (parseCents(t.text) ?? 0).abs());
+  final edited = <int>{};
+  final dist = [for (final k in kids) DistKid(k.id, percent: k.hasBudget && k.budgetPercent)];
+  final editable = [for (final k in kids) if (!(k.hasBudget && k.budgetPercent)) k];
+  int percentSum() => kids
+      .where((k) => k.hasBudget && k.budgetPercent)
+      .fold(0, (a, k) => a + k.monthlyTarget(sal));
+  Map<int, int?> editedValues() => {
+    for (final id in edited) id: _parseOrNull(ctl[id]!.text),
+  };
+  // total final depois de gravar: campos editados + o que as outras já têm
+  int sum() {
+    final w = distributionWrites(dist, editedValues());
+    return kids.fold(0, (a, k) => a + (w[k.id] ?? k.monthlyTarget(sal)));
+  }
+
   return showDialog<void>(
     context: context,
     builder: (ctx) => StatefulBuilder(
@@ -1532,6 +1571,7 @@ Future<void> showDistributeDialog(
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (total > 0)
                 Text(
@@ -1539,23 +1579,46 @@ Future<void> showDistributeDialog(
                       ? 'Total to distribute: ${fmtMoney(total)}'
                       : 'Valor a distribuir: ${fmtMoney(total)}',
                 ),
+              const SizedBox(height: 4),
+              Text(
+                en
+                    ? 'This writes permanent monthly budgets on the subcategories, not just this month. Empty fields are left untouched.'
+                    : 'Isto grava orçamentos mensais permanentes nas subcategorias, não só neste mês. Os campos vazios ficam como estão.',
+                style: Theme.of(ctx).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
               for (final k in kids)
-                TextField(
-                  controller: ctl[k.id],
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(
-                    labelText: k.name,
-                    prefixText: '$baseSym  ',
+                if (k.hasBudget && k.budgetPercent)
+                  ListTile(
+                    key: ValueKey('dist-pct-${k.id}'),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(k.name),
+                    subtitle: Text(
+                      en
+                          ? '${(k.budgetValue / 100).toStringAsFixed(0)}% of salary (not changed)'
+                          : '${(k.budgetValue / 100).toStringAsFixed(0)}% do salário (não alterado)',
+                    ),
+                    trailing: Text(fmtMoney(k.monthlyTarget(sal))),
+                  )
+                else
+                  TextField(
+                    key: ValueKey('dist-field-${k.id}'),
+                    controller: ctl[k.id],
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: k.name,
+                      prefixText: '$baseSym  ',
+                    ),
+                    onChanged: (_) => set(() => edited.add(k.id)),
                   ),
-                  onChanged: (_) => set(() {}),
-                ),
               const SizedBox(height: 10),
               Text(
                 total > 0
                     ? (en
                           ? 'Distributed ${fmtMoney(sum())} of ${fmtMoney(total)}'
                           : 'Distribuído ${fmtMoney(sum())} de ${fmtMoney(total)}')
-                    : (en ? 'Total ${fmtMoney(sum())}' : 'Total ${fmtMoney(sum())}'),
+                    : 'Total ${fmtMoney(sum())}',
                 style: TextStyle(
                   color: total > 0 && sum() > total
                       ? Theme.of(ctx).colorScheme.error
@@ -1566,12 +1629,14 @@ Future<void> showDistributeDialog(
           ),
         ),
         actions: [
-          if (total > 0)
+          if (total > 0 && editable.isNotEmpty)
             TextButton(
               onPressed: () => set(() {
-                final each = (total / kids.length).floor();
-                for (final t in ctl.values) {
-                  t.text = (each / 100).toStringAsFixed(2).replaceAll('.', ',');
+                final rest = total - percentSum();
+                final parts = splitEqually(rest < 0 ? 0 : rest, editable.length);
+                for (var i = 0; i < editable.length; i++) {
+                  ctl[editable[i].id]!.text = fmtField(parts[i]);
+                  edited.add(editable[i].id);
                 }
               }),
               child: Text(en ? 'Split equally' : 'Dividir por igual'),
@@ -1582,8 +1647,10 @@ Future<void> showDistributeDialog(
           ),
           FilledButton(
             onPressed: () {
+              final writes = distributionWrites(dist, editedValues());
               for (final k in kids) {
-                final v = (parseCents(ctl[k.id]!.text) ?? 0).abs();
+                final v = writes[k.id];
+                if (v == null) continue;
                 s.updateCategory(
                   k.copyWith(
                     hasBudget: v > 0,
@@ -1600,9 +1667,8 @@ Future<void> showDistributeDialog(
         ],
       ),
     ),
-  ).whenComplete(() {
-    for (final t in ctl.values) {
-      t.dispose();
-    }
-  });
+  );
+  // sem dispose: os controladores ainda são usados durante a animação de saída do diálogo
 }
+
+int? _parseOrNull(String t) => t.trim().isEmpty ? null : parseCents(t);

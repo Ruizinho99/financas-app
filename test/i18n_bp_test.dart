@@ -1,7 +1,7 @@
 import 'package:financas/db/database.dart';
 import 'package:financas/screens/budget_screen.dart';
 import 'package:financas/screens/goals_screen.dart';
-import 'package:financas/screens/planning_screen.dart';
+import 'package:financas/screens/plan_item_editor.dart';
 import 'package:financas/screens/recurring_screen.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:financas/l10n/app_localizations.dart';
@@ -48,18 +48,33 @@ void main() {
     expect(find.textContaining('Set your net salary'), findsOneWidget);
   });
 
-  testWidgets('planeamento em ingles: titulo e nova despesa planeada', (
+  testWidgets('editor de despesa planeada em ingles: valor e tipos', (
     tester,
   ) async {
     final s = AppState(Db.memory());
-    tester.view.physicalSize = const Size(400, 1400) * 2;
-    tester.view.devicePixelRatio = 2;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(_app(s, const PlanningScreen()));
+    await tester.pumpWidget(
+      _app(
+        s,
+        Builder(
+          builder: (ctx) => TextButton(
+            onPressed: () => showPlanItemEditor(
+              ctx,
+              s,
+              '2026-12',
+              categoryId: 1,
+              title: 'Home',
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    expect(find.text('Planning'), findsOneWidget);
-    expect(find.text('Planned expense'), findsOneWidget);
-    expect(find.text('Planned mandatory'), findsOneWidget);
+    expect(find.text('Planned amount (€)'), findsOneWidget);
+    expect(find.text('Mandatory'), findsOneWidget);
+    expect(find.text('Optional'), findsOneWidget);
+    expect(find.text('Save'), findsOneWidget);
   });
 
   testWidgets('objetivos em ingles: lista vazia e botao de novo objetivo', (
