@@ -10,6 +10,7 @@ import '../util/format.dart';
 import '../invest/plan_widgets.dart';
 import '../widgets/category_editor.dart';
 import '../widgets/common.dart';
+import 'category_stats_screen.dart';
 import 'classify_screen.dart';
 
 class BudgetScreen extends StatefulWidget {
@@ -593,6 +594,40 @@ class _BudgetRow extends StatelessWidget {
     required this.salary,
   });
 
+  /// Mini-linha dos últimos 6 meses e, no mês em curso, a previsão do fim do mês ao ritmo atual.
+  List<Widget> _trendLine(BuildContext context, AppState s, TextTheme tt) {
+    final trend = trendOf(s, row.category, monthKey);
+    if (trend.every((v) => v == 0)) return const [];
+    final en = Localizations.localeOf(context).languageCode == 'en';
+    final pace = paceOf(s.periodOfMonth(monthKey));
+    final fc = row.target > 0 && row.isMax ? forecastEnd(row.spent, pace) : null;
+    final cs = Theme.of(context).colorScheme;
+    return [
+      Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 96,
+              height: 22,
+              child: CustomPaint(painter: _SparkPainter(trend, cs.primary)),
+            ),
+            const SizedBox(width: 8),
+            if (fc != null)
+              Expanded(
+                child: Text(
+                  '${en ? 'Forecast' : 'Previsão'} ${fmtMoney(fc)}',
+                  style: tt.bodySmall?.copyWith(
+                    color: fc > row.target ? cs.error : cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ];
+  }
+
   /// Compras de ativos associados a esta categoria neste mês (ex.: "Compras: 110 € · 0,8 NVDA · 2 compras").
   List<Widget> _purchasesLine(BuildContext context, AppState s, TextTheme tt) {
     final p = purchasesForCategory(s, row.category.id, monthKey);
@@ -719,6 +754,7 @@ class _BudgetRow extends StatelessWidget {
                         style: tt.bodySmall,
                       ),
                     ),
+                  ..._trendLine(context, s, tt),
                   ..._purchasesLine(context, s, tt),
                 ],
               ),
@@ -859,6 +895,18 @@ class _CategorySheet extends StatelessWidget {
                 ),
                 if (row != null && target > 0)
                   _Pill(pillText(l, row), stateColor(row)),
+                IconButton(
+                  tooltip: Localizations.localeOf(context).languageCode == 'en'
+                      ? 'Statistics'
+                      : 'Estatísticas',
+                  icon: const Icon(Icons.bar_chart),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CategoryStatsScreen(categoryId: c.id),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -1265,4 +1313,42 @@ Future<void> showSalaryEditor(
       ),
     ),
   );
+}
+
+
+/// Linha fina com um ponto no último valor (a evolução dos últimos meses).
+class _SparkPainter extends CustomPainter {
+  final List<int> values;
+  final Color color;
+  _SparkPainter(this.values, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2) return;
+    final maxV = values.reduce((a, b) => a > b ? a : b);
+    if (maxV <= 0) return;
+    final dx = size.width / (values.length - 1);
+    Offset pt(int i) => Offset(
+      i * dx,
+      size.height - 3 - (values[i] / maxV) * (size.height - 6),
+    );
+    final path = Path()..moveTo(pt(0).dx, pt(0).dy);
+    for (var i = 1; i < values.length; i++) {
+      path.lineTo(pt(i).dx, pt(i).dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+    canvas.drawCircle(pt(values.length - 1), 3.5, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_SparkPainter old) =>
+      old.values != values || old.color != color;
 }

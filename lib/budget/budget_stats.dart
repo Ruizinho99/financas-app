@@ -150,6 +150,44 @@ List<(String, int)> history(AppState s, Categoria c, String key, {int n = 6}) {
   return out;
 }
 
+List<Map<int, int>>? _memoMonths;
+Object? _memoTxns;
+String? _memoKey;
+
+/// Gasto de cada categoria nos [n] meses até [key]; guarda o resultado enquanto os movimentos
+/// forem os mesmos (a lista do orçamento pede isto uma vez por linha).
+List<Map<int, int>> monthTotals(AppState s, String key, {int n = 6}) {
+  if (_memoMonths != null &&
+      identical(_memoTxns, s.transactions) &&
+      _memoKey == '$key|$n') {
+    return _memoMonths!;
+  }
+  final y = int.parse(key.substring(0, 4)), m = int.parse(key.substring(5, 7));
+  final out = [
+    for (var i = n - 1; i >= 0; i--)
+      s.totalsByCategory(s.periodOfMonth(monthKey(DateTime(y, m - i)))),
+  ];
+  _memoMonths = out;
+  _memoTxns = s.transactions;
+  _memoKey = '$key|$n';
+  return out;
+}
+
+/// Gasto da categoria [c] em cada um dos meses de [monthTotals].
+List<int> trendOf(AppState s, Categoria c, String key, {int n = 6}) => [
+  for (final t in monthTotals(s, key, n: n)) () {
+    final v = s.rollup(c, t);
+    return v < 0 ? 0 : v;
+  }(),
+];
+
+/// Previsão do gasto no fim do mês ao ritmo atual: gasto / fração do mês já passada.
+/// Nulo se o mês não está a decorrer ou ainda não há gasto.
+int? forecastEnd(int spent, double? pace) {
+  if (pace == null || pace <= 0 || spent <= 0) return null;
+  return (spent / pace).round();
+}
+
 /// Orçamento sugerido: média dos 3 meses anteriores, arredondada para cima aos 5 €;
 /// se não houver histórico, o gasto deste mês. Nulo se não há nada a sugerir.
 int? suggestBudget(AppState s, Categoria c, String key, int spentNow) {
