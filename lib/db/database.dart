@@ -1407,10 +1407,16 @@ class Db {
   }
 
   /// Liga [opIds] à transferência [txnId] e desliga as que estavam ligadas a ela e não estão na lista.
+  /// As ligadas passam a alocar (allocate=1): o dinheiro da transferência foi mesmo investido nelas, por
+  /// isso o "em espera" da transferência e o dinheiro por alocar da conta mexem juntos. Ao desligar,
+  /// o `allocate` fica como está (não se guarda se a operação veio de um extrato).
   void setOpsTransfer(int txnId, Iterable<int> opIds) {
     _db.execute('UPDATE invest_ops SET txn_id=NULL WHERE txn_id=?', [txnId]);
     for (final id in opIds) {
-      _db.execute('UPDATE invest_ops SET txn_id=? WHERE id=?', [txnId, id]);
+      _db.execute(
+        'UPDATE invest_ops SET txn_id=?, allocate=1 WHERE id=?',
+        [txnId, id],
+      );
     }
   }
 
