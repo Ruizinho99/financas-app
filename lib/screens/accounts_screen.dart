@@ -1,3 +1,5 @@
+import '../stats/balance_stats.dart';
+import '../widgets/trend_line.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -205,6 +207,34 @@ class AccountsScreen extends StatelessWidget {
           : ListView(
               padding: const EdgeInsets.only(bottom: 90),
               children: [
+                if (s.accounts.length > 1)
+                  Card(
+                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            Localizations.localeOf(context).languageCode == 'en'
+                                ? 'Total balance'
+                                : 'Saldo total',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          Text(
+                            fmtMoney(
+                              s.accounts.fold<int>(
+                                0,
+                                (a, c) => a + s.accountBalance(c.id),
+                              ),
+                            ),
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          const _BalanceTrend(),
+                        ],
+                      ),
+                    ),
+                  ),
                 for (final a in s.accounts)
                   Builder(
                     builder: (_) {
@@ -315,6 +345,7 @@ class AccountDetailScreen extends StatelessWidget {
                     ),
                     style: tt.bodySmall,
                   ),
+                  _BalanceTrend(accountId: accountId),
                   const Divider(height: 24),
                   Text(l.frmThisMonth, style: tt.titleSmall),
                   const SizedBox(height: 6),
@@ -428,4 +459,37 @@ class _Stat extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// Evolução do saldo em 12 meses (de uma conta, ou de todas se [accountId] for nulo).
+class _BalanceTrend extends StatelessWidget {
+  final int? accountId;
+  const _BalanceTrend({this.accountId});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final en = Localizations.localeOf(context).languageCode == 'en';
+    final ser = balanceSeries(s, accountId: accountId);
+    if (s.transactions.where((t) => accountId == null || t.accountId == accountId).isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final delta = ser.last.cents - ser.first.cents;
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TrendLine(
+          cents: [for (final p in ser) p.cents],
+          labels: [for (final p in ser) fmtMonthShort(p.end)],
+        ),
+        Text(
+          '${delta >= 0 ? '+' : '−'}${fmtMoney(delta.abs())} ${en ? 'in 12 months' : 'em 12 meses'}',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: delta >= 0 ? cs.primary : cs.error,
+          ),
+        ),
+      ],
+    );
+  }
 }
