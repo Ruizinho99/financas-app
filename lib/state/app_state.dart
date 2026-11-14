@@ -1322,6 +1322,8 @@ class AppState extends ChangeNotifier {
             amount: e.op.amount,
             fee: e.op.fee,
             note: e.op.note,
+            // o que vem de um extrato já aconteceu: não mexe no dinheiro por alocar
+            allocate: false,
           ),
           isNew: true,
         );
