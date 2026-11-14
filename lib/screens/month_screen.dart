@@ -20,7 +20,6 @@ import 'budget_screen.dart';
 import 'classify_screen.dart';
 import 'goals_screen.dart';
 import 'import_screen.dart';
-import 'planning_screen.dart';
 
 /// Ecrã principal: o mês em foco — quanto gastaste, quanto entrou, quanto sobrou e onde foi o dinheiro.
 class MonthScreen extends StatefulWidget {
@@ -488,7 +487,7 @@ class _CartoesMes extends StatelessWidget {
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => PlanningScreen(initialMonth: month),
+            builder: (_) => BudgetScreen(initialMonth: month),
           ),
         ),
         child: Text(l.seePlan),

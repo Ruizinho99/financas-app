@@ -10,24 +10,51 @@ import '../util/format.dart';
 import '../invest/plan_widgets.dart';
 import '../widgets/category_editor.dart';
 import '../widgets/common.dart';
+import '../planning/planning.dart';
 import 'category_stats_screen.dart';
 import 'classify_screen.dart';
+import 'planning_screen.dart' show showPlanItemEditor;
 
 class BudgetScreen extends StatefulWidget {
-  const BudgetScreen({super.key});
+  /// Mês a abrir (por omissão, o atual).
+  final DateTime? initialMonth;
+  const BudgetScreen({super.key, this.initialMonth});
   @override
   State<BudgetScreen> createState() => _BudgetScreenState();
 }
 
 enum _Sort { state, spent, name }
 
+enum _TypeFilter { all, expense, investment, savings }
+
+bool _matchesType(_TypeFilter f, Categoria c) => switch (f) {
+  _TypeFilter.all => true,
+  _TypeFilter.expense => !c.isSetAside,
+  _TypeFilter.investment => c.isInvestment,
+  _TypeFilter.savings => c.isSavings,
+};
+
 class _BudgetScreenState extends State<BudgetScreen> {
   // o mês da app em foco (nomeado pelo mês em que termina)
-  late DateTime month = _keyToMonth(context.read<AppState>().currentMonthKey);
+  late DateTime month = widget.initialMonth != null
+      ? DateTime(widget.initialMonth!.year, widget.initialMonth!.month)
+      : _keyToMonth(context.read<AppState>().currentMonthKey);
   _Sort sort = _Sort.state;
+  // filtro por tipo de categoria: null = todas
+  _TypeFilter typeFilter = _TypeFilter.all;
 
   static DateTime _keyToMonth(String k) =>
       DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
+
+  String _filterLabel(BuildContext context, _TypeFilter f) {
+    final en = Localizations.localeOf(context).languageCode == 'en';
+    return switch (f) {
+      _TypeFilter.all => en ? 'All' : 'Todas',
+      _TypeFilter.expense => en ? 'Expenses' : 'Despesas',
+      _TypeFilter.investment => en ? 'Investments' : 'Investimentos',
+      _TypeFilter.savings => en ? 'Savings' : 'Poupanças',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +67,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
     // movimentos sem categoria do mês: contam como despesa/receita em "Por classificar"
     final unclassifiedSpent = s.unclassifiedSpent(period);
     final unclassifiedCount = s.txnsIn(period).where(s.isUnclassified).length;
-    final rows = budgetRows(s, key, salary);
+    final rows = budgetRows(s, key, salary)
+        .where((r) => _matchesType(typeFilter, r.category))
+        .toList();
     final sum = summarize(s, rows);
     final pace = paceOf(period);
     final unallocated = salary - allocated;
@@ -70,8 +99,33 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l.budget),
+        title: Text(
+          Localizations.localeOf(context).languageCode == 'en'
+              ? 'Planning and budget'
+              : 'Planeamento e orçamento',
+        ),
         actions: [
+          if (s.planFor(key).isEmpty &&
+              s.planFor(monthKey(DateTime(month.year, month.month - 1)))
+                  .isNotEmpty)
+            IconButton(
+              tooltip: l.bpCopyPreviousPlan,
+              icon: const Icon(Icons.content_copy_outlined),
+              onPressed: () {
+                final prev = monthKey(DateTime(month.year, month.month - 1));
+                final n = s.copyPlan(prev, key);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      l.bpCopiedPlanItems(
+                        n,
+                        fmtMonth(DateTime(month.year, month.month - 1)),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           IconButton(
             tooltip: l.bpCopySalaryTooltip,
             icon: const Icon(Icons.payments_outlined),
@@ -102,6 +156,25 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 ),
               ),
             ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final f in _TypeFilter.values)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(_filterLabel(context, f)),
+                        selected: typeFilter == f,
+                        onSelected: (_) => setState(() => typeFilter = f),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
           _SummaryCard(
             sum: sum,
@@ -910,6 +983,47 @@ class _CategorySheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.event_available, size: 18),
+                  label: Text(
+                    s.planFor(monthKey).any((p) => p.categoryId == c.id)
+                        ? (Localizations.localeOf(context).languageCode == 'en'
+                              ? 'This month only: ${fmtMoney(s.planFor(monthKey).firstWhere((p) => p.categoryId == c.id).cents)}'
+                              : 'Só este mês: ${fmtMoney(s.planFor(monthKey).firstWhere((p) => p.categoryId == c.id).cents)}')
+                        : (Localizations.localeOf(context).languageCode == 'en'
+                              ? 'Plan this month only'
+                              : 'Planear só este mês'),
+                  ),
+                  onPressed: () => _planThisMonth(context, s, c, monthKey),
+                ),
+                if (s.planFor(monthKey).any((p) => p.categoryId == c.id))
+                  TextButton(
+                    onPressed: () => s.deletePlanned(
+                      s.planFor(monthKey).firstWhere((p) => p.categoryId == c.id).id,
+                    ),
+                    child: Text(
+                      Localizations.localeOf(context).languageCode == 'en'
+                          ? 'Remove'
+                          : 'Remover',
+                    ),
+                  ),
+                if (kids.isNotEmpty)
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.call_split, size: 18),
+                    label: Text(
+                      Localizations.localeOf(context).languageCode == 'en'
+                          ? 'Distribute'
+                          : 'Distribuir',
+                    ),
+                    onPressed: () => showDistributeDialog(context, s, c, target),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
             if (target > 0) ...[
               Row(
                 children: [
@@ -1351,4 +1465,144 @@ class _SparkPainter extends CustomPainter {
   @override
   bool shouldRepaint(_SparkPainter old) =>
       old.values != values || old.color != color;
+}
+
+
+/// Valor planeado só para um mês: manda sobre o orçamento da categoria nesse mês.
+Future<void> _planThisMonth(
+  BuildContext context,
+  AppState s,
+  Categoria c,
+  String monthKey,
+) async {
+  final existing = s.planFor(monthKey).where((p) => p.categoryId == c.id).firstOrNull;
+  final r = await showPlanItemEditor(
+    context,
+    s,
+    monthKey,
+    categoryId: c.id,
+    title: s.path(c.id),
+    current: existing,
+  );
+  if (r == null) return;
+  if (existing == null) {
+    s.addPlanned(
+      month: monthKey,
+      categoryId: c.id,
+      cents: r.cents,
+      mandatory: r.mandatory,
+    );
+  } else {
+    s.updatePlanned(
+      PlannedItem(
+        id: existing.id,
+        month: monthKey,
+        categoryId: c.id,
+        cents: r.cents,
+        mandatory: r.mandatory,
+      ),
+    );
+  }
+}
+
+/// Reparte o valor de uma categoria (ex.: Investimento) pelas suas subcategorias (corretoras, ativos...).
+/// Cada subcategoria fica com o seu orçamento; a soma é comparada com o valor da categoria.
+Future<void> showDistributeDialog(
+  BuildContext context,
+  AppState s,
+  Categoria c,
+  int total,
+) {
+  final en = Localizations.localeOf(context).languageCode == 'en';
+  final kids = s.childrenOf(c.id).where((k) => !k.archived).toList();
+  final ctl = {
+    for (final k in kids)
+      k.id: TextEditingController(
+        text: k.hasBudget && k.budgetValue > 0 && !k.budgetPercent
+            ? (k.budgetValue / 100).toStringAsFixed(2).replaceAll('.', ',')
+            : '',
+      ),
+  };
+  int sum() => ctl.values.fold(0, (a, t) => a + (parseCents(t.text) ?? 0).abs());
+  return showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, set) => AlertDialog(
+        title: Text(en ? 'Distribute ${c.name}' : 'Distribuir ${c.name}'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (total > 0)
+                Text(
+                  en
+                      ? 'Total to distribute: ${fmtMoney(total)}'
+                      : 'Valor a distribuir: ${fmtMoney(total)}',
+                ),
+              for (final k in kids)
+                TextField(
+                  controller: ctl[k.id],
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: k.name,
+                    prefixText: '$baseSym  ',
+                  ),
+                  onChanged: (_) => set(() {}),
+                ),
+              const SizedBox(height: 10),
+              Text(
+                total > 0
+                    ? (en
+                          ? 'Distributed ${fmtMoney(sum())} of ${fmtMoney(total)}'
+                          : 'Distribuído ${fmtMoney(sum())} de ${fmtMoney(total)}')
+                    : (en ? 'Total ${fmtMoney(sum())}' : 'Total ${fmtMoney(sum())}'),
+                style: TextStyle(
+                  color: total > 0 && sum() > total
+                      ? Theme.of(ctx).colorScheme.error
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          if (total > 0)
+            TextButton(
+              onPressed: () => set(() {
+                final each = (total / kids.length).floor();
+                for (final t in ctl.values) {
+                  t.text = (each / 100).toStringAsFixed(2).replaceAll('.', ',');
+                }
+              }),
+              child: Text(en ? 'Split equally' : 'Dividir por igual'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(ctx)!.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              for (final k in kids) {
+                final v = (parseCents(ctl[k.id]!.text) ?? 0).abs();
+                s.updateCategory(
+                  k.copyWith(
+                    hasBudget: v > 0,
+                    budgetValue: v,
+                    budgetPercent: false,
+                    budgetType: c.isSetAside ? BudgetType.goal : k.budgetType,
+                  ),
+                );
+              }
+              Navigator.pop(ctx);
+            },
+            child: Text(en ? 'Save' : 'Guardar'),
+          ),
+        ],
+      ),
+    ),
+  ).whenComplete(() {
+    for (final t in ctl.values) {
+      t.dispose();
+    }
+  });
 }

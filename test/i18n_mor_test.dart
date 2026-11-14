@@ -38,10 +38,10 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(_app(const Scaffold(body: MoreScreen())));
     await tester.pump(const Duration(seconds: 1));
-    expect(find.text('Budget'), findsOneWidget);
+    expect(find.text('Planning and budget'), findsOneWidget);
     expect(find.text('Updates'), findsOneWidget);
     expect(find.text('Appearance'), findsOneWidget);
-    expect(find.text('Orçamento'), findsNothing);
+    expect(find.text('Planeamento e orçamento'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

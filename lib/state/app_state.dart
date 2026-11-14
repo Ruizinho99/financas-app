@@ -1150,6 +1150,12 @@ class AppState extends ChangeNotifier {
   /// Com [month] (AAAA-MM), categorias fora das suas datas nesse mês não têm alocação.
   int effectiveMonthlyTarget(Categoria c, int salary, [String? month]) {
     if (month != null && !isCategoryActive(c, month)) return 0;
+    // valor planeado só para este mês: manda sobre o orçamento da categoria
+    if (month != null) {
+      for (final p in plannedItems) {
+        if (p.month == month && p.categoryId == c.id) return p.cents;
+      }
+    }
     if (c.hasBudget) return c.monthlyTarget(salary);
     return childrenOf(c.id)
         .where((ch) => month == null || isCategoryActive(ch, month))

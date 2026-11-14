@@ -396,7 +396,7 @@ void main() {
       expect(find.text('A minha carteira'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.more_horiz));
       await tester.pumpAndSettle();
-      for (final t in ['Orçamento', 'Análise', 'Classificar movimentos']) {
+      for (final t in ['Planeamento e orçamento', 'Análise', 'Classificar movimentos']) {
         expect(find.text(t), findsOneWidget, reason: t);
       }
       expect(tester.takeException(), isNull);
