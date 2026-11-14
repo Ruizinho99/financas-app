@@ -22,7 +22,6 @@ import 'analysis_screen.dart';
 import 'budget_screen.dart' show BudgetScreen, showBudgetEditor;
 import 'classify_screen.dart';
 import 'month_cycle_screen.dart';
-import 'planning_screen.dart';
 import 'recurring_screen.dart';
 import 'backup_screen.dart';
 import 'goals_screen.dart';
@@ -43,8 +42,16 @@ class MoreScreen extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.savings_outlined),
-            title: Text(l.budget),
-            subtitle: Text(l.morBudgetSubtitle),
+            title: Text(
+              Localizations.localeOf(context).languageCode == 'en'
+                  ? 'Planning and budget'
+                  : 'Planeamento e orçamento',
+            ),
+            subtitle: Text(
+              Localizations.localeOf(context).languageCode == 'en'
+                  ? 'Plan each month and follow what you spend, by type'
+                  : 'Planeia cada mês e acompanha o que gastas, por tipo',
+            ),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BudgetScreen()),
@@ -57,15 +64,6 @@ class MoreScreen extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const MonthCycleScreen()),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.event_note_outlined),
-            title: Text(l.planning),
-            subtitle: Text(l.morPlanningSubtitle),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const PlanningScreen()),
             ),
           ),
           ListTile(
