@@ -44,6 +44,7 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       {}; // tipo não reconhecido -> o que fazer
   List<ParsedTrade> trades = [];
   final Set<int> excluded = {};
+  final cashCtl = TextEditingController(); // dinheiro na corretora à data do extrato (opcional)
   DateTime? from, to; // intervalo de datas a importar (nulo = tudo)
   final Map<String, int> choice =
       {}; // chave do instrumento -> id do ativo, 0 = criar novo, -1 = ignorar
@@ -408,6 +409,27 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
       newHoldings: newH,
       ops: [for (final e in toSave) (key: e.key, op: e.op)],
     );
+    // saldo do extrato: o dinheiro por alocar passa a ser o indicado (as compras importadas não o mexem)
+    final wanted = parseNum(cashCtl.text);
+    if (wanted != null && accountId != null) {
+      final cur = s.portfolio.accounts
+          .where((a) => a.account.id == accountId)
+          .map((a) => a.cashCents)
+          .firstOrNull;
+      final diff = (wanted * 100).round() - (cur ?? 0);
+      if (diff != 0) {
+        s.addOp(
+          InvestOp(
+            id: 0,
+            accountId: accountId!,
+            date: DateTime.now(),
+            type: OpType.cash,
+            amount: diff,
+            note: 'Saldo do extrato',
+          ),
+        );
+      }
+    }
     final negativeCash = s.portfolio.accounts.any(
       (a) => a.account.id == accountId && a.cashCents < 0,
     );
@@ -535,6 +557,30 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
                 to = t;
                 _afterParse();
               }),
+            ),
+            const SizedBox(height: 14),
+            FormCard(
+              children: [
+                Text(
+                  Localizations.localeOf(context).languageCode == 'en'
+                      ? 'Cash on the platform (optional)'
+                      : 'Dinheiro na corretora (opcional)',
+                  style: tt.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  Localizations.localeOf(context).languageCode == 'en'
+                      ? 'The imported trades already happened, so they do not change your unallocated cash. Enter the cash you had at the statement date to set it.'
+                      : 'As compras importadas já aconteceram, por isso não mexem no dinheiro por alocar. Indica o dinheiro que tinhas na data do extrato para o fixar.',
+                  style: tt.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: cashCtl,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(prefixText: '$baseSym '),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
             // moeda e câmbio
