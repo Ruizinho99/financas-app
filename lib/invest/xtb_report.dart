@@ -8,6 +8,10 @@ class XtbSummary {
   final int zeroDividends; // dividendos que ficam a 0,00 € depois da retenção (não se importam)
   final int unmatchedWithholdings; // retenções sem dividendo correspondente
   final int skippedPositions; // posições que não são compras de ações (ex.: CFD vendidos a descoberto)
+  /// Saldo de caixa no fim do extrato (cêntimos): soma de todas as operações da folha "Cash Operations".
+  final int cashBalance;
+  /// Data da última operação de caixa (a data do extrato), se houver.
+  final DateTime? asOf;
   const XtbSummary({
     required this.buys,
     required this.sells,
@@ -16,6 +20,8 @@ class XtbSummary {
     required this.zeroDividends,
     required this.unmatchedWithholdings,
     required this.skippedPositions,
+    this.cashBalance = 0,
+    this.asOf,
   });
 }
 
@@ -295,6 +301,16 @@ String _f(double v, [int decimals = 4]) {
     );
     divs++;
   }
+  // saldo de caixa: soma de todas as operações de caixa; data do extrato: a mais recente
+  var cashCents = 0;
+  DateTime? asOf;
+  for (final r in cash) {
+    if (r['Type'] == 'Total') continue;
+    final t = _dateTime(r['Time']);
+    if (t == null) continue;
+    cashCents += (_num(r['Amount']) * 100).round();
+    if (asOf == null || t.isAfter(asOf)) asOf = t;
+  }
   final unmatched = withholdings.values.fold(0, (a, l) => a + l.length);
 
   // por data; em caso de empate, tipo, título e quantidade (ordem estável e previsível)
@@ -318,6 +334,8 @@ String _f(double v, [int decimals = 4]) {
       zeroDividends: zero,
       unmatchedWithholdings: unmatched,
       skippedPositions: skipped,
+      cashBalance: cashCents,
+      asOf: asOf,
     ),
   );
 }

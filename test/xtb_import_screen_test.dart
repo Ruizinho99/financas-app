@@ -76,13 +76,20 @@ void main() {
     expect(find.textContaining('depósitos e levantamentos'), findsOneWidget);
     expect(find.text('Ativos encontrados'), findsOneWidget);
     expect(find.textContaining('Importar 3 operações'), findsOneWidget);
+    expect(find.widgetWithText(TextField, '1,50'), findsOneWidget); // saldo preenchido
     // não pede folha nem colunas
     expect(find.text('Folha do Excel'), findsNothing);
     expect(tester.takeException(), isNull);
     // importar de facto: 3 operações, e a posição fica a zero (comprada e vendida)
     await tester.tap(find.textContaining('Importar 3 operações'));
     await tester.pumpAndSettle();
-    expect(s.investOps.length, 3);
-    expect(s.investOps.map((o) => o.type.name).toSet(), {'buy', 'sell', 'dividend'});
+    // + o ajuste de saldo: o campo vinha preenchido com o saldo do extrato (1,50 €), datado do extrato
+    expect(s.investOps.length, 4);
+    expect(s.investOps.map((o) => o.type.name).toSet(), {'buy', 'sell', 'dividend', 'cash'});
+    final adj = s.investOps.singleWhere((o) => o.type.name == 'cash');
+    expect(adj.amount, 150);
+    expect(adj.date, DateTime(2026, 2, 1, 10, 0));
+    expect(adj.note, 'Saldo do extrato');
+    expect(s.portfolio.accounts.single.cashCents, 150);
   });
 }

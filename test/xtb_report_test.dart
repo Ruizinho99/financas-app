@@ -64,6 +64,33 @@ void main() {
     expect(isXtbReport({'Closed Positions': [], 'Cash Operations': []}), isFalse);
   });
 
+  test('saldo de caixa e data do extrato vêm das operações de caixa', () {
+    final r = xtbReportToTable(_sheets());
+    // 1000 + 0,50 - 0,07 + 0,01 - 0,01 (a linha Total não conta)
+    expect(r.summary.cashBalance, 100043);
+    expect(r.summary.asOf, DateTime.utc(2026, 7, 1, 10));
+  });
+
+  test('saldo inclui compras, vendas, levantamentos e impostos', () {
+    final sh = _sheets();
+    sh['Cash Operations']!.insertAll(2, [
+      ['Stock purchase', 'Alpha', 'ALP.DE', 'STOCK', '2026-02-01 10:00', '-200', '9', '', '', ''],
+      ['Stock sale', 'Alpha', 'ALP.DE', 'STOCK', '2026-08-02 11:30', '240', '10', '', '', ''],
+      ['Withdrawal', '', '', '', '2026-09-03 09:00', '-100', '11', '', '', ''],
+    ]);
+    final r = xtbReportToTable(sh).summary;
+    expect(r.cashBalance, 100043 - 20000 + 24000 - 10000);
+    expect(r.asOf, DateTime.utc(2026, 9, 3, 9));
+  });
+
+  test('sem operações de caixa: saldo 0 e sem data', () {
+    final sh = _sheets();
+    sh['Cash Operations'] = [['Type', 'Time', 'Amount']];
+    final r = xtbReportToTable(sh).summary;
+    expect(r.cashBalance, 0);
+    expect(r.asOf, isNull);
+  });
+
   group('conversão em operações', () {
     final r = xtbReportToTable(_sheets());
     final t = r.table;
