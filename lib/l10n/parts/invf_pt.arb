@@ -704,5 +704,8 @@
   "invfKindCrypto": "Cripto",
   "invfKindFund": "Fundo",
   "invfKindBond": "Obrigação",
-  "invfKindOther": "Outro"
+  "invfKindOther": "Outro",
+  "invfBudgetCategoryLabel": "Categoria do orçamento (opcional)",
+  "invfPlannedPerMonthLabel": "Compras planeadas por mês (opcional)",
+  "invfTimeLabel": "Hora"
 }

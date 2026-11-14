@@ -216,9 +216,7 @@ class AccountsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            Localizations.localeOf(context).languageCode == 'en'
-                                ? 'Total balance'
-                                : 'Saldo total',
+                            AppLocalizations.of(context)!.frmTotalBalance,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           Text(
@@ -469,7 +467,7 @@ class _BalanceTrend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
-    final en = Localizations.localeOf(context).languageCode == 'en';
+    final l = AppLocalizations.of(context)!;
     final ser = balanceSeries(s, accountId: accountId);
     if (s.transactions.where((t) => accountId == null || t.accountId == accountId).isEmpty) {
       return const SizedBox.shrink();
@@ -484,7 +482,7 @@ class _BalanceTrend extends StatelessWidget {
           labels: [for (final p in ser) fmtMonthShort(p.end)],
         ),
         Text(
-          '${delta >= 0 ? '+' : '−'}${fmtMoney(delta.abs())} ${en ? 'in 12 months' : 'em 12 meses'}',
+          l.frmDeltaIn12Months('${delta >= 0 ? '+' : '−'}${fmtMoney(delta.abs())}'),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: delta >= 0 ? cs.primary : cs.error,
           ),

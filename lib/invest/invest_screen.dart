@@ -173,9 +173,7 @@ class _InvestScreenState extends State<InvestScreen> {
         title: Text(l.invTitle),
         actions: [
           IconButton(
-            tooltip: Localizations.localeOf(context).languageCode == 'en'
-                ? 'Portfolio analysis'
-                : 'Análise da carteira',
+            tooltip: AppLocalizations.of(context)!.invPortfolioAnalysisTooltip,
             icon: const Icon(Icons.insights),
             onPressed: () => Navigator.push(
               context,
@@ -185,9 +183,7 @@ class _InvestScreenState extends State<InvestScreen> {
             ),
           ),
           IconButton(
-            tooltip: Localizations.localeOf(context).languageCode == 'en'
-                ? 'Analyse an asset'
-                : 'Analisar um ativo',
+            tooltip: AppLocalizations.of(context)!.invAnalyseAssetTooltip,
             icon: const Icon(Icons.query_stats),
             onPressed: () => Navigator.push(
               context,

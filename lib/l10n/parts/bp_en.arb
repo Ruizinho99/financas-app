@@ -44,12 +44,30 @@
   "bpCategories": "Categories",
   "bpNewCategory": "New category",
   "bpStatusOk": "✓ Within the maximum · {left} left",
-  "@bpStatusOk": {"placeholders": {"left": {"type": "String"}}},
+  "@bpStatusOk": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      }
+    }
+  },
   "bpStatusOver": "⚠ Exceeded by {over}",
-  "@bpStatusOver": {"placeholders": {"over": {"type": "String"}}},
+  "@bpStatusOver": {
+    "placeholders": {
+      "over": {
+        "type": "String"
+      }
+    }
+  },
   "bpStatusMinOk": "✓ Minimum reached",
   "bpStatusMinBelow": "Below the minimum · {missing} to go",
-  "@bpStatusMinBelow": {"placeholders": {"missing": {"type": "String"}}},
+  "@bpStatusMinBelow": {
+    "placeholders": {
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
   "bpBudgetLimit": "Maximum",
   "bpBudgetGoal": "Minimum",
   "bpSpentOfTarget": "{spent} of {target} · {type}",
@@ -474,5 +492,109 @@
   "bpNoEndDate": "No end date",
   "bpRemoveEndDate": "Remove end date",
   "bpActive": "Active",
-  "bpActiveHint": "Turn off to pause, without deleting"
+  "bpActiveHint": "Turn off to pause, without deleting",
+  "bpFilterAll": "All",
+  "bpFilterExpenses": "Expenses",
+  "bpFilterInvestments": "Investments",
+  "bpFilterSavings": "Savings",
+  "bpPlanningTitle": "Planning and budget",
+  "bpForecastAmount": "Forecast {amount}",
+  "@bpForecastAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPurchasesCount": "{count, plural, =0{{count} purchases} =1{{count} purchase} other{{count} purchases}}",
+  "@bpPurchasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bpAssetPlannedBought": "{name}: planned {planned} · bought {bought}",
+  "@bpAssetPlannedBought": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      },
+      "bought": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAssetBought": "{name}: bought {bought}",
+  "@bpAssetBought": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "bought": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnitsShort": "{qty} un",
+  "@bpUnitsShort": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatsTooltip": "Statistics",
+  "bpThisMonthOnlyAmount": "This month only: {amount}",
+  "@bpThisMonthOnlyAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPlanThisMonthOnly": "Plan this month only",
+  "bpRemove": "Remove",
+  "bpDistribute": "Distribute",
+  "bpDistributeTitle": "Distribute {name}",
+  "@bpDistributeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributeTotal": "Total to distribute: {amount}",
+  "@bpDistributeTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributeNote": "This writes permanent monthly budgets on the subcategories, not just this month. Empty fields are left untouched.",
+  "bpDistributePercentOfSalary": "{percent}% of salary (not changed)",
+  "@bpDistributePercentOfSalary": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributedOf": "Distributed {sum} of {total}",
+  "@bpDistributedOf": {
+    "placeholders": {
+      "sum": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSplitEqually": "Split equally",
+  "bpLast6Months": "Last 6 months"
 }

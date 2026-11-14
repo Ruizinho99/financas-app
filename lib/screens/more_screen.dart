@@ -42,16 +42,8 @@ class MoreScreen extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.savings_outlined),
-            title: Text(
-              Localizations.localeOf(context).languageCode == 'en'
-                  ? 'Planning and budget'
-                  : 'Planeamento e orçamento',
-            ),
-            subtitle: Text(
-              Localizations.localeOf(context).languageCode == 'en'
-                  ? 'Plan each month and follow what you spend, by type'
-                  : 'Planeia cada mês e acompanha o que gastas, por tipo',
-            ),
+            title: Text(l.bpPlanningTitle),
+            subtitle: Text(l.morPlanningSubtitle),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const BudgetScreen()),
@@ -408,7 +400,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           [
             if (kidCount > 0) l.ctbSubCount(kidCount),
             if (c.isInvestment) l.morInvestmentKind,
-            if (c.isSavings) (Localizations.localeOf(context).languageCode == 'en' ? 'Savings' : 'Poupança'),
+            if (c.isSavings) l.morSavingsKind,
             if (dates != null) dates,
             l.morTxnCount(count),
             if (s.rangesOf(c.id).isNotEmpty)

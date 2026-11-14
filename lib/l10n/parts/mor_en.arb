@@ -316,5 +316,7 @@
   "morAlertsChannelDescription": "Recurring transactions and investment deliveries",
   "morAssetFallback": "Asset",
   "morNavMonth": "Month",
-  "morNavPortfolio": "Portfolio"
+  "morNavPortfolio": "Portfolio",
+  "morPlanningSubtitle": "Plan each month and follow what you spend, by type",
+  "morSavingsKind": "Savings"
 }

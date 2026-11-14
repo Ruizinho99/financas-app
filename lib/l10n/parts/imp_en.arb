@@ -401,5 +401,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "impCashTitle": "Cash on the platform (optional)",
+  "impCashHint": "The imported trades already happened, so they do not change your unallocated cash. Enter the cash you had at the statement date to set it. Linking older deposits later changes your cash."
 }

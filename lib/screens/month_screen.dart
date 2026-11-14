@@ -793,11 +793,10 @@ class _SixMonths extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final en = Localizations.localeOf(context).languageCode == 'en';
     final maxV = series.fold<int>(0, (a, e) => e.spent > a ? e.spent : a);
     if (maxV <= 0) return const SizedBox.shrink();
     return SectionCard(
-      title: en ? 'Last 6 months' : 'Últimos 6 meses',
+      title: AppLocalizations.of(context)!.bpLast6Months,
       child: SizedBox(
         height: 120,
         child: BarChart(

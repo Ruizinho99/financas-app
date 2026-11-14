@@ -1280,6 +1280,100 @@ class AppLocalizationsPt extends AppLocalizations {
   String get bpActiveHint => 'Desativa para pausar, sem apagar';
 
   @override
+  String get bpFilterAll => 'Todas';
+
+  @override
+  String get bpFilterExpenses => 'Despesas';
+
+  @override
+  String get bpFilterInvestments => 'Investimentos';
+
+  @override
+  String get bpFilterSavings => 'Poupanças';
+
+  @override
+  String get bpPlanningTitle => 'Planeamento e orçamento';
+
+  @override
+  String bpForecastAmount(String amount) {
+    return 'Previsão $amount';
+  }
+
+  @override
+  String bpPurchasesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count compras',
+      one: '$count compra',
+      zero: '$count compras',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bpAssetPlannedBought(String name, String planned, String bought) {
+    return '$name: planeado $planned · comprado $bought';
+  }
+
+  @override
+  String bpAssetBought(String name, String bought) {
+    return '$name: comprado $bought';
+  }
+
+  @override
+  String bpUnitsShort(String qty) {
+    return '$qty un';
+  }
+
+  @override
+  String get bpStatsTooltip => 'Estatísticas';
+
+  @override
+  String bpThisMonthOnlyAmount(String amount) {
+    return 'Só este mês: $amount';
+  }
+
+  @override
+  String get bpPlanThisMonthOnly => 'Planear só este mês';
+
+  @override
+  String get bpRemove => 'Remover';
+
+  @override
+  String get bpDistribute => 'Distribuir';
+
+  @override
+  String bpDistributeTitle(String name) {
+    return 'Distribuir $name';
+  }
+
+  @override
+  String bpDistributeTotal(String amount) {
+    return 'Valor a distribuir: $amount';
+  }
+
+  @override
+  String get bpDistributeNote =>
+      'Isto grava orçamentos mensais permanentes nas subcategorias, não só neste mês. Os campos vazios ficam como estão.';
+
+  @override
+  String bpDistributePercentOfSalary(String percent) {
+    return '$percent% do salário (não alterado)';
+  }
+
+  @override
+  String bpDistributedOf(String sum, String total) {
+    return 'Distribuído $sum de $total';
+  }
+
+  @override
+  String get bpSplitEqually => 'Dividir por igual';
+
+  @override
+  String get bpLast6Months => 'Últimos 6 meses';
+
+  @override
   String get budSpentThisMonth => 'Gasto este mês';
 
   @override
@@ -1706,6 +1800,31 @@ class AppLocalizationsPt extends AppLocalizations {
   String dayOfMonthItem(int day) {
     return 'Dia $day';
   }
+
+  @override
+  String get cstEmpty =>
+      'Ainda não há despesas nesta categoria nos últimos 12 meses.';
+
+  @override
+  String get cstTotal12 => 'Total (12 meses)';
+
+  @override
+  String get cstMonthlyAverage => 'Média por mês';
+
+  @override
+  String get cstBiggest => 'Maior gasto';
+
+  @override
+  String get cstTransactions => 'Movimentos';
+
+  @override
+  String get cstTrend => 'Evolução mensal e média';
+
+  @override
+  String get cstSubcategories => 'Subcategorias';
+
+  @override
+  String get cstWhereMost => 'Onde mais gastas';
 
   @override
   String get ctbPickParentTitle => 'Escolher categoria-mãe';
@@ -2710,6 +2829,14 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get frmTotalBalance => 'Saldo total';
+
+  @override
+  String frmDeltaIn12Months(String delta) {
+    return '$delta em 12 meses';
+  }
+
+  @override
   String get impImportTitle => 'Importar extrato';
 
   @override
@@ -3315,6 +3442,13 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get impCashTitle => 'Dinheiro na corretora (opcional)';
+
+  @override
+  String get impCashHint =>
+      'As compras importadas já aconteceram, por isso não mexem no dinheiro por alocar. Indica o dinheiro que tinhas na data do extrato para o fixar. Ligar depois entregas mais antigas a esta conta altera o dinheiro.';
 
   @override
   String impfixMismatchTitle(int count) {
@@ -3989,6 +4123,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get invClosedPosition => 'Posição fechada';
+
+  @override
+  String get invPortfolioAnalysisTooltip => 'Análise da carteira';
+
+  @override
+  String get invAnalyseAssetTooltip => 'Analisar um ativo';
 
   @override
   String get invfAccountNewTitle => 'Nova plataforma';
@@ -4808,6 +4948,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get invfKindOther => 'Outro';
 
   @override
+  String get invfBudgetCategoryLabel => 'Categoria do orçamento (opcional)';
+
+  @override
+  String get invfPlannedPerMonthLabel => 'Compras planeadas por mês (opcional)';
+
+  @override
+  String get invfTimeLabel => 'Hora';
+
+  @override
   String get iosBackupSubtitle =>
       'Guardar ou restaurar no iCloud Drive ou num ficheiro';
 
@@ -4884,7 +5033,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get morBudgetSubtitle => 'Salário e limites por categoria';
 
   @override
-  String get morPlanningSubtitle => 'Salário e despesas planeadas por mês';
+  String get morPlanningSubtitle =>
+      'Planeia cada mês e acompanha o que gastas, por tipo';
 
   @override
   String get morGoalsSubtitle => 'Poupar para férias, um carro…';
@@ -5366,6 +5516,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get morNavPortfolio => 'Carteira';
+
+  @override
+  String get morSavingsKind => 'Poupança';
 
   @override
   String get mrgMenu => 'Unificar com…';

@@ -574,16 +574,12 @@ class _ImportTradesScreenState extends State<ImportTradesScreen> {
             FormCard(
               children: [
                 Text(
-                  Localizations.localeOf(context).languageCode == 'en'
-                      ? 'Cash on the platform (optional)'
-                      : 'Dinheiro na corretora (opcional)',
+                  AppLocalizations.of(context)!.impCashTitle,
                   style: tt.titleMedium,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  Localizations.localeOf(context).languageCode == 'en'
-                      ? 'The imported trades already happened, so they do not change your unallocated cash. Enter the cash you had at the statement date to set it. Linking older deposits later changes your cash.'
-                      : 'As compras importadas já aconteceram, por isso não mexem no dinheiro por alocar. Indica o dinheiro que tinhas na data do extrato para o fixar. Ligar depois entregas mais antigas a esta conta altera o dinheiro.',
+                  AppLocalizations.of(context)!.impCashHint,
                   style: tt.bodySmall,
                 ),
                 const SizedBox(height: 8),

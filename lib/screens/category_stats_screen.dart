@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 import '../stats/category_stats.dart';
 import '../util/format.dart';
@@ -16,8 +17,7 @@ class CategoryStatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final c = s.cat(categoryId);
-    final en = Localizations.localeOf(context).languageCode == 'en';
-    String t(String pt, String e) => en ? e : pt;
+    final l = AppLocalizations.of(context)!;
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     if (c == null) return const Scaffold();
@@ -31,7 +31,10 @@ class CategoryStatsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              Text(
+                label,
+                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+              ),
               const SizedBox(height: 2),
               Text(value, style: tt.titleLarge),
             ],
@@ -100,13 +103,7 @@ class CategoryStatsScreen extends StatelessWidget {
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
-                child: Text(
-                  t(
-                    'Ainda não há despesas nesta categoria nos últimos 12 meses.',
-                    'No expenses in this category in the last 12 months yet.',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                child: Text(l.cstEmpty, textAlign: TextAlign.center),
               ),
             )
           : ListView(
@@ -114,26 +111,26 @@ class CategoryStatsScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    tile(t('Total (12 meses)', 'Total (12 months)'), fmtMoney(st.total)),
+                    tile(l.cstTotal12, fmtMoney(st.total)),
                     const SizedBox(width: 8),
-                    tile(t('Média por mês', 'Monthly average'), fmtMoney(st.averagePerMonth)),
+                    tile(l.cstMonthlyAverage, fmtMoney(st.averagePerMonth)),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     tile(
-                      t('Maior gasto', 'Biggest expense'),
+                      l.cstBiggest,
                       st.biggest == null
                           ? '—'
                           : fmtMoney(-s.effectiveAmount(st.biggest!)),
                     ),
                     const SizedBox(width: 8),
-                    tile(t('Movimentos', 'Transactions'), '${st.count}'),
+                    tile(l.cstTransactions, '${st.count}'),
                   ],
                 ),
                 card(
-                  t('Evolução mensal e média', 'Monthly trend and average'),
+                  l.cstTrend,
                   SizedBox(
                     height: 180,
                     child: BarChart(
@@ -159,7 +156,10 @@ class CategoryStatsScreen extends StatelessWidget {
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
                                     fmtMonthShort(
-                                      DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))),
+                                      DateTime(
+                                        int.parse(k.substring(0, 4)),
+                                        int.parse(k.substring(5, 7)),
+                                      ),
                                     ).substring(0, 1).toUpperCase(),
                                     style: tt.labelSmall,
                                   ),
@@ -172,7 +172,10 @@ class CategoryStatsScreen extends StatelessWidget {
                           touchTooltipData: BarTouchTooltipData(
                             getTooltipItem: (g, gi, rod, ri) => BarTooltipItem(
                               '${st.monthKeys[gi]}\n${fmtMoney(rod.toY.round())}',
-                              TextStyle(color: cs.onInverseSurface, fontSize: 12),
+                              TextStyle(
+                                color: cs.onInverseSurface,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -197,7 +200,9 @@ class CategoryStatsScreen extends StatelessWidget {
                                   color: i == st.monthly.length - 1
                                       ? cs.primary
                                       : cs.primary.withValues(alpha: 0.45),
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(4),
+                                  ),
                                 ),
                               ],
                             ),
@@ -208,7 +213,7 @@ class CategoryStatsScreen extends StatelessWidget {
                 ),
                 if (st.bySubcategory.length > 1)
                   card(
-                    t('Subcategorias', 'Subcategories'),
+                    l.cstSubcategories,
                     Column(
                       children: [
                         for (final e in st.bySubcategory.take(8))
@@ -218,7 +223,7 @@ class CategoryStatsScreen extends StatelessWidget {
                   ),
                 if (st.byMerchant.isNotEmpty)
                   card(
-                    t('Onde mais gastas', 'Where you spend most'),
+                    l.cstWhereMost,
                     Column(
                       children: [
                         for (final e in st.byMerchant)

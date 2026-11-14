@@ -460,5 +460,7 @@
   "invSeen": "Visto",
   "invAvgShort": "médio",
   "invNoPriceShort": "sem preço",
-  "invClosedPosition": "Posição fechada"
+  "invClosedPosition": "Posição fechada",
+  "invPortfolioAnalysisTooltip": "Análise da carteira",
+  "invAnalyseAssetTooltip": "Analisar um ativo"
 }

@@ -401,5 +401,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "impCashTitle": "Dinheiro na corretora (opcional)",
+  "impCashHint": "As compras importadas já aconteceram, por isso não mexem no dinheiro por alocar. Indica o dinheiro que tinhas na data do extrato para o fixar. Ligar depois entregas mais antigas a esta conta altera o dinheiro."
 }

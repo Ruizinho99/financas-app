@@ -48,12 +48,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
       DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7)));
 
   String _filterLabel(BuildContext context, _TypeFilter f) {
-    final en = Localizations.localeOf(context).languageCode == 'en';
+    final l = AppLocalizations.of(context)!;
     return switch (f) {
-      _TypeFilter.all => en ? 'All' : 'Todas',
-      _TypeFilter.expense => en ? 'Expenses' : 'Despesas',
-      _TypeFilter.investment => en ? 'Investments' : 'Investimentos',
-      _TypeFilter.savings => en ? 'Savings' : 'Poupanças',
+      _TypeFilter.all => l.bpFilterAll,
+      _TypeFilter.expense => l.bpFilterExpenses,
+      _TypeFilter.investment => l.bpFilterInvestments,
+      _TypeFilter.savings => l.bpFilterSavings,
     };
   }
 
@@ -100,11 +100,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          Localizations.localeOf(context).languageCode == 'en'
-              ? 'Planning and budget'
-              : 'Planeamento e orçamento',
-        ),
+        title: Text(AppLocalizations.of(context)!.bpPlanningTitle),
         actions: [
           if (s.planFor(key).isEmpty &&
               s.planFor(monthKey(DateTime(month.year, month.month - 1)))
@@ -672,7 +668,7 @@ class _BudgetRow extends StatelessWidget {
   List<Widget> _trendLine(BuildContext context, AppState s, TextTheme tt) {
     final trend = trendOf(s, row.category, monthKey);
     if (trend.every((v) => v == 0)) return const [];
-    final en = Localizations.localeOf(context).languageCode == 'en';
+    final l = AppLocalizations.of(context)!;
     final pace = paceOf(s.periodOfMonth(monthKey));
     final fc = row.target > 0 && row.isMax ? forecastEnd(row.spent, pace) : null;
     final cs = Theme.of(context).colorScheme;
@@ -690,7 +686,7 @@ class _BudgetRow extends StatelessWidget {
             if (fc != null)
               Expanded(
                 child: Text(
-                  '${en ? 'Forecast' : 'Previsão'} ${fmtMoney(fc)}',
+                  l.bpForecastAmount(fmtMoney(fc)),
                   style: tt.bodySmall?.copyWith(
                     color: fc > row.target ? cs.error : cs.onSurfaceVariant,
                   ),
@@ -706,22 +702,20 @@ class _BudgetRow extends StatelessWidget {
   List<Widget> _purchasesLine(BuildContext context, AppState s, TextTheme tt) {
     final p = purchasesForCategory(s, row.category.id, monthKey);
     if (p.isEmpty) return const [];
-    final en = Localizations.localeOf(context).languageCode == 'en';
+    final l = AppLocalizations.of(context)!;
     String money(int c) => fmtMoney(c);
-    String n(int k) => en
-        ? '$k ${k == 1 ? 'purchase' : 'purchases'}'
-        : '$k ${k == 1 ? 'compra' : 'compras'}';
+    String n(int k) => l.bpPurchasesCount(k);
+    String units(double q) => l.bpUnitsShort(fmtQty(q));
     return [
       for (final a in p.assets)
         Padding(
           padding: const EdgeInsets.only(top: 2),
           child: Text(
             a.plannedCents > 0
-                ? '${a.name}: ${en ? 'planned' : 'planeado'} ${money(a.plannedCents)} · '
-                      '${en ? 'bought' : 'comprado'} ${money(a.boughtCents)}'
-                      '${a.count == 0 ? '' : ' · ${fmtQty(a.quantity)} un · ${n(a.count)}'}'
-                : '${a.name}: ${en ? 'bought' : 'comprado'} ${money(a.boughtCents)} · '
-                      '${fmtQty(a.quantity)} un · ${n(a.count)}',
+                ? '${l.bpAssetPlannedBought(a.name, money(a.plannedCents), money(a.boughtCents))}'
+                      '${a.count == 0 ? '' : ' · ${units(a.quantity)} · ${n(a.count)}'}'
+                : '${l.bpAssetBought(a.name, money(a.boughtCents))} · '
+                      '${units(a.quantity)} · ${n(a.count)}',
             style: tt.bodySmall?.copyWith(
               color: a.plannedCents > 0 && a.boughtCents >= a.plannedCents
                   ? Colors.green
@@ -977,9 +971,7 @@ class _CategorySheet extends StatelessWidget {
                 if (row != null && target > 0)
                   _Pill(pillText(l, row), stateColor(row)),
                 IconButton(
-                  tooltip: Localizations.localeOf(context).languageCode == 'en'
-                      ? 'Statistics'
-                      : 'Estatísticas',
+                  tooltip: l.bpStatsTooltip,
                   icon: const Icon(Icons.bar_chart),
                   onPressed: () => Navigator.push(
                     context,
@@ -999,12 +991,10 @@ class _CategorySheet extends StatelessWidget {
                   icon: const Icon(Icons.event_available, size: 18),
                   label: Text(
                     s.planFor(monthKey).any((p) => p.categoryId == c.id)
-                        ? (Localizations.localeOf(context).languageCode == 'en'
-                              ? 'This month only: ${fmtMoney(s.planFor(monthKey).firstWhere((p) => p.categoryId == c.id).cents)}'
-                              : 'Só este mês: ${fmtMoney(s.planFor(monthKey).firstWhere((p) => p.categoryId == c.id).cents)}')
-                        : (Localizations.localeOf(context).languageCode == 'en'
-                              ? 'Plan this month only'
-                              : 'Planear só este mês'),
+                        ? l.bpThisMonthOnlyAmount(
+                            fmtMoney(s.planFor(monthKey).firstWhere((p) => p.categoryId == c.id).cents),
+                          )
+                        : l.bpPlanThisMonthOnly,
                   ),
                   onPressed: () => _planThisMonth(context, s, c, monthKey),
                 ),
@@ -1013,20 +1003,12 @@ class _CategorySheet extends StatelessWidget {
                     onPressed: () => s.deletePlanned(
                       s.planFor(monthKey).firstWhere((p) => p.categoryId == c.id).id,
                     ),
-                    child: Text(
-                      Localizations.localeOf(context).languageCode == 'en'
-                          ? 'Remove'
-                          : 'Remover',
-                    ),
+                    child: Text(l.bpRemove),
                   ),
                 if (kids.isNotEmpty)
                   OutlinedButton.icon(
                     icon: const Icon(Icons.call_split, size: 18),
-                    label: Text(
-                      Localizations.localeOf(context).languageCode == 'en'
-                          ? 'Distribute'
-                          : 'Distribuir',
-                    ),
+                    label: Text(l.bpDistribute),
                     onPressed: () => showDistributeDialog(
                       context,
                       s,
@@ -1530,7 +1512,7 @@ Future<void> showDistributeDialog(
   String? monthKey,
   int? salary,
 }) {
-  final en = Localizations.localeOf(context).languageCode == 'en';
+  final l = AppLocalizations.of(context)!;
   final mk = monthKey ?? s.currentMonthKey;
   final sal = salary ?? s.salaryFor(mk);
   final own = s.totalsByCategory(s.periodOfMonth(mk));
@@ -1567,23 +1549,17 @@ Future<void> showDistributeDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, set) => AlertDialog(
-        title: Text(en ? 'Distribute ${c.name}' : 'Distribuir ${c.name}'),
+        title: Text(l.bpDistributeTitle(c.name)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (total > 0)
-                Text(
-                  en
-                      ? 'Total to distribute: ${fmtMoney(total)}'
-                      : 'Valor a distribuir: ${fmtMoney(total)}',
-                ),
+                Text(l.bpDistributeTotal(fmtMoney(total))),
               const SizedBox(height: 4),
               Text(
-                en
-                    ? 'This writes permanent monthly budgets on the subcategories, not just this month. Empty fields are left untouched.'
-                    : 'Isto grava orçamentos mensais permanentes nas subcategorias, não só neste mês. Os campos vazios ficam como estão.',
+                l.bpDistributeNote,
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
@@ -1595,9 +1571,9 @@ Future<void> showDistributeDialog(
                     contentPadding: EdgeInsets.zero,
                     title: Text(k.name),
                     subtitle: Text(
-                      en
-                          ? '${(k.budgetValue / 100).toStringAsFixed(0)}% of salary (not changed)'
-                          : '${(k.budgetValue / 100).toStringAsFixed(0)}% do salário (não alterado)',
+                      l.bpDistributePercentOfSalary(
+                        (k.budgetValue / 100).toStringAsFixed(0),
+                      ),
                     ),
                     trailing: Text(fmtMoney(k.monthlyTarget(sal))),
                   )
@@ -1615,9 +1591,7 @@ Future<void> showDistributeDialog(
               const SizedBox(height: 10),
               Text(
                 total > 0
-                    ? (en
-                          ? 'Distributed ${fmtMoney(sum())} of ${fmtMoney(total)}'
-                          : 'Distribuído ${fmtMoney(sum())} de ${fmtMoney(total)}')
+                    ? l.bpDistributedOf(fmtMoney(sum()), fmtMoney(total))
                     : 'Total ${fmtMoney(sum())}',
                 style: TextStyle(
                   color: total > 0 && sum() > total
@@ -1639,7 +1613,7 @@ Future<void> showDistributeDialog(
                   edited.add(editable[i].id);
                 }
               }),
-              child: Text(en ? 'Split equally' : 'Dividir por igual'),
+              child: Text(l.bpSplitEqually),
             ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1662,7 +1636,7 @@ Future<void> showDistributeDialog(
               }
               Navigator.pop(ctx);
             },
-            child: Text(en ? 'Save' : 'Guardar'),
+            child: Text(l.bpSave),
           ),
         ],
       ),

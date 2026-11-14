@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+  "cstEmpty": "No expenses in this category in the last 12 months yet.",
+  "cstTotal12": "Total (12 months)",
+  "cstMonthlyAverage": "Monthly average",
+  "cstBiggest": "Biggest expense",
+  "cstTransactions": "Transactions",
+  "cstTrend": "Monthly trend and average",
+  "cstSubcategories": "Subcategories",
+  "cstWhereMost": "Where you spend most"
+}

@@ -510,5 +510,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "frmTotalBalance": "Total balance",
+  "frmDeltaIn12Months": "{delta} in 12 months",
+  "@frmDeltaIn12Months": {"placeholders": {"delta": {"type": "String"}}}
 }

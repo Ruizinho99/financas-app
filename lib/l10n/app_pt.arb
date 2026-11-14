@@ -1117,6 +1117,110 @@
   "bpRemoveEndDate": "Remover data de fim",
   "bpActive": "Ativa",
   "bpActiveHint": "Desativa para pausar, sem apagar",
+  "bpFilterAll": "Todas",
+  "bpFilterExpenses": "Despesas",
+  "bpFilterInvestments": "Investimentos",
+  "bpFilterSavings": "Poupanças",
+  "bpPlanningTitle": "Planeamento e orçamento",
+  "bpForecastAmount": "Previsão {amount}",
+  "@bpForecastAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPurchasesCount": "{count, plural, =0{{count} compras} =1{{count} compra} other{{count} compras}}",
+  "@bpPurchasesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bpAssetPlannedBought": "{name}: planeado {planned} · comprado {bought}",
+  "@bpAssetPlannedBought": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "planned": {
+        "type": "String"
+      },
+      "bought": {
+        "type": "String"
+      }
+    }
+  },
+  "bpAssetBought": "{name}: comprado {bought}",
+  "@bpAssetBought": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "bought": {
+        "type": "String"
+      }
+    }
+  },
+  "bpUnitsShort": "{qty} un",
+  "@bpUnitsShort": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "bpStatsTooltip": "Estatísticas",
+  "bpThisMonthOnlyAmount": "Só este mês: {amount}",
+  "@bpThisMonthOnlyAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpPlanThisMonthOnly": "Planear só este mês",
+  "bpRemove": "Remover",
+  "bpDistribute": "Distribuir",
+  "bpDistributeTitle": "Distribuir {name}",
+  "@bpDistributeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributeTotal": "Valor a distribuir: {amount}",
+  "@bpDistributeTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributeNote": "Isto grava orçamentos mensais permanentes nas subcategorias, não só neste mês. Os campos vazios ficam como estão.",
+  "bpDistributePercentOfSalary": "{percent}% do salário (não alterado)",
+  "@bpDistributePercentOfSalary": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "bpDistributedOf": "Distribuído {sum} de {total}",
+  "@bpDistributedOf": {
+    "placeholders": {
+      "sum": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "bpSplitEqually": "Dividir por igual",
+  "bpLast6Months": "Últimos 6 meses",
   "budSpentThisMonth": "Gasto este mês",
   "budDayOfTotal": "dia {day} de {total}",
   "@budDayOfTotal": {
@@ -1493,6 +1597,14 @@
       }
     }
   },
+  "cstEmpty": "Ainda não há despesas nesta categoria nos últimos 12 meses.",
+  "cstTotal12": "Total (12 meses)",
+  "cstMonthlyAverage": "Média por mês",
+  "cstBiggest": "Maior gasto",
+  "cstTransactions": "Movimentos",
+  "cstTrend": "Evolução mensal e média",
+  "cstSubcategories": "Subcategorias",
+  "cstWhereMost": "Onde mais gastas",
   "ctbPickParentTitle": "Escolher categoria-mãe",
   "ctbMoveTo": "Mover “{name}” para…",
   "@ctbMoveTo": {
@@ -2193,6 +2305,15 @@
       }
     }
   },
+  "frmTotalBalance": "Saldo total",
+  "frmDeltaIn12Months": "{delta} em 12 meses",
+  "@frmDeltaIn12Months": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
   "impImportTitle": "Importar extrato",
   "impFormatsInfo": "Formatos suportados: PDF (com texto), CSV e Excel (.xlsx). O ficheiro é lido apenas no telemóvel e nunca sai daqui.",
   "impChooseFile": "Escolher ficheiro",
@@ -2595,6 +2716,8 @@
       }
     }
   },
+  "impCashTitle": "Dinheiro na corretora (opcional)",
+  "impCashHint": "As compras importadas já aconteceram, por isso não mexem no dinheiro por alocar. Indica o dinheiro que tinhas na data do extrato para o fixar. Ligar depois entregas mais antigas a esta conta altera o dinheiro.",
   "impfixMismatchTitle": "{count, plural, =0{{count} movimentos não batem certo com o saldo} =1{1 movimento não bate certo com o saldo} other{{count} movimentos não batem certo com o saldo}}",
   "@impfixMismatchTitle": {
     "placeholders": {
@@ -3065,6 +3188,8 @@
   "invAvgShort": "médio",
   "invNoPriceShort": "sem preço",
   "invClosedPosition": "Posição fechada",
+  "invPortfolioAnalysisTooltip": "Análise da carteira",
+  "invAnalyseAssetTooltip": "Analisar um ativo",
   "invfAccountNewTitle": "Nova plataforma",
   "invfAccountEditTitle": "Editar plataforma",
   "invfName": "Nome",
@@ -3770,6 +3895,9 @@
   "invfKindFund": "Fundo",
   "invfKindBond": "Obrigação",
   "invfKindOther": "Outro",
+  "invfBudgetCategoryLabel": "Categoria do orçamento (opcional)",
+  "invfPlannedPerMonthLabel": "Compras planeadas por mês (opcional)",
+  "invfTimeLabel": "Hora",
   "iosBackupSubtitle": "Guardar ou restaurar no iCloud Drive ou num ficheiro",
   "iosBackupDriveHint": "Não precisas de ligar nenhuma conta na app: ao guardar, escolhe “iCloud Drive” (ou outra pasta) na janela de ficheiros do iPhone. Para restaurar, escolhe o ficheiro, do iPhone ou do iCloud Drive.",
   "iosSaveBackup": "Guardar cópia (iCloud Drive ou ficheiro)",
@@ -3829,7 +3957,7 @@
   "lnkUnlinked": "Movimento desligado.",
   "morMoreTitle": "Mais",
   "morBudgetSubtitle": "Salário e limites por categoria",
-  "morPlanningSubtitle": "Salário e despesas planeadas por mês",
+  "morPlanningSubtitle": "Planeia cada mês e acompanha o que gastas, por tipo",
   "morGoalsSubtitle": "Poupar para férias, um carro…",
   "morAnalysisSubtitle": "Onde gastas e onde podes poupar",
   "morClassifyTitle": "Classificar movimentos",
@@ -4150,6 +4278,7 @@
   "morAssetFallback": "Ativo",
   "morNavMonth": "Mês",
   "morNavPortfolio": "Carteira",
+  "morSavingsKind": "Poupança",
   "mrgMenu": "Unificar com…",
   "mrgMergeInto": "Unificar \"{name}\" em…",
   "@mrgMergeInto": {
