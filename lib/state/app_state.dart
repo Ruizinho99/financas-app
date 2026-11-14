@@ -745,6 +745,7 @@ class AppState extends ChangeNotifier {
         isIncome: out.isIncome,
         both: out.both,
         isInvestment: out.isInvestment,
+        isSavings: out.isSavings,
         emoji: out.emoji,
         description: out.description,
         budgetType: out.budgetType,
@@ -791,6 +792,7 @@ class AppState extends ChangeNotifier {
                 x.copyWith(
                   isIncome: t.isIncome,
                   isInvestment: t.isInvestment,
+                  isSavings: t.isSavings,
                   both: t.both,
                 ),
                 id: x.id,
@@ -853,6 +855,7 @@ class AppState extends ChangeNotifier {
             x.copyWith(
               isIncome: parent.isIncome,
               isInvestment: parent.isInvestment,
+              isSavings: parent.isSavings,
               both: parent.both,
             ),
             id: x.id,
@@ -1009,13 +1012,13 @@ class AppState extends ChangeNotifier {
   bool isSpend(Txn t) =>
       flowAmount(t) < 0 &&
       !t.isTransfer &&
-      !(cat(t.categoryId)?.isInvestment ?? false);
+      !(cat(t.categoryId)?.isSetAside ?? false);
 
   /// Receita que conta nas contas: entrada que não é transferência nem investimento. Uma entrada sem
   /// categoria conta como receita (fica em "Por classificar" até ser classificada).
   bool isIncomeTxn(Txn t) {
     if (flowAmount(t) <= 0 || t.isTransfer) return false;
-    return !(cat(t.categoryId)?.isInvestment ?? false);
+    return !(cat(t.categoryId)?.isSetAside ?? false);
   }
 
   /// Movimento sem categoria (a categoria virtual "Por classificar"; não existe na base de dados).
@@ -1114,6 +1117,7 @@ class AppState extends ChangeNotifier {
           parentId: parentId,
           isIncome: src.isIncome,
           isInvestment: src.isInvestment,
+          isSavings: src.isSavings,
           both: src.both,
           emoji: src.emoji,
           description: src.description,
@@ -1575,6 +1579,7 @@ class AppState extends ChangeNotifier {
               emoji: d.emoji,
               isIncome: main.isIncome,
               isInvestment: main.isInvestment,
+              isSavings: main.isSavings,
               both: main.both,
             ),
             id: ex.id,
@@ -1587,6 +1592,7 @@ class AppState extends ChangeNotifier {
               parentId: subParent,
               isIncome: main.isIncome,
               isInvestment: main.isInvestment,
+              isSavings: main.isSavings,
               both: main.both,
               emoji: d.emoji,
             ),

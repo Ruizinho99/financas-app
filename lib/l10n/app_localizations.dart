@@ -3944,6 +3944,18 @@ abstract class AppLocalizations {
   /// **'Entradas de dinheiro (ex.: salário). Não conta como despesa.'**
   String get frmKindIncomeHelp;
 
+  /// No description provided for @frmKindSavings.
+  ///
+  /// In pt, this message translates to:
+  /// **'Poupança'**
+  String get frmKindSavings;
+
+  /// No description provided for @frmKindSavingsHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dinheiro posto de lado (fundo de emergência, conta poupança). Não conta como gasto; aparece como poupado.'**
+  String get frmKindSavingsHelp;
+
   /// No description provided for @frmKindInvestmentHelp.
   ///
   /// In pt, this message translates to:

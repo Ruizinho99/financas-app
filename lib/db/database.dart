@@ -447,6 +447,20 @@ class Db {
         _db.execute('PRAGMA user_version = 25');
       });
     }
+    if (v < 26) {
+      inTransaction(() {
+        final cols = _db
+            .select('PRAGMA table_info(categories)')
+            .map((r) => r['name'])
+            .toSet();
+        if (!cols.contains('is_savings')) {
+          _db.execute(
+            'ALTER TABLE categories ADD COLUMN is_savings INTEGER NOT NULL DEFAULT 0',
+          );
+        }
+        _db.execute('PRAGMA user_version = 26');
+      });
+    }
     // a cache de mercado só serve para evitar pedidos repetidos: ao abrir, apaga o que tem mais de 7 dias
     purgeMarketCache();
   }
@@ -470,6 +484,7 @@ class Db {
     parentId: r['parent_id'] as int?,
     isIncome: r['is_income'] == 1,
     isInvestment: r['is_investment'] == 1,
+    isSavings: r['is_savings'] == 1,
     both: r['is_both'] == 1,
     emoji: r['emoji'] as String,
     description: r['description'] as String,
@@ -505,16 +520,17 @@ class Db {
       c.activeTo,
       c.isInvestment ? 1 : 0,
       c.both ? 1 : 0,
+      c.isSavings ? 1 : 0,
     ];
     if (id == null) {
       _db.execute(
-        'INSERT INTO categories(name,parent_id,is_income,emoji,description,budget_type,budget_percent,budget_value,has_budget,archived,active_from,active_to,is_investment,is_both) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+        'INSERT INTO categories(name,parent_id,is_income,emoji,description,budget_type,budget_percent,budget_value,has_budget,archived,active_from,active_to,is_investment,is_both,is_savings) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
         vals,
       );
       return _db.lastInsertRowId;
     }
     _db.execute(
-      'UPDATE categories SET name=?,parent_id=?,is_income=?,emoji=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=?,active_from=?,active_to=?,is_investment=?,is_both=? WHERE id=?',
+      'UPDATE categories SET name=?,parent_id=?,is_income=?,emoji=?,description=?,budget_type=?,budget_percent=?,budget_value=?,has_budget=?,archived=?,active_from=?,active_to=?,is_investment=?,is_both=?,is_savings=? WHERE id=?',
       [...vals, id],
     );
     return id;
@@ -1593,7 +1609,7 @@ class Db {
     }
   }
 
-  static const _schemaVersion = 25;
+  static const _schemaVersion = 26;
 
   static Future<File> dbFile() async {
     final dir = await getApplicationDocumentsDirectory();

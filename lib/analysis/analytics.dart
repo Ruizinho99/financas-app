@@ -276,7 +276,7 @@ class Analytics {
     for (final t in s.transactions) {
       if (!p.contains(t.date) || t.isTransfer || s.flowAmount(t) >= 0) continue;
       final c = s.cat(t.categoryId);
-      if (c == null || !c.isInvestment) continue;
+      if (c == null || !c.isSetAside) continue;
       if (filter.accountIds.isNotEmpty &&
           (t.accountId == null || !filter.accountIds.contains(t.accountId)))
         continue;

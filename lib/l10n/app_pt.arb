@@ -2008,6 +2008,8 @@
   "frmKindOptionalHelp": "Gasto que podes cortar (lazer, restaurantes…).",
   "frmKindMandatoryHelp": "Gasto fixo do mês (renda, seguros…). Depois podes escolher só alguns meses.",
   "frmKindIncomeHelp": "Entradas de dinheiro (ex.: salário). Não conta como despesa.",
+  "frmKindSavings": "Poupança",
+  "frmKindSavingsHelp": "Dinheiro posto de lado (fundo de emergência, conta poupança). Não conta como gasto; aparece como poupado.",
   "frmKindInvestmentHelp": "Dinheiro que pões a render. Não conta como gasto; aparece como investido.",
   "frmKindBothHelp": "Aceita gastos e entradas (ex.: vendas, reembolsos). Os gastos contam como despesa e as entradas como receita.",
   "frmAccounts": "Contas",

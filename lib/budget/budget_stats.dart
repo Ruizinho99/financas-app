@@ -114,7 +114,7 @@ BudgetSummary summarize(AppState s, List<CatBudget> rows) {
     if (r.target > 0 && r.isMax) {
       spentB += r.spent;
       budgeted += r.target;
-    } else if (r.target == 0 && !r.category.isInvestment) {
+    } else if (r.target == 0 && !r.category.isSetAside) {
       unb += r.spent;
     }
   }

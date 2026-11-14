@@ -76,7 +76,7 @@ void main() {
 
       final raw = db.snapshotBytes();
       _comCopia(raw, (r) {
-        expect(r.select('PRAGMA user_version').first.values.first, 25);
+        expect(r.select('PRAGMA user_version').first.values.first, 26);
         final tabelas = r
             .select("SELECT name FROM sqlite_master WHERE type='table'")
             .map((x) => x['name'])
@@ -183,7 +183,7 @@ void main() {
       final raw = db.snapshotBytes();
       _comCopia(raw, (r) {
         expect(r.select('SELECT count(*) c FROM market_cache').first['c'], 0);
-        expect(r.select('PRAGMA user_version').first.values.first, 25);
+        expect(r.select('PRAGMA user_version').first.values.first, 26);
       });
       // a base original mantém a cache
       expect(db.marketCacheRead('k'), isNotNull);
@@ -221,7 +221,7 @@ void main() {
       await db.restoreBytes(meio);
       expect(db.holdings().single.analysisSymbol, 'AAPL'); // intacto
       _comCopia(db.snapshotBytes(), (r) {
-        expect(r.select('PRAGMA user_version').first.values.first, 25);
+        expect(r.select('PRAGMA user_version').first.values.first, 26);
       });
       db.close();
     });
