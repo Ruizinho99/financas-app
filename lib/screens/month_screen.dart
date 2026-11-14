@@ -1,3 +1,5 @@
+import '../stats/month_stats.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -218,6 +220,19 @@ class _MonthScreenState extends State<MonthScreen> {
                   ),
                 ),
               ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Center(
+                child: DeltaChip(
+                  cur: an.spent,
+                  prev: Analytics(
+                    s,
+                    s.previousMonthOf(p) ?? previousPeriod(p),
+                    const AnalysisFilter(),
+                  ).spent,
+                ),
+              ),
+            ),
             const SizedBox(height: 14),
             // ----- números -----
             Row(
@@ -257,6 +272,11 @@ class _MonthScreenState extends State<MonthScreen> {
                 ),
               ),
             const SizedBox(height: 6),
+            _SixMonths(
+              series: spendSeries(s, monthKey(month)),
+              selected: monthKey(month),
+              onPick: (k) => setState(() => month = _keyToMonth(k)),
+            ),
             // ----- onde gastas mais -----
             if (top.isNotEmpty)
               SectionCard(
@@ -267,6 +287,14 @@ class _MonthScreenState extends State<MonthScreen> {
                 ),
                 child: Column(
                   children: [
+                    _ShareBar(
+                      parts: [
+                        for (final e in top)
+                          (e.amount, paletteIndex(e.categoryId)),
+                      ],
+                      total: an.spent,
+                    ),
+                    const SizedBox(height: 6),
                     for (final e in top)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
@@ -689,4 +717,141 @@ class _RingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_RingPainter o) =>
       o.value != value || o.color != color || o.track != track;
+}
+
+
+const _palette = [
+  Color(0xFF2A78D6),
+  Color(0xFFEB6834),
+  Color(0xFF1BAF7A),
+  Color(0xFFEDA100),
+  Color(0xFFE87BA4),
+  Color(0xFF008300),
+  Color(0xFF6250D6),
+  Color(0xFF898781),
+];
+
+/// Barra repartida: cada categoria com a sua cor e o resto em cinzento.
+class _ShareBar extends StatelessWidget {
+  final List<(int, int)> parts; // (cêntimos, índice da paleta)
+  final int total;
+  const _ShareBar({required this.parts, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    if (total <= 0) return const SizedBox.shrink();
+    final used = parts.fold<int>(0, (a, p) => a + p.$1);
+    final rest = total - used;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(5),
+      child: SizedBox(
+        height: 12,
+        child: Row(
+          children: [
+            for (final p in parts)
+              Expanded(
+                flex: (p.$1 * 1000 ~/ total).clamp(1, 1000),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 2),
+                  color: _palette[p.$2],
+                ),
+              ),
+            if (rest > 0)
+              Expanded(
+                flex: (rest * 1000 ~/ total).clamp(1, 1000),
+                child: Container(color: Theme.of(context).colorScheme.outlineVariant),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Despesa dos últimos 6 meses em barras; toca numa para ir para esse mês.
+class _SixMonths extends StatelessWidget {
+  final List<({String key, int spent})> series;
+  final String selected;
+  final void Function(String key) onPick;
+  const _SixMonths({
+    required this.series,
+    required this.selected,
+    required this.onPick,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final en = Localizations.localeOf(context).languageCode == 'en';
+    final maxV = series.fold<int>(0, (a, e) => e.spent > a ? e.spent : a);
+    if (maxV <= 0) return const SizedBox.shrink();
+    return SectionCard(
+      title: en ? 'Last 6 months' : 'Últimos 6 meses',
+      child: SizedBox(
+        height: 120,
+        child: BarChart(
+          BarChartData(
+            maxY: maxV * 1.2,
+            gridData: const FlGridData(show: false),
+            borderData: FlBorderData(show: false),
+            titlesData: FlTitlesData(
+              topTitles: const AxisTitles(),
+              rightTitles: const AxisTitles(),
+              leftTitles: const AxisTitles(),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 22,
+                  getTitlesWidget: (v, _) {
+                    final i = v.toInt();
+                    if (i < 0 || i >= series.length) return const SizedBox.shrink();
+                    final k = series[i].key;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        fmtMonthShort(
+                          DateTime(int.parse(k.substring(0, 4)), int.parse(k.substring(5, 7))),
+                        ),
+                        style: tt.labelSmall,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            barTouchData: BarTouchData(
+              touchCallback: (e, r) {
+                if (e is FlTapUpEvent && r?.spot != null) {
+                  onPick(series[r!.spot!.touchedBarGroupIndex].key);
+                }
+              },
+              touchTooltipData: BarTouchTooltipData(
+                getTooltipItem: (g, gi, rod, ri) => BarTooltipItem(
+                  fmtMoney(rod.toY.round()),
+                  TextStyle(color: cs.onInverseSurface, fontSize: 12),
+                ),
+              ),
+            ),
+            barGroups: [
+              for (var i = 0; i < series.length; i++)
+                BarChartGroupData(
+                  x: i,
+                  barRods: [
+                    BarChartRodData(
+                      toY: series[i].spent.toDouble(),
+                      width: 22,
+                      color: series[i].key == selected
+                          ? cs.primary
+                          : cs.primary.withValues(alpha: 0.35),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

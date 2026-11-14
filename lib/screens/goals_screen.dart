@@ -1,3 +1,5 @@
+import '../stats/balance_stats.dart';
+import '../widgets/trend_line.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -342,11 +344,46 @@ class GoalDetailScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  LinearProgressIndicator(
-                    value: p.fraction,
-                    minHeight: 10,
-                    borderRadius: BorderRadius.circular(5),
-                    color: p.done ? cs.tertiary : cs.primary,
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 72,
+                        height: 72,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox.expand(
+                              child: CircularProgressIndicator(
+                                value: p.fraction,
+                                strokeWidth: 9,
+                                strokeCap: StrokeCap.round,
+                                backgroundColor: cs.surfaceContainerHighest,
+                                color: p.done ? cs.tertiary : cs.primary,
+                              ),
+                            ),
+                            Text(
+                              '${(p.fraction * 100).round()} %',
+                              style: tt.titleSmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Builder(
+                          builder: (_) {
+                            final cum = goalCumulative(p);
+                            if (cum.length < 2) return const SizedBox.shrink();
+                            return TrendLine(
+                              cents: [for (final e in cum) e.cents],
+                              labels: [for (final e in cum) fmtDate(e.date)],
+                              target: p.target,
+                              height: 72,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   Text(
