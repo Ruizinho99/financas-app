@@ -2447,6 +2447,13 @@ class AppLocalizationsPt extends AppLocalizations {
       'Entradas de dinheiro (ex.: salário). Não conta como despesa.';
 
   @override
+  String get frmKindSavings => 'Poupança';
+
+  @override
+  String get frmKindSavingsHelp =>
+      'Dinheiro posto de lado (fundo de emergência, conta poupança). Não conta como gasto; aparece como poupado.';
+
+  @override
   String get frmKindInvestmentHelp =>
       'Dinheiro que pões a render. Não conta como gasto; aparece como investido.';
 

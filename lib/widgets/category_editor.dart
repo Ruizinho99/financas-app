@@ -45,7 +45,7 @@ class _SubRow {
 }
 
 /// O que a categoria é: define como entra nas contas do mês.
-enum _Kind { optional, mandatory, income, investment, both }
+enum _Kind { optional, mandatory, income, investment, savings, both }
 
 extension on _Kind {
   String labelL(AppLocalizations l) => switch (this) {
@@ -53,6 +53,7 @@ extension on _Kind {
     _Kind.mandatory => l.frmKindMandatory,
     _Kind.income => l.frmKindIncome,
     _Kind.investment => l.frmKindInvestment,
+    _Kind.savings => l.frmKindSavings,
     _Kind.both => l.frmKindBoth,
   };
   IconData get icon => switch (this) {
@@ -60,6 +61,7 @@ extension on _Kind {
     _Kind.mandatory => Icons.event_repeat,
     _Kind.income => Icons.south_west,
     _Kind.investment => Icons.trending_up,
+    _Kind.savings => Icons.savings_outlined,
     _Kind.both => Icons.swap_vert,
   };
   String helpL(AppLocalizations l) => switch (this) {
@@ -67,6 +69,7 @@ extension on _Kind {
     _Kind.mandatory => l.frmKindMandatoryHelp,
     _Kind.income => l.frmKindIncomeHelp,
     _Kind.investment => l.frmKindInvestmentHelp,
+    _Kind.savings => l.frmKindSavingsHelp,
     _Kind.both => l.frmKindBothHelp,
   };
 }
@@ -114,6 +117,8 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
         ? _Kind.optional
         : e.isInvestment
         ? _Kind.investment
+        : e.isSavings
+        ? _Kind.savings
         : (st.rangesOf(e.id).isNotEmpty ? _Kind.mandatory : _Kind.optional);
     initialKind = kind;
     if (e != null) {
@@ -261,12 +266,13 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       // as marcas antigas de receita e "despesas e receitas" guardam-se como estão (já não mudam nada)
       isIncome: e?.isIncome ?? parentCat?.isIncome ?? false,
       isInvestment: parentCat?.isInvestment ?? (kind == _Kind.investment),
+      isSavings: parentCat?.isSavings ?? (kind == _Kind.savings),
       both: e?.both ?? parentCat?.both ?? false,
       emoji: emoji,
       description: desc.text.trim(),
       budgetType:
           e?.budgetType ??
-          ((parentCat?.isInvestment ?? (kind == _Kind.investment))
+          ((parentCat?.isSetAside ?? (kind == _Kind.investment || kind == _Kind.savings))
               ? BudgetType.goal
               : BudgetType.limit),
       budgetPercent: e?.budgetPercent ?? false,
@@ -679,6 +685,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
                             _Kind.optional,
                             _Kind.mandatory,
                             _Kind.investment,
+                            _Kind.savings,
                           ])
                             DropdownMenuItem(
                               value: k,

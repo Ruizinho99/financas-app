@@ -10,6 +10,7 @@ class Categoria {
   final bool both; // aceita despesas e receitas (ex.: vendas, reembolsos)
   final bool
   isInvestment; // despesa que é dinheiro investido (não conta como gasto)
+  final bool isSavings; // poupança: dinheiro posto de lado, não conta como gasto
   final String emoji; // ícone da categoria (um emoji); vazio = sem ícone
   final String description;
   final BudgetType budgetType;
@@ -27,6 +28,7 @@ class Categoria {
     this.isIncome = false,
     this.both = false,
     this.isInvestment = false,
+    this.isSavings = false,
     this.emoji = '',
     this.description = '',
     this.budgetType = BudgetType.limit,
@@ -37,6 +39,9 @@ class Categoria {
     this.activeFrom,
     this.activeTo,
   });
+
+  /// Dinheiro que sai mas não é gasto: investimento ou poupança.
+  bool get isSetAside => isInvestment || isSavings;
 
   bool get hasDates => activeFrom != null || activeTo != null;
 
@@ -51,6 +56,7 @@ class Categoria {
     bool? isIncome,
     bool? both,
     bool? isInvestment,
+    bool? isSavings,
     String? emoji,
     String? description,
     BudgetType? budgetType,
@@ -67,6 +73,7 @@ class Categoria {
     isIncome: isIncome ?? this.isIncome,
     both: both ?? this.both,
     isInvestment: isInvestment ?? this.isInvestment,
+    isSavings: isSavings ?? this.isSavings,
     emoji: emoji ?? this.emoji,
     description: description ?? this.description,
     budgetType: budgetType ?? this.budgetType,

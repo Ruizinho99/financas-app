@@ -410,6 +410,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           [
             if (kidCount > 0) l.ctbSubCount(kidCount),
             if (c.isInvestment) l.morInvestmentKind,
+            if (c.isSavings) (Localizations.localeOf(context).languageCode == 'en' ? 'Savings' : 'Poupança'),
             if (dates != null) dates,
             l.morTxnCount(count),
             if (s.rangesOf(c.id).isNotEmpty)

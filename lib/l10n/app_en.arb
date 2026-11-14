@@ -2008,6 +2008,8 @@
   "frmKindOptionalHelp": "Spending you can cut (leisure, restaurants…).",
   "frmKindMandatoryHelp": "Fixed monthly spending (rent, insurance…). You can then pick only some months.",
   "frmKindIncomeHelp": "Money coming in (e.g. salary). Doesn't count as an expense.",
+  "frmKindSavings": "Savings",
+  "frmKindSavingsHelp": "Money set aside (emergency fund, savings account). Doesn't count as spending; it shows as saved.",
   "frmKindInvestmentHelp": "Money you put to work. Doesn't count as spending; it shows as invested.",
   "frmKindBothHelp": "Accepts spending and income (e.g. sales, refunds). Spending counts as an expense and income as income.",
   "frmAccounts": "Accounts",

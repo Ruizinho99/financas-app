@@ -2454,6 +2454,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Money coming in (e.g. salary). Doesn\'t count as an expense.';
 
   @override
+  String get frmKindSavings => 'Savings';
+
+  @override
+  String get frmKindSavingsHelp =>
+      'Money set aside (emergency fund, savings account). Doesn\'t count as spending; it shows as saved.';
+
+  @override
   String get frmKindInvestmentHelp =>
       'Money you put to work. Doesn\'t count as spending; it shows as invested.';
 
