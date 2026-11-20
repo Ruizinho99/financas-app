@@ -249,6 +249,81 @@ void main() {
     });
   });
 
+  group('Servidor local', () {
+    test(
+      'usa o endereço indicado, sem chave não manda Authorization',
+      () async {
+        late http.Request sent;
+        final p = AgentProviderKind.local.build(
+          apiKey: '',
+          model: 'llama3.1',
+          baseUrl: 'http://192.168.1.10:11434/v1/',
+          client: MockClient((r) async {
+            sent = r;
+            return http.Response(
+              jsonEncode({
+                'choices': [
+                  {
+                    'message': {'content': 'Olá'},
+                  },
+                ],
+              }),
+              200,
+              headers: {'content-type': 'application/json; charset=utf-8'},
+            );
+          }),
+        );
+        final turn = await p.send(system: 's', messages: _convo, tools: _tools);
+        expect(
+          sent.url.toString(),
+          'http://192.168.1.10:11434/v1/chat/completions',
+        );
+        expect(sent.headers.containsKey('authorization'), isFalse);
+        expect((jsonDecode(sent.body) as Map)['model'], 'llama3.1');
+        expect(turn.text, 'Olá');
+      },
+    );
+
+    test('com chave manda Bearer', () async {
+      late http.Request sent;
+      final p = AgentProviderKind.local.build(
+        apiKey: 'abc',
+        model: 'm',
+        baseUrl: 'https://llm.casa.pt/v1',
+        client: MockClient((r) async {
+          sent = r;
+          return http.Response('{"choices":[]}', 200);
+        }),
+      );
+      await p.send(system: '', messages: _convo, tools: []);
+      expect(sent.headers['authorization'], 'Bearer abc');
+    });
+
+    test('normalizeBaseUrl aceita http(s) e recusa o resto', () {
+      expect(
+        normalizeBaseUrl(' http://pc.local:1234/v1// '),
+        'http://pc.local:1234/v1',
+      );
+      expect(normalizeBaseUrl('https://x.pt'), 'https://x.pt');
+      expect(normalizeBaseUrl(''), isNull);
+      expect(normalizeBaseUrl(null), isNull);
+      expect(normalizeBaseUrl('192.168.1.10:11434'), isNull);
+      expect(normalizeBaseUrl('ftp://x.pt'), isNull);
+      expect(normalizeBaseUrl('http://x.pt/v1?a=1'), isNull);
+    });
+
+    test('construir sem endereço válido falha', () {
+      expect(
+        () => AgentProviderKind.local.build(
+          apiKey: '',
+          model: 'm',
+          baseUrl: 'xx',
+        ),
+        throwsArgumentError,
+      );
+    });
+  });
+
   test(
     'AgentProviderKind constrói o fornecedor certo com o modelo por omissão',
     () {

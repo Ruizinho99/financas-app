@@ -1,6 +1,6 @@
 # Agente dentro da app — plano (rascunho para aprovação)
 
-Estado: fase 1 (v1.38.0) e fase 2 (v1.39.0) feitas. A fase 2 inclui `transferir`, `mover_tudo_para`, `adicionar_movimento` e `classificar`, com plano, confirmação, snapshot e Desfazer; "todas as contas" são só as contas normais (as de investimento ficam de fora). A fase 3 (v1.40.0) acrescenta OpenAI e Gemini, com escolha do fornecedor e uma chave por fornecedor. A fase 4 (v1.41.0) acrescenta `criar_categoria`, `criar_objetivo`, `definir_salario` e `apagar_movimentos` (a vermelho no plano; não apaga transferências). Falta a fase 5 (modelo local).
+Estado: fase 1 (v1.38.0) e fase 2 (v1.39.0) feitas. A fase 2 inclui `transferir`, `mover_tudo_para`, `adicionar_movimento` e `classificar`, com plano, confirmação, snapshot e Desfazer; "todas as contas" são só as contas normais (as de investimento ficam de fora). A fase 3 (v1.40.0) acrescenta OpenAI e Gemini, com escolha do fornecedor e uma chave por fornecedor. A fase 4 (v1.41.0) acrescenta `criar_categoria`, `criar_objetivo`, `definir_salario` e `apagar_movimentos` (a vermelho no plano; não apaga transferências). A fase 5 (v1.42.0) acrescenta o **servidor local** (ver abaixo).
 
 ## Ideia
 
@@ -82,3 +82,13 @@ Fica de fora na v1: importar extratos, investimentos, apagar contas/categorias (
 - Cada ferramenta com testes unitários (validação e efeito na `AppState`).
 - Um `FakeProvider` que devolve chamadas pré-definidas, para testar planner/executor/Desfazer sem rede.
 - Teste do pedido de exemplo: contas A, B, C com saldos → plano com 2 transferências para B → executar → saldos certos → Desfazer repõe.
+
+## Fase 5: modelo local (feito como servidor local)
+
+Em vez de embutir um motor na app, o fornecedor "Servidor local" fala com qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp, vLLM), no PC ou na rede de casa. Reutiliza o fornecedor OpenAI com outro endereço; a chave é opcional.
+
+Porquê não embutir (flutter_edge_ai, LiteRT-LM, testado em 2026-11-20): obriga a `minSdk 30` e só arm64 (deixa de servir Android 10 e anteriores), traz um motor nativo grande, pede pods estáticos e permissões no iOS, e não dá para verificar num telemóvel daqui. Fica como possível fase 6, se o utilizador aceitar subir o Android mínimo.
+
+Exemplo com Ollama no PC: `OLLAMA_HOST=0.0.0.0 ollama serve`, `ollama pull llama3.1`, e nas definições do agente: endereço `http://<IP do PC>:11434/v1`, modelo `llama3.1`.
+
+Custos: Android passa a permitir tráfego http (`usesCleartextTraffic`) e o iOS `NSAllowsLocalNetworking`, porque estes servidores costumam estar em http na rede de casa; o resto da app usa https no código. Modelos pequenos falham mais em chamadas de ferramentas; o plano com confirmação continua a proteger os dados.

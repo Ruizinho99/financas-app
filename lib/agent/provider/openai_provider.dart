@@ -7,17 +7,23 @@ import 'llm_provider.dart';
 /// Fornecedor OpenAI (Chat Completions) com a chave do utilizador.
 class OpenAiProvider implements LlmProvider {
   static const defaultModel = 'gpt-4.1';
-  static final _endpoint = Uri.parse(
-    'https://api.openai.com/v1/chat/completions',
-  );
+  static const defaultBaseUrl = 'https://api.openai.com/v1';
 
+  /// Chave; vazia nos servidores locais que não a pedem.
   final String apiKey;
   final String model;
+
+  /// Raiz da API, sem a barra final (por omissão a da OpenAI). Qualquer servidor
+  /// compatível serve: Ollama, LM Studio, llama.cpp, vLLM…
+  final String baseUrl;
+  final Duration timeout;
   final http.Client _client;
 
   OpenAiProvider({
     required this.apiKey,
     this.model = defaultModel,
+    this.baseUrl = defaultBaseUrl,
+    this.timeout = const Duration(seconds: 60),
     http.Client? client,
   }) : _client = client ?? http.Client();
 
@@ -50,14 +56,14 @@ class OpenAiProvider implements LlmProvider {
     try {
       res = await _client
           .post(
-            _endpoint,
+            Uri.parse('$baseUrl/chat/completions'),
             headers: {
-              'authorization': 'Bearer $apiKey',
+              if (apiKey.isNotEmpty) 'authorization': 'Bearer $apiKey',
               'content-type': 'application/json',
             },
             body: body,
           )
-          .timeout(const Duration(seconds: 60));
+          .timeout(timeout);
     } on Exception catch (e) {
       throw LlmException('network: $e');
     }

@@ -172,6 +172,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get agLocalUrlLabel => 'Server address';
+
+  @override
+  String get agLocalUrlInvalid => 'Enter a valid http:// or https:// address.';
+
+  @override
+  String get agLocalModelRequired =>
+      'Enter the name of the model the server has.';
+
+  @override
+  String get agKeyOptional => 'API key (optional)';
+
+  @override
+  String get agLocalNote =>
+      'Works with any server compatible with the OpenAI API (Ollama, LM Studio, llama.cpp), for example on your PC. Your request and the data the agent looks up go to that server. Over http the connection isn\'t encrypted: use it only on your home network. Small models make more mistakes; the plan and confirmation protect your data.';
+
+  @override
   String get anCompareOn => 'Comparing with the previous period';
 
   @override

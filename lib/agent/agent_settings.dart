@@ -12,6 +12,7 @@ class AgentSettings {
 
   static String _keyName(AgentProviderKind k) => 'agent_${k.name}_api_key';
   static String _modelName(AgentProviderKind k) => 'agent_${k.name}_model';
+  static const _baseUrlName = 'agent_local_base_url';
 
   static Future<AgentProviderKind> readKind() async {
     final p = await SharedPreferences.getInstance();
@@ -61,12 +62,38 @@ class AgentSettings {
     }
   }
 
-  /// O fornecedor escolhido com a sua chave e modelo, ou nulo se faltar a chave.
-  static Future<({AgentProviderKind kind, String key, String model})?>
+  static Future<String?> readBaseUrl() async {
+    final p = await SharedPreferences.getInstance();
+    final v = p.getString(_baseUrlName)?.trim();
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  static Future<void> saveBaseUrl(String? url) async {
+    final p = await SharedPreferences.getInstance();
+    final v = url?.trim() ?? '';
+    if (v.isEmpty) {
+      await p.remove(_baseUrlName);
+    } else {
+      await p.setString(_baseUrlName, v);
+    }
+  }
+
+  /// O fornecedor escolhido, pronto a usar, ou nulo se faltar algo: a chave
+  /// (Claude, OpenAI, Gemini) ou o endereço e o modelo (servidor local, onde a
+  /// chave é opcional).
+  static Future<
+    ({AgentProviderKind kind, String key, String model, String? baseUrl})?
+  >
   active() async {
     final kind = await readKind();
     final key = await readApiKey(kind);
+    final model = await readModel(kind);
+    if (kind.isLocal) {
+      final url = normalizeBaseUrl(await readBaseUrl());
+      if (url == null || model.isEmpty) return null;
+      return (kind: kind, key: key ?? '', model: model, baseUrl: url);
+    }
     if (key == null) return null;
-    return (kind: kind, key: key, model: await readModel(kind));
+    return (kind: kind, key: key, model: model, baseUrl: null);
   }
 }

@@ -5,7 +5,9 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <!-- Aviso quando sai uma versão nova (Android 13+ pede a permissão ao utilizador). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- O servidor local do Agente (Ollama, LM Studio…) costuma estar na rede de casa em http. Todo o resto da app usa https. -->
     <application
+        android:usesCleartextTraffic="true"
         android:label="Finanças"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
