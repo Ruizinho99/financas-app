@@ -63,7 +63,11 @@ class _AgentScreenState extends State<AgentScreen> {
     if (widget.provider != null) return widget.provider;
     final cfg = await AgentSettings.active();
     if (cfg == null) return null;
-    return cfg.kind.build(apiKey: cfg.key, model: cfg.model);
+    return cfg.kind.build(
+      apiKey: cfg.key,
+      model: cfg.model,
+      baseUrl: cfg.baseUrl,
+    );
   }
 
   Future<void> _openSettings() async {

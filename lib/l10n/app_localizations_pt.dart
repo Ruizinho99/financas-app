@@ -173,6 +173,24 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get agLocalUrlLabel => 'Endereço do servidor';
+
+  @override
+  String get agLocalUrlInvalid =>
+      'Indica um endereço http:// ou https:// válido.';
+
+  @override
+  String get agLocalModelRequired =>
+      'Indica o nome do modelo que o servidor tem.';
+
+  @override
+  String get agKeyOptional => 'Chave da API (opcional)';
+
+  @override
+  String get agLocalNote =>
+      'Serve qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp), por exemplo no teu PC. O pedido e os dados que o agente consultar vão para esse servidor. Em http a ligação não é cifrada: usa só na tua rede de casa. Modelos pequenos erram mais; o plano e a confirmação protegem os teus dados.';
+
+  @override
   String get anCompareOn => 'A comparar com o período anterior';
 
   @override

@@ -13,6 +13,8 @@ class AgentSettingsScreen extends StatefulWidget {
 class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
   final _key = TextEditingController();
   final _model = TextEditingController();
+  final _url = TextEditingController();
+  String? _error;
   AgentProviderKind _kind = AgentProviderKind.claude;
   bool _hasKey = false;
 
@@ -27,8 +29,11 @@ class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
     final k = kind ?? await AgentSettings.readKind();
     final key = await AgentSettings.readApiKey(k);
     final model = await AgentSettings.readModel(k);
+    final url = await AgentSettings.readBaseUrl();
     if (!mounted) return;
     setState(() {
+      _error = null;
+      _url.text = url ?? '';
       _kind = k;
       _hasKey = key != null;
       _key.clear();
@@ -40,12 +45,24 @@ class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
   void dispose() {
     _key.dispose();
     _model.dispose();
+    _url.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     final l = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
+    if (_kind.isLocal) {
+      if (normalizeBaseUrl(_url.text) == null) {
+        setState(() => _error = l.agLocalUrlInvalid);
+        return;
+      }
+      if (_model.text.trim().isEmpty) {
+        setState(() => _error = l.agLocalModelRequired);
+        return;
+      }
+      await AgentSettings.saveBaseUrl(normalizeBaseUrl(_url.text));
+    }
     await AgentSettings.saveKind(_kind);
     if (_key.text.trim().isNotEmpty) {
       await AgentSettings.saveApiKey(_kind, _key.text);
@@ -89,13 +106,28 @@ class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
             },
           ),
           const SizedBox(height: 16),
+          if (_kind.isLocal) ...[
+            TextField(
+              controller: _url,
+              autocorrect: false,
+              keyboardType: TextInputType.url,
+              decoration: InputDecoration(
+                labelText: l.agLocalUrlLabel,
+                hintText: 'http://192.168.1.10:11434/v1',
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           TextField(
             controller: _key,
             obscureText: true,
             autocorrect: false,
             enableSuggestions: false,
             decoration: InputDecoration(
-              labelText: l.agKeyLabel(_kind.label),
+              labelText: _kind.isLocal
+                  ? l.agKeyOptional
+                  : l.agKeyLabel(_kind.label),
               helperText: _hasKey ? l.agKeyStored : null,
               helperMaxLines: 2,
               border: const OutlineInputBorder(),
@@ -112,7 +144,18 @@ class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(l.agPrivacy, style: Theme.of(context).textTheme.bodySmall),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          Text(
+            _kind.isLocal ? l.agLocalNote : l.agPrivacy,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 16),
           FilledButton(onPressed: _save, child: Text(l.agSave)),
           if (_hasKey)

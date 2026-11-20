@@ -350,6 +350,36 @@ abstract class AppLocalizations {
   /// **'Apagar {count} movimento(s): {summary}'**
   String agPlanDelete(int count, String summary);
 
+  /// No description provided for @agLocalUrlLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Endereço do servidor'**
+  String get agLocalUrlLabel;
+
+  /// No description provided for @agLocalUrlInvalid.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica um endereço http:// ou https:// válido.'**
+  String get agLocalUrlInvalid;
+
+  /// No description provided for @agLocalModelRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Indica o nome do modelo que o servidor tem.'**
+  String get agLocalModelRequired;
+
+  /// No description provided for @agKeyOptional.
+  ///
+  /// In pt, this message translates to:
+  /// **'Chave da API (opcional)'**
+  String get agKeyOptional;
+
+  /// No description provided for @agLocalNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Serve qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp), por exemplo no teu PC. O pedido e os dados que o agente consultar vão para esse servidor. Em http a ligação não é cifrada: usa só na tua rede de casa. Modelos pequenos erram mais; o plano e a confirmação protegem os teus dados.'**
+  String get agLocalNote;
+
   /// No description provided for @anCompareOn.
   ///
   /// In pt, this message translates to:
