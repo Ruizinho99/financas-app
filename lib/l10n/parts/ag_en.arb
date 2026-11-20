@@ -6,19 +6,19 @@
   "agNewChat": "New conversation",
   "agSettingsTitle": "Agent settings",
   "agSettingsTooltip": "Settings",
-  "agKeyLabel": "Claude API key",
+  "agKeyLabel": "API key · {provider}",
   "agKeyStored": "Key stored on this phone. Type another to replace it.",
   "agModelLabel": "Model",
   "agSave": "Save",
   "agRemoveKey": "Remove key",
   "agSaved": "Saved",
-  "agPrivacy": "The text of your requests and the data the agent looks up (account and category names, balances, requested transactions) are sent to Anthropic (Claude) using your key. The key is stored securely on this phone only.",
-  "agNeedKey": "Set your Claude API key to get started.",
+  "agPrivacy": "The text of your requests and the data the agent looks up (account and category names, balances, requested transactions) are sent to the provider you choose (Anthropic, OpenAI or Google) using your key. Keys are stored securely on this phone only.",
+  "agNeedKey": "Pick a provider and set your API key to get started.",
   "agNeedKeyAction": "Set key",
   "agReadOnly": "Ask for changes in text: the agent shows a plan and only makes them after you confirm.",
   "agThinking": "Thinking…",
   "agErrNetwork": "No connection, or the provider didn't respond. Try again.",
-  "agErrKey": "The key was rejected. Check it in the agent settings.",
+  "agErrKey": "The provider rejected the key. Check it in the agent settings.",
   "agErrSteps": "The agent took too many steps. Try a simpler request.",
   "agErrGeneric": "Couldn't answer: {message}",
   "@agErrGeneric": {
@@ -97,5 +97,13 @@
       }
     }
   },
-  "agUndoNote": "Undo restores your data as it was before the plan."
+  "agUndoNote": "Undo restores your data as it was before the plan.",
+  "agProviderLabel": "Provider",
+  "@agKeyLabel": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -8,7 +8,6 @@ import '../state/app_state.dart';
 import 'agent_loop.dart';
 import 'agent_settings.dart';
 import 'agent_settings_screen.dart';
-import 'provider/claude_provider.dart';
 import 'provider/llm_provider.dart';
 import 'tools/read_tools.dart';
 import 'tools/write_tools.dart';
@@ -52,8 +51,7 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 
   Future<void> _checkKey() async {
-    final has =
-        widget.provider != null || await AgentSettings.readApiKey() != null;
+    final has = widget.provider != null || await AgentSettings.active() != null;
     if (!mounted) return;
     setState(() {
       _hasKey = has;
@@ -63,9 +61,9 @@ class _AgentScreenState extends State<AgentScreen> {
 
   Future<LlmProvider?> _provider() async {
     if (widget.provider != null) return widget.provider;
-    final key = await AgentSettings.readApiKey();
-    if (key == null) return null;
-    return ClaudeProvider(apiKey: key, model: await AgentSettings.readModel());
+    final cfg = await AgentSettings.active();
+    if (cfg == null) return null;
+    return cfg.kind.build(apiKey: cfg.key, model: cfg.model);
   }
 
   Future<void> _openSettings() async {

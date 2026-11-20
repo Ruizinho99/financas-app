@@ -32,7 +32,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agSettingsTooltip => 'Settings';
 
   @override
-  String get agKeyLabel => 'Claude API key';
+  String agKeyLabel(String provider) {
+    return 'API key · $provider';
+  }
 
   @override
   String get agKeyStored =>
@@ -52,10 +54,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agPrivacy =>
-      'The text of your requests and the data the agent looks up (account and category names, balances, requested transactions) are sent to Anthropic (Claude) using your key. The key is stored securely on this phone only.';
+      'The text of your requests and the data the agent looks up (account and category names, balances, requested transactions) are sent to the provider you choose (Anthropic, OpenAI or Google) using your key. Keys are stored securely on this phone only.';
 
   @override
-  String get agNeedKey => 'Set your Claude API key to get started.';
+  String get agNeedKey =>
+      'Pick a provider and set your API key to get started.';
 
   @override
   String get agNeedKeyAction => 'Set key';
@@ -73,7 +76,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agErrKey =>
-      'The key was rejected. Check it in the agent settings.';
+      'The provider rejected the key. Check it in the agent settings.';
 
   @override
   String get agErrSteps =>
@@ -134,6 +137,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agUndoNote => 'Undo restores your data as it was before the plan.';
+
+  @override
+  String get agProviderLabel => 'Provider';
 
   @override
   String get anCompareOn => 'Comparing with the previous period';
