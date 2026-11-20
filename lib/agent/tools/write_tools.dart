@@ -10,7 +10,14 @@ import '../provider/llm_provider.dart';
 class PlannedAction {
   final String Function(AppLocalizations l) describe;
   final void Function(AppState s) apply;
-  const PlannedAction({required this.describe, required this.apply});
+
+  /// Apaga dados: o plano mostra-a a vermelho.
+  final bool destructive;
+  const PlannedAction({
+    required this.describe,
+    required this.apply,
+    this.destructive = false,
+  });
 }
 
 /// Ferramenta de escrita: valida o pedido do modelo e devolve ações para o plano.
@@ -246,6 +253,197 @@ List<WriteTool> buildWriteTools(AppState s) => [
                 if (now[id] != null) now[id]!,
             ], cat.id);
           },
+        ),
+      ];
+    },
+  ),
+  WriteTool(
+    const ToolSpec(
+      name: 'criar_categoria',
+      description:
+          'Propõe uma categoria nova (de despesa por omissão), opcionalmente '
+          'dentro de outra (mae_id). Só fica no plano.',
+      inputSchema: {
+        'type': 'object',
+        'properties': {
+          'nome': {'type': 'string'},
+          'mae_id': {'type': 'integer'},
+          'receita': {'type': 'boolean'},
+        },
+        'required': ['nome'],
+      },
+    ),
+    (input) {
+      final name = (input['nome'] as String?)?.trim() ?? '';
+      if (name.isEmpty || name.length > 60) {
+        throw ArgumentError('nome inválido (1 a 60 caracteres)');
+      }
+      final parentId = input['mae_id'];
+      final parent = parentId == null
+          ? null
+          : s.cat(parentId is int ? parentId : null);
+      if (parentId != null && parent == null) {
+        throw ArgumentError('mae_id: categoria inexistente');
+      }
+      final clash = s.categories.any(
+        (c) =>
+            c.parentId == parent?.id &&
+            c.name.toLowerCase() == name.toLowerCase(),
+      );
+      if (clash) {
+        throw ArgumentError('já existe uma categoria com esse nome aí');
+      }
+      final income = input['receita'] == true;
+      return [
+        PlannedAction(
+          describe: (l) => parent == null
+              ? l.agPlanCategory(name)
+              : l.agPlanSubcategory(name, parent.name),
+          apply: (st) => st.addCategory(
+            Categoria(
+              id: 0,
+              name: name,
+              parentId: parent?.id,
+              isIncome: income,
+            ),
+          ),
+        ),
+      ];
+    },
+  ),
+  WriteTool(
+    const ToolSpec(
+      name: 'criar_objetivo',
+      description:
+          'Propõe um objetivo de poupança com um valor alvo em euros, dentro '
+          'de uma categoria existente (categoria_mae_id). Data de fim '
+          'opcional em AAAA-MM-DD. Só fica no plano.',
+      inputSchema: {
+        'type': 'object',
+        'properties': {
+          'nome': {'type': 'string'},
+          'montante': {'type': 'number'},
+          'categoria_mae_id': {'type': 'integer'},
+          'data_fim': {'type': 'string'},
+        },
+        'required': ['nome', 'montante', 'categoria_mae_id'],
+      },
+    ),
+    (input) {
+      final name = (input['nome'] as String?)?.trim() ?? '';
+      if (name.isEmpty || name.length > 60) {
+        throw ArgumentError('nome inválido (1 a 60 caracteres)');
+      }
+      final cents = _cents(input['montante']);
+      if (cents < 0) throw ArgumentError('o montante tem de ser positivo');
+      final pid = input['categoria_mae_id'];
+      final parent = pid is int ? s.cat(pid) : null;
+      if (parent == null) {
+        throw ArgumentError('categoria_mae_id: categoria inexistente');
+      }
+      final raw = input['data_fim'] as String?;
+      DateTime? end;
+      if (raw != null && raw.isNotEmpty) {
+        end = DateTime.tryParse(raw);
+        if (end == null) throw ArgumentError('data_fim inválida (AAAA-MM-DD)');
+      }
+      return [
+        PlannedAction(
+          describe: (l) => l.agPlanGoal(name, fmtMoney(cents)),
+          apply: (st) => st.addGoal(
+            name: name,
+            parentCategoryId: parent.id,
+            targetCents: cents,
+            endDate: end,
+          ),
+        ),
+      ];
+    },
+  ),
+  WriteTool(
+    const ToolSpec(
+      name: 'definir_salario',
+      description:
+          'Propõe o salário mensal em euros. Com mes (AAAA-MM) só esse mês; '
+          'sem mes, o salário por omissão. Só fica no plano.',
+      inputSchema: {
+        'type': 'object',
+        'properties': {
+          'montante': {'type': 'number'},
+          'mes': {'type': 'string'},
+        },
+        'required': ['montante'],
+      },
+    ),
+    (input) {
+      final cents = _cents(input['montante']);
+      if (cents < 0) throw ArgumentError('o montante tem de ser positivo');
+      final month = input['mes'] as String?;
+      if (month != null &&
+          month.isNotEmpty &&
+          !RegExp(r'^\d{4}-(0[1-9]|1[0-2])$').hasMatch(month)) {
+        throw ArgumentError('mes inválido (usa AAAA-MM)');
+      }
+      final all = month == null || month.isEmpty;
+      return [
+        PlannedAction(
+          describe: (l) => all
+              ? l.agPlanSalaryDefault(fmtMoney(cents))
+              : l.agPlanSalary(month, fmtMoney(cents)),
+          apply: (st) =>
+              all ? st.setDefaultSalary(cents) : st.setSalary(month, cents),
+        ),
+      ];
+    },
+  ),
+  WriteTool(
+    const ToolSpec(
+      name: 'apagar_movimentos',
+      description:
+          'Propõe apagar movimentos (ids de procurar_movimentos). Usa só se '
+          'o utilizador pediu mesmo para apagar. Não apaga transferências. '
+          'Só fica no plano.',
+      inputSchema: {
+        'type': 'object',
+        'properties': {
+          'movimento_ids': {
+            'type': 'array',
+            'items': {'type': 'integer'},
+          },
+        },
+        'required': ['movimento_ids'],
+      },
+    ),
+    (input) {
+      final ids = input['movimento_ids'];
+      if (ids is! List || ids.isEmpty) {
+        throw ArgumentError('movimento_ids em falta');
+      }
+      if (ids.length > 50) {
+        throw ArgumentError('no máximo 50 movimentos de cada vez');
+      }
+      final byId = {for (final t in s.transactions) t.id: t};
+      final found = <Txn>[];
+      for (final id in ids.toSet()) {
+        final t = id is int ? byId[id] : null;
+        if (t == null) throw ArgumentError('movimento $id inexistente');
+        if (t.isTransfer) {
+          throw ArgumentError(
+            'movimento $id é uma transferência: não se apaga por aqui',
+          );
+        }
+        found.add(t);
+      }
+      final txnIds = [for (final t in found) t.id];
+      final summary = found.take(3).map((t) => t.description).join(', ');
+      return [
+        PlannedAction(
+          destructive: true,
+          describe: (l) => l.agPlanDelete(
+            txnIds.length,
+            found.length > 3 ? '$summary…' : summary,
+          ),
+          apply: (st) => st.deleteTxns(txnIds),
         ),
       ];
     },

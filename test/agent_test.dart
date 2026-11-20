@@ -322,6 +322,116 @@ void main() {
       },
     );
 
+    test('criar_categoria, criar_objetivo e definir_salario', () async {
+      final s = _state();
+      final root = s.addCategory(
+        const Categoria(
+          id: 0,
+          name: 'Poupança',
+          parentId: null,
+          isIncome: false,
+        ),
+      );
+      final plan = [
+        ...w(s, 'criar_categoria').plan({'nome': 'Café', 'mae_id': root}),
+        ...w(
+          s,
+          'criar_objetivo',
+        ).plan({'nome': 'Férias', 'montante': 1500, 'categoria_mae_id': root}),
+        ...w(s, 'definir_salario').plan({'montante': 1800, 'mes': '2026-11'}),
+        ...w(s, 'definir_salario').plan({'montante': 1700}),
+      ];
+      expect(plan.every((a) => !a.destructive), isTrue);
+      await executePlan(s, plan);
+      expect(
+        s.categories.any((c) => c.name == 'Café' && c.parentId == root),
+        isTrue,
+      );
+      expect(s.goals.single.name, 'Férias');
+      expect(s.salaryFor('2026-11'), 180000);
+      expect(s.defaultSalary, 170000);
+    });
+
+    test('validação das ferramentas novas', () {
+      final s = _state();
+      final root = s.addCategory(
+        const Categoria(id: 0, name: 'Casa', parentId: null, isIncome: false),
+      );
+      expect(
+        () => w(s, 'criar_categoria').plan({'nome': ' '}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(s, 'criar_categoria').plan({'nome': 'casa'}),
+        throwsArgumentError,
+      ); // já existe
+      expect(
+        () => w(s, 'criar_categoria').plan({'nome': 'X', 'mae_id': 999}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(
+          s,
+          'criar_objetivo',
+        ).plan({'nome': 'A', 'montante': 10, 'categoria_mae_id': 999}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(s, 'criar_objetivo').plan({
+          'nome': 'A',
+          'montante': 10,
+          'categoria_mae_id': root,
+          'data_fim': 'amanhã',
+        }),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(s, 'definir_salario').plan({'montante': 100, 'mes': '2026-13'}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(s, 'definir_salario').plan({'montante': -1}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(s, 'apagar_movimentos').plan({'movimento_ids': []}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(s, 'apagar_movimentos').plan({
+          'movimento_ids': [99999],
+        }),
+        throwsArgumentError,
+      );
+      final transferId = s.transactions.firstWhere((t) => t.isTransfer).id;
+      expect(
+        () => w(s, 'apagar_movimentos').plan({
+          'movimento_ids': [transferId],
+        }),
+        throwsArgumentError,
+      );
+    });
+
+    test(
+      'apagar_movimentos fica marcado como destrutivo e o Desfazer repõe',
+      () async {
+        final s = _state();
+        final id = s.transactions
+            .firstWhere((t) => t.description == 'Supermercado')
+            .id;
+        final n = s.transactions.length;
+        final plan = w(s, 'apagar_movimentos').plan({
+          'movimento_ids': [id],
+        });
+        expect(plan.single.destructive, isTrue);
+        expect(s.transactions.length, n); // planear não apaga
+        final snap = await executePlan(s, plan);
+        expect(s.transactions.length, n - 1);
+        await s.restoreBackup(snap);
+        expect(s.transactions.length, n);
+      },
+    );
+
     test(
       'o laço regista o plano sem executar e devolve erros ao modelo',
       () async {

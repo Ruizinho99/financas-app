@@ -143,6 +143,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String get agProviderLabel => 'Fornecedor';
 
   @override
+  String agPlanCategory(String name) {
+    return 'Criar categoria “$name”';
+  }
+
+  @override
+  String agPlanSubcategory(String name, String parent) {
+    return 'Criar categoria “$name” dentro de $parent';
+  }
+
+  @override
+  String agPlanGoal(String name, String amount) {
+    return 'Criar objetivo “$name” de $amount';
+  }
+
+  @override
+  String agPlanSalary(String month, String amount) {
+    return 'Definir o salário de $month para $amount';
+  }
+
+  @override
+  String agPlanSalaryDefault(String amount) {
+    return 'Definir o salário por omissão para $amount';
+  }
+
+  @override
+  String agPlanDelete(int count, String summary) {
+    return 'Apagar $count movimento(s): $summary';
+  }
+
+  @override
   String get anCompareOn => 'A comparar com o período anterior';
 
   @override

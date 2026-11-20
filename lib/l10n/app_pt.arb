@@ -107,6 +107,66 @@
       }
     }
   },
+  "agPlanCategory": "Criar categoria “{name}”",
+  "@agPlanCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanSubcategory": "Criar categoria “{name}” dentro de {parent}",
+  "@agPlanSubcategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "parent": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanGoal": "Criar objetivo “{name}” de {amount}",
+  "@agPlanGoal": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanSalary": "Definir o salário de {month} para {amount}",
+  "@agPlanSalary": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanSalaryDefault": "Definir o salário por omissão para {amount}",
+  "@agPlanSalaryDefault": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanDelete": "Apagar {count} movimento(s): {summary}",
+  "@agPlanDelete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
   "anCompareOn": "A comparar com o período anterior",
   "anCompareOff": "Comparar com o período anterior",
   "anModeMonth": "Mês",

@@ -348,7 +348,12 @@ class _PlanCard extends StatelessWidget {
             for (final a in plan)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Text('• ${a.describe(l)}'),
+                child: Text(
+                  '${a.destructive ? '🗑 ' : '• '}${a.describe(l)}',
+                  style: a.destructive
+                      ? TextStyle(color: theme.colorScheme.error)
+                      : null,
+                ),
               ),
             const SizedBox(height: 8),
             Text(l.agUndoNote, style: theme.textTheme.bodySmall),
