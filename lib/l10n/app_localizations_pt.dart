@@ -191,6 +191,51 @@ class AppLocalizationsPt extends AppLocalizations {
       'Serve qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp), por exemplo no teu PC. O pedido e os dados que o agente consultar vão para esse servidor. Em http a ligação não é cifrada: usa só na tua rede de casa. Modelos pequenos erram mais; o plano e a confirmação protegem os teus dados.';
 
   @override
+  String get agOnDeviceNote =>
+      'O modelo corre dentro do telemóvel: nada do que pedes sai daqui. Descarrega por Wi-Fi (centenas de MB a alguns GB) e deixa espaço livre. Pode ser lento e aquecer o telemóvel, e modelos pequenos erram mais; o plano e a confirmação protegem os teus dados. Num iPhone, modelos grandes podem ser fechados por falta de memória: prefere os mais pequenos.';
+
+  @override
+  String get agOnDeviceUnsupported =>
+      'Este telemóvel não suporta modelos locais (precisa de Android 11 com processador arm64, ou de um iPhone).';
+
+  @override
+  String get agOnDeviceNeedModel => 'Descarrega e escolhe um modelo para usar.';
+
+  @override
+  String get agDownload => 'Descarregar';
+
+  @override
+  String get agUse => 'Usar';
+
+  @override
+  String get agInUse => 'Em uso';
+
+  @override
+  String get agRecommended => 'Recomendado';
+
+  @override
+  String agDownloading(int percent) {
+    return 'A descarregar… $percent%';
+  }
+
+  @override
+  String get agDeleteModel => 'Apagar modelo';
+
+  @override
+  String agDownloadFailed(String message) {
+    return 'Não foi possível: $message';
+  }
+
+  @override
+  String get agErrNoModel =>
+      'Ainda não há um modelo no telemóvel. Descarrega um nas definições do agente.';
+
+  @override
+  String agErrLocalModel(String message) {
+    return 'O modelo no telemóvel falhou: $message';
+  }
+
+  @override
   String get anCompareOn => 'A comparar com o período anterior';
 
   @override

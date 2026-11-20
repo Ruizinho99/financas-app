@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'claude_provider.dart';
 import 'gemini_provider.dart';
 import 'llm_provider.dart';
+import 'on_device_provider.dart';
 import 'openai_provider.dart';
 
 /// Fornecedores de modelos que o utilizador pode escolher.
@@ -13,7 +14,10 @@ enum AgentProviderKind {
 
   /// Servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp…),
   /// no PC ou na rede de casa. O modelo tem de ser indicado.
-  local('Servidor local', '');
+  local('Servidor local', ''),
+
+  /// Modelo descarregado e executado dentro do telemóvel (LiteRT-LM).
+  onDevice('Modelo no telemóvel', '');
 
   final String label;
   final String defaultModel;
@@ -44,6 +48,7 @@ enum AgentProviderKind {
         timeout: const Duration(minutes: 5),
         client: client,
       ),
+      onDevice => OnDeviceProvider(),
     };
   }
 }

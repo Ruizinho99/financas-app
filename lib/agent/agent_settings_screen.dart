@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'agent_settings.dart';
+import 'ondevice/on_device_models.dart';
 import 'provider/provider_kind.dart';
 
 class AgentSettingsScreen extends StatefulWidget {
@@ -52,6 +53,17 @@ class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
   Future<void> _save() async {
     final l = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
+    if (_kind == AgentProviderKind.onDevice) {
+      if (await OnDeviceModels.activeFile() == null) {
+        setState(() => _error = l.agOnDeviceNeedModel);
+        return;
+      }
+      await AgentSettings.saveKind(_kind);
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l.agSaved)));
+      Navigator.pop(context, true);
+      return;
+    }
     if (_kind.isLocal) {
       if (normalizeBaseUrl(_url.text) == null) {
         setState(() => _error = l.agLocalUrlInvalid);
@@ -106,43 +118,47 @@ class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
             },
           ),
           const SizedBox(height: 16),
-          if (_kind.isLocal) ...[
+          if (_kind == AgentProviderKind.onDevice)
+            const OnDeviceModelsPanel()
+          else ...[
+            if (_kind.isLocal) ...[
+              TextField(
+                controller: _url,
+                autocorrect: false,
+                keyboardType: TextInputType.url,
+                decoration: InputDecoration(
+                  labelText: l.agLocalUrlLabel,
+                  hintText: 'http://192.168.1.10:11434/v1',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             TextField(
-              controller: _url,
+              controller: _key,
+              obscureText: true,
               autocorrect: false,
-              keyboardType: TextInputType.url,
+              enableSuggestions: false,
               decoration: InputDecoration(
-                labelText: l.agLocalUrlLabel,
-                hintText: 'http://192.168.1.10:11434/v1',
+                labelText: _kind.isLocal
+                    ? l.agKeyOptional
+                    : l.agKeyLabel(_kind.label),
+                helperText: _hasKey ? l.agKeyStored : null,
+                helperMaxLines: 2,
                 border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
+            TextField(
+              controller: _model,
+              autocorrect: false,
+              decoration: InputDecoration(
+                labelText: l.agModelLabel,
+                hintText: _kind.defaultModel,
+                border: const OutlineInputBorder(),
+              ),
+            ),
           ],
-          TextField(
-            controller: _key,
-            obscureText: true,
-            autocorrect: false,
-            enableSuggestions: false,
-            decoration: InputDecoration(
-              labelText: _kind.isLocal
-                  ? l.agKeyOptional
-                  : l.agKeyLabel(_kind.label),
-              helperText: _hasKey ? l.agKeyStored : null,
-              helperMaxLines: 2,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _model,
-            autocorrect: false,
-            decoration: InputDecoration(
-              labelText: l.agModelLabel,
-              hintText: _kind.defaultModel,
-              border: const OutlineInputBorder(),
-            ),
-          ),
           const SizedBox(height: 16),
           if (_error != null)
             Padding(
@@ -152,16 +168,171 @@ class _AgentSettingsScreenState extends State<AgentSettingsScreen> {
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ),
-          Text(
-            _kind.isLocal ? l.agLocalNote : l.agPrivacy,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text(switch (_kind) {
+            AgentProviderKind.local => l.agLocalNote,
+            AgentProviderKind.onDevice => l.agOnDeviceNote,
+            _ => l.agPrivacy,
+          }, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 16),
           FilledButton(onPressed: _save, child: Text(l.agSave)),
-          if (_hasKey)
+          if (_hasKey && _kind != AgentProviderKind.onDevice)
             TextButton(onPressed: _remove, child: Text(l.agRemoveKey)),
         ],
       ),
+    );
+  }
+}
+
+/// Lista de modelos para o telemóvel: descarregar, usar e apagar.
+class OnDeviceModelsPanel extends StatefulWidget {
+  const OnDeviceModelsPanel({super.key});
+  @override
+  State<OnDeviceModelsPanel> createState() => _OnDeviceModelsPanelState();
+}
+
+class _OnDeviceModelsPanelState extends State<OnDeviceModelsPanel> {
+  List<OnDeviceModelOption>? _options;
+  Set<String> _installed = {};
+  String? _active;
+  String? _busyFile; // modelo a descarregar ou a mudar
+  int _percent = 0;
+  String? _error;
+  bool _unsupported = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    try {
+      final options = await OnDeviceModels.options();
+      final installed = await OnDeviceModels.installedFiles();
+      final active = await OnDeviceModels.activeFile();
+      if (!mounted) return;
+      setState(() {
+        _options = options;
+        _installed = installed;
+        _active = active;
+        _unsupported = options.isEmpty;
+      });
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _options = const [];
+        _unsupported = true;
+      });
+    }
+  }
+
+  Future<void> _install(OnDeviceModelOption o) async {
+    final l = AppLocalizations.of(context)!;
+    setState(() {
+      _busyFile = o.file;
+      _percent = 0;
+      _error = null;
+    });
+    try {
+      await OnDeviceModels.install(
+        o,
+        onProgress: (p) {
+          if (mounted) setState(() => _percent = p);
+        },
+      );
+    } on Object catch (e) {
+      if (mounted) setState(() => _error = l.agDownloadFailed('$e'));
+    } finally {
+      if (mounted) setState(() => _busyFile = null);
+      await _refresh();
+    }
+  }
+
+  Future<void> _delete(OnDeviceModelOption o) async {
+    final l = AppLocalizations.of(context)!;
+    try {
+      await OnDeviceModels.uninstall(o);
+    } on Object catch (e) {
+      if (mounted) setState(() => _error = l.agDownloadFailed('$e'));
+    }
+    await _refresh();
+  }
+
+  static String _size(int bytes) => bytes >= 1000 * 1000 * 1000
+      ? '${(bytes / 1e9).toStringAsFixed(1)} GB'
+      : '${(bytes / 1e6).round()} MB';
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final options = _options;
+    if (options == null) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_unsupported) return Text(l.agOnDeviceUnsupported);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final o in options)
+          Card(
+            child: ListTile(
+              title: Text(
+                o.recommended ? '${o.name} · ${l.agRecommended}' : o.name,
+              ),
+              subtitle: Text(
+                _busyFile == o.file
+                    ? l.agDownloading(_percent)
+                    : _active == o.file
+                    ? '${_size(o.sizeBytes)} · ${l.agInUse}'
+                    : _size(o.sizeBytes),
+              ),
+              trailing: _busyFile == o.file
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        value: _percent > 0 ? _percent / 100 : null,
+                        strokeWidth: 3,
+                      ),
+                    )
+                  : _installed.contains(o.file)
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_active != o.file)
+                          TextButton(
+                            onPressed: _busyFile == null
+                                ? () => _install(o)
+                                : null,
+                            child: Text(l.agUse),
+                          ),
+                        IconButton(
+                          tooltip: l.agDeleteModel,
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: _busyFile == null
+                              ? () => _delete(o)
+                              : null,
+                        ),
+                      ],
+                    )
+                  : TextButton(
+                      onPressed: _busyFile == null ? () => _install(o) : null,
+                      child: Text(l.agDownload),
+                    ),
+            ),
+          ),
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              _error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+      ],
     );
   }
 }

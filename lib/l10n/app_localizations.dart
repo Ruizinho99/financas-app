@@ -380,6 +380,78 @@ abstract class AppLocalizations {
   /// **'Serve qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp), por exemplo no teu PC. O pedido e os dados que o agente consultar vão para esse servidor. Em http a ligação não é cifrada: usa só na tua rede de casa. Modelos pequenos erram mais; o plano e a confirmação protegem os teus dados.'**
   String get agLocalNote;
 
+  /// No description provided for @agOnDeviceNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'O modelo corre dentro do telemóvel: nada do que pedes sai daqui. Descarrega por Wi-Fi (centenas de MB a alguns GB) e deixa espaço livre. Pode ser lento e aquecer o telemóvel, e modelos pequenos erram mais; o plano e a confirmação protegem os teus dados. Num iPhone, modelos grandes podem ser fechados por falta de memória: prefere os mais pequenos.'**
+  String get agOnDeviceNote;
+
+  /// No description provided for @agOnDeviceUnsupported.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este telemóvel não suporta modelos locais (precisa de Android 11 com processador arm64, ou de um iPhone).'**
+  String get agOnDeviceUnsupported;
+
+  /// No description provided for @agOnDeviceNeedModel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descarrega e escolhe um modelo para usar.'**
+  String get agOnDeviceNeedModel;
+
+  /// No description provided for @agDownload.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descarregar'**
+  String get agDownload;
+
+  /// No description provided for @agUse.
+  ///
+  /// In pt, this message translates to:
+  /// **'Usar'**
+  String get agUse;
+
+  /// No description provided for @agInUse.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em uso'**
+  String get agInUse;
+
+  /// No description provided for @agRecommended.
+  ///
+  /// In pt, this message translates to:
+  /// **'Recomendado'**
+  String get agRecommended;
+
+  /// No description provided for @agDownloading.
+  ///
+  /// In pt, this message translates to:
+  /// **'A descarregar… {percent}%'**
+  String agDownloading(int percent);
+
+  /// No description provided for @agDeleteModel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar modelo'**
+  String get agDeleteModel;
+
+  /// No description provided for @agDownloadFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível: {message}'**
+  String agDownloadFailed(String message);
+
+  /// No description provided for @agErrNoModel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ainda não há um modelo no telemóvel. Descarrega um nas definições do agente.'**
+  String get agErrNoModel;
+
+  /// No description provided for @agErrLocalModel.
+  ///
+  /// In pt, this message translates to:
+  /// **'O modelo no telemóvel falhou: {message}'**
+  String agErrLocalModel(String message);
+
   /// No description provided for @anCompareOn.
   ///
   /// In pt, this message translates to:

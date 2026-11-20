@@ -170,5 +170,38 @@
   "agLocalUrlInvalid": "Indica um endereço http:// ou https:// válido.",
   "agLocalModelRequired": "Indica o nome do modelo que o servidor tem.",
   "agKeyOptional": "Chave da API (opcional)",
-  "agLocalNote": "Serve qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp), por exemplo no teu PC. O pedido e os dados que o agente consultar vão para esse servidor. Em http a ligação não é cifrada: usa só na tua rede de casa. Modelos pequenos erram mais; o plano e a confirmação protegem os teus dados."
+  "agLocalNote": "Serve qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp), por exemplo no teu PC. O pedido e os dados que o agente consultar vão para esse servidor. Em http a ligação não é cifrada: usa só na tua rede de casa. Modelos pequenos erram mais; o plano e a confirmação protegem os teus dados.",
+  "agOnDeviceNote": "O modelo corre dentro do telemóvel: nada do que pedes sai daqui. Descarrega por Wi-Fi (centenas de MB a alguns GB) e deixa espaço livre. Pode ser lento e aquecer o telemóvel, e modelos pequenos erram mais; o plano e a confirmação protegem os teus dados. Num iPhone, modelos grandes podem ser fechados por falta de memória: prefere os mais pequenos.",
+  "agOnDeviceUnsupported": "Este telemóvel não suporta modelos locais (precisa de Android 11 com processador arm64, ou de um iPhone).",
+  "agOnDeviceNeedModel": "Descarrega e escolhe um modelo para usar.",
+  "agDownload": "Descarregar",
+  "agUse": "Usar",
+  "agInUse": "Em uso",
+  "agRecommended": "Recomendado",
+  "agDownloading": "A descarregar… {percent}%",
+  "@agDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "agDeleteModel": "Apagar modelo",
+  "agDownloadFailed": "Não foi possível: {message}",
+  "@agDownloadFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "agErrNoModel": "Ainda não há um modelo no telemóvel. Descarrega um nas definições do agente.",
+  "agErrLocalModel": "O modelo no telemóvel falhou: {message}",
+  "@agErrLocalModel": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }
