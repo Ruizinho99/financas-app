@@ -98,6 +98,144 @@ abstract class AppLocalizations {
     Locale('pt'),
   ];
 
+  /// No description provided for @agTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Agente'**
+  String get agTitle;
+
+  /// No description provided for @agMoreSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pergunta pelas tuas contas e movimentos em texto'**
+  String get agMoreSubtitle;
+
+  /// No description provided for @agInputHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pede algo à app'**
+  String get agInputHint;
+
+  /// No description provided for @agSend.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar'**
+  String get agSend;
+
+  /// No description provided for @agNewChat.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova conversa'**
+  String get agNewChat;
+
+  /// No description provided for @agSettingsTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definições do agente'**
+  String get agSettingsTitle;
+
+  /// No description provided for @agSettingsTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definições'**
+  String get agSettingsTooltip;
+
+  /// No description provided for @agKeyLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Chave da API Claude'**
+  String get agKeyLabel;
+
+  /// No description provided for @agKeyStored.
+  ///
+  /// In pt, this message translates to:
+  /// **'Chave guardada neste telemóvel. Escreve outra para a substituir.'**
+  String get agKeyStored;
+
+  /// No description provided for @agModelLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo'**
+  String get agModelLabel;
+
+  /// No description provided for @agSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardar'**
+  String get agSave;
+
+  /// No description provided for @agRemoveKey.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover chave'**
+  String get agRemoveKey;
+
+  /// No description provided for @agSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Guardado'**
+  String get agSaved;
+
+  /// No description provided for @agPrivacy.
+  ///
+  /// In pt, this message translates to:
+  /// **'O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados à Anthropic (Claude) com a tua chave. A chave fica guardada de forma segura só neste telemóvel.'**
+  String get agPrivacy;
+
+  /// No description provided for @agNeedKey.
+  ///
+  /// In pt, this message translates to:
+  /// **'Define a tua chave da API Claude para começar.'**
+  String get agNeedKey;
+
+  /// No description provided for @agNeedKeyAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definir chave'**
+  String get agNeedKeyAction;
+
+  /// No description provided for @agReadOnly.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nesta versão o agente só consulta dados; ainda não faz alterações.'**
+  String get agReadOnly;
+
+  /// No description provided for @agThinking.
+  ///
+  /// In pt, this message translates to:
+  /// **'A pensar…'**
+  String get agThinking;
+
+  /// No description provided for @agErrNetwork.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem ligação ou o fornecedor não respondeu. Tenta de novo.'**
+  String get agErrNetwork;
+
+  /// No description provided for @agErrKey.
+  ///
+  /// In pt, this message translates to:
+  /// **'A chave foi recusada. Confirma-a nas definições do agente.'**
+  String get agErrKey;
+
+  /// No description provided for @agErrSteps.
+  ///
+  /// In pt, this message translates to:
+  /// **'O agente deu demasiados passos. Tenta um pedido mais simples.'**
+  String get agErrSteps;
+
+  /// No description provided for @agErrGeneric.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível responder: {message}'**
+  String agErrGeneric(String message);
+
+  /// No description provided for @agEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pergunta, por exemplo, quanto tens em cada conta.'**
+  String get agEmpty;
+
   /// No description provided for @anCompareOn.
   ///
   /// In pt, this message translates to:
@@ -7835,7 +7973,7 @@ abstract class AppLocalizations {
   /// No description provided for @morPrivacyNote.
   ///
   /// In pt, this message translates to:
-  /// **'Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).'**
+  /// **'Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo) ou se usares o Agente (é enviado o teu pedido e os dados que ele consultar).'**
   String get morPrivacyNote;
 
   /// No description provided for @morImportsTitle.

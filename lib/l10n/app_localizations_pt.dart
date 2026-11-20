@@ -10,6 +10,84 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
+  String get agTitle => 'Agente';
+
+  @override
+  String get agMoreSubtitle =>
+      'Pergunta pelas tuas contas e movimentos em texto';
+
+  @override
+  String get agInputHint => 'Pede algo à app';
+
+  @override
+  String get agSend => 'Enviar';
+
+  @override
+  String get agNewChat => 'Nova conversa';
+
+  @override
+  String get agSettingsTitle => 'Definições do agente';
+
+  @override
+  String get agSettingsTooltip => 'Definições';
+
+  @override
+  String get agKeyLabel => 'Chave da API Claude';
+
+  @override
+  String get agKeyStored =>
+      'Chave guardada neste telemóvel. Escreve outra para a substituir.';
+
+  @override
+  String get agModelLabel => 'Modelo';
+
+  @override
+  String get agSave => 'Guardar';
+
+  @override
+  String get agRemoveKey => 'Remover chave';
+
+  @override
+  String get agSaved => 'Guardado';
+
+  @override
+  String get agPrivacy =>
+      'O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados à Anthropic (Claude) com a tua chave. A chave fica guardada de forma segura só neste telemóvel.';
+
+  @override
+  String get agNeedKey => 'Define a tua chave da API Claude para começar.';
+
+  @override
+  String get agNeedKeyAction => 'Definir chave';
+
+  @override
+  String get agReadOnly =>
+      'Nesta versão o agente só consulta dados; ainda não faz alterações.';
+
+  @override
+  String get agThinking => 'A pensar…';
+
+  @override
+  String get agErrNetwork =>
+      'Sem ligação ou o fornecedor não respondeu. Tenta de novo.';
+
+  @override
+  String get agErrKey =>
+      'A chave foi recusada. Confirma-a nas definições do agente.';
+
+  @override
+  String get agErrSteps =>
+      'O agente deu demasiados passos. Tenta um pedido mais simples.';
+
+  @override
+  String agErrGeneric(String message) {
+    return 'Não foi possível responder: $message';
+  }
+
+  @override
+  String get agEmpty => 'Pergunta, por exemplo, quanto tens em cada conta.';
+
+  @override
   String get anCompareOn => 'A comparar com o período anterior';
 
   @override
@@ -5167,7 +5245,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get morPrivacyNote =>
-      'Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).';
+      'Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo) ou se usares o Agente (é enviado o teu pedido e os dados que ele consultar).';
 
   @override
   String get morImportsTitle => 'Importações';

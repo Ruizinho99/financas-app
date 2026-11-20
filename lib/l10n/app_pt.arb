@@ -1,5 +1,35 @@
 {
   "@@locale": "pt",
+  "agTitle": "Agente",
+  "agMoreSubtitle": "Pergunta pelas tuas contas e movimentos em texto",
+  "agInputHint": "Pede algo à app",
+  "agSend": "Enviar",
+  "agNewChat": "Nova conversa",
+  "agSettingsTitle": "Definições do agente",
+  "agSettingsTooltip": "Definições",
+  "agKeyLabel": "Chave da API Claude",
+  "agKeyStored": "Chave guardada neste telemóvel. Escreve outra para a substituir.",
+  "agModelLabel": "Modelo",
+  "agSave": "Guardar",
+  "agRemoveKey": "Remover chave",
+  "agSaved": "Guardado",
+  "agPrivacy": "O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados à Anthropic (Claude) com a tua chave. A chave fica guardada de forma segura só neste telemóvel.",
+  "agNeedKey": "Define a tua chave da API Claude para começar.",
+  "agNeedKeyAction": "Definir chave",
+  "agReadOnly": "Nesta versão o agente só consulta dados; ainda não faz alterações.",
+  "agThinking": "A pensar…",
+  "agErrNetwork": "Sem ligação ou o fornecedor não respondeu. Tenta de novo.",
+  "agErrKey": "A chave foi recusada. Confirma-a nas definições do agente.",
+  "agErrSteps": "O agente deu demasiados passos. Tenta um pedido mais simples.",
+  "agErrGeneric": "Não foi possível responder: {message}",
+  "@agErrGeneric": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "agEmpty": "Pergunta, por exemplo, quanto tens em cada conta.",
   "anCompareOn": "A comparar com o período anterior",
   "anCompareOff": "Comparar com o período anterior",
   "anModeMonth": "Mês",
@@ -4020,7 +4050,7 @@
   "morWipeTransactionsConfirm": "Apagar TODOS os movimentos, regras e salários? As categorias mantêm-se. Não é possível desfazer.",
   "morWipeAllTitle": "Apagar tudo, incluindo categorias",
   "morWipeAllConfirm": "Apagar TUDO: movimentos, categorias, orçamentos, regras, salários e investimentos? Não é possível desfazer.",
-  "morPrivacyNote": "Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).",
+  "morPrivacyNote": "Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo) ou se usares o Agente (é enviado o teu pedido e os dados que ele consultar).",
   "morImportsTitle": "Importações",
   "morNoImports": "Ainda sem importações.",
   "morUndoImport": "Desfazer importação",
