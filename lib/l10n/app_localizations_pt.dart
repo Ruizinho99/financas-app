@@ -32,7 +32,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get agSettingsTooltip => 'Definições';
 
   @override
-  String get agKeyLabel => 'Chave da API Claude';
+  String agKeyLabel(String provider) {
+    return 'Chave da API · $provider';
+  }
 
   @override
   String get agKeyStored =>
@@ -52,10 +54,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get agPrivacy =>
-      'O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados à Anthropic (Claude) com a tua chave. A chave fica guardada de forma segura só neste telemóvel.';
+      'O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados ao fornecedor escolhido (Anthropic, OpenAI ou Google) com a tua chave. As chaves ficam guardadas de forma segura só neste telemóvel.';
 
   @override
-  String get agNeedKey => 'Define a tua chave da API Claude para começar.';
+  String get agNeedKey =>
+      'Escolhe um fornecedor e define a tua chave da API para começar.';
 
   @override
   String get agNeedKeyAction => 'Definir chave';
@@ -73,7 +76,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get agErrKey =>
-      'A chave foi recusada. Confirma-a nas definições do agente.';
+      'A chave foi recusada pelo fornecedor. Confirma-a nas definições do agente.';
 
   @override
   String get agErrSteps =>
@@ -135,6 +138,9 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get agUndoNote =>
       'Desfazer repõe os dados como estavam antes do plano.';
+
+  @override
+  String get agProviderLabel => 'Fornecedor';
 
   @override
   String get anCompareOn => 'A comparar com o período anterior';

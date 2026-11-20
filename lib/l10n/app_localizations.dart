@@ -143,8 +143,8 @@ abstract class AppLocalizations {
   /// No description provided for @agKeyLabel.
   ///
   /// In pt, this message translates to:
-  /// **'Chave da API Claude'**
-  String get agKeyLabel;
+  /// **'Chave da API · {provider}'**
+  String agKeyLabel(String provider);
 
   /// No description provided for @agKeyStored.
   ///
@@ -179,13 +179,13 @@ abstract class AppLocalizations {
   /// No description provided for @agPrivacy.
   ///
   /// In pt, this message translates to:
-  /// **'O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados à Anthropic (Claude) com a tua chave. A chave fica guardada de forma segura só neste telemóvel.'**
+  /// **'O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados ao fornecedor escolhido (Anthropic, OpenAI ou Google) com a tua chave. As chaves ficam guardadas de forma segura só neste telemóvel.'**
   String get agPrivacy;
 
   /// No description provided for @agNeedKey.
   ///
   /// In pt, this message translates to:
-  /// **'Define a tua chave da API Claude para começar.'**
+  /// **'Escolhe um fornecedor e define a tua chave da API para começar.'**
   String get agNeedKey;
 
   /// No description provided for @agNeedKeyAction.
@@ -215,7 +215,7 @@ abstract class AppLocalizations {
   /// No description provided for @agErrKey.
   ///
   /// In pt, this message translates to:
-  /// **'A chave foi recusada. Confirma-a nas definições do agente.'**
+  /// **'A chave foi recusada pelo fornecedor. Confirma-a nas definições do agente.'**
   String get agErrKey;
 
   /// No description provided for @agErrSteps.
@@ -307,6 +307,12 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Desfazer repõe os dados como estavam antes do plano.'**
   String get agUndoNote;
+
+  /// No description provided for @agProviderLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fornecedor'**
+  String get agProviderLabel;
 
   /// No description provided for @anCompareOn.
   ///

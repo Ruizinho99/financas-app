@@ -6,19 +6,19 @@
   "agNewChat": "Nova conversa",
   "agSettingsTitle": "Definições do agente",
   "agSettingsTooltip": "Definições",
-  "agKeyLabel": "Chave da API Claude",
+  "agKeyLabel": "Chave da API · {provider}",
   "agKeyStored": "Chave guardada neste telemóvel. Escreve outra para a substituir.",
   "agModelLabel": "Modelo",
   "agSave": "Guardar",
   "agRemoveKey": "Remover chave",
   "agSaved": "Guardado",
-  "agPrivacy": "O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados à Anthropic (Claude) com a tua chave. A chave fica guardada de forma segura só neste telemóvel.",
-  "agNeedKey": "Define a tua chave da API Claude para começar.",
+  "agPrivacy": "O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados ao fornecedor escolhido (Anthropic, OpenAI ou Google) com a tua chave. As chaves ficam guardadas de forma segura só neste telemóvel.",
+  "agNeedKey": "Escolhe um fornecedor e define a tua chave da API para começar.",
   "agNeedKeyAction": "Definir chave",
   "agReadOnly": "Pede alterações em texto: o agente mostra um plano e só as faz depois de confirmares.",
   "agThinking": "A pensar…",
   "agErrNetwork": "Sem ligação ou o fornecedor não respondeu. Tenta de novo.",
-  "agErrKey": "A chave foi recusada. Confirma-a nas definições do agente.",
+  "agErrKey": "A chave foi recusada pelo fornecedor. Confirma-a nas definições do agente.",
   "agErrSteps": "O agente deu demasiados passos. Tenta um pedido mais simples.",
   "agErrGeneric": "Não foi possível responder: {message}",
   "@agErrGeneric": {
@@ -97,5 +97,13 @@
       }
     }
   },
-  "agUndoNote": "Desfazer repõe os dados como estavam antes do plano."
+  "agUndoNote": "Desfazer repõe os dados como estavam antes do plano.",
+  "agProviderLabel": "Fornecedor",
+  "@agKeyLabel": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  }
 }

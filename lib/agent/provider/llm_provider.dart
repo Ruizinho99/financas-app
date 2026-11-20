@@ -20,7 +20,16 @@ class ToolCall {
   final String id;
   final String name;
   final Map<String, dynamic> input;
-  const ToolCall({required this.id, required this.name, required this.input});
+
+  /// Dados que o fornecedor quer de volta na mensagem seguinte (por exemplo a
+  /// assinatura de raciocínio do Gemini). A app não os interpreta.
+  final Object? meta;
+  const ToolCall({
+    required this.id,
+    required this.name,
+    required this.input,
+    this.meta,
+  });
 }
 
 /// Resultado de uma ferramenta, devolvido ao modelo.
