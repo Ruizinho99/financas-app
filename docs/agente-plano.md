@@ -87,8 +87,19 @@ Fica de fora na v1: importar extratos, investimentos, apagar contas/categorias (
 
 Em vez de embutir um motor na app, o fornecedor "Servidor local" fala com qualquer servidor compatível com a API da OpenAI (Ollama, LM Studio, llama.cpp, vLLM), no PC ou na rede de casa. Reutiliza o fornecedor OpenAI com outro endereço; a chave é opcional.
 
-Porquê não embutir (flutter_edge_ai, LiteRT-LM, testado em 2026-11-20): obriga a `minSdk 30` e só arm64 (deixa de servir Android 10 e anteriores), traz um motor nativo grande, pede pods estáticos e permissões no iOS, e não dá para verificar num telemóvel daqui. Fica como possível fase 6, se o utilizador aceitar subir o Android mínimo.
+Porquê não embutir (flutter_edge_ai, LiteRT-LM, testado em 2026-11-20): obriga a `minSdk 30` e só arm64 (deixa de servir Android 10 e anteriores), traz um motor nativo grande, pede pods estáticos e permissões no iOS, e não dá para verificar num telemóvel daqui. Foi depois feito na fase 6 (v1.43.0), a pedido do utilizador, ver abaixo.
 
 Exemplo com Ollama no PC: `OLLAMA_HOST=0.0.0.0 ollama serve`, `ollama pull llama3.1`, e nas definições do agente: endereço `http://<IP do PC>:11434/v1`, modelo `llama3.1`.
 
 Custos: Android passa a permitir tráfego http (`usesCleartextTraffic`) e o iOS `NSAllowsLocalNetworking`, porque estes servidores costumam estar em http na rede de casa; o resto da app usa https no código. Modelos pequenos falham mais em chamadas de ferramentas; o plano com confirmação continua a proteger os dados.
+
+## Fase 6: modelo dentro da app (v1.43.0)
+
+Pedido do utilizador: ter o modelo integrado na app, com descarga e arranque feitos pela própria app.
+
+- Motor: `flutter_edge_ai` + `flutter_edge_ai_litertlm` (LiteRT-LM), carregado só quando se usa o agente (`OnDeviceModels.ensureInitialized`).
+- Fornecedor "Modelo no telemóvel" (`OnDeviceProvider`): abre uma conversa no motor por pedido, repõe o histórico (que o laço do agente já envia inteiro) e devolve o texto e os pedidos de ferramentas; o laço, o plano e a confirmação são os mesmos.
+- Definições: lista tirada do catálogo do motor, só modelos que chamam ferramentas e correm neste aparelho (sem FunctionGemma, que não conversa), do mais pequeno para o maior. Descarregar com progresso, Usar, Apagar. Os tamanhos vêm do catálogo (de ~0,6 GB a vários GB).
+- Custos: `minSdk 30` (Android 11) e só arm64 (`abiFilters`); APK de release passa de ~80 MB para ~111 MB; iOS com pods estáticos. Não se acrescentaram entitlements de memória no iOS, porque o `.ipa` não assinado é instalado por sideload e isso pode falhar com contas gratuitas: modelos grandes podem ser fechados por falta de memória num iPhone.
+- Contexto de 4096 tokens, resposta até 1024, temperatura 0,2.
+- Não testado: descarga e geração num aparelho real (só compila e os testes usam um motor simulado).

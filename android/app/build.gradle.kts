@@ -21,7 +21,8 @@ android {
         applicationId = "pt.financas.financas"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // O motor de modelos no telemóvel (LiteRT-LM) exige Android 11 e arm64.
+        minSdk = 30
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -29,6 +30,10 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        ndk {
+            // As bibliotecas do motor só existem para arm64.
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {

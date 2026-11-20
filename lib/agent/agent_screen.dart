@@ -83,6 +83,10 @@ class _AgentScreenState extends State<AgentScreen> {
       if (e.statusCode == 401 || e.statusCode == 403) return l.agErrKey;
       if (e.message.startsWith('network:')) return l.agErrNetwork;
       if (e.message == 'too-many-steps') return l.agErrSteps;
+      if (e.message == 'no-model') return l.agErrNoModel;
+      if (e.message.startsWith('local-model:')) {
+        return l.agErrLocalModel(e.message.substring(12).trim());
+      }
       return l.agErrGeneric(e.message);
     }
     return l.agErrGeneric('$e');

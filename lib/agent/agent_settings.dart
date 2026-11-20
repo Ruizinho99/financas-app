@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'ondevice/on_device_models.dart';
 import 'provider/provider_kind.dart';
 
 /// Definições do agente: as chaves ficam no armazenamento seguro do sistema
@@ -88,6 +89,11 @@ class AgentSettings {
     final kind = await readKind();
     final key = await readApiKey(kind);
     final model = await readModel(kind);
+    if (kind == AgentProviderKind.onDevice) {
+      final file = await OnDeviceModels.activeFile();
+      if (file == null) return null;
+      return (kind: kind, key: '', model: file, baseUrl: null);
+    }
     if (kind.isLocal) {
       final url = normalizeBaseUrl(await readBaseUrl());
       if (url == null || model.isEmpty) return null;

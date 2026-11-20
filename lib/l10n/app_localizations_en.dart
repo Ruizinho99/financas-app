@@ -189,6 +189,51 @@ class AppLocalizationsEn extends AppLocalizations {
       'Works with any server compatible with the OpenAI API (Ollama, LM Studio, llama.cpp), for example on your PC. Your request and the data the agent looks up go to that server. Over http the connection isn\'t encrypted: use it only on your home network. Small models make more mistakes; the plan and confirmation protect your data.';
 
   @override
+  String get agOnDeviceNote =>
+      'The model runs inside your phone: nothing you ask leaves it. Download over Wi-Fi (hundreds of MB to a few GB) and keep free space. It can be slow and warm the phone up, and small models make more mistakes; the plan and confirmation protect your data. On an iPhone, large models may be closed for lack of memory: prefer the smaller ones.';
+
+  @override
+  String get agOnDeviceUnsupported =>
+      'This phone can\'t run local models (it needs Android 11 with an arm64 processor, or an iPhone).';
+
+  @override
+  String get agOnDeviceNeedModel => 'Download and pick a model to use.';
+
+  @override
+  String get agDownload => 'Download';
+
+  @override
+  String get agUse => 'Use';
+
+  @override
+  String get agInUse => 'In use';
+
+  @override
+  String get agRecommended => 'Recommended';
+
+  @override
+  String agDownloading(int percent) {
+    return 'Downloading… $percent%';
+  }
+
+  @override
+  String get agDeleteModel => 'Delete model';
+
+  @override
+  String agDownloadFailed(String message) {
+    return 'Couldn\'t do it: $message';
+  }
+
+  @override
+  String get agErrNoModel =>
+      'There\'s no model on the phone yet. Download one in the agent settings.';
+
+  @override
+  String agErrLocalModel(String message) {
+    return 'The on-phone model failed: $message';
+  }
+
+  @override
   String get anCompareOn => 'Comparing with the previous period';
 
   @override
