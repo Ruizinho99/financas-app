@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../agent/agent_screen.dart';
 import '../update/update_checker.dart';
 
 import '../l10n/app_localizations.dart';
@@ -65,6 +66,15 @@ class MoreScreen extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const GoalsScreen()),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.auto_awesome_outlined),
+            title: Text(l.agTitle),
+            subtitle: Text(l.agMoreSubtitle),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AgentScreen()),
             ),
           ),
           ListTile(

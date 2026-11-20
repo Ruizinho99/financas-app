@@ -1,5 +1,35 @@
 {
   "@@locale": "en",
+  "agTitle": "Agent",
+  "agMoreSubtitle": "Ask about your accounts and transactions in text",
+  "agInputHint": "Ask the app something",
+  "agSend": "Send",
+  "agNewChat": "New conversation",
+  "agSettingsTitle": "Agent settings",
+  "agSettingsTooltip": "Settings",
+  "agKeyLabel": "Claude API key",
+  "agKeyStored": "Key stored on this phone. Type another to replace it.",
+  "agModelLabel": "Model",
+  "agSave": "Save",
+  "agRemoveKey": "Remove key",
+  "agSaved": "Saved",
+  "agPrivacy": "The text of your requests and the data the agent looks up (account and category names, balances, requested transactions) are sent to Anthropic (Claude) using your key. The key is stored securely on this phone only.",
+  "agNeedKey": "Set your Claude API key to get started.",
+  "agNeedKeyAction": "Set key",
+  "agReadOnly": "In this version the agent only reads data; it can't make changes yet.",
+  "agThinking": "Thinking…",
+  "agErrNetwork": "No connection, or the provider didn't respond. Try again.",
+  "agErrKey": "The key was rejected. Check it in the agent settings.",
+  "agErrSteps": "The agent took too many steps. Try a simpler request.",
+  "agErrGeneric": "Couldn't answer: {message}",
+  "@agErrGeneric": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "agEmpty": "Ask, for example, how much you have in each account.",
   "anCompareOn": "Comparing with the previous period",
   "anCompareOff": "Compare with the previous period",
   "anModeMonth": "Month",
@@ -4020,7 +4050,7 @@
   "morWipeTransactionsConfirm": "Delete ALL transactions, rules and salaries? Categories are kept. This cannot be undone.",
   "morWipeAllTitle": "Delete everything, including categories",
   "morWipeAllConfirm": "Delete EVERYTHING: transactions, categories, budgets, rules, salaries and investments? This cannot be undone.",
-  "morPrivacyNote": "All data stays only on this phone. The internet is only used if you tap “Update prices” in Portfolio (only the asset symbol is sent).",
+  "morPrivacyNote": "All data stays only on this phone. The internet is only used if you tap “Update prices” in Portfolio (only the asset symbol is sent) or if you use the Agent (your request and the data it looks up are sent).",
   "morImportsTitle": "Imports",
   "morNoImports": "No imports yet.",
   "morUndoImport": "Undo import",

@@ -10,6 +10,84 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get agTitle => 'Agent';
+
+  @override
+  String get agMoreSubtitle =>
+      'Ask about your accounts and transactions in text';
+
+  @override
+  String get agInputHint => 'Ask the app something';
+
+  @override
+  String get agSend => 'Send';
+
+  @override
+  String get agNewChat => 'New conversation';
+
+  @override
+  String get agSettingsTitle => 'Agent settings';
+
+  @override
+  String get agSettingsTooltip => 'Settings';
+
+  @override
+  String get agKeyLabel => 'Claude API key';
+
+  @override
+  String get agKeyStored =>
+      'Key stored on this phone. Type another to replace it.';
+
+  @override
+  String get agModelLabel => 'Model';
+
+  @override
+  String get agSave => 'Save';
+
+  @override
+  String get agRemoveKey => 'Remove key';
+
+  @override
+  String get agSaved => 'Saved';
+
+  @override
+  String get agPrivacy =>
+      'The text of your requests and the data the agent looks up (account and category names, balances, requested transactions) are sent to Anthropic (Claude) using your key. The key is stored securely on this phone only.';
+
+  @override
+  String get agNeedKey => 'Set your Claude API key to get started.';
+
+  @override
+  String get agNeedKeyAction => 'Set key';
+
+  @override
+  String get agReadOnly =>
+      'In this version the agent only reads data; it can\'t make changes yet.';
+
+  @override
+  String get agThinking => 'Thinking…';
+
+  @override
+  String get agErrNetwork =>
+      'No connection, or the provider didn\'t respond. Try again.';
+
+  @override
+  String get agErrKey =>
+      'The key was rejected. Check it in the agent settings.';
+
+  @override
+  String get agErrSteps =>
+      'The agent took too many steps. Try a simpler request.';
+
+  @override
+  String agErrGeneric(String message) {
+    return 'Couldn\'t answer: $message';
+  }
+
+  @override
+  String get agEmpty => 'Ask, for example, how much you have in each account.';
+
+  @override
   String get anCompareOn => 'Comparing with the previous period';
 
   @override
@@ -5167,7 +5245,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get morPrivacyNote =>
-      'All data stays only on this phone. The internet is only used if you tap “Update prices” in Portfolio (only the asset symbol is sent).';
+      'All data stays only on this phone. The internet is only used if you tap “Update prices” in Portfolio (only the asset symbol is sent) or if you use the Agent (your request and the data it looks up are sent).';
 
   @override
   String get morImportsTitle => 'Imports';

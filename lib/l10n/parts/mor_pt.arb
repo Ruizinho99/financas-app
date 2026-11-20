@@ -65,7 +65,7 @@
   "morWipeTransactionsConfirm": "Apagar TODOS os movimentos, regras e salários? As categorias mantêm-se. Não é possível desfazer.",
   "morWipeAllTitle": "Apagar tudo, incluindo categorias",
   "morWipeAllConfirm": "Apagar TUDO: movimentos, categorias, orçamentos, regras, salários e investimentos? Não é possível desfazer.",
-  "morPrivacyNote": "Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo).",
+  "morPrivacyNote": "Todos os dados ficam guardados apenas neste telemóvel. A internet só é usada se carregares em “Atualizar preços” na Carteira (é enviado apenas o símbolo do ativo) ou se usares o Agente (é enviado o teu pedido e os dados que ele consultar).",
   "morImportsTitle": "Importações",
   "morNoImports": "Ainda sem importações.",
   "morUndoImport": "Desfazer importação",
