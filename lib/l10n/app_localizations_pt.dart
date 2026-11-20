@@ -62,7 +62,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get agReadOnly =>
-      'Nesta versão o agente só consulta dados; ainda não faz alterações.';
+      'Pede alterações em texto: o agente mostra um plano e só as faz depois de confirmares.';
 
   @override
   String get agThinking => 'A pensar…';
@@ -86,6 +86,55 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get agEmpty => 'Pergunta, por exemplo, quanto tens em cada conta.';
+
+  @override
+  String agPlanTransfer(String amount, String from, String to) {
+    return 'Transferir $amount de $from para $to';
+  }
+
+  @override
+  String agPlanAddTxn(String description, String amount, String account) {
+    return 'Adicionar “$description”: $amount (conta: $account)';
+  }
+
+  @override
+  String agPlanClassify(int count, String category) {
+    return 'Pôr $count movimento(s) na categoria $category';
+  }
+
+  @override
+  String agPlanTitle(int count) {
+    return 'Plano · $count ação(ões)';
+  }
+
+  @override
+  String get agConfirm => 'Confirmar';
+
+  @override
+  String get agCancel => 'Cancelar';
+
+  @override
+  String get agUndo => 'Desfazer';
+
+  @override
+  String agDone(int count) {
+    return 'Feito: $count ação(ões) executada(s).';
+  }
+
+  @override
+  String get agUndone => 'Alterações desfeitas.';
+
+  @override
+  String get agCancelled => 'Plano cancelado.';
+
+  @override
+  String agExecFailed(String message) {
+    return 'Não foi possível executar e nada ficou alterado: $message';
+  }
+
+  @override
+  String get agUndoNote =>
+      'Desfazer repõe os dados como estavam antes do plano.';
 
   @override
   String get anCompareOn => 'A comparar com o período anterior';

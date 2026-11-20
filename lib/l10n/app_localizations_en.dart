@@ -62,7 +62,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agReadOnly =>
-      'In this version the agent only reads data; it can\'t make changes yet.';
+      'Ask for changes in text: the agent shows a plan and only makes them after you confirm.';
 
   @override
   String get agThinking => 'Thinking…';
@@ -86,6 +86,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agEmpty => 'Ask, for example, how much you have in each account.';
+
+  @override
+  String agPlanTransfer(String amount, String from, String to) {
+    return 'Transfer $amount from $from to $to';
+  }
+
+  @override
+  String agPlanAddTxn(String description, String amount, String account) {
+    return 'Add “$description”: $amount (account: $account)';
+  }
+
+  @override
+  String agPlanClassify(int count, String category) {
+    return 'Put $count transaction(s) in category $category';
+  }
+
+  @override
+  String agPlanTitle(int count) {
+    return 'Plan · $count action(s)';
+  }
+
+  @override
+  String get agConfirm => 'Confirm';
+
+  @override
+  String get agCancel => 'Cancel';
+
+  @override
+  String get agUndo => 'Undo';
+
+  @override
+  String agDone(int count) {
+    return 'Done: $count action(s) carried out.';
+  }
+
+  @override
+  String get agUndone => 'Changes undone.';
+
+  @override
+  String get agCancelled => 'Plan cancelled.';
+
+  @override
+  String agExecFailed(String message) {
+    return 'Couldn\'t carry it out and nothing was changed: $message';
+  }
+
+  @override
+  String get agUndoNote => 'Undo restores your data as it was before the plan.';
 
   @override
   String get anCompareOn => 'Comparing with the previous period';

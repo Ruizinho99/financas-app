@@ -5,8 +5,10 @@ import 'package:financas/agent/agent_screen.dart';
 import 'package:financas/agent/provider/claude_provider.dart';
 import 'package:financas/agent/provider/llm_provider.dart';
 import 'package:financas/agent/tools/read_tools.dart';
+import 'package:financas/agent/tools/write_tools.dart';
 import 'package:financas/db/database.dart';
 import 'package:financas/l10n/app_localizations.dart';
+import 'package:financas/models.dart';
 import 'package:financas/state/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -105,7 +107,7 @@ void main() {
         provider: p,
         tools: buildReadTools(s),
       ).run([const AgentMessage.user('que contas tenho?')]);
-      expect(added.last.text, 'Tens 2 contas.');
+      expect(added.messages.last.text, 'Tens 2 contas.');
       final result = p.seen[1].last.toolResults.single;
       expect(result.callId, 't1');
       expect(result.content, contains('Conta 2'));
@@ -149,6 +151,212 @@ void main() {
         throwsA(isA<LlmException>()),
       );
     });
+  });
+
+  group('ferramentas de escrita e plano', () {
+    WriteTool w(AppState s, String n) =>
+        buildWriteTools(s).firstWhere((t) => t.spec.name == n);
+
+    test('chamar a ferramenta não altera nada', () {
+      final s = _state();
+      final before = s.transactions.length;
+      final plan = w(s, 'transferir').plan({
+        'de_conta_id': s.accounts[0].id,
+        'para_conta_id': s.accounts[1].id,
+        'montante': 10.0,
+      });
+      expect(plan, hasLength(1));
+      expect(s.transactions.length, before);
+    });
+
+    test(
+      'mover_tudo_para: uma transferência por conta com saldo positivo',
+      () async {
+        final s = _state();
+        final c3 = s.addAccount('Conta 3', openingCents: 3000);
+        s.addAccount('Vazia');
+        final b1 = s.accountBalance(s.accounts[0].id);
+        final dest = s.accounts[1].id;
+        final plan = w(s, 'mover_tudo_para').plan({'conta_destino_id': dest});
+        expect(plan, hasLength(2)); // Conta 1 e Conta 3; a Vazia fica de fora
+        final destBefore = s.accountBalance(dest);
+        await executePlan(s, plan);
+        expect(s.accountBalance(s.accounts[0].id), 0);
+        expect(s.accountBalance(c3), 0);
+        expect(s.accountBalance(dest), destBefore + b1 + 3000);
+      },
+    );
+
+    test('valida contas, montantes, categorias e movimentos', () {
+      final s = _state();
+      final a = s.accounts[0].id, b = s.accounts[1].id;
+      expect(
+        () => w(
+          s,
+          'transferir',
+        ).plan({'de_conta_id': a, 'para_conta_id': a, 'montante': 1}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(
+          s,
+          'transferir',
+        ).plan({'de_conta_id': a, 'para_conta_id': 999, 'montante': 1}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(
+          s,
+          'transferir',
+        ).plan({'de_conta_id': a, 'para_conta_id': b, 'montante': -5}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(
+          s,
+          'transferir',
+        ).plan({'de_conta_id': a, 'para_conta_id': b, 'montante': 0}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(
+          s,
+          'adicionar_movimento',
+        ).plan({'descricao': 'x', 'montante': 1, 'data': 'ontem'}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(
+          s,
+          'adicionar_movimento',
+        ).plan({'descricao': 'x', 'montante': 1, 'categoria_id': 999}),
+        throwsArgumentError,
+      );
+      expect(
+        () => w(s, 'classificar').plan({
+          'movimento_ids': [99999],
+          'categoria_id': 1,
+        }),
+        throwsArgumentError,
+      );
+      final catId = s.addCategory(
+        const Categoria(id: 0, name: 'X', parentId: null, isIncome: false),
+      );
+      final transferId = s.transactions.firstWhere((t) => t.isTransfer).id;
+      expect(
+        () => w(s, 'classificar').plan({
+          'movimento_ids': [transferId],
+          'categoria_id': catId,
+        }),
+        throwsArgumentError,
+      );
+    });
+
+    test(
+      'adicionar_movimento e classificar executam depois de confirmados',
+      () async {
+        final s = _state();
+        final cat = s.addCategory(
+          const Categoria(
+            id: 0,
+            name: 'Mercearia',
+            parentId: null,
+            isIncome: false,
+          ),
+        );
+        final plan = [
+          ...w(s, 'adicionar_movimento').plan({
+            'descricao': 'Café',
+            'montante': -1.5,
+            'conta_id': s.accounts[0].id,
+            'data': '2026-11-02',
+          }),
+          ...w(s, 'classificar').plan({
+            'movimento_ids': [
+              s.transactions
+                  .firstWhere((t) => t.description == 'Supermercado')
+                  .id,
+            ],
+            'categoria_id': cat,
+          }),
+        ];
+        await executePlan(s, plan);
+        final cafe = s.transactions.firstWhere((t) => t.description == 'Café');
+        expect(cafe.amount, -150);
+        expect(cafe.date, DateTime(2026, 11, 2));
+        expect(
+          s.transactions
+              .firstWhere((t) => t.description == 'Supermercado')
+              .categoryId,
+          cat,
+        );
+      },
+    );
+
+    test(
+      'Desfazer repõe os dados; falha a meio não deixa nada alterado',
+      () async {
+        final s = _state();
+        final bal = s.accountBalance(s.accounts[0].id);
+        final n = s.transactions.length;
+        final plan = w(
+          s,
+          'mover_tudo_para',
+        ).plan({'conta_destino_id': s.accounts[1].id});
+        final snap = await executePlan(s, plan);
+        expect(s.accountBalance(s.accounts[0].id), 0);
+        await s.restoreBackup(snap);
+        expect(s.accountBalance(s.accounts[0].id), bal);
+        expect(s.transactions.length, n);
+
+        final failing = [
+          ...plan,
+          PlannedAction(
+            describe: (_) => 'x',
+            apply: (_) => throw StateError('falhou'),
+          ),
+        ];
+        await expectLater(executePlan(s, failing), throwsStateError);
+        expect(s.accountBalance(s.accounts[0].id), bal);
+        expect(s.transactions.length, n);
+      },
+    );
+
+    test(
+      'o laço regista o plano sem executar e devolve erros ao modelo',
+      () async {
+        final s = _state();
+        final n = s.transactions.length;
+        final p = FakeProvider([
+          AgentTurn(
+            toolCalls: [
+              ToolCall(
+                id: 'a',
+                name: 'mover_tudo_para',
+                input: {'conta_destino_id': s.accounts[1].id},
+              ),
+              const ToolCall(
+                id: 'b',
+                name: 'transferir',
+                input: {'de_conta_id': 1, 'para_conta_id': 1, 'montante': 1},
+              ),
+            ],
+          ),
+          const AgentTurn(text: 'Proponho isto.'),
+        ]);
+        final run = await AgentLoop(
+          provider: p,
+          tools: buildReadTools(s),
+          writeTools: buildWriteTools(s),
+        ).run([const AgentMessage.user('passa tudo')]);
+        expect(run.plan, hasLength(1));
+        expect(s.transactions.length, n); // nada executado
+        final results = p.seen[1].last.toolResults;
+        expect(results[0].isError, isFalse);
+        expect(results[0].content, contains('NÃO foi executado'));
+        expect(results[1].isError, isTrue);
+      },
+    );
   });
 
   group('ClaudeProvider', () {
@@ -242,12 +450,92 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('só consulta dados'), findsOneWidget);
+    expect(find.textContaining('mostra um plano'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'quanto tenho?');
     await tester.tap(find.byIcon(Icons.send));
     await tester.pumpAndSettle();
     expect(find.text('quanto tenho?'), findsOneWidget);
     expect(find.text('A Conta 1 tem 64,50 €.'), findsOneWidget);
+  });
+
+  testWidgets('ecrã: plano, confirmar e botão Desfazer', (tester) async {
+    final s = _state();
+    final dest = s.accounts[1].id;
+    final b1 = s.accountBalance(s.accounts[0].id);
+    final p = FakeProvider([
+      AgentTurn(
+        toolCalls: [
+          ToolCall(
+            id: 'm',
+            name: 'mover_tudo_para',
+            input: {'conta_destino_id': dest},
+          ),
+        ],
+      ),
+      const AgentTurn(text: 'Proponho mover o saldo. Confirma?'),
+    ]);
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AppState>.value(
+        value: s,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('pt', 'PT'),
+          home: AgentScreen(provider: p),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'passa tudo para a conta 2');
+    await tester.tap(find.byIcon(Icons.send));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Plano · 1 ação'), findsOneWidget);
+    expect(find.textContaining('Transferir'), findsOneWidget);
+    expect(s.accountBalance(s.accounts[0].id), b1); // ainda nada feito
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+    expect(s.accountBalance(s.accounts[0].id), 0);
+    expect(find.textContaining('Feito'), findsOneWidget);
+    // o botão Desfazer aparece; a reposição em si (cópia da base de dados, com
+    // E/S real) é testada acima, fora do ecrã, porque o relógio simulado dos
+    // testes de widgets não a deixa terminar
+    expect(find.text('Desfazer'), findsOneWidget);
+  });
+
+  testWidgets('ecrã: cancelar não altera nada', (tester) async {
+    final s = _state();
+    final b1 = s.accountBalance(s.accounts[0].id);
+    final p = FakeProvider([
+      AgentTurn(
+        toolCalls: [
+          ToolCall(
+            id: 'm',
+            name: 'mover_tudo_para',
+            input: {'conta_destino_id': s.accounts[1].id},
+          ),
+        ],
+      ),
+      const AgentTurn(text: 'Confirma?'),
+    ]);
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AppState>.value(
+        value: s,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('pt', 'PT'),
+          home: AgentScreen(provider: p),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'x');
+    await tester.tap(find.byIcon(Icons.send));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(s.accountBalance(s.accounts[0].id), b1);
+    expect(find.text('Plano cancelado.'), findsOneWidget);
   });
 
   testWidgets('ecrã: erro do fornecedor mostra mensagem e repõe o texto', (

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +11,7 @@ import 'agent_settings_screen.dart';
 import 'provider/claude_provider.dart';
 import 'provider/llm_provider.dart';
 import 'tools/read_tools.dart';
+import 'tools/write_tools.dart';
 
 /// Conversa com o agente. [provider] só serve para testes: sem ele usa-se o
 /// Claude com a chave guardada nas definições.
@@ -27,6 +30,13 @@ class _AgentScreenState extends State<AgentScreen> {
   bool _hasKey = false;
   bool _busy = false;
   String? _error;
+  final Map<AgentMessage, String> _shown =
+      Map.identity(); // texto que o utilizador escreveu
+  List<PlannedAction> _plan = [];
+  Uint8List? _undo; // cópia anterior ao último plano executado
+  String? _status; // resultado do último plano (feito, cancelado, desfeito)
+  String?
+  _note; // o que aconteceu ao plano, para dizer ao modelo na mensagem seguinte
 
   @override
   void initState() {
@@ -87,20 +97,31 @@ class _AgentScreenState extends State<AgentScreen> {
       return;
     }
     final before = _history.length;
+    final sent = _note == null ? text : '$_note\n$text';
     setState(() {
-      _history.add(AgentMessage.user(text));
+      final msg = AgentMessage.user(sent);
+      _shown[msg] = text;
+      _history.add(msg);
+      _plan = [];
+      _undo = null;
+      _status = null;
       _input.clear();
       _busy = true;
       _error = null;
     });
     _scrollDown();
     try {
-      final added = await AgentLoop(
+      final run = await AgentLoop(
         provider: provider,
         tools: buildReadTools(state),
+        writeTools: buildWriteTools(state),
       ).run(List.of(_history));
       if (!mounted) return;
-      setState(() => _history.addAll(added));
+      setState(() {
+        _history.addAll(run.messages);
+        _plan = run.plan;
+        _note = null;
+      });
     } on Object catch (e) {
       if (!mounted) return;
       // a pergunta fica no ecrã; a conversa interna volta ao estado anterior
@@ -113,6 +134,65 @@ class _AgentScreenState extends State<AgentScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
       _scrollDown();
+    }
+  }
+
+  Future<void> _confirm() async {
+    final l = AppLocalizations.of(context)!;
+    final state = context.read<AppState>();
+    final plan = _plan;
+    if (plan.isEmpty || _busy) return;
+    setState(() => _busy = true);
+    try {
+      final snapshot = await executePlan(state, plan);
+      if (!mounted) return;
+      setState(() {
+        _undo = snapshot;
+        _plan = [];
+        _status = l.agDone(plan.length);
+        _note = '(O utilizador confirmou e o plano foi executado.)';
+      });
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _plan = [];
+        _error = l.agExecFailed('$e');
+        _note = '(O plano falhou ao executar e nada foi alterado.)';
+      });
+    } finally {
+      if (mounted) setState(() => _busy = false);
+      _scrollDown();
+    }
+  }
+
+  void _cancel() {
+    final l = AppLocalizations.of(context)!;
+    setState(() {
+      _plan = [];
+      _status = l.agCancelled;
+      _note = '(O utilizador cancelou o plano; nada foi alterado.)';
+    });
+  }
+
+  Future<void> _undoPlan() async {
+    final l = AppLocalizations.of(context)!;
+    final state = context.read<AppState>();
+    final snapshot = _undo;
+    if (snapshot == null || _busy) return;
+    setState(() => _busy = true);
+    try {
+      await state.restoreBackup(snapshot);
+      if (!mounted) return;
+      setState(() {
+        _undo = null;
+        _status = l.agUndone;
+        _note = '(O utilizador desfez o plano; os dados voltaram ao que eram antes.)';
+      });
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() => _error = l.agExecFailed('$e'));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -164,7 +244,7 @@ class _AgentScreenState extends State<AgentScreen> {
           : Column(
               children: [
                 Expanded(
-                  child: visible.isEmpty && !_busy
+                  child: visible.isEmpty && !_busy && _plan.isEmpty
                       ? Center(
                           child: Padding(
                             padding: const EdgeInsets.all(24),
@@ -178,7 +258,20 @@ class _AgentScreenState extends State<AgentScreen> {
                           controller: _scroll,
                           padding: const EdgeInsets.all(12),
                           children: [
-                            for (final m in visible) _Bubble(m),
+                            for (final m in visible)
+                              _Bubble(m, _shown[m] ?? m.text),
+                            if (_plan.isNotEmpty)
+                              _PlanCard(
+                                plan: _plan,
+                                busy: _busy,
+                                onConfirm: _confirm,
+                                onCancel: _cancel,
+                              ),
+                            if (_status != null)
+                              _StatusRow(
+                                text: _status!,
+                                onUndo: _undo == null ? null : _undoPlan,
+                              ),
                             if (_busy)
                               Padding(
                                 padding: const EdgeInsets.all(8),
@@ -230,6 +323,82 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 }
 
+class _PlanCard extends StatelessWidget {
+  final List<PlannedAction> plan;
+  final bool busy;
+  final VoidCallback onConfirm;
+  final VoidCallback onCancel;
+  const _PlanCard({
+    required this.plan,
+    required this.busy,
+    required this.onConfirm,
+    required this.onCancel,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.agPlanTitle(plan.length), style: theme.textTheme.labelLarge),
+            const SizedBox(height: 8),
+            for (final a in plan)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Text('• ${a.describe(l)}'),
+              ),
+            const SizedBox(height: 8),
+            Text(l.agUndoNote, style: theme.textTheme.bodySmall),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: busy ? null : onCancel,
+                    child: Text(l.agCancel),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: busy ? null : onConfirm,
+                    child: Text(l.agConfirm),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusRow extends StatelessWidget {
+  final String text;
+  final VoidCallback? onUndo;
+  const _StatusRow({required this.text, this.onUndo});
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text(text)),
+          if (onUndo != null)
+            TextButton(onPressed: onUndo, child: Text(l.agUndo)),
+        ],
+      ),
+    );
+  }
+}
+
 class _NeedKey extends StatelessWidget {
   final VoidCallback onSet;
   const _NeedKey({required this.onSet});
@@ -254,7 +423,8 @@ class _NeedKey extends StatelessWidget {
 
 class _Bubble extends StatelessWidget {
   final AgentMessage message;
-  const _Bubble(this.message);
+  final String text;
+  const _Bubble(this.message, this.text);
   @override
   Widget build(BuildContext context) {
     final mine = message.role == AgentRole.user;
@@ -273,7 +443,7 @@ class _Bubble extends StatelessWidget {
               : scheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: SelectableText(message.text),
+        child: SelectableText(text),
       ),
     );
   }
