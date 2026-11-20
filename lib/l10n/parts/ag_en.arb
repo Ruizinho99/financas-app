@@ -105,5 +105,65 @@
         "type": "String"
       }
     }
+  },
+  "agPlanCategory": "Create category “{name}”",
+  "@agPlanCategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanSubcategory": "Create category “{name}” inside {parent}",
+  "@agPlanSubcategory": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "parent": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanGoal": "Create goal “{name}” of {amount}",
+  "@agPlanGoal": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanSalary": "Set the salary for {month} to {amount}",
+  "@agPlanSalary": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanSalaryDefault": "Set the default salary to {amount}",
+  "@agPlanSalaryDefault": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanDelete": "Delete {count} transaction(s): {summary}",
+  "@agPlanDelete": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
   }
 }

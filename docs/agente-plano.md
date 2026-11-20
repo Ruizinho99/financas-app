@@ -1,6 +1,6 @@
 # Agente dentro da app — plano (rascunho para aprovação)
 
-Estado: fase 1 (v1.38.0) e fase 2 (v1.39.0) feitas. A fase 2 inclui `transferir`, `mover_tudo_para`, `adicionar_movimento` e `classificar`, com plano, confirmação, snapshot e Desfazer; "todas as contas" são só as contas normais (as de investimento ficam de fora). A fase 3 (v1.40.0) acrescenta OpenAI e Gemini, com escolha do fornecedor e uma chave por fornecedor. Faltam as fases 4 e 5.
+Estado: fase 1 (v1.38.0) e fase 2 (v1.39.0) feitas. A fase 2 inclui `transferir`, `mover_tudo_para`, `adicionar_movimento` e `classificar`, com plano, confirmação, snapshot e Desfazer; "todas as contas" são só as contas normais (as de investimento ficam de fora). A fase 3 (v1.40.0) acrescenta OpenAI e Gemini, com escolha do fornecedor e uma chave por fornecedor. A fase 4 (v1.41.0) acrescenta `criar_categoria`, `criar_objetivo`, `definir_salario` e `apagar_movimentos` (a vermelho no plano; não apaga transferências). Falta a fase 5 (modelo local).
 
 ## Ideia
 

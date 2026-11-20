@@ -314,6 +314,42 @@ abstract class AppLocalizations {
   /// **'Fornecedor'**
   String get agProviderLabel;
 
+  /// No description provided for @agPlanCategory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar categoria “{name}”'**
+  String agPlanCategory(String name);
+
+  /// No description provided for @agPlanSubcategory.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar categoria “{name}” dentro de {parent}'**
+  String agPlanSubcategory(String name, String parent);
+
+  /// No description provided for @agPlanGoal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar objetivo “{name}” de {amount}'**
+  String agPlanGoal(String name, String amount);
+
+  /// No description provided for @agPlanSalary.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definir o salário de {month} para {amount}'**
+  String agPlanSalary(String month, String amount);
+
+  /// No description provided for @agPlanSalaryDefault.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definir o salário por omissão para {amount}'**
+  String agPlanSalaryDefault(String amount);
+
+  /// No description provided for @agPlanDelete.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar {count} movimento(s): {summary}'**
+  String agPlanDelete(int count, String summary);
+
   /// No description provided for @anCompareOn.
   ///
   /// In pt, this message translates to:
