@@ -15,7 +15,7 @@
   "agPrivacy": "O texto dos teus pedidos e os dados que o agente consultar (nomes de contas e categorias, saldos, movimentos pedidos) são enviados à Anthropic (Claude) com a tua chave. A chave fica guardada de forma segura só neste telemóvel.",
   "agNeedKey": "Define a tua chave da API Claude para começar.",
   "agNeedKeyAction": "Definir chave",
-  "agReadOnly": "Nesta versão o agente só consulta dados; ainda não faz alterações.",
+  "agReadOnly": "Pede alterações em texto: o agente mostra um plano e só as faz depois de confirmares.",
   "agThinking": "A pensar…",
   "agErrNetwork": "Sem ligação ou o fornecedor não respondeu. Tenta de novo.",
   "agErrKey": "A chave foi recusada. Confirma-a nas definições do agente.",
@@ -28,5 +28,74 @@
       }
     }
   },
-  "agEmpty": "Pergunta, por exemplo, quanto tens em cada conta."
+  "agEmpty": "Pergunta, por exemplo, quanto tens em cada conta.",
+  "agPlanTransfer": "Transferir {amount} de {from} para {to}",
+  "@agPlanTransfer": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanAddTxn": "Adicionar “{description}”: {amount} (conta: {account})",
+  "@agPlanAddTxn": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanClassify": "Pôr {count} movimento(s) na categoria {category}",
+  "@agPlanClassify": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanTitle": "Plano · {count} ação(ões)",
+  "@agPlanTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agConfirm": "Confirmar",
+  "agCancel": "Cancelar",
+  "agUndo": "Desfazer",
+  "agDone": "Feito: {count} ação(ões) executada(s).",
+  "@agDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agUndone": "Alterações desfeitas.",
+  "agCancelled": "Plano cancelado.",
+  "agExecFailed": "Não foi possível executar e nada ficou alterado: {message}",
+  "@agExecFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "agUndoNote": "Desfazer repõe os dados como estavam antes do plano."
 }

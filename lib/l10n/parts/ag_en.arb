@@ -15,7 +15,7 @@
   "agPrivacy": "The text of your requests and the data the agent looks up (account and category names, balances, requested transactions) are sent to Anthropic (Claude) using your key. The key is stored securely on this phone only.",
   "agNeedKey": "Set your Claude API key to get started.",
   "agNeedKeyAction": "Set key",
-  "agReadOnly": "In this version the agent only reads data; it can't make changes yet.",
+  "agReadOnly": "Ask for changes in text: the agent shows a plan and only makes them after you confirm.",
   "agThinking": "Thinking…",
   "agErrNetwork": "No connection, or the provider didn't respond. Try again.",
   "agErrKey": "The key was rejected. Check it in the agent settings.",
@@ -28,5 +28,74 @@
       }
     }
   },
-  "agEmpty": "Ask, for example, how much you have in each account."
+  "agEmpty": "Ask, for example, how much you have in each account.",
+  "agPlanTransfer": "Transfer {amount} from {from} to {to}",
+  "@agPlanTransfer": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanAddTxn": "Add “{description}”: {amount} (account: {account})",
+  "@agPlanAddTxn": {
+    "placeholders": {
+      "description": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanClassify": "Put {count} transaction(s) in category {category}",
+  "@agPlanClassify": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "agPlanTitle": "Plan · {count} action(s)",
+  "@agPlanTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agConfirm": "Confirm",
+  "agCancel": "Cancel",
+  "agUndo": "Undo",
+  "agDone": "Done: {count} action(s) carried out.",
+  "@agDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agUndone": "Changes undone.",
+  "agCancelled": "Plan cancelled.",
+  "agExecFailed": "Couldn't carry it out and nothing was changed: {message}",
+  "@agExecFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "agUndoNote": "Undo restores your data as it was before the plan."
 }

@@ -1,6 +1,6 @@
 # Agente dentro da app — plano (rascunho para aprovação)
 
-Estado: **só desenho, nada implementado**. Falta aprovar o mock e as decisões abertas.
+Estado: fase 1 (v1.38.0) e fase 2 (v1.39.0) feitas. A fase 2 inclui `transferir`, `mover_tudo_para`, `adicionar_movimento` e `classificar`, com plano, confirmação, snapshot e Desfazer; "todas as contas" são só as contas normais (as de investimento ficam de fora). Faltam as fases 3 a 5.
 
 ## Ideia
 

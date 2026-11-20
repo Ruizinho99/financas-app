@@ -197,7 +197,7 @@ abstract class AppLocalizations {
   /// No description provided for @agReadOnly.
   ///
   /// In pt, this message translates to:
-  /// **'Nesta versão o agente só consulta dados; ainda não faz alterações.'**
+  /// **'Pede alterações em texto: o agente mostra um plano e só as faz depois de confirmares.'**
   String get agReadOnly;
 
   /// No description provided for @agThinking.
@@ -235,6 +235,78 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Pergunta, por exemplo, quanto tens em cada conta.'**
   String get agEmpty;
+
+  /// No description provided for @agPlanTransfer.
+  ///
+  /// In pt, this message translates to:
+  /// **'Transferir {amount} de {from} para {to}'**
+  String agPlanTransfer(String amount, String from, String to);
+
+  /// No description provided for @agPlanAddTxn.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar “{description}”: {amount} (conta: {account})'**
+  String agPlanAddTxn(String description, String amount, String account);
+
+  /// No description provided for @agPlanClassify.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pôr {count} movimento(s) na categoria {category}'**
+  String agPlanClassify(int count, String category);
+
+  /// No description provided for @agPlanTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano · {count} ação(ões)'**
+  String agPlanTitle(int count);
+
+  /// No description provided for @agConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirmar'**
+  String get agConfirm;
+
+  /// No description provided for @agCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar'**
+  String get agCancel;
+
+  /// No description provided for @agUndo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desfazer'**
+  String get agUndo;
+
+  /// No description provided for @agDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Feito: {count} ação(ões) executada(s).'**
+  String agDone(int count);
+
+  /// No description provided for @agUndone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alterações desfeitas.'**
+  String get agUndone;
+
+  /// No description provided for @agCancelled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano cancelado.'**
+  String get agCancelled;
+
+  /// No description provided for @agExecFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível executar e nada ficou alterado: {message}'**
+  String agExecFailed(String message);
+
+  /// No description provided for @agUndoNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desfazer repõe os dados como estavam antes do plano.'**
+  String get agUndoNote;
 
   /// No description provided for @anCompareOn.
   ///
